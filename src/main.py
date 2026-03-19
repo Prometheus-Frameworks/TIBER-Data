@@ -21,6 +21,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--season", type=int, help="Single season to ingest.")
     parser.add_argument("--seasons", type=int, nargs="+", help="One or more seasons to ingest.")
     parser.add_argument("--overwrite", action="store_true", help="Overwrite output files.")
+    parser.add_argument(
+        "--disable-offline-fallback",
+        action="store_true",
+        help="Fail instead of using local fixtures when public sources are unavailable.",
+    )
     return parser.parse_args()
 
 
@@ -98,7 +103,11 @@ def validation_rules() -> list[ValidationRule]:
 def main() -> int:
     args = parse_args()
     seasons = args.seasons or ([args.season] if args.season else None)
-    config = build_config(seasons=seasons, overwrite=args.overwrite)
+    config = build_config(
+        seasons=seasons,
+        overwrite=args.overwrite,
+        allow_offline_fallback=not args.disable_offline_fallback,
+    )
     ensure_directories([config.raw_dir, config.silver_dir, config.gold_dir])
 
     client = PublicDataClient(config)

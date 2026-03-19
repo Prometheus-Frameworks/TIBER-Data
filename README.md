@@ -1,6 +1,6 @@
 # TIBER-Data
 
-TIBER-Data is the shared football data foundation for downstream TIBER model repositories. PR1 intentionally focuses on dependable data contracts and a reproducible ETL backbone instead of advanced modeling, serving infrastructure, or historical backfill.
+TIBER-Data is the shared football data foundation for downstream TIBER model repositories. PR2 makes the public ingest path real and deterministic so the repository can produce trustworthy silver and gold outputs from actual public NFL data instead of placeholder URLs or method-guessing logic.
 
 ## Why this repo exists
 
@@ -30,19 +30,19 @@ src/
   utils/
 ```
 
-## PR1 scope
+## Scope of the current pipeline
 
-Included in this bootstrap:
+Included in this pipeline:
 
-- Python ETL scaffold using `polars`, `pyarrow`, and `nflreadpy`.
+- Python ETL scaffold using `polars`, `pyarrow`, and optional `nflreadpy`.
 - Canonical schema docs for the first foundational tables.
-- Public-data ingest entrypoints for players, teams, and weekly stats.
+- Deterministic public-data ingest entrypoints for players, teams, weekly player stats, and team-week context.
 - Silver tables for players, weekly player stats, and weekly team stats.
 - Gold tables for player role inputs and team context.
 - Lightweight validation checks for required columns, duplicate keys, and non-negative numeric metrics.
 - One command entrypoint to run the pipeline end to end.
 
-Explicitly out of scope for PR1:
+Explicitly out of scope for this repo version:
 
 - web/API layers
 - databases or warehouse infrastructure
@@ -60,19 +60,44 @@ Create a Python 3.10+ environment and install the package with dependencies:
 python -m pip install -e .
 ```
 
-> `nflreadpy` is configured as the first-choice public data access layer. The ingest client also includes an offline fallback path so the repository structure and transforms stay testable in restricted environments.
+## Supported public ingest path
+
+The pipeline now uses explicit documented public source paths.
+
+### Preferred loader when available
+
+If `nflreadpy` is installed and working, the ingest client uses these explicit functions:
+
+- `nflreadpy.load_rosters(seasons=..., file_type="parquet")`
+- `nflreadpy.load_player_stats(seasons=..., summary_level="week", file_type="parquet")`
+- `nflreadpy.load_team_stats(seasons=..., summary_level="week", file_type="parquet")`
+- `nflreadpy.load_teams()`
+
+### Stable direct public fallback
+
+If `nflreadpy` is unavailable, the pipeline falls back to direct public nflverse paths:
+
+- players season snapshots: `https://github.com/nflverse/nflverse-data/releases/download/rosters/roster_{season}.parquet`
+- weekly player stats: `https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_{season}.parquet`
+- weekly team stats / team-week context: `https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_{season}.parquet`
+- team metadata: `https://raw.githubusercontent.com/nflverse/nflverse-pbp/master/teams_colors_logos.csv`
+
+The current silver and gold weekly outputs are **regular-season only** because the canonical schema does not yet carry `season_type`.
+
+There is no placeholder ingest URL in the main path anymore.
 
 ## Run the pipeline
 
 ```bash
-python -m src.main
+python -m src.main --overwrite
 ```
 
 Optional flags:
 
 ```bash
 python -m src.main --season 2024 --overwrite
-python -m src.main --seasons 2023 2024
+python -m src.main --seasons 2023 2024 --overwrite
+python -m src.main --season 2024 --disable-offline-fallback
 ```
 
 The pipeline will:
@@ -96,16 +121,21 @@ The pipeline will:
 - `data/gold/player_role_inputs_weekly.parquet`
 - `data/gold/team_context_weekly.parquet`
 
-## Schema philosophy
+## Column honesty rules
 
-The docs and code use three tiers when discussing fields:
+The docs and code use four practical states for fields:
 
-- `required_now`
-- `derived_now_if_available`
-- `future_optional`
+- **real**: directly sourced from the public ingest path.
+- **derived**: computed deterministically from real inputs.
+- **null_when_unavailable**: kept null if the public source does not cleanly expose it.
+- **pending**: intentionally reserved for later public derivation work.
 
-That prevents the repo from pretending it already has routes, tracking, air-yards, or participation data if those fields are not cleanly available from the current public ingest path.
+This keeps the repo from pretending it already has routes, tracking, or red-zone participation when those fields are not reliably available from the current public path.
 
-## Notes on current public ingest
+## Known limitations
 
-The ingest module tries to read public data through `nflreadpy` first. If that library is unavailable or the environment cannot reach public endpoints, the client can fall back to deterministic sample fixtures for local development. Those fixtures are deliberately limited and exist to preserve pipeline shape and validation behavior in offline CI; they are **not** a substitute for the intended public ingest path.
+- The current weekly silver/gold outputs keep regular-season weeks only. Postseason support should add an explicit `season_type` field before widening scope.
+- `red_zone_targets`, `routes_run`, `route_share`, `snap_share`, `yprr`, `tprr`, `neutral_pass_rate`, `red_zone_pass_rate`, `qb_epa_per_dropback`, and `receiver_room_certainty` remain null/pending until a stable public source is added.
+- `team_air_yards` uses official team stats when present and otherwise falls back to player-level summed air yards.
+- `fantasy_points_ppr` is passed through when the source provides it; otherwise it is computed deterministically from passing, rushing, and receiving box-score stats.
+- Offline fixtures remain available only as a restricted-environment fallback for local testing or CI. They are not the main ingest path.

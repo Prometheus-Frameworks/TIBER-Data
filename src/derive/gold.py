@@ -21,17 +21,33 @@ def build_player_role_inputs_weekly(player_weekly, team_weekly):
     if routes_available:
         route_expr = [
             pl.col("routes_run").cast(pl.Float64),
-            (pl.col("routes_run") / pl.col("routes_run").sum().over(["team", "season", "week"]))
-            .fill_nan(None)
+            pl.when(pl.col("routes_run").sum().over(["team", "season", "week"]) > 0)
+            .then(
+                pl.col("routes_run")
+                / pl.col("routes_run").sum().over(["team", "season", "week"])
+            )
+            .otherwise(None)
             .alias("route_share"),
             pl.col("snap_share").cast(pl.Float64),
-            (pl.col("receiving_yards") / pl.col("routes_run")).fill_nan(None).alias("yprr"),
-            (pl.col("targets") / pl.col("routes_run")).fill_nan(None).alias("tprr"),
+            pl.when(pl.col("routes_run") > 0)
+            .then(pl.col("receiving_yards") / pl.col("routes_run"))
+            .otherwise(None)
+            .alias("yprr"),
+            pl.when(pl.col("routes_run") > 0)
+            .then(pl.col("targets") / pl.col("routes_run"))
+            .otherwise(None)
+            .alias("tprr"),
         ]
     return (
         joined.with_columns(
-            (pl.col("targets") / pl.col("team_targets")).fill_nan(0.0).alias("target_share"),
-            (pl.col("air_yards") / pl.col("team_air_yards")).fill_nan(0.0).alias("air_yards_share"),
+            pl.when(pl.col("team_targets") > 0)
+            .then(pl.col("targets") / pl.col("team_targets"))
+            .otherwise(0.0)
+            .alias("target_share"),
+            pl.when(pl.col("team_air_yards") > 0)
+            .then(pl.col("air_yards") / pl.col("team_air_yards"))
+            .otherwise(None)
+            .alias("air_yards_share"),
             *route_expr,
         )
         .select(
@@ -64,7 +80,10 @@ def build_player_role_inputs_weekly(player_weekly, team_weekly):
 def build_team_context_weekly(team_weekly, player_role_weekly):
     pl = require_polars()
     concentration = player_role_weekly.group_by(["team", "season", "week"]).agg(
-        (1 / pl.col("target_share").pow(2).sum()).alias("target_competition_index")
+        pl.when(pl.col("target_share").pow(2).sum() > 0)
+        .then(1 / pl.col("target_share").pow(2).sum())
+        .otherwise(None)
+        .alias("target_competition_index")
     )
     return (
         team_weekly.join(concentration, on=["team", "season", "week"], how="left")
