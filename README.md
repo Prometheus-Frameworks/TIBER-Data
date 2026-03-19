@@ -44,7 +44,6 @@ Included in this pipeline:
 
 Explicitly out of scope for this repo version:
 
-- web/API layers
 - databases or warehouse infrastructure
 - cloud deployment
 - auth
@@ -106,6 +105,62 @@ The pipeline will:
 2. normalize canonical parquet tables into `data/silver/`
 3. derive first-pass gold tables into `data/gold/`
 4. validate schema and basic quality constraints before succeeding
+
+## Run the read-only API
+
+After you have produced parquet outputs in `data/silver/` and `data/gold/`, start the API with:
+
+```bash
+uvicorn src.api:app --host 0.0.0.0 --port 8000
+```
+
+Recommended local flow:
+
+```bash
+python -m src.main --overwrite
+uvicorn src.api:app --host 0.0.0.0 --port 8000
+```
+
+The API is intentionally small and read-only. It reads directly from the existing parquet outputs and does not use a database, auth layer, or write path. If required parquet files are missing, endpoints fail clearly with a `503` response that names the missing dataset and path.
+
+### Endpoints
+
+- `GET /health`
+- `GET /api/teams`
+- `GET /api/players`
+- `GET /api/team-context`
+- `GET /api/team-context/{team}`
+- `GET /api/player-role-inputs`
+- `GET /api/player-role-inputs/{player_id}`
+
+### Example requests
+
+```bash
+curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/api/teams
+curl http://127.0.0.1:8000/api/players
+curl http://127.0.0.1:8000/api/team-context
+curl http://127.0.0.1:8000/api/team-context/BAL
+curl http://127.0.0.1:8000/api/player-role-inputs
+curl http://127.0.0.1:8000/api/player-role-inputs/00-0037834
+```
+
+Each API response returns simple JSON in this shape:
+
+```json
+{
+  "dataset": "teams",
+  "count": 32,
+  "data": [
+    {
+      "team": "ARI",
+      "team_name": "Cardinals",
+      "conference": "NFC",
+      "division": "West"
+    }
+  ]
+}
+```
 
 ## Tables produced
 
