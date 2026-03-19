@@ -4,8 +4,8 @@ Canonical silver table for team metadata.
 
 | column | type | requirement_tier | required | description | source / derivation |
 |---|---|---|---|---|---|
-| team | string | required_now | yes | Canonical team abbreviation. | Public team metadata source or normalized static fallback. |
-| team_name | string | required_now | yes | Full franchise or display name. | Source normalization. |
-| conference | string | future_optional | no | Conference affiliation. | Public team metadata passthrough if available. |
-| division | string | future_optional | no | Division affiliation. | Public team metadata passthrough if available. |
-| season | int | derived_now_if_available | no | Optional season snapshot if metadata is season-bound. | Added when source data is seasonal. |
+| team | string | required_now | yes | Canonical team abbreviation. | Real team metadata source or normalized restricted-environment fixture. |
+| team_name | string | required_now | yes | Full franchise or display name. | Real source normalization. |
+| conference | string | derived_now_if_available | no | Conference affiliation. | Real source passthrough when available. |
+| division | string | derived_now_if_available | no | Division affiliation. | Real source passthrough when available. |
+| season | int | derived_now_if_available | no | Optional season snapshot if metadata is season-bound. | Not currently materialized in the silver contract. |
