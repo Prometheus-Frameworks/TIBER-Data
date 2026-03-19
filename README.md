@@ -127,10 +127,10 @@ The API is intentionally small and read-only. It reads directly from the existin
 
 - `GET /health`
 - `GET /api/teams`
-- `GET /api/players`
-- `GET /api/team-context`
+- `GET /api/players` with optional `team`, `season`, `position`, and `player_id` filters
+- `GET /api/team-context` with optional `team`, `season`, and `week` filters
 - `GET /api/team-context/{team}`
-- `GET /api/player-role-inputs`
+- `GET /api/player-role-inputs` with optional `team`, `season`, `week`, `position`, and `player_id` filters
 - `GET /api/player-role-inputs/{player_id}`
 
 ### Example requests
@@ -139,9 +139,12 @@ The API is intentionally small and read-only. It reads directly from the existin
 curl http://127.0.0.1:8000/health
 curl http://127.0.0.1:8000/api/teams
 curl http://127.0.0.1:8000/api/players
+curl "http://127.0.0.1:8000/api/players?team=BAL&season=2024&position=WR"
 curl http://127.0.0.1:8000/api/team-context
+curl "http://127.0.0.1:8000/api/team-context?team=BAL&season=2024&week=1"
 curl http://127.0.0.1:8000/api/team-context/BAL
 curl http://127.0.0.1:8000/api/player-role-inputs
+curl "http://127.0.0.1:8000/api/player-role-inputs?team=BAL&season=2024&week=1&position=WR"
 curl http://127.0.0.1:8000/api/player-role-inputs/00-0037834
 ```
 

@@ -140,3 +140,115 @@ def test_filtered_endpoints_return_not_found_for_unknown_keys(tmp_path: Path) ->
     missing_player = client.get("/api/player-role-inputs/p2")
     assert missing_player.status_code == 404
     assert missing_player.json()["detail"]["error"] == "player_not_found"
+
+
+def test_collection_filters_return_only_matching_rows(tmp_path: Path) -> None:
+    configure_datasets(tmp_path)
+    write_parquet(
+        api.DATASETS["players"],
+        [
+            {
+                "player_id": "p1",
+                "full_name": "Player One",
+                "position": "WR",
+                "team": "BAL",
+                "season": 2024,
+            },
+            {
+                "player_id": "p2",
+                "full_name": "Player Two",
+                "position": "RB",
+                "team": "KC",
+                "season": 2023,
+            },
+        ],
+    )
+    write_parquet(
+        api.DATASETS["team_context"],
+        [
+            TEAM_CONTEXT_ROW,
+            {
+                **TEAM_CONTEXT_ROW,
+                "team": "KC",
+                "season": 2023,
+                "week": 2,
+                "team_pass_attempts": 35.0,
+            },
+        ],
+    )
+    write_parquet(
+        api.DATASETS["player_role_inputs"],
+        [
+            PLAYER_ROLE_ROW,
+            {
+                **PLAYER_ROLE_ROW,
+                "player_id": "p2",
+                "full_name": "Player Two",
+                "position": "RB",
+                "team": "KC",
+                "season": 2023,
+                "week": 2,
+                "targets": 4.0,
+                "target_share": 0.1,
+            },
+        ],
+    )
+
+    players = client.get("/api/players", params={"team": "bal", "season": 2024, "position": "wr"})
+    assert players.status_code == 200
+    assert players.json()["count"] == 1
+    assert players.json()["data"] == [
+        {
+            "player_id": "p1",
+            "full_name": "Player One",
+            "position": "WR",
+            "team": "BAL",
+            "season": 2024,
+        }
+    ]
+
+    team_context = client.get("/api/team-context", params={"team": "kc", "season": 2023, "week": 2})
+    assert team_context.status_code == 200
+    assert team_context.json()["count"] == 1
+    assert team_context.json()["data"][0]["team"] == "KC"
+
+    player_role_inputs = client.get(
+        "/api/player-role-inputs",
+        params={"team": "bal", "season": 2024, "week": 1, "position": "wr", "player_id": "p1"},
+    )
+    assert player_role_inputs.status_code == 200
+    assert player_role_inputs.json()["count"] == 1
+    assert player_role_inputs.json()["data"][0]["player_id"] == "p1"
+
+
+def test_collection_filters_return_empty_data_for_valid_no_match_queries(tmp_path: Path) -> None:
+    configure_datasets(tmp_path)
+    write_parquet(
+        api.DATASETS["players"],
+        [
+            {
+                "player_id": "p1",
+                "full_name": "Player One",
+                "position": "WR",
+                "team": "BAL",
+                "season": 2024,
+            }
+        ],
+    )
+    write_parquet(api.DATASETS["team_context"], [TEAM_CONTEXT_ROW])
+    write_parquet(api.DATASETS["player_role_inputs"], [PLAYER_ROLE_ROW])
+
+    players = client.get("/api/players", params={"team": "KC"})
+    assert players.status_code == 200
+    assert players.json() == {"dataset": "players", "count": 0, "data": []}
+
+    team_context = client.get("/api/team-context", params={"team": "KC", "season": 2024})
+    assert team_context.status_code == 200
+    assert team_context.json() == {"dataset": "team_context", "count": 0, "data": []}
+
+    player_role_inputs = client.get(
+        "/api/player-role-inputs",
+        params={"position": "RB", "player_id": "missing"},
+    )
+    assert player_role_inputs.status_code == 200
+    assert player_role_inputs.json() == {"dataset": "player_role_inputs", "count": 0, "data": []}

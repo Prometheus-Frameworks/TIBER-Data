@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from src.config.settings import build_config
@@ -43,6 +43,19 @@ def _records_response(dataset: str, records: list[dict[str, Any]]) -> JSONRespon
     return JSONResponse(content={"dataset": dataset, "count": len(records), "data": records})
 
 
+def _apply_filters(frame: Any, filters: dict[str, Any]) -> Any:
+    pl = require_polars()
+    filtered = frame
+    for column, value in filters.items():
+        if value is None:
+            continue
+        if column in {"team", "position"}:
+            filtered = filtered.filter(pl.col(column).str.to_uppercase() == str(value).upper())
+            continue
+        filtered = filtered.filter(pl.col(column) == value)
+    return filtered
+
+
 @app.get("/health")
 def health() -> JSONResponse:
     missing = [
@@ -74,22 +87,47 @@ def get_teams() -> JSONResponse:
 
 
 @app.get("/api/players")
-def get_players() -> JSONResponse:
+def get_players(
+    team: str | None = Query(default=None),
+    season: int | None = Query(default=None),
+    player_id: str | None = Query(default=None),
+    position: str | None = Query(default=None),
+) -> JSONResponse:
     frame = _load_dataset("players")
-    return _records_response("players", frame.to_dicts())
+    filtered = _apply_filters(
+        frame,
+        {
+            "team": team,
+            "season": season,
+            "player_id": player_id,
+            "position": position,
+        },
+    )
+    return _records_response("players", filtered.to_dicts())
 
 
 @app.get("/api/team-context")
-def get_team_context() -> JSONResponse:
+def get_team_context(
+    team: str | None = Query(default=None),
+    season: int | None = Query(default=None),
+    week: int | None = Query(default=None),
+) -> JSONResponse:
     frame = _load_dataset("team_context")
-    return _records_response("team_context", frame.to_dicts())
+    filtered = _apply_filters(
+        frame,
+        {
+            "team": team,
+            "season": season,
+            "week": week,
+        },
+    )
+    return _records_response("team_context", filtered.to_dicts())
 
 
 @app.get("/api/team-context/{team}")
 def get_team_context_for_team(team: str) -> JSONResponse:
-    pl = require_polars()
     frame = _load_dataset("team_context")
-    filtered = frame.filter(pl.col("team").str.to_uppercase() == team.upper())
+    filtered = _apply_filters(frame, {"team": team})
     if filtered.height == 0:
         raise HTTPException(
             status_code=404,
@@ -103,16 +141,31 @@ def get_team_context_for_team(team: str) -> JSONResponse:
 
 
 @app.get("/api/player-role-inputs")
-def get_player_role_inputs() -> JSONResponse:
+def get_player_role_inputs(
+    team: str | None = Query(default=None),
+    season: int | None = Query(default=None),
+    week: int | None = Query(default=None),
+    position: str | None = Query(default=None),
+    player_id: str | None = Query(default=None),
+) -> JSONResponse:
     frame = _load_dataset("player_role_inputs")
-    return _records_response("player_role_inputs", frame.to_dicts())
+    filtered = _apply_filters(
+        frame,
+        {
+            "team": team,
+            "season": season,
+            "week": week,
+            "position": position,
+            "player_id": player_id,
+        },
+    )
+    return _records_response("player_role_inputs", filtered.to_dicts())
 
 
 @app.get("/api/player-role-inputs/{player_id}")
 def get_player_role_inputs_for_player(player_id: str) -> JSONResponse:
-    pl = require_polars()
     frame = _load_dataset("player_role_inputs")
-    filtered = frame.filter(pl.col("player_id") == player_id)
+    filtered = _apply_filters(frame, {"player_id": player_id})
     if filtered.height == 0:
         raise HTTPException(
             status_code=404,
