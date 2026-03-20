@@ -4,7 +4,12 @@ import argparse
 from pathlib import Path
 
 from src.config.settings import build_config
-from src.derive.gold import build_player_role_inputs_weekly, build_team_context_weekly
+from src.derive.gold import (
+    build_player_role_inputs_weekly,
+    build_player_role_profile_compatibility_weekly,
+    build_team_context_weekly,
+    build_team_opportunity_context_compatibility_weekly,
+)
 from src.ingest.public import PublicDataClient
 from src.transform.silver import (
     build_players,
@@ -97,6 +102,18 @@ def validation_rules() -> list[ValidationRule]:
             ["team", "season", "week"],
             ["team_pass_attempts", "team_rush_attempts", "pace_proxy"],
         ),
+        ValidationRule(
+            "player_role_profile_compatibility_weekly",
+            ["player_id", "player_name", "position", "team", "season", "week"],
+            ["player_id", "season", "week"],
+            ["target_share", "competition_for_role"],
+        ),
+        ValidationRule(
+            "team_opportunity_context_compatibility_weekly",
+            ["team_id", "team_name", "team", "season", "week"],
+            ["team_id", "season", "week"],
+            ["pace_index", "target_competition_index"],
+        ),
     ]
 
 
@@ -130,6 +147,18 @@ def main() -> int:
         weekly_team_stats,
         player_role_inputs_weekly,
     )
+    player_role_profile_compatibility_weekly = build_player_role_profile_compatibility_weekly(
+        player_role_inputs_weekly,
+        players,
+    )
+    team_opportunity_context_compatibility_weekly = (
+        build_team_opportunity_context_compatibility_weekly(
+            team_context_weekly,
+            teams,
+            player_role_inputs_weekly,
+            players,
+        )
+    )
 
     rules = validation_rules()
     frames_to_validate = [
@@ -138,6 +167,8 @@ def main() -> int:
         (weekly_team_stats, rules[2]),
         (player_role_inputs_weekly, rules[3]),
         (team_context_weekly, rules[4]),
+        (player_role_profile_compatibility_weekly, rules[5]),
+        (team_opportunity_context_compatibility_weekly, rules[6]),
     ]
     for frame, rule in frames_to_validate:
         validate_frame(frame, rule)
@@ -162,6 +193,16 @@ def main() -> int:
     write_parquet(
         team_context_weekly,
         config.gold_dir / "team_context_weekly.parquet",
+        config.overwrite,
+    )
+    write_parquet(
+        player_role_profile_compatibility_weekly,
+        config.gold_dir / "player_role_profile_compatibility_weekly.parquet",
+        config.overwrite,
+    )
+    write_parquet(
+        team_opportunity_context_compatibility_weekly,
+        config.gold_dir / "team_opportunity_context_compatibility_weekly.parquet",
         config.overwrite,
     )
     return 0

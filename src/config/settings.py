@@ -36,7 +36,11 @@ def build_config(
 ) -> PipelineConfig:
     fallback = allow_offline_fallback
     if fallback is None:
-        fallback = os.environ.get("TIBER_ALLOW_OFFLINE_FALLBACK", "1") not in {"0", "false", "False"}
+        fallback = os.environ.get("TIBER_ALLOW_OFFLINE_FALLBACK", "1") not in {
+            "0",
+            "false",
+            "False",
+        }
     config = PipelineConfig(overwrite=overwrite, allow_offline_fallback=fallback)
     if seasons:
         config.seasons = seasons

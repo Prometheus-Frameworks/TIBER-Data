@@ -200,7 +200,8 @@ def build_weekly_player_stats(records: list[dict[str, Any]]):
         pl.col("week").cast(pl.Int64, strict=False),
     ]
     expressions.extend(
-        pl.col(column).cast(pl.Float64, strict=False).fill_null(0.0) for column in core_numeric_columns
+        pl.col(column).cast(pl.Float64, strict=False).fill_null(0.0)
+        for column in core_numeric_columns
     )
     expressions.extend(
         pl.col(column).cast(pl.Float64, strict=False) for column in optional_numeric_columns
