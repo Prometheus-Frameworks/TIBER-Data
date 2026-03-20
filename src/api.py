@@ -16,6 +16,10 @@ DATASETS = {
     "players": build_config().silver_dir / "players.parquet",
     "team_context": build_config().gold_dir / "team_context_weekly.parquet",
     "player_role_inputs": build_config().gold_dir / "player_role_inputs_weekly.parquet",
+    "player_role_profile_compatibility": build_config().gold_dir
+    / "player_role_profile_compatibility_weekly.parquet",
+    "team_opportunity_context_compatibility": build_config().gold_dir
+    / "team_opportunity_context_compatibility_weekly.parquet",
 }
 
 
@@ -176,3 +180,75 @@ def get_player_role_inputs_for_player(player_id: str) -> JSONResponse:
             },
         )
     return _records_response("player_role_inputs", filtered.to_dicts())
+
+
+@app.get("/api/compatibility/player-role-profiles")
+def get_player_role_profile_compatibility(
+    team: str | None = Query(default=None),
+    season: int | None = Query(default=None),
+    week: int | None = Query(default=None),
+    position: str | None = Query(default=None),
+    player_id: str | None = Query(default=None),
+) -> JSONResponse:
+    frame = _load_dataset("player_role_profile_compatibility")
+    filtered = _apply_filters(
+        frame,
+        {
+            "team": team,
+            "season": season,
+            "week": week,
+            "position": position,
+            "player_id": player_id,
+        },
+    )
+    return _records_response("player_role_profile_compatibility", filtered.to_dicts())
+
+
+@app.get("/api/compatibility/player-role-profiles/{player_id}")
+def get_player_role_profile_compatibility_for_player(player_id: str) -> JSONResponse:
+    frame = _load_dataset("player_role_profile_compatibility")
+    filtered = _apply_filters(frame, {"player_id": player_id})
+    if filtered.height == 0:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "player_not_found",
+                "player_id": player_id,
+                "message": f"No compatibility rows found for player_id '{player_id}'.",
+            },
+        )
+    return _records_response("player_role_profile_compatibility", filtered.to_dicts())
+
+
+@app.get("/api/compatibility/team-opportunity-context")
+def get_team_opportunity_context_compatibility(
+    team: str | None = Query(default=None),
+    season: int | None = Query(default=None),
+    week: int | None = Query(default=None),
+) -> JSONResponse:
+    frame = _load_dataset("team_opportunity_context_compatibility")
+    filtered = _apply_filters(
+        frame,
+        {
+            "team": team,
+            "season": season,
+            "week": week,
+        },
+    )
+    return _records_response("team_opportunity_context_compatibility", filtered.to_dicts())
+
+
+@app.get("/api/compatibility/team-opportunity-context/{team}")
+def get_team_opportunity_context_compatibility_for_team(team: str) -> JSONResponse:
+    frame = _load_dataset("team_opportunity_context_compatibility")
+    filtered = _apply_filters(frame, {"team": team})
+    if filtered.height == 0:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "team_not_found",
+                "team": team,
+                "message": f"No compatibility rows found for team '{team}'.",
+            },
+        )
+    return _records_response("team_opportunity_context_compatibility", filtered.to_dicts())

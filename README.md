@@ -38,7 +38,7 @@ Included in this pipeline:
 - Canonical schema docs for the first foundational tables.
 - Deterministic public-data ingest entrypoints for players, teams, weekly player stats, and team-week context.
 - Silver tables for players, weekly player stats, and weekly team stats.
-- Gold tables for player role inputs and team context.
+- Gold tables for player role inputs, team context, and explicit compatibility views for the Role-and-opportunity-model client contract.
 - Lightweight validation checks for required columns, duplicate keys, and non-negative numeric metrics.
 - One command entrypoint to run the pipeline end to end.
 
@@ -104,7 +104,8 @@ The pipeline will:
 1. ingest source data into `data/raw/`
 2. normalize canonical parquet tables into `data/silver/`
 3. derive first-pass gold tables into `data/gold/`
-4. validate schema and basic quality constraints before succeeding
+4. derive explicit compatibility outputs from gold inputs without mutating the core raw/silver/gold contracts
+5. validate schema and basic quality constraints before succeeding
 
 ## Run the read-only API
 
@@ -132,6 +133,10 @@ The API is intentionally small and read-only. It reads directly from the existin
 - `GET /api/team-context/{team}`
 - `GET /api/player-role-inputs` with optional `team`, `season`, `week`, `position`, and `player_id` filters
 - `GET /api/player-role-inputs/{player_id}`
+- `GET /api/compatibility/player-role-profiles` with optional `team`, `season`, `week`, `position`, and `player_id` filters
+- `GET /api/compatibility/player-role-profiles/{player_id}`
+- `GET /api/compatibility/team-opportunity-context` with optional `team`, `season`, and `week` filters
+- `GET /api/compatibility/team-opportunity-context/{team}`
 
 ### Example requests
 
@@ -146,6 +151,12 @@ curl http://127.0.0.1:8000/api/team-context/BAL
 curl http://127.0.0.1:8000/api/player-role-inputs
 curl "http://127.0.0.1:8000/api/player-role-inputs?team=BAL&season=2024&week=1&position=WR"
 curl http://127.0.0.1:8000/api/player-role-inputs/00-0037834
+curl http://127.0.0.1:8000/api/compatibility/player-role-profiles
+curl "http://127.0.0.1:8000/api/compatibility/player-role-profiles?team=BAL&season=2024&week=1&position=WR"
+curl http://127.0.0.1:8000/api/compatibility/player-role-profiles/00-0037834
+curl http://127.0.0.1:8000/api/compatibility/team-opportunity-context
+curl "http://127.0.0.1:8000/api/compatibility/team-opportunity-context?team=BAL&season=2024&week=1"
+curl http://127.0.0.1:8000/api/compatibility/team-opportunity-context/BAL
 ```
 
 Each API response returns simple JSON in this shape:
@@ -178,6 +189,38 @@ Each API response returns simple JSON in this shape:
 
 - `data/gold/player_role_inputs_weekly.parquet`
 - `data/gold/team_context_weekly.parquet`
+- `data/gold/player_role_profile_compatibility_weekly.parquet`
+- `data/gold/team_opportunity_context_compatibility_weekly.parquet`
+
+## Compatibility layer contract
+
+The compatibility layer is intentionally explicit and additive. It does **not** rename or muddy the core gold tables. Instead, it publishes separate gold compatibility views that line up with the client-facing shapes used by `Role-and-opportunity-model`.
+
+### Player role profile compatibility output
+
+`data/gold/player_role_profile_compatibility_weekly.parquet` and `/api/compatibility/player-role-profiles` expose:
+
+- directly carried or renamed fields: `player_id`, `player_name`, `position`, `target_share`
+- deterministic weekly derivations: `air_yard_share`, `route_participation`, `red_zone_target_share`, `average_depth_of_target`, `competition_for_role`
+- season-level deterministic carry-forward: `vacated_targets_available`
+- explicit null placeholders when the public source does not honestly support the field yet: `slot_rate`, `inline_rate`, `wide_rate`, `first_read_share`, `explosive_target_rate`, `personnel_versatility`, `injury_risk`
+
+### Team opportunity context compatibility output
+
+`data/gold/team_opportunity_context_compatibility_weekly.parquet` and `/api/compatibility/team-opportunity-context` expose:
+
+- directly carried or joined fields: `team_id`, `team_name`
+- deterministic weekly derivations: `pace_index`, `target_competition_index`
+- season-level deterministic carry-forward: `vacated_target_share`
+- explicit null placeholders where play-by-play, coaching, or QB continuity data are not yet supported in the current public path: `pass_rate_over_expected`, `neutral_pass_rate`, `red_zone_pass_rate`, `quarterback_stability`, `play_caller_continuity`, `receiver_room_certainty`
+
+### Compatibility derivation rules
+
+- `red_zone_target_share`: player red-zone targets divided by the summed team red-zone targets for the same team-week when public red-zone targets exist; otherwise null.
+- `average_depth_of_target`: player air yards divided by player targets when both are available and targets are positive.
+- `competition_for_role`: same-team, same-position target share total minus the player’s own target share for that week. This is a deterministic proxy for same-room role competition rather than a tracking-grade alignment metric.
+- `pace_index`: team `pace_proxy` divided by the league average `pace_proxy` for the same season-week.
+- `vacated_target_share` / `vacated_targets_available`: prior-season team targets earned by players absent from the current season roster, divided by the prior-season team target total. This is only derivable when adjacent seasons are present in the ingest window; otherwise it remains null.
 
 ## Column honesty rules
 
@@ -193,7 +236,8 @@ This keeps the repo from pretending it already has routes, tracking, or red-zone
 ## Known limitations
 
 - The current weekly silver/gold outputs keep regular-season weeks only. Postseason support should add an explicit `season_type` field before widening scope.
-- `red_zone_targets`, `routes_run`, `route_share`, `snap_share`, `yprr`, `tprr`, `neutral_pass_rate`, `red_zone_pass_rate`, `qb_epa_per_dropback`, and `receiver_room_certainty` remain null/pending until a stable public source is added.
+- `routes_run`, `route_share`, `snap_share`, `yprr`, `tprr`, `pass_rate_over_expected`, `neutral_pass_rate`, `red_zone_pass_rate`, `qb_epa_per_dropback`, `quarterback_stability`, `play_caller_continuity`, and `receiver_room_certainty` remain null/pending until a stable public source is added.
+- Compatibility alignment-style fields such as `slot_rate`, `inline_rate`, `wide_rate`, and `first_read_share` remain explicit nulls rather than fabricated estimates.
 - `team_air_yards` uses official team stats when present and otherwise falls back to player-level summed air yards.
 - `fantasy_points_ppr` is passed through when the source provides it; otherwise it is computed deterministically from passing, rushing, and receiving box-score stats.
 - Offline fixtures remain available only as a restricted-environment fallback for local testing or CI. They are not the main ingest path.
