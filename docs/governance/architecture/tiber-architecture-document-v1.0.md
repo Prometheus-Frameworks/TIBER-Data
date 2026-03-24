@@ -61,6 +61,7 @@ Other repositories should reference these files directly and should not maintain
 
 1. **Single contract authority**
    - Canonical interface definitions are governed in TIBER-Data.
+   - Current in-repo contract implementation reference: `src/contracts/v1/index.ts` (with supporting files in `src/contracts/v1/`).
 
 2. **Versioned integration boundaries**
    - Cross-repo interfaces are consumed via explicit version labels.
@@ -96,3 +97,12 @@ This document is **v1.0** and is the active baseline unless superseded by a newe
 - Proposed updates should be made in TIBER-Data via pull request.
 - Superseding versions should remain discoverable with clear filenames and references.
 - Downstream repos should link to canonical files instead of copying full text.
+
+### PR conformance checklist (minimal)
+
+A governance or integration-boundary PR should:
+
+- identify affected producer and consumer repositories from the map in Section 3
+- reference the concrete contract artifact path when applicable (for example `src/contracts/v1/index.ts`)
+- state whether version labels change (governance-doc version and/or contract version namespace)
+- confirm downstream repos will reference canonical docs/contracts rather than forked local copies

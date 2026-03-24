@@ -35,6 +35,8 @@ Other repositories should reference these canonical files and avoid maintaining 
 3. Governance docs are referenced from TIBER-Data, not duplicated downstream.
 4. Implementation can vary by repo, but must respect canonical interfaces.
 
+Concrete contract reference in this repo: `src/contracts/v1/index.ts`.
+
 ## Governance document versioning note
 
 - Major = breaking governance change

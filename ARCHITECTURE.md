@@ -2,6 +2,8 @@
 
 TIBER-Data is the canonical home of TIBER architecture governance documents.
 
+For first-time orientation: the governing architecture rules are defined in **Section 4 (Architectural principles)** of the full architecture document.
+
 Use these canonical documents:
 
 - [TIBER Architecture Document v1.0](docs/governance/architecture/tiber-architecture-document-v1.0.md)
