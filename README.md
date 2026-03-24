@@ -9,7 +9,11 @@ TIBER-Data is both:
 - the canonical contract authority for cross-repo integration in the TIBER ecosystem
 - the canonical home for TIBER architecture governance documents
 
-Approved architecture governance documents:
+Start here:
+
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+
+Canonical architecture governance documents:
 
 - [TIBER Architecture Document v1.0](docs/governance/architecture/tiber-architecture-document-v1.0.md)
 - [TIBER Architecture Quick Reference v1.0](docs/governance/architecture/tiber-architecture-quick-reference-v1.0.md)
