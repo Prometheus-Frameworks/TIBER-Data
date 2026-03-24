@@ -2,6 +2,18 @@
 
 TIBER-Data is the boring source of truth for canonical football data contracts used by downstream TIBER repositories. This PR adds a small, strict, versioned role-opportunity contract so repos like `Role-and-opportunity-model` and `TIBER-Fantasy` can stop inventing slightly different payload shapes.
 
+## Canonical governance documents
+
+TIBER-Data is both:
+
+- the canonical contract authority for cross-repo integration in the TIBER ecosystem
+- the canonical home for TIBER architecture governance documents
+
+Approved architecture governance documents:
+
+- [TIBER Architecture Document v1.0](docs/governance/architecture/tiber-architecture-document-v1.0.md)
+- [TIBER Architecture Quick Reference v1.0](docs/governance/architecture/tiber-architecture-quick-reference-v1.0.md)
+
 ## What this repo is for
 
 This repository now has two complementary jobs:
