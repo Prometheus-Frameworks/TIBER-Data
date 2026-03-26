@@ -127,6 +127,23 @@ npm run build
 - `npm run test` — run the acceptance tests and fixture validation
 - `npm run build` — emit the distributable TypeScript build into `dist/`
 
+
+## Rookie data canonical storage
+
+TIBER-Data now defines the canonical rookie data storage boundary:
+
+- `data/raw/rookies/` — authoritative rookie inputs and raw support artifacts
+- `data/silver/rookies/` — reusable processed rookie support artifacts
+- `data/gold/rookies/` — promoted canonical rookie outputs for downstream consumers
+- `data/rookies_manifest.csv` — provenance/inventory for every imported rookie artifact
+
+Boundary summary:
+
+- `TIBER-Rookies` computes and experiments.
+- `TIBER-Data` stores and serves reusable rookie data.
+
+See [Rookie data centralization boundary](docs/data/rookies-data-centralization.md) for ownership, sync flow, and coverage status.
+
 ## Existing data pipeline
 
 The Python ETL and read-only API remain in this repository for producing deterministic raw, silver, and gold datasets. The contract work introduced here is designed to sit alongside that pipeline and provide a cleaner handoff boundary for downstream consumers.
