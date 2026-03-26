@@ -130,19 +130,20 @@ npm run build
 
 ## Rookie data canonical storage
 
-TIBER-Data now defines the canonical rookie data storage boundary:
+TIBER-Data is the canonical retrieval point for reusable rookie data artifacts.
 
 - `data/raw/rookies/` — authoritative rookie inputs and raw support artifacts
 - `data/silver/rookies/` — reusable processed rookie support artifacts
-- `data/gold/rookies/` — promoted canonical rookie outputs for downstream consumers
-- `data/rookies_manifest.csv` — provenance/inventory for every imported rookie artifact
+- `data/gold/rookies/` — promoted canonical rookie outputs (verified only)
+- `data/rookies_manifest.csv` — provenance/inventory for every imported artifact
 
-Boundary summary:
+Boundary: `TIBER-Rookies` computes and experiments. `TIBER-Data` stores and serves.
 
-- `TIBER-Rookies` computes and experiments.
-- `TIBER-Data` stores and serves reusable rookie data.
+Ingestion is **fail-closed**: artifacts must be directly read from TIBER-Rookies at import time. If source access fails, no data files are created — only an `IMPORT_BLOCKED.md` record. No synthetic or placeholder data is permitted in canonical storage.
 
-See [Rookie data centralization boundary](docs/data/rookies-data-centralization.md) for ownership, sync flow, and coverage status.
+- [Ingestion rules, boundary, and manifest schema](docs/data/rookies-data-centralization.md)
+- Validate imports: `python scripts/validate_rookie_inventory.py`
+- PR template for rookie imports: `.github/PULL_REQUEST_TEMPLATE/rookie-import.md`
 
 ## Existing data pipeline
 

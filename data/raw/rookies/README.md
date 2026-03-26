@@ -5,18 +5,20 @@ This directory stores **raw rookie inputs** centralized from `Prometheus-Framewo
 ## Scope
 
 - Layer: `raw`
-- Ownership in this repo: durable canonical storage of reusable rookie input artifacts
+- Ownership: durable canonical storage of reusable rookie input artifacts
 - Typical content: source extracts, provider payload snapshots, and support files used before feature processing
 
-## Artifact requirements
+## Ingestion rules
 
-Every artifact placed here must have matching metadata in `data/rookies_manifest.csv` with:
+All files in this directory must comply with the [fail-closed ingestion rules](../../docs/data/rookies-data-centralization.md#ingestion-rules-fail-closed).
 
-- source repository (`TIBER-Rookies`)
-- season
-- artifact purpose
-- classification (`raw`)
-- role (`authoritative_input` or `support_data`)
-- import date
+- Only place artifacts that were **directly read from TIBER-Rookies** at import time.
+- Every artifact must have a corresponding row in `data/rookies_manifest.csv` with `source_path`, `verified` status, and `sha256` (if verified).
+- If source access fails during import, do not create data files. Instead, create an `IMPORT_BLOCKED.md` in the target season subdirectory. See blocked import protocol in the centralization doc.
 
-Do not place UI/prototype assets in this directory.
+## What does NOT belong here
+
+- Synthetic or placeholder data with realistic-looking values
+- UI/prototype assets from TIBER-Rookies
+- Model logic or scoring code
+- Files without a manifest entry
