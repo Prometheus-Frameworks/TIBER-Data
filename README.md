@@ -109,6 +109,16 @@ Golden fixtures are available for four realistic player archetypes plus a mixed 
 
 These fixtures are intentionally internally consistent and can be reused in downstream tests.
 
+
+## Rookie data centralization
+
+Reusable rookie artifacts imported from `TIBER-Rookies` now live under `data/rookies/` as the canonical retrieval location for downstream repos.
+
+- machine-readable index: `data/rookies/artifact-index.json`
+- inventory + provenance notes: `docs/data/rookie-data-inventory.md`
+
+This repository stores reusable rookie artifacts (promoted/support/processed data), while rookie model logic and UI/lab surfaces remain in `TIBER-Rookies`.
+
 ## Validate locally
 
 Install Node dependencies and run the contract checks locally:

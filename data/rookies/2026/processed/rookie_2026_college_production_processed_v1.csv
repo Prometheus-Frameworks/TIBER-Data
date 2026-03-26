@@ -1,0 +1,4 @@
+player_id,player_name,season,position,age_adjusted_dominator,yards_per_team_pass_attempt,breakout_age
+rookie-2026-cam-ward,Cam Ward,2026,QB,0.63,9.8,20.1
+rookie-2026-ashton-jeanty,Ashton Jeanty,2026,RB,0.78,3.4,19.2
+rookie-2026-tetairoa-mcmillan,Tetairoa McMillan,2026,WR,0.72,3.1,18.8

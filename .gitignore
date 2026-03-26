@@ -17,3 +17,5 @@ data/raw/*.csv
 data/raw/*.json
 data/silver/*.parquet
 data/gold/*.parquet
+
+node_modules/

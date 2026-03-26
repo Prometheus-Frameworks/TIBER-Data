@@ -1,0 +1,61 @@
+{
+  "domain": "rookie-data",
+  "canonical_store": "TIBER-Data",
+  "source_repository": "TIBER-Rookies",
+  "generated_at": "2026-03-26",
+  "coverage": {
+    "seasons": [2026],
+    "historic_seasons_present": [],
+    "historic_coverage_note": "No historic reusable rookie datasets have been centralized in this repo yet."
+  },
+  "artifacts": [
+    {
+      "artifact_id": "rookie_2026_promoted_board_v1",
+      "season": 2026,
+      "artifact_type": "promoted",
+      "purpose": "Downstream handoff of currently promoted rookie board records for model consumers.",
+      "classification": "downstream_handoff_output",
+      "path": "data/rookies/2026/promoted/rookie_2026_promoted_board_v1.json",
+      "source": {
+        "repository": "TIBER-Rookies",
+        "notes": "Imported canonical snapshot from rookie lab output."
+      }
+    },
+    {
+      "artifact_id": "rookie_2026_combine_support_v1",
+      "season": 2026,
+      "artifact_type": "support",
+      "purpose": "Processed combine support input used during rookie pipeline scoring runs.",
+      "classification": "support_data",
+      "path": "data/rookies/2026/support/rookie_2026_combine_support_v1.csv",
+      "source": {
+        "repository": "TIBER-Rookies",
+        "notes": "Imported reusable support snapshot; excludes UI/lab files."
+      }
+    },
+    {
+      "artifact_id": "rookie_2026_draft_capital_proxy_v1",
+      "season": 2026,
+      "artifact_type": "processed",
+      "purpose": "Draft-capital proxy table consumed by rookie modeling pipelines.",
+      "classification": "authoritative_input",
+      "path": "data/rookies/2026/processed/rookie_2026_draft_capital_proxy_v1.csv",
+      "source": {
+        "repository": "TIBER-Rookies",
+        "notes": "Imported processed artifact for durable reuse in downstream repos."
+      }
+    },
+    {
+      "artifact_id": "rookie_2026_college_production_processed_v1",
+      "season": 2026,
+      "artifact_type": "processed",
+      "purpose": "Processed college production features for rookie candidates.",
+      "classification": "authoritative_input",
+      "path": "data/rookies/2026/processed/rookie_2026_college_production_processed_v1.csv",
+      "source": {
+        "repository": "TIBER-Rookies",
+        "notes": "Imported processed production snapshot for canonical retrieval."
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "artifact_id": "rookie_2026_promoted_board_v1",
+  "season": 2026,
+  "artifact_type": "promoted",
+  "artifact_purpose": "Current promoted rookie handoff artifact for downstream model consumers.",
+  "source_repository": "TIBER-Rookies",
+  "records": [
+    {
+      "player_id": "rookie-2026-cam-ward",
+      "player_name": "Cam Ward",
+      "position": "QB",
+      "school": "Miami",
+      "promoted_tier": 1,
+      "overall_rank": 1,
+      "evaluation_version": "2026.1"
+    },
+    {
+      "player_id": "rookie-2026-ashton-jeanty",
+      "player_name": "Ashton Jeanty",
+      "position": "RB",
+      "school": "Boise State",
+      "promoted_tier": 1,
+      "overall_rank": 2,
+      "evaluation_version": "2026.1"
+    },
+    {
+      "player_id": "rookie-2026-tetairoa-mcmillan",
+      "player_name": "Tetairoa McMillan",
+      "position": "WR",
+      "school": "Arizona",
+      "promoted_tier": 1,
+      "overall_rank": 3,
+      "evaluation_version": "2026.1"
+    }
+  ]
+}
