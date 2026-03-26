@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from src.config.settings import build_config
 from src.utils.frames import require_polars
@@ -252,3 +253,168 @@ def get_team_opportunity_context_compatibility_for_team(team: str) -> JSONRespon
             },
         )
     return _records_response("team_opportunity_context_compatibility", filtered.to_dicts())
+
+
+@app.get("/api/players/search")
+def search_players(name: str = Query(..., min_length=1)) -> JSONResponse:
+    frame = _load_dataset("players")
+    pl = require_polars()
+    filtered = frame.filter(pl.col("full_name").str.to_lowercase().str.contains(name.lower()))
+    return _records_response("players", filtered.to_dicts())
+
+
+@app.get("/api/player/{player_id}/all")
+def get_player_all(player_id: str) -> JSONResponse:
+    pl = require_polars()
+    result: dict[str, Any] = {}
+    for dataset in ["players", "player_role_inputs", "player_role_profile_compatibility"]:
+        try:
+            frame = _load_dataset(dataset)
+            result[dataset] = frame.filter(pl.col("player_id") == player_id).to_dicts()
+        except HTTPException:
+            result[dataset] = []
+    return JSONResponse(content={"player_id": player_id, "data": result})
+
+
+_HTML_UI = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TIBER-Data Player Search</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: monospace; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; padding: 2rem; }
+  h1 { font-size: 1.1rem; color: #888; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
+  #search-form { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+  input[type=text] { flex: 1; max-width: 400px; padding: 0.5rem 0.75rem; background: #1a1a1a; border: 1px solid #333; color: #e0e0e0; font-family: monospace; font-size: 0.95rem; outline: none; }
+  input[type=text]:focus { border-color: #555; }
+  button { padding: 0.5rem 1rem; background: #222; border: 1px solid #444; color: #ccc; font-family: monospace; font-size: 0.95rem; cursor: pointer; }
+  button:hover { background: #2a2a2a; }
+  #matches { margin-bottom: 1.5rem; }
+  .match-item { padding: 0.4rem 0.6rem; cursor: pointer; border-left: 2px solid transparent; color: #aaa; font-size: 0.9rem; }
+  .match-item:hover, .match-item.active { border-left-color: #666; color: #e0e0e0; background: #1a1a1a; }
+  #output { display: none; }
+  .section { margin-bottom: 2rem; }
+  .section-title { font-size: 0.75rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem; border-bottom: 1px solid #1e1e1e; padding-bottom: 0.4rem; }
+  .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.4rem 1rem; }
+  .kv { font-size: 0.85rem; }
+  .kv .k { color: #555; }
+  .kv .v { color: #ccc; }
+  table { border-collapse: collapse; font-size: 0.78rem; width: 100%; overflow-x: auto; display: block; }
+  th { color: #555; font-weight: normal; text-align: left; padding: 0.3rem 0.6rem; border-bottom: 1px solid #1e1e1e; white-space: nowrap; }
+  td { padding: 0.25rem 0.6rem; color: #bbb; white-space: nowrap; }
+  tr:hover td { background: #141414; }
+  #status { color: #555; font-size: 0.85rem; margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+<h1>TIBER-DATA / player search</h1>
+<form id="search-form">
+  <input type="text" id="name-input" placeholder="player name..." autocomplete="off" autofocus>
+  <button type="submit">search</button>
+</form>
+<div id="status"></div>
+<div id="matches"></div>
+<div id="output">
+  <div class="section" id="section-profile">
+    <div class="section-title">profile</div>
+    <div class="profile-grid" id="profile-grid"></div>
+  </div>
+  <div class="section" id="section-role-inputs">
+    <div class="section-title">role inputs (weekly)</div>
+    <div id="role-inputs-table"></div>
+  </div>
+  <div class="section" id="section-compatibility">
+    <div class="section-title">role profile compatibility (weekly)</div>
+    <div id="compatibility-table"></div>
+  </div>
+</div>
+<script>
+function fmt(v) {
+  if (v === null || v === undefined) return '—';
+  if (typeof v === 'number') return Number.isInteger(v) ? v : v.toFixed(3);
+  return v;
+}
+
+function renderKV(container, obj) {
+  container.innerHTML = '';
+  for (const [k, v] of Object.entries(obj)) {
+    const el = document.createElement('div');
+    el.className = 'kv';
+    el.innerHTML = '<span class="k">' + k + '</span>: <span class="v">' + fmt(v) + '</span>';
+    container.appendChild(el);
+  }
+}
+
+function renderTable(container, rows) {
+  container.innerHTML = '';
+  if (!rows.length) { container.textContent = 'no data'; return; }
+  const keys = Object.keys(rows[0]);
+  const table = document.createElement('table');
+  const thead = table.createTHead();
+  const hr = thead.insertRow();
+  keys.forEach(k => { const th = document.createElement('th'); th.textContent = k; hr.appendChild(th); });
+  const tbody = table.createTBody();
+  rows.forEach(row => {
+    const tr = tbody.insertRow();
+    keys.forEach(k => { const td = tr.insertCell(); td.textContent = fmt(row[k]); });
+  });
+  container.appendChild(table);
+}
+
+async function loadPlayer(playerId) {
+  document.getElementById('status').textContent = 'loading...';
+  document.getElementById('output').style.display = 'none';
+  const res = await fetch('/api/player/' + encodeURIComponent(playerId) + '/all');
+  const json = await res.json();
+  const d = json.data;
+
+  const profile = d.players?.[0] ?? {};
+  renderKV(document.getElementById('profile-grid'), profile);
+  renderTable(document.getElementById('role-inputs-table'), d.player_role_inputs ?? []);
+  renderTable(document.getElementById('compatibility-table'), d.player_role_profile_compatibility ?? []);
+
+  document.getElementById('output').style.display = 'block';
+  document.getElementById('status').textContent = '';
+}
+
+document.getElementById('search-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('name-input').value.trim();
+  if (!name) return;
+  document.getElementById('matches').innerHTML = '';
+  document.getElementById('output').style.display = 'none';
+  document.getElementById('status').textContent = 'searching...';
+  const res = await fetch('/api/players/search?name=' + encodeURIComponent(name));
+  const json = await res.json();
+  const players = json.data ?? [];
+  document.getElementById('status').textContent = players.length ? players.length + ' result(s)' : 'no results';
+  if (players.length === 1) {
+    loadPlayer(players[0].player_id);
+    return;
+  }
+  const matchesEl = document.getElementById('matches');
+  const seen = new Set();
+  players.forEach(p => {
+    if (seen.has(p.player_id)) return;
+    seen.add(p.player_id);
+    const el = document.createElement('div');
+    el.className = 'match-item';
+    el.textContent = p.full_name + '  ' + (p.position ?? '') + '  ' + (p.team ?? '');
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.match-item').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      loadPlayer(p.player_id);
+    });
+    matchesEl.appendChild(el);
+  });
+});
+</script>
+</body>
+</html>"""
+
+
+@app.get("/", response_class=HTMLResponse)
+def ui() -> str:
+    return _HTML_UI
