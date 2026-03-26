@@ -5,18 +5,20 @@ This directory stores **processed rookie artifacts** centralized from `Prometheu
 ## Scope
 
 - Layer: `silver`
-- Ownership in this repo: durable reusable intermediate rookie datasets
+- Ownership: durable reusable intermediate rookie datasets
 - Typical content: cleaned joins, enriched feature tables, and processing-stage support artifacts
 
-## Artifact requirements
+## Ingestion rules
 
-Every artifact placed here must be listed in `data/rookies_manifest.csv` and include provenance fields:
+All files in this directory must comply with the [fail-closed ingestion rules](../../docs/data/rookies-data-centralization.md#ingestion-rules-fail-closed).
 
-- source repository (`TIBER-Rookies`)
-- season
-- purpose
-- classification (`processed`)
-- role (`support_data`)
-- import date
+- Only place artifacts that were **directly read from TIBER-Rookies** at import time.
+- Every artifact must have a corresponding row in `data/rookies_manifest.csv` with `source_path`, `verified` status, and `sha256` (if verified).
+- If source access fails during import, do not create data files. Instead, create an `IMPORT_BLOCKED.md` in the target season subdirectory. See blocked import protocol in the centralization doc.
 
-Do not place app presentation files in this directory.
+## What does NOT belong here
+
+- Synthetic or placeholder data with realistic-looking values
+- App presentation or UI files
+- Model logic or scoring code
+- Files without a manifest entry
