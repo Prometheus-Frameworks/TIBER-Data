@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-04-01T23:35:08.624251+00:00",
+  "artifact": "tiber_team_state_v0_1",
+  "source": {
+    "provider": "nflverse-pbp",
+    "season": 2025,
+    "throughWeek": 1,
+    "seasonType": "REG",
+    "gamesIncluded": 2,
+    "notes": []
+  },
+  "definitions": {
+    "neutralSituation": "Offensive plays with down in {1,2,3,4}, quarter in {1,2,3}, and absolute score differential <= 8 at snap.",
+    "earlyDown": "Offensive plays on 1st or 2nd down.",
+    "garbageTimeExclusion": "Excluded only for early-down rates: 4th quarter plays with absolute score differential > 16.",
+    "successRate": "Standard success rule: gain >=40% of yards-to-go on 1st down, >=60% on 2nd down, and 100% on 3rd/4th down.",
+    "explosivePlay": "Offensive play with yards_gained >= 16.",
+    "driveSustainRate": "Share of offensive drives with at least one first down.",
+    "redZone": "Offensive plays snapped at yardline_100 <= 20.",
+    "redZoneTdEfficiency": "Offensive touchdowns scored on drives that reached the red zone divided by total red-zone drives.",
+    "paceSecondsPerPlay": "Median seconds between consecutive offensive snaps for a team in a game, excluding deltas <=0 or >45 seconds. Omitted if required timing fields are unavailable."
+  },
+  "teams": [
+    {
+      "team": "BUF",
+      "sample": {
+        "games": 1,
+        "plays": 3,
+        "neutralPlays": 2,
+        "earlyDownPlays": 2,
+        "redZonePlays": 1,
+        "drives": 2
+      },
+      "features": {
+        "neutralPassRate": 0.5,
+        "earlyDownPassRate": 0.5,
+        "earlyDownSuccessRate": 1.0,
+        "redZonePassRate": 0.0,
+        "redZoneTdEfficiency": 1.0,
+        "explosivePlayRate": 0.0,
+        "driveSustainRate": 0.5,
+        "paceSecondsPerPlay": 30.0
+      },
+      "stability": {
+        "sampleFlag": "thin",
+        "confidenceBand": "low",
+        "notes": [
+          "Fewer than 250 offensive plays in sample."
+        ]
+      }
+    },
+    {
+      "team": "KC",
+      "sample": {
+        "games": 1,
+        "plays": 2,
+        "neutralPlays": 2,
+        "earlyDownPlays": 2,
+        "redZonePlays": 1,
+        "drives": 1
+      },
+      "features": {
+        "neutralPassRate": 0.5,
+        "earlyDownPassRate": 0.5,
+        "earlyDownSuccessRate": 1.0,
+        "redZonePassRate": 1.0,
+        "redZoneTdEfficiency": 1.0,
+        "explosivePlayRate": 1.0,
+        "driveSustainRate": 1.0,
+        "paceSecondsPerPlay": 25.0
+      },
+      "stability": {
+        "sampleFlag": "thin",
+        "confidenceBand": "low",
+        "notes": [
+          "Fewer than 250 offensive plays in sample."
+        ]
+      }
+    }
+  ]
+}
