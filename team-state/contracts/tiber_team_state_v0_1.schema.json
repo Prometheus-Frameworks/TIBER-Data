@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tiber_team_state_v0_1",
+  "type": "object",
+  "required": ["generatedAt", "artifact", "source", "definitions", "teams"],
+  "properties": {
+    "generatedAt": { "type": "string" },
+    "artifact": { "const": "tiber_team_state_v0_1" },
+    "source": { "type": "object" },
+    "definitions": { "type": "object" },
+    "teams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["team", "sample", "features", "stability"],
+        "properties": {
+          "team": { "type": "string" },
+          "sample": { "type": "object" },
+          "features": { "type": "object" },
+          "stability": { "type": "object" }
+        }
+      }
+    }
+  }
+}
