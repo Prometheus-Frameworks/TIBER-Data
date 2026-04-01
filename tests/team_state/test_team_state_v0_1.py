@@ -44,3 +44,17 @@ def test_partial_data_omits_pace_without_crashing(pbp_fixture: pl.DataFrame) -> 
         "paceSecondsPerPlay omitted" in note
         for note in artifact["teams"][0]["stability"]["notes"]
     )
+
+
+def test_missing_required_feature_key_fails_validation(pbp_fixture: pl.DataFrame) -> None:
+    artifact = build_team_state_artifact(pbp_fixture, season=2025, through_week=1)
+    del artifact["teams"][0]["features"]["neutralPassRate"]
+    with pytest.raises(TeamStateValidationError, match="features missing required keys"):
+        validate_artifact_shape(artifact)
+
+
+def test_missing_required_source_key_fails_validation(pbp_fixture: pl.DataFrame) -> None:
+    artifact = build_team_state_artifact(pbp_fixture, season=2025, through_week=1)
+    del artifact["source"]["seasonType"]
+    with pytest.raises(TeamStateValidationError, match="source missing required keys"):
+        validate_artifact_shape(artifact)

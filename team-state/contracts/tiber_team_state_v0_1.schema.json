@@ -6,7 +6,21 @@
   "properties": {
     "generatedAt": { "type": "string" },
     "artifact": { "const": "tiber_team_state_v0_1" },
-    "source": { "type": "object" },
+    "source": {
+      "type": "object",
+      "required": ["provider", "season", "throughWeek", "seasonType", "gamesIncluded", "notes"],
+      "properties": {
+        "provider": { "type": "string" },
+        "season": { "type": "integer" },
+        "throughWeek": { "type": ["integer", "null"] },
+        "seasonType": { "type": "string" },
+        "gamesIncluded": { "type": "integer" },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
     "definitions": { "type": "object" },
     "teams": {
       "type": "array",
@@ -15,9 +29,53 @@
         "required": ["team", "sample", "features", "stability"],
         "properties": {
           "team": { "type": "string" },
-          "sample": { "type": "object" },
-          "features": { "type": "object" },
-          "stability": { "type": "object" }
+          "sample": {
+            "type": "object",
+            "required": ["games", "plays", "neutralPlays", "earlyDownPlays", "redZonePlays", "drives"],
+            "properties": {
+              "games": { "type": "integer" },
+              "plays": { "type": "integer" },
+              "neutralPlays": { "type": "integer" },
+              "earlyDownPlays": { "type": "integer" },
+              "redZonePlays": { "type": "integer" },
+              "drives": { "type": "integer" }
+            }
+          },
+          "features": {
+            "type": "object",
+            "required": [
+              "neutralPassRate",
+              "earlyDownPassRate",
+              "earlyDownSuccessRate",
+              "redZonePassRate",
+              "redZoneTdEfficiency",
+              "explosivePlayRate",
+              "driveSustainRate",
+              "paceSecondsPerPlay"
+            ],
+            "properties": {
+              "neutralPassRate": { "type": ["number", "null"] },
+              "earlyDownPassRate": { "type": ["number", "null"] },
+              "earlyDownSuccessRate": { "type": ["number", "null"] },
+              "redZonePassRate": { "type": ["number", "null"] },
+              "redZoneTdEfficiency": { "type": ["number", "null"] },
+              "explosivePlayRate": { "type": ["number", "null"] },
+              "driveSustainRate": { "type": ["number", "null"] },
+              "paceSecondsPerPlay": { "type": ["number", "null"] }
+            }
+          },
+          "stability": {
+            "type": "object",
+            "required": ["sampleFlag", "confidenceBand", "notes"],
+            "properties": {
+              "sampleFlag": { "type": "string" },
+              "confidenceBand": { "type": "string" },
+              "notes": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
         }
       }
     }
