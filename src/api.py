@@ -7,6 +7,13 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from src.config.settings import build_config
+from src.team_state.consumer import (
+    ARTIFACT_NAME,
+    ARTIFACT_SOURCE,
+    TeamStateArtifactInvalidError,
+    TeamStateArtifactNotFoundError,
+    load_team_state_artifact,
+)
 from src.utils.frames import require_polars
 
 app = FastAPI(title="TIBER-Data API", version="0.1.0")
@@ -252,3 +259,61 @@ def get_team_opportunity_context_compatibility_for_team(team: str) -> JSONRespon
             },
         )
     return _records_response("team_opportunity_context_compatibility", filtered.to_dicts())
+
+
+@app.get("/api/external/team-state")
+def get_external_team_state(
+    season: int = Query(..., ge=1999),
+    through_week: int | None = Query(default=None, ge=1, le=18),
+) -> JSONResponse:
+    """Read-only consumer boundary for the promoted tiber_team_state_v0_1 artifact."""
+    try:
+        artifact_data, artifact_path = load_team_state_artifact(
+            season=season,
+            through_week=through_week,
+        )
+    except TeamStateArtifactNotFoundError as exc:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "ok": False,
+                "artifact": ARTIFACT_NAME,
+                "season": exc.season,
+                "throughWeek": exc.through_week,
+                "source": ARTIFACT_SOURCE,
+                "error": {
+                    "code": "TEAM_STATE_NOT_FOUND",
+                    "message": "Team State artifact is unavailable for the requested scope.",
+                    "searchedPaths": [str(path) for path in exc.searched_paths],
+                },
+            },
+        )
+    except TeamStateArtifactInvalidError as exc:
+        return JSONResponse(
+            status_code=422,
+            content={
+                "ok": False,
+                "artifact": ARTIFACT_NAME,
+                "season": season,
+                "throughWeek": through_week,
+                "source": ARTIFACT_SOURCE,
+                "error": {
+                    "code": "TEAM_STATE_INVALID",
+                    "message": "Team State artifact is invalid JSON.",
+                    "path": str(exc.path),
+                    "reason": exc.reason,
+                },
+            },
+        )
+
+    return JSONResponse(
+        content={
+            "ok": True,
+            "artifact": ARTIFACT_NAME,
+            "season": season,
+            "throughWeek": through_week,
+            "source": ARTIFACT_SOURCE,
+            "path": str(artifact_path),
+            "data": artifact_data,
+        }
+    )

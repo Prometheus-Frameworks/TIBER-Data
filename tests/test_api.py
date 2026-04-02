@@ -415,3 +415,72 @@ def test_collection_filters_return_empty_data_for_valid_no_match_queries(tmp_pat
         "count": 0,
         "data": [],
     }
+
+
+def test_team_state_artifact_endpoint_returns_stable_payload(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    artifact_dir = tmp_path / "team-state" / "artifacts"
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    artifact_path = artifact_dir / "tiber_team_state_v0_1_2025_through_week_17.json"
+    artifact_path.write_text(
+        json.dumps(
+            {
+                "artifact": "tiber_team_state_v0_1",
+                "season": 2025,
+                "throughWeek": 17,
+                "teams": [{"team": "BAL", "score": 0.88}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("TIBER_TEAM_STATE_ARTIFACT_DIR", str(artifact_dir))
+
+    response = api.get_external_team_state(season=2025, through_week=17)
+
+    assert response.status_code == 200
+    assert response_body(response) == {
+        "ok": True,
+        "artifact": "tiber_team_state_v0_1",
+        "season": 2025,
+        "throughWeek": 17,
+        "source": "tiber-data",
+        "path": str(artifact_path),
+        "data": {
+            "artifact": "tiber_team_state_v0_1",
+            "season": 2025,
+            "throughWeek": 17,
+            "teams": [{"team": "BAL", "score": 0.88}],
+        },
+    }
+
+
+def test_team_state_artifact_endpoint_returns_not_found(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    artifact_dir = tmp_path / "team-state" / "artifacts"
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setenv("TIBER_TEAM_STATE_ARTIFACT_DIR", str(artifact_dir))
+
+    response = api.get_external_team_state(season=2025, through_week=17)
+
+    assert response.status_code == 404
+    body = response_body(response)
+    assert body["ok"] is False
+    assert body["error"]["code"] == "TEAM_STATE_NOT_FOUND"
+    assert body["season"] == 2025
+    assert body["throughWeek"] == 17
+
+
+def test_team_state_artifact_endpoint_returns_invalid_json_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    artifact_dir = tmp_path / "team-state" / "artifacts"
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    artifact_path = artifact_dir / "tiber_team_state_v0_1_2025.json"
+    artifact_path.write_text("{not-json", encoding="utf-8")
+    monkeypatch.setenv("TIBER_TEAM_STATE_ARTIFACT_DIR", str(artifact_dir))
+
+    response = api.get_external_team_state(season=2025, through_week=None)
+
+    assert response.status_code == 422
+    body = response_body(response)
+    assert body["ok"] is False
+    assert body["error"]["code"] == "TEAM_STATE_INVALID"
+    assert body["error"]["path"] == str(artifact_path)

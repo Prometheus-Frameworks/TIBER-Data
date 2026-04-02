@@ -148,3 +148,17 @@ Ingestion is **fail-closed**: artifacts must be directly read from TIBER-Rookies
 ## Existing data pipeline
 
 The Python ETL and read-only API remain in this repository for producing deterministic raw, silver, and gold datasets. The contract work introduced here is designed to sit alongside that pipeline and provide a cleaner handoff boundary for downstream consumers.
+
+### Team State artifact inspection endpoint
+
+A thin read-only consumer endpoint is available at `GET /api/external/team-state` with query params:
+
+- `season` (required)
+- `through_week` (optional)
+
+This route reads the promoted `tiber_team_state_v0_1` JSON artifact from:
+
+1. `TIBER_TEAM_STATE_ARTIFACT_DIR` (if set), otherwise
+2. `team-state/artifacts/` under the repo root
+
+The endpoint is intentionally a consumer boundary only: it does not recompute Team State metrics when artifacts are missing.
