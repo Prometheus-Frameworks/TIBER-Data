@@ -63,6 +63,24 @@ The contract carries both normalized shares and raw counts.
 
 This split keeps downstream consumers from having to guess whether a field is a rate, a percentage-like decimal, or a volume total.
 
+## Canonical FORGE weekly input contract v1 (groundwork)
+
+TIBER-Data now includes an initial canonical input contract for weekly skill-position records flowing into TIBER-FORGE: `ForgeWeeklyPlayerInput`.
+
+This addition is intentionally narrow and scoped to **schema, deterministic fixtures, and validation helpers** for the first TIBER-Data → TIBER-FORGE ingestion boundary.
+
+What this does:
+
+- defines a versioned weekly input record shape under `src/contracts/v1`
+- includes deterministic WR/RB/QB fixtures plus a mixed array fixture
+- provides validation helpers for single records and arrays
+
+What this does **not** do:
+
+- add FORGE scoring/math logic
+- complete the live weekly export/ETL pipeline
+- claim production readiness for downstream ingestion
+
 ## Downstream usage
 
 Downstream repos should import the top-level exports and validate their payloads before persisting or consuming them.
