@@ -81,6 +81,20 @@ What this does **not** do:
 - complete the live weekly export/ETL pipeline
 - claim production readiness for downstream ingestion
 
+### Canonical sample handoff artifact (groundwork)
+
+TIBER-Data now ships a deterministic sample handoff artifact that matches `ForgeWeeklyPlayerInput` and gives TIBER-FORGE a concrete upstream file target:
+
+- `data/gold/forge/forge_weekly_player_input_2025_w12.sample.json`
+
+Generate/re-generate it from canonical fixtures with fail-closed validation:
+
+```bash
+npm run export:forge-weekly-sample
+```
+
+This is groundwork only: fixture-derived canonical shape for ingestion alignment, not the completed live weekly production export pipeline.
+
 ## Downstream usage
 
 Downstream repos should import the top-level exports and validate their payloads before persisting or consuming them.
