@@ -3,3 +3,4 @@ export * from './validate/validateForgeWeeklyPlayerInput.js';
 export * from './validate/validateRoleOpportunity.js';
 
 export * from './export/forgeWeeklySampleArtifact.js';
+export * from './export/forgeWeeklyDerivedArtifact.js';

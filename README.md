@@ -95,6 +95,26 @@ npm run export:forge-weekly-sample
 
 This is groundwork only: fixture-derived canonical shape for ingestion alignment, not the completed live weekly production export pipeline.
 
+### First narrow derived handoff artifact slice
+
+TIBER-Data now also ships a first narrow **derived** `ForgeWeeklyPlayerInput` export lane from repo-held support artifacts:
+
+- `data/gold/forge/forge_weekly_player_input_2024_w01.qb_offline_fixture.derived.json`
+
+Generate/re-generate with fail-closed validation:
+
+```bash
+npm run export:forge-weekly-derived
+```
+
+Scope is intentionally small and honest in this first slice:
+
+- source inputs are repo-held raw support artifacts (`data/raw/forge/weekly_player_stats.offline_fixture.json` and `data/raw/forge/team_week_context.offline_fixture.json`)
+- exported cohort is QB-only for season `2024`, week `1`
+- some required contract fields currently use explicit neutral/default placeholders where direct source coverage is not yet available
+
+This is still **not** the full live weekly production export pipeline.
+
 ## Downstream usage
 
 Downstream repos should import the top-level exports and validate their payloads before persisting or consuming them.

@@ -1,0 +1,82 @@
+[
+  {
+    "playerId": "00-0033901",
+    "externalIds": {
+      "gsisId": "00-0033901"
+    },
+    "playerName": "Jared Goff",
+    "position": "QB",
+    "team": "DET",
+    "season": 2024,
+    "week": 1,
+    "asOf": "2026-04-06T00:00:00Z",
+    "snaps": 31,
+    "snapShare": 1,
+    "routesRun": 0,
+    "routeParticipation": 0,
+    "rushAttempts": 3,
+    "targets": 0,
+    "yardsPerRouteRun": 0,
+    "yardsPerCarry": 2.333,
+    "catchRate": 0,
+    "fantasyPointsPerOpportunity": 0.571,
+    "impliedTeamTotal": 27,
+    "spread": 0,
+    "opponentDefenseTier": "average",
+    "expectedGameScript": "neutral",
+    "injuryStatus": "healthy",
+    "practiceParticipation": "not_listed",
+    "activeProjection": 1,
+    "roleVolatility": 0,
+    "sourceUpdatedAt": "2026-04-06T00:00:00Z",
+    "sourceSetId": "forge-weekly-derived-qb-slice-2024-w01",
+    "featureCoverage": 0.74,
+    "qualityFlags": [
+      "source_provenance:offline_fixture",
+      "source_provenance:offline_fixture",
+      "routes_and_route_participation_not_available_set_to_0_for_qb_slice",
+      "spread_and_matchup_tier_not_available_set_to_neutral_defaults"
+    ],
+    "dataConfidenceHint": "Narrow QB-only derived export from repo raw weekly stats + team context; several fields are neutral defaults pending broader sources."
+  },
+  {
+    "playerId": "00-0037183",
+    "externalIds": {
+      "gsisId": "00-0037183"
+    },
+    "playerName": "Kirk Cousins",
+    "position": "QB",
+    "team": "ATL",
+    "season": 2024,
+    "week": 1,
+    "asOf": "2026-04-06T00:00:00Z",
+    "snaps": 33,
+    "snapShare": 1,
+    "routesRun": 0,
+    "routeParticipation": 0,
+    "rushAttempts": 2,
+    "targets": 0,
+    "yardsPerRouteRun": 0,
+    "yardsPerCarry": 0.5,
+    "catchRate": 0,
+    "fantasyPointsPerOpportunity": 0.5667,
+    "impliedTeamTotal": 24,
+    "spread": 0,
+    "opponentDefenseTier": "average",
+    "expectedGameScript": "neutral",
+    "injuryStatus": "healthy",
+    "practiceParticipation": "not_listed",
+    "activeProjection": 1,
+    "roleVolatility": 0,
+    "sourceUpdatedAt": "2026-04-06T00:00:00Z",
+    "sourceSetId": "forge-weekly-derived-qb-slice-2024-w01",
+    "featureCoverage": 0.74,
+    "qualityFlags": [
+      "source_provenance:offline_fixture",
+      "source_provenance:offline_fixture",
+      "routes_and_route_participation_not_available_set_to_0_for_qb_slice",
+      "spread_and_matchup_tier_not_available_set_to_neutral_defaults"
+    ],
+    "dataConfidenceHint": "Narrow QB-only derived export from repo raw weekly stats + team context; several fields are neutral defaults pending broader sources."
+  }
+]
