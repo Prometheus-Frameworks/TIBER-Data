@@ -35,7 +35,7 @@ describe('forge weekly derived artifact export lanes', () => {
   it('builds broader skill-position artifacts for multiple weeks', () => {
     const artifacts = buildForgeWeeklySkillDerivedArtifactsForWeeks();
 
-    expect(artifacts.map((artifact) => artifact.week)).toEqual([1, 2, 3]);
+    expect(artifacts.map((artifact) => artifact.week)).toEqual([1, 2, 3, 4, 5, 6]);
 
     for (const { season, week, artifact } of artifacts) {
       const parsed = forgeWeeklyPlayerInputArraySchema.parse(artifact);
@@ -85,7 +85,7 @@ describe('forge weekly derived artifact export lanes', () => {
     expect(() =>
       buildForgeWeeklySkillDerivedArtifactFromRawSources({
         season: 2024,
-        week: 4,
+        week: 7,
       }),
     ).toThrow('No skill-position records found');
   });
