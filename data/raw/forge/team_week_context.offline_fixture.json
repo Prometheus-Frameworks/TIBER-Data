@@ -1,0 +1,24 @@
+{
+  "provenance": "offline_fixture",
+  "source_path": "src/ingest/public.py::FIXTURE_DATA.team_week_context",
+  "records": [
+    {
+      "team": "DET",
+      "season": 2024,
+      "week": 1,
+      "team_pass_attempts": 28,
+      "team_rush_attempts": 15,
+      "team_points": 27,
+      "team_air_yards": 151
+    },
+    {
+      "team": "ATL",
+      "season": 2024,
+      "week": 1,
+      "team_pass_attempts": 31,
+      "team_rush_attempts": 18,
+      "team_points": 24,
+      "team_air_yards": 134
+    }
+  ]
+}
