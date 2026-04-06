@@ -97,9 +97,10 @@ This is groundwork only: fixture-derived canonical shape for ingestion alignment
 
 ### First narrow derived handoff artifact slice
 
-TIBER-Data now also ships a first narrow **derived** `ForgeWeeklyPlayerInput` export lane from repo-held support artifacts:
+TIBER-Data now ships two **derived** `ForgeWeeklyPlayerInput` export lanes from repo-held support artifacts:
 
 - `data/gold/forge/forge_weekly_player_input_2024_w01.qb_offline_fixture.derived.json`
+- `data/gold/forge/forge_weekly_player_input_2024_w01.skill_offline_fixture.derived.json`
 
 Generate/re-generate with fail-closed validation:
 
@@ -107,11 +108,13 @@ Generate/re-generate with fail-closed validation:
 npm run export:forge-weekly-derived
 ```
 
-Scope is intentionally small and honest in this first slice:
+Scope remains intentionally small and honest:
 
-- source inputs are repo-held raw support artifacts (`data/raw/forge/weekly_player_stats.offline_fixture.json` and `data/raw/forge/team_week_context.offline_fixture.json`)
-- exported cohort is QB-only for season `2024`, week `1`
-- some required contract fields currently use explicit neutral/default placeholders where direct source coverage is not yet available
+- both artifacts are derived from repo-held support fixtures (`data/raw/forge/weekly_player_stats.offline_fixture.json` and `data/raw/forge/team_week_context.offline_fixture.json`)
+- both lanes are fixed to season `2024`, week `1`
+- the QB lane remains a narrow sanity-check slice
+- the skill lane broadens to a small QB/RB/WR/TE cohort for wider FORGE ingestion sanity checks
+- spread/matchup and route-participation style fields still rely on explicit neutral/default placeholders where source coverage is missing
 
 This is still **not** the full live weekly production export pipeline.
 
