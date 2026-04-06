@@ -46,6 +46,7 @@ export const FORGE_WEEKLY_DERIVED_ARTIFACT_PATH =
   'data/gold/forge/forge_weekly_player_input_2024_w01.qb_offline_fixture.derived.json';
 export const FORGE_WEEKLY_DERIVED_SKILL_ARTIFACT_PATH =
   'data/gold/forge/forge_weekly_player_input_2024_w01.skill_offline_fixture.derived.json';
+export const FORGE_WEEKLY_DERIVED_SKILL_EXPORT_WEEKS = [1, 2, 3] as const;
 
 function parseRawPayload<T>(sourcePath: string): RawExportPayload<T> {
   const resolvedPath = path.resolve(sourcePath);
@@ -64,6 +65,16 @@ export type ForgeWeeklyDerivedBuildOptions = {
   season?: number;
   week?: number;
   asOf?: string;
+};
+
+export type ForgeWeeklySkillDerivedBuildForWeeksOptions = Omit<ForgeWeeklyDerivedBuildOptions, 'week'> & {
+  weeks?: number[];
+};
+
+export type ForgeWeeklySkillDerivedArtifactByWeek = {
+  season: number;
+  week: number;
+  artifact: ForgeWeeklyPlayerInputArray;
 };
 
 function getSources(options: ForgeWeeklyDerivedBuildOptions) {
@@ -92,6 +103,47 @@ function getSources(options: ForgeWeeklyDerivedBuildOptions) {
     teamContextByKey,
     playerStatsSourcePath,
   };
+}
+
+function assertDerivedCoverageChecks(
+  derived: ForgeWeeklyPlayerInputArray,
+  season: number,
+  week: number,
+  expectedPositions: ForgeWeeklyPlayerInput['position'][],
+): void {
+  if (derived.length === 0) {
+    throw new Error(`Derived artifact for season=${season}, week=${week} is empty. Export fails closed.`);
+  }
+
+  for (const record of derived) {
+    if (record.season !== season || record.week !== week) {
+      throw new Error(
+        `Derived record metadata mismatch: expected season=${season}, week=${week} but found season=${record.season}, week=${record.week}.`,
+      );
+    }
+
+    if (!record.sourceSetId.includes(`${season}-w${String(week).padStart(2, '0')}`)) {
+      throw new Error(
+        `Derived record sourceSetId mismatch for ${record.playerId}: ${record.sourceSetId}. Export fails closed.`,
+      );
+    }
+  }
+
+  const observedPositions = [...new Set(derived.map((record) => record.position))].sort();
+  const expectedSorted = [...new Set(expectedPositions)].sort();
+  for (const expectedPosition of expectedSorted) {
+    if (!observedPositions.includes(expectedPosition)) {
+      throw new Error(
+        `Missing expected position ${expectedPosition} for season=${season}, week=${week}. Export fails closed.`,
+      );
+    }
+  }
+
+  const ids = derived.map((record) => record.playerId);
+  const sortedIds = [...ids].sort((a, b) => a.localeCompare(b));
+  if (ids.join('|') !== sortedIds.join('|')) {
+    throw new Error(`Derived records are not deterministically sorted for season=${season}, week=${week}.`);
+  }
 }
 
 function deriveQbRecord(
@@ -240,7 +292,9 @@ export function buildForgeWeeklyDerivedArtifactFromRawSources(
     );
   }
 
-  return forgeWeeklyPlayerInputArraySchema.parse(derived);
+  const validated = forgeWeeklyPlayerInputArraySchema.parse(derived);
+  assertDerivedCoverageChecks(validated, season, week, ['QB']);
+  return validated;
 }
 
 export function buildForgeWeeklySkillDerivedArtifactFromRawSources(
@@ -276,7 +330,32 @@ export function buildForgeWeeklySkillDerivedArtifactFromRawSources(
     );
   }
 
-  return forgeWeeklyPlayerInputArraySchema.parse(derived);
+  const expectedPositions = skillSlice.map((record) => record.position);
+  const validated = forgeWeeklyPlayerInputArraySchema.parse(derived);
+  assertDerivedCoverageChecks(validated, season, week, expectedPositions);
+  return validated;
+}
+
+export function buildForgeWeeklySkillDerivedArtifactsForWeeks(
+  options: ForgeWeeklySkillDerivedBuildForWeeksOptions = {},
+): ForgeWeeklySkillDerivedArtifactByWeek[] {
+  const season = options.season ?? 2024;
+  const requestedWeeks = options.weeks ?? [...FORGE_WEEKLY_DERIVED_SKILL_EXPORT_WEEKS];
+  const weeks = [...new Set(requestedWeeks)].sort((a, b) => a - b);
+
+  if (weeks.length === 0) {
+    throw new Error('No weeks requested for skill-derived weekly export. Export fails closed.');
+  }
+
+  return weeks.map((week) => ({
+    season,
+    week,
+    artifact: buildForgeWeeklySkillDerivedArtifactFromRawSources({ ...options, season, week }),
+  }));
+}
+
+export function getForgeWeeklySkillDerivedArtifactPath(season: number, week: number): string {
+  return `data/gold/forge/forge_weekly_player_input_${season}_w${String(week).padStart(2, '0')}.skill_offline_fixture.derived.json`;
 }
 
 export function toDeterministicForgeWeeklyDerivedJson(
@@ -317,4 +396,24 @@ export function writeForgeWeeklySkillDerivedArtifact(
   writeFileSync(resolvedPath, artifactJson, 'utf-8');
 
   return resolvedPath;
+}
+
+export function writeForgeWeeklySkillDerivedArtifactsForWeeks(
+  outputRoot: string = 'data/gold/forge',
+  options: ForgeWeeklySkillDerivedBuildForWeeksOptions = {},
+): string[] {
+  const artifactsByWeek = buildForgeWeeklySkillDerivedArtifactsForWeeks(options);
+
+  return artifactsByWeek.map(({ season, week, artifact }) => {
+    const defaultPath = getForgeWeeklySkillDerivedArtifactPath(season, week);
+    const outputPath =
+      outputRoot === 'data/gold/forge'
+        ? defaultPath
+        : path.join(outputRoot, path.basename(defaultPath));
+
+    const resolvedPath = path.resolve(outputPath);
+    mkdirSync(path.dirname(resolvedPath), { recursive: true });
+    writeFileSync(resolvedPath, `${JSON.stringify(artifact, null, 2)}\n`, 'utf-8');
+    return resolvedPath;
+  });
 }
