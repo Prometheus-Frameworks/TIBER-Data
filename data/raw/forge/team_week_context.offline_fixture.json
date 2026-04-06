@@ -55,6 +55,60 @@
       "team_rush_attempts": 20,
       "team_points": 20,
       "team_air_yards": 143
+    },
+    {
+      "team": "DET",
+      "season": 2024,
+      "week": 4,
+      "team_pass_attempts": 34,
+      "team_rush_attempts": 20,
+      "team_points": 31,
+      "team_air_yards": 181
+    },
+    {
+      "team": "ATL",
+      "season": 2024,
+      "week": 4,
+      "team_pass_attempts": 33,
+      "team_rush_attempts": 22,
+      "team_points": 29,
+      "team_air_yards": 168
+    },
+    {
+      "team": "DET",
+      "season": 2024,
+      "week": 5,
+      "team_pass_attempts": 29,
+      "team_rush_attempts": 17,
+      "team_points": 24,
+      "team_air_yards": 152
+    },
+    {
+      "team": "ATL",
+      "season": 2024,
+      "week": 5,
+      "team_pass_attempts": 31,
+      "team_rush_attempts": 21,
+      "team_points": 21,
+      "team_air_yards": 149
+    },
+    {
+      "team": "DET",
+      "season": 2024,
+      "week": 6,
+      "team_pass_attempts": 32,
+      "team_rush_attempts": 21,
+      "team_points": 30,
+      "team_air_yards": 172
+    },
+    {
+      "team": "ATL",
+      "season": 2024,
+      "week": 6,
+      "team_pass_attempts": 30,
+      "team_rush_attempts": 23,
+      "team_points": 27,
+      "team_air_yards": 163
     }
   ]
 }

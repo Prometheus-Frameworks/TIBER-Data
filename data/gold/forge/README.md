@@ -25,8 +25,11 @@ Current derived artifact slices:
   - `forge_weekly_player_input_2024_w01.skill_offline_fixture.derived.json`
   - `forge_weekly_player_input_2024_w02.skill_offline_fixture.derived.json`
   - `forge_weekly_player_input_2024_w03.skill_offline_fixture.derived.json`
-  - represented scope: season `2024`, small fixed set of weeks (`1-3`)
+  - `forge_weekly_player_input_2024_w04.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w05.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w06.skill_offline_fixture.derived.json`
+  - represented scope: season `2024`, small fixed set of contiguous weeks (`1-6`)
   - intended use: first repeatable weekly artifact factory pattern for FORGE ingestion sanity checks
   - explicit checks per generated week: non-empty artifact, coherent source metadata (`sourceSetId`/season/week), deterministic ordering, expected positions from source support, and schema validation
   - explicit gaps/defaults for now: snaps/snapShare are opportunity-based approximations and route/spread/matchup fields remain neutral/defaulted with quality flags
-  - still an offline-fixture-backed constrained export path, **not** full-season production ETL parity
+  - still an offline-fixture-backed constrained season-segment export path, **not** full-season production ETL parity
