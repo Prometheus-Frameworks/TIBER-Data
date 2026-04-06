@@ -8,14 +8,18 @@ import {
   FORGE_WEEKLY_DERIVED_ARTIFACT_PATH,
   FORGE_WEEKLY_DERIVED_PLAYER_STATS_SOURCE_PATH,
   FORGE_WEEKLY_DERIVED_SKILL_ARTIFACT_PATH,
+  FORGE_WEEKLY_DERIVED_SKILL_EXPORT_WEEKS,
   buildForgeWeeklyDerivedArtifactFromRawSources,
   buildForgeWeeklySkillDerivedArtifactFromRawSources,
+  buildForgeWeeklySkillDerivedArtifactsForWeeks,
   forgeWeeklyPlayerInputArraySchema,
+  getForgeWeeklySkillDerivedArtifactPath,
   toDeterministicForgeWeeklyDerivedJson,
   toDeterministicForgeWeeklySampleJson,
   toDeterministicForgeWeeklySkillDerivedJson,
   writeForgeWeeklyDerivedArtifact,
   writeForgeWeeklySkillDerivedArtifact,
+  writeForgeWeeklySkillDerivedArtifactsForWeeks,
 } from '../src/index.js';
 
 describe('forge weekly derived artifact export lanes', () => {
@@ -28,37 +32,62 @@ describe('forge weekly derived artifact export lanes', () => {
     expect(parsed.map((record) => record.playerId)).toEqual(['00-0033901', '00-0037183']);
   });
 
-  it('builds a broader skill-position derived artifact for the same week', () => {
-    const artifact = buildForgeWeeklySkillDerivedArtifactFromRawSources();
-    const parsed = forgeWeeklyPlayerInputArraySchema.parse(artifact);
+  it('builds broader skill-position artifacts for multiple weeks', () => {
+    const artifacts = buildForgeWeeklySkillDerivedArtifactsForWeeks();
 
-    expect(parsed).toHaveLength(8);
-    expect([...new Set(parsed.map((record) => record.position))].sort()).toEqual(['QB', 'RB', 'TE', 'WR']);
-    expect(parsed.map((record) => record.playerId)).toEqual([
-      '00-0033901',
-      '00-0036976',
-      '00-0037183',
-      '00-0037834',
-      '00-0038047',
-      '00-0038122',
-      '00-0038134',
-      '00-0039152',
-    ]);
+    expect(artifacts.map((artifact) => artifact.week)).toEqual([1, 2, 3]);
+
+    for (const { season, week, artifact } of artifacts) {
+      const parsed = forgeWeeklyPlayerInputArraySchema.parse(artifact);
+      expect(parsed).toHaveLength(8);
+      expect([...new Set(parsed.map((record) => record.position))].sort()).toEqual([
+        'QB',
+        'RB',
+        'TE',
+        'WR',
+      ]);
+      expect(parsed.every((record) => record.season === season && record.week === week)).toBe(true);
+      expect(parsed.map((record) => record.playerId)).toEqual([
+        '00-0033901',
+        '00-0036976',
+        '00-0037183',
+        '00-0037834',
+        '00-0038047',
+        '00-0038122',
+        '00-0038134',
+        '00-0039152',
+      ]);
+    }
   });
 
-  it('is deterministic and matches both committed derived artifacts', () => {
+  it('is deterministic and matches committed derived artifacts', () => {
     const firstQbPass = toDeterministicForgeWeeklyDerivedJson();
     const secondQbPass = toDeterministicForgeWeeklyDerivedJson();
     const committedQb = readFileSync(path.resolve(FORGE_WEEKLY_DERIVED_ARTIFACT_PATH), 'utf-8');
 
-    const firstSkillPass = toDeterministicForgeWeeklySkillDerivedJson();
-    const secondSkillPass = toDeterministicForgeWeeklySkillDerivedJson();
-    const committedSkill = readFileSync(path.resolve(FORGE_WEEKLY_DERIVED_SKILL_ARTIFACT_PATH), 'utf-8');
-
     expect(firstQbPass).toEqual(secondQbPass);
     expect(firstQbPass).toEqual(committedQb);
-    expect(firstSkillPass).toEqual(secondSkillPass);
-    expect(firstSkillPass).toEqual(committedSkill);
+
+    for (const week of FORGE_WEEKLY_DERIVED_SKILL_EXPORT_WEEKS) {
+      const firstSkillPass = toDeterministicForgeWeeklySkillDerivedJson({ week });
+      const secondSkillPass = toDeterministicForgeWeeklySkillDerivedJson({ week });
+      const committedSkill = readFileSync(
+        path.resolve(getForgeWeeklySkillDerivedArtifactPath(2024, week)),
+        'utf-8',
+      );
+
+      expect(firstSkillPass).toEqual(secondSkillPass);
+      expect(firstSkillPass).toEqual(committedSkill);
+    }
+  });
+
+  it('fails closed for missing week support in raw fixtures', () => {
+    expect(() =>
+      buildForgeWeeklySkillDerivedArtifactFromRawSources({
+        season: 2024,
+        week: 4,
+      }),
+    ).toThrow('No skill-position records found');
   });
 
   it('fails closed when source path is missing', () => {
@@ -130,5 +159,27 @@ describe('forge weekly derived artifact export lanes', () => {
     expect(writtenSkill).toEqual(path.resolve(skillOutputPath));
     expect(qbFileContents).toEqual(toDeterministicForgeWeeklyDerivedJson());
     expect(skillFileContents).toEqual(toDeterministicForgeWeeklySkillDerivedJson());
+  });
+
+  it('writes deterministic weekly skill artifacts for the configured week set', () => {
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'forge-weekly-skill-multi-'));
+
+    const outputPaths = writeForgeWeeklySkillDerivedArtifactsForWeeks(tempRoot);
+
+    expect(outputPaths).toHaveLength(FORGE_WEEKLY_DERIVED_SKILL_EXPORT_WEEKS.length);
+
+    for (const week of FORGE_WEEKLY_DERIVED_SKILL_EXPORT_WEEKS) {
+      const basename = path.basename(getForgeWeeklySkillDerivedArtifactPath(2024, week));
+      const outputPath = path.resolve(path.join(tempRoot, basename));
+      const written = readFileSync(outputPath, 'utf-8');
+
+      expect(outputPaths).toContain(outputPath);
+      expect(written).toEqual(toDeterministicForgeWeeklySkillDerivedJson({ week }));
+    }
+  });
+
+  it('keeps backward compatibility for the original skill artifact path', () => {
+    const weekOneCommitted = readFileSync(path.resolve(FORGE_WEEKLY_DERIVED_SKILL_ARTIFACT_PATH), 'utf-8');
+    expect(weekOneCommitted).toEqual(toDeterministicForgeWeeklySkillDerivedJson({ week: 1 }));
   });
 });
