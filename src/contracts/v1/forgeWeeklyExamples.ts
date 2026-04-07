@@ -27,7 +27,7 @@ export const forgeWeeklyWrExample: ForgeWeeklyPlayerInput = {
   fantasyPointsPerOpportunity: 1.63,
   impliedTeamTotal: 25.5,
   spread: -3,
-  opponentDefenseTier: 'average',
+  opponentDefenseTier: 'neutral',
   expectedGameScript: 'neutral',
   injuryStatus: 'healthy',
   practiceParticipation: 'full',

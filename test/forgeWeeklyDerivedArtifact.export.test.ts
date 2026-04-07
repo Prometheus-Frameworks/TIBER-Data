@@ -47,6 +47,14 @@ describe('forge weekly derived artifact export lanes', () => {
         'WR',
       ]);
       expect(parsed.every((record) => record.season === season && record.week === week)).toBe(true);
+      expect(parsed.every((record) => record.practiceParticipation === 'none')).toBe(true);
+      expect(parsed.every((record) => record.opponentDefenseTier === 'neutral')).toBe(true);
+      expect(parsed.every((record) => record.activeProjection === 1)).toBe(true);
+      expect(parsed.every((record) => record.roleVolatility === 0.5)).toBe(true);
+      expect(parsed.every((record) => record.fantasyPointsPerOpportunity <= 3)).toBe(true);
+      expect(parsed.every((record) => (record.qualityFlags ?? []).length === new Set(record.qualityFlags ?? []).size)).toBe(
+        true,
+      );
       expect(parsed.map((record) => record.playerId)).toEqual([
         '00-0033901',
         '00-0036976',
@@ -58,6 +66,21 @@ describe('forge weekly derived artifact export lanes', () => {
         '00-0039152',
       ]);
     }
+  });
+
+  it('serializes week 6 audit players with cleaner semantic defaults', () => {
+    const weekSix = buildForgeWeeklySkillDerivedArtifactFromRawSources({ season: 2024, week: 6 });
+    const byName = new Map(weekSix.map((record) => [record.playerName, record]));
+
+    const gibbs = byName.get('Jahmyr Gibbs');
+    const stBrown = byName.get('Amon-Ra St. Brown');
+    const goff = byName.get('Jared Goff');
+    const robinson = byName.get('Bijan Robinson');
+
+    expect(gibbs?.activeProjection).toBe(1);
+    expect(stBrown?.routeParticipation).toBeGreaterThan(0);
+    expect(goff?.opponentDefenseTier).toBe('neutral');
+    expect(robinson?.practiceParticipation).toBe('none');
   });
 
   it('is deterministic and matches committed derived artifacts', () => {
