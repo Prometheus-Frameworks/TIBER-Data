@@ -184,6 +184,21 @@ function getSources(options: ForgeWeeklyDerivedBuildOptions) {
   };
 }
 
+export function getForgeWeeklySkillSupportedWeeksFromRawSources(
+  options: Omit<ForgeWeeklyDerivedBuildOptions, 'week' | 'asOf'> = {},
+): number[] {
+  const { season, playerStatsPayload, teamContextPayload } = getSources(options);
+
+  const playerWeeks = new Set(
+    playerStatsPayload.records.filter((record) => record.season === season).map((record) => record.week),
+  );
+  const teamWeeks = new Set(
+    teamContextPayload.records.filter((record) => record.season === season).map((record) => record.week),
+  );
+
+  return [...playerWeeks].filter((week) => teamWeeks.has(week)).sort((a, b) => a - b);
+}
+
 function assertDerivedCoverageChecks(
   derived: ForgeWeeklyPlayerInputArray,
   season: number,
@@ -481,9 +496,17 @@ export function buildForgeWeeklySkillDerivedArtifactsForWeeks(
   const season = options.season ?? 2024;
   const requestedWeeks = options.weeks ?? [...FORGE_WEEKLY_DERIVED_SKILL_EXPORT_WEEKS];
   const weeks = [...new Set(requestedWeeks)].sort((a, b) => a - b);
+  const supportedWeeks = getForgeWeeklySkillSupportedWeeksFromRawSources(options);
 
   if (weeks.length === 0) {
     throw new Error('No weeks requested for skill-derived weekly export. Export fails closed.');
+  }
+
+  const unsupportedWeeks = weeks.filter((week) => !supportedWeeks.includes(week));
+  if (unsupportedWeeks.length > 0) {
+    throw new Error(
+      `Requested unsupported skill-derived weeks (${unsupportedWeeks.join(', ')}) for season=${season}. Supported weeks from repo-held raw support are: ${supportedWeeks.join(', ')}.`,
+    );
   }
 
   return weeks.map((week) => ({
