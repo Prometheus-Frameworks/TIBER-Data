@@ -59,6 +59,18 @@ function roundTo(value: number, precision: number): number {
   return Math.round(value * factor) / factor;
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function cappedFantasyPointsPerOpportunity(pointsPerOpportunity: number): number {
+  return clamp(pointsPerOpportunity, 0, 3);
+}
+
+function uniqueQualityFlags(flags: string[]): string[] {
+  return [...new Set(flags)];
+}
+
 export type ForgeWeeklyDerivedBuildOptions = {
   playerStatsSourcePath?: string;
   teamContextSourcePath?: string;
@@ -179,24 +191,29 @@ function deriveQbRecord(
     yardsPerRouteRun: 0,
     yardsPerCarry: qb.rushing_attempts > 0 ? roundTo(qb.rushing_yards / qb.rushing_attempts, 3) : 0,
     catchRate: qb.targets > 0 ? roundTo(qb.receptions / qb.targets, 4) : 0,
-    fantasyPointsPerOpportunity: opportunities > 0 ? roundTo(qb.fantasy_points_ppr / opportunities, 4) : 0,
+    fantasyPointsPerOpportunity:
+      opportunities > 0
+        ? cappedFantasyPointsPerOpportunity(roundTo(qb.fantasy_points_ppr / opportunities, 4))
+        : 0,
     impliedTeamTotal: teamContext.team_points,
     spread: 0,
-    opponentDefenseTier: 'average',
+    opponentDefenseTier: 'neutral',
     expectedGameScript: 'neutral',
     injuryStatus: 'healthy',
-    practiceParticipation: 'not_listed',
-    activeProjection: snapShare,
-    roleVolatility: roundTo(1 - snapShare, 4),
+    practiceParticipation: 'none',
+    activeProjection: 1,
+    roleVolatility: 0.5,
     sourceUpdatedAt: asOf,
     sourceSetId: `forge-weekly-derived-qb-slice-${qb.season}-w${String(qb.week).padStart(2, '0')}`,
     featureCoverage: 0.74,
-    qualityFlags: [
+    qualityFlags: uniqueQualityFlags([
       `source_provenance:${playerStatsProvenance}`,
       `source_provenance:${teamContextProvenance}`,
       'routes_and_route_participation_not_available_set_to_0_for_qb_slice',
       'spread_and_matchup_tier_not_available_set_to_neutral_defaults',
-    ],
+      'role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history',
+      'active_projection_set_to_1_for_realized_week_records',
+    ]),
     dataConfidenceHint:
       'Narrow QB-only derived export from repo raw weekly stats + team context; several fields are neutral defaults pending broader sources.',
   };
@@ -212,6 +229,12 @@ function deriveSkillRecord(
   const opportunities = player.pass_attempts + player.rushing_attempts + player.targets;
   const teamOpportunities = teamContext.team_pass_attempts + teamContext.team_rush_attempts;
   const snapShare = teamOpportunities > 0 ? Math.min(1, roundTo(opportunities / teamOpportunities, 4)) : 0;
+  const routeParticipation =
+    player.position === 'QB'
+      ? 0
+      : teamContext.team_pass_attempts > 0
+        ? clamp(roundTo(player.targets / teamContext.team_pass_attempts, 4), 0, 1)
+        : 0;
 
   return {
     playerId: player.player_id,
@@ -226,8 +249,8 @@ function deriveSkillRecord(
     asOf,
     snaps: opportunities,
     snapShare,
-    routesRun: 0,
-    routeParticipation: 0,
+    routesRun: player.position === 'QB' ? 0 : Math.max(player.targets, player.receptions),
+    routeParticipation,
     rushAttempts: player.rushing_attempts,
     targets: player.targets,
     yardsPerRouteRun: 0,
@@ -235,25 +258,29 @@ function deriveSkillRecord(
       player.rushing_attempts > 0 ? roundTo(player.rushing_yards / player.rushing_attempts, 3) : 0,
     catchRate: player.targets > 0 ? roundTo(player.receptions / player.targets, 4) : 0,
     fantasyPointsPerOpportunity:
-      opportunities > 0 ? roundTo(player.fantasy_points_ppr / opportunities, 4) : 0,
+      opportunities > 0
+        ? cappedFantasyPointsPerOpportunity(roundTo(player.fantasy_points_ppr / opportunities, 4))
+        : 0,
     impliedTeamTotal: teamContext.team_points,
     spread: 0,
-    opponentDefenseTier: 'average',
+    opponentDefenseTier: 'neutral',
     expectedGameScript: 'neutral',
     injuryStatus: 'healthy',
-    practiceParticipation: 'not_listed',
-    activeProjection: snapShare,
-    roleVolatility: roundTo(1 - snapShare, 4),
+    practiceParticipation: 'none',
+    activeProjection: 1,
+    roleVolatility: 0.5,
     sourceUpdatedAt: asOf,
     sourceSetId: `forge-weekly-derived-skill-slice-${player.season}-w${String(player.week).padStart(2, '0')}`,
-    featureCoverage: 0.67,
-    qualityFlags: [
+    featureCoverage: 0.71,
+    qualityFlags: uniqueQualityFlags([
       `source_provenance:${playerStatsProvenance}`,
       `source_provenance:${teamContextProvenance}`,
       'snaps_and_snap_share_approximated_from_player_opportunities_vs_team_pass_plus_rush_attempts',
-      'routes_and_route_participation_not_available_set_to_0_for_skill_slice',
+      'routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume',
       'spread_and_matchup_tier_not_available_set_to_neutral_defaults',
-    ],
+      'role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history',
+      'active_projection_set_to_1_for_realized_week_records',
+    ]),
     dataConfidenceHint:
       'Broader skill-position derived export (QB/RB/WR/TE) from repo offline fixture support data for engine sanity checks; not production feed parity.',
   };

@@ -19,13 +19,13 @@ export const primaryRoleSchema = z.enum([
 
 export const confidenceTierSchema = z.enum(['low', 'medium', 'high']);
 
-export const opponentDefenseTierSchema = z.enum(['elite', 'strong', 'average', 'weak']);
+export const opponentDefenseTierSchema = z.enum(['elite', 'strong', 'neutral', 'weak']);
 
 export const expectedGameScriptSchema = z.enum(['positive', 'neutral', 'negative']);
 
 export const injuryStatusSchema = z.enum(['healthy', 'questionable', 'doubtful', 'out']);
 
-export const practiceParticipationSchema = z.enum(['full', 'limited', 'did_not_practice', 'not_listed']);
+export const practiceParticipationSchema = z.enum(['full', 'limited', 'did_not_practice', 'none']);
 
 export type Position = z.infer<typeof positionSchema>;
 export type PrimaryRole = z.infer<typeof primaryRoleSchema>;

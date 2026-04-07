@@ -22,20 +22,21 @@
     "fantasyPointsPerOpportunity": 0.571,
     "impliedTeamTotal": 27,
     "spread": 0,
-    "opponentDefenseTier": "average",
+    "opponentDefenseTier": "neutral",
     "expectedGameScript": "neutral",
     "injuryStatus": "healthy",
-    "practiceParticipation": "not_listed",
+    "practiceParticipation": "none",
     "activeProjection": 1,
-    "roleVolatility": 0,
+    "roleVolatility": 0.5,
     "sourceUpdatedAt": "2026-04-06T00:00:00Z",
     "sourceSetId": "forge-weekly-derived-qb-slice-2024-w01",
     "featureCoverage": 0.74,
     "qualityFlags": [
       "source_provenance:offline_fixture",
-      "source_provenance:offline_fixture",
       "routes_and_route_participation_not_available_set_to_0_for_qb_slice",
-      "spread_and_matchup_tier_not_available_set_to_neutral_defaults"
+      "spread_and_matchup_tier_not_available_set_to_neutral_defaults",
+      "role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history",
+      "active_projection_set_to_1_for_realized_week_records"
     ],
     "dataConfidenceHint": "Narrow QB-only derived export from repo raw weekly stats + team context; several fields are neutral defaults pending broader sources."
   },
@@ -62,20 +63,21 @@
     "fantasyPointsPerOpportunity": 0.5667,
     "impliedTeamTotal": 24,
     "spread": 0,
-    "opponentDefenseTier": "average",
+    "opponentDefenseTier": "neutral",
     "expectedGameScript": "neutral",
     "injuryStatus": "healthy",
-    "practiceParticipation": "not_listed",
+    "practiceParticipation": "none",
     "activeProjection": 1,
-    "roleVolatility": 0,
+    "roleVolatility": 0.5,
     "sourceUpdatedAt": "2026-04-06T00:00:00Z",
     "sourceSetId": "forge-weekly-derived-qb-slice-2024-w01",
     "featureCoverage": 0.74,
     "qualityFlags": [
       "source_provenance:offline_fixture",
-      "source_provenance:offline_fixture",
       "routes_and_route_participation_not_available_set_to_0_for_qb_slice",
-      "spread_and_matchup_tier_not_available_set_to_neutral_defaults"
+      "spread_and_matchup_tier_not_available_set_to_neutral_defaults",
+      "role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history",
+      "active_projection_set_to_1_for_realized_week_records"
     ],
     "dataConfidenceHint": "Narrow QB-only derived export from repo raw weekly stats + team context; several fields are neutral defaults pending broader sources."
   }

@@ -18,7 +18,7 @@ Current derived artifact slices:
     - `data/raw/forge/weekly_player_stats.offline_fixture.json`
     - `data/raw/forge/team_week_context.offline_fixture.json`
   - directly mapped fields: identity, scope, rush/pass usage, team points proxy
-  - explicit gaps/defaults for now: spread/opponent matchup context and route participation fields use neutral/default placeholders with quality flags
+  - explicit gaps/defaults for now: spread/opponent matchup context uses neutral placeholders and route participation for QB remains unavailable, with quality flags
   - narrow sanity-check derived slice, **not** full weekly production parity
 
 - repeatable broader skill-position weekly derived artifacts:
@@ -31,5 +31,5 @@ Current derived artifact slices:
   - represented scope: season `2024`, small fixed set of contiguous weeks (`1-6`)
   - intended use: first repeatable weekly artifact factory pattern for FORGE ingestion sanity checks
   - explicit checks per generated week: non-empty artifact, coherent source metadata (`sourceSetId`/season/week), deterministic ordering, expected positions from source support, and schema validation
-  - explicit gaps/defaults for now: snaps/snapShare are opportunity-based approximations and route/spread/matchup fields remain neutral/defaulted with quality flags
+  - explicit gaps/defaults for now: snaps/snapShare remain opportunity-based approximations, route fields are lightweight target-share approximations for non-QB rows, and spread/matchup remain neutral/defaulted with quality flags
   - still an offline-fixture-backed constrained season-segment export path, **not** full-season production ETL parity
