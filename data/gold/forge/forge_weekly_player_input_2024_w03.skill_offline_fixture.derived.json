@@ -27,17 +27,17 @@
     "injuryStatus": "healthy",
     "practiceParticipation": "none",
     "activeProjection": 1,
-    "roleVolatility": 0.5,
+    "roleVolatility": 0.204,
     "sourceUpdatedAt": "2026-04-06T00:00:00Z",
     "sourceSetId": "forge-weekly-derived-skill-slice-2024-w03",
-    "featureCoverage": 0.71,
+    "featureCoverage": 0.85,
     "qualityFlags": [
       "source_provenance:offline_fixture",
       "snaps_and_snap_share_approximated_from_player_opportunities_vs_team_pass_plus_rush_attempts",
-      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
       "spread_and_matchup_tier_not_available_set_to_neutral_defaults",
-      "role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history",
-      "active_projection_set_to_1_for_realized_week_records"
+      "active_projection_set_to_1_for_realized_week_records",
+      "routes_and_route_participation_not_available_set_to_0_for_qb_rows",
+      "role_volatility_derived_from_recent_opportunity_share_and_role_mix_changes"
     ],
     "dataConfidenceHint": "Broader skill-position derived export (QB/RB/WR/TE) from repo offline fixture support data for engine sanity checks; not production feed parity."
   },
@@ -69,17 +69,17 @@
     "injuryStatus": "healthy",
     "practiceParticipation": "none",
     "activeProjection": 1,
-    "roleVolatility": 0.5,
+    "roleVolatility": 0.2394,
     "sourceUpdatedAt": "2026-04-06T00:00:00Z",
     "sourceSetId": "forge-weekly-derived-skill-slice-2024-w03",
-    "featureCoverage": 0.71,
+    "featureCoverage": 0.94,
     "qualityFlags": [
       "source_provenance:offline_fixture",
       "snaps_and_snap_share_approximated_from_player_opportunities_vs_team_pass_plus_rush_attempts",
-      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
       "spread_and_matchup_tier_not_available_set_to_neutral_defaults",
-      "role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history",
-      "active_projection_set_to_1_for_realized_week_records"
+      "active_projection_set_to_1_for_realized_week_records",
+      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
+      "role_volatility_derived_from_recent_opportunity_share_and_role_mix_changes"
     ],
     "dataConfidenceHint": "Broader skill-position derived export (QB/RB/WR/TE) from repo offline fixture support data for engine sanity checks; not production feed parity."
   },
@@ -111,17 +111,17 @@
     "injuryStatus": "healthy",
     "practiceParticipation": "none",
     "activeProjection": 1,
-    "roleVolatility": 0.5,
+    "roleVolatility": 0.2088,
     "sourceUpdatedAt": "2026-04-06T00:00:00Z",
     "sourceSetId": "forge-weekly-derived-skill-slice-2024-w03",
-    "featureCoverage": 0.71,
+    "featureCoverage": 0.85,
     "qualityFlags": [
       "source_provenance:offline_fixture",
       "snaps_and_snap_share_approximated_from_player_opportunities_vs_team_pass_plus_rush_attempts",
-      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
       "spread_and_matchup_tier_not_available_set_to_neutral_defaults",
-      "role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history",
-      "active_projection_set_to_1_for_realized_week_records"
+      "active_projection_set_to_1_for_realized_week_records",
+      "routes_and_route_participation_not_available_set_to_0_for_qb_rows",
+      "role_volatility_derived_from_recent_opportunity_share_and_role_mix_changes"
     ],
     "dataConfidenceHint": "Broader skill-position derived export (QB/RB/WR/TE) from repo offline fixture support data for engine sanity checks; not production feed parity."
   },
@@ -153,17 +153,17 @@
     "injuryStatus": "healthy",
     "practiceParticipation": "none",
     "activeProjection": 1,
-    "roleVolatility": 0.5,
+    "roleVolatility": 0.2535,
     "sourceUpdatedAt": "2026-04-06T00:00:00Z",
     "sourceSetId": "forge-weekly-derived-skill-slice-2024-w03",
-    "featureCoverage": 0.71,
+    "featureCoverage": 0.91,
     "qualityFlags": [
       "source_provenance:offline_fixture",
       "snaps_and_snap_share_approximated_from_player_opportunities_vs_team_pass_plus_rush_attempts",
-      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
       "spread_and_matchup_tier_not_available_set_to_neutral_defaults",
-      "role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history",
-      "active_projection_set_to_1_for_realized_week_records"
+      "active_projection_set_to_1_for_realized_week_records",
+      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
+      "role_volatility_derived_from_recent_opportunity_share_and_role_mix_changes"
     ],
     "dataConfidenceHint": "Broader skill-position derived export (QB/RB/WR/TE) from repo offline fixture support data for engine sanity checks; not production feed parity."
   },
@@ -195,17 +195,17 @@
     "injuryStatus": "healthy",
     "practiceParticipation": "none",
     "activeProjection": 1,
-    "roleVolatility": 0.5,
+    "roleVolatility": 0.2018,
     "sourceUpdatedAt": "2026-04-06T00:00:00Z",
     "sourceSetId": "forge-weekly-derived-skill-slice-2024-w03",
-    "featureCoverage": 0.71,
+    "featureCoverage": 0.91,
     "qualityFlags": [
       "source_provenance:offline_fixture",
       "snaps_and_snap_share_approximated_from_player_opportunities_vs_team_pass_plus_rush_attempts",
-      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
       "spread_and_matchup_tier_not_available_set_to_neutral_defaults",
-      "role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history",
-      "active_projection_set_to_1_for_realized_week_records"
+      "active_projection_set_to_1_for_realized_week_records",
+      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
+      "role_volatility_derived_from_recent_opportunity_share_and_role_mix_changes"
     ],
     "dataConfidenceHint": "Broader skill-position derived export (QB/RB/WR/TE) from repo offline fixture support data for engine sanity checks; not production feed parity."
   },
@@ -237,17 +237,17 @@
     "injuryStatus": "healthy",
     "practiceParticipation": "none",
     "activeProjection": 1,
-    "roleVolatility": 0.5,
+    "roleVolatility": 0.2011,
     "sourceUpdatedAt": "2026-04-06T00:00:00Z",
     "sourceSetId": "forge-weekly-derived-skill-slice-2024-w03",
-    "featureCoverage": 0.71,
+    "featureCoverage": 0.91,
     "qualityFlags": [
       "source_provenance:offline_fixture",
       "snaps_and_snap_share_approximated_from_player_opportunities_vs_team_pass_plus_rush_attempts",
-      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
       "spread_and_matchup_tier_not_available_set_to_neutral_defaults",
-      "role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history",
-      "active_projection_set_to_1_for_realized_week_records"
+      "active_projection_set_to_1_for_realized_week_records",
+      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
+      "role_volatility_derived_from_recent_opportunity_share_and_role_mix_changes"
     ],
     "dataConfidenceHint": "Broader skill-position derived export (QB/RB/WR/TE) from repo offline fixture support data for engine sanity checks; not production feed parity."
   },
@@ -279,17 +279,17 @@
     "injuryStatus": "healthy",
     "practiceParticipation": "none",
     "activeProjection": 1,
-    "roleVolatility": 0.5,
+    "roleVolatility": 0.2358,
     "sourceUpdatedAt": "2026-04-06T00:00:00Z",
     "sourceSetId": "forge-weekly-derived-skill-slice-2024-w03",
-    "featureCoverage": 0.71,
+    "featureCoverage": 0.94,
     "qualityFlags": [
       "source_provenance:offline_fixture",
       "snaps_and_snap_share_approximated_from_player_opportunities_vs_team_pass_plus_rush_attempts",
-      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
       "spread_and_matchup_tier_not_available_set_to_neutral_defaults",
-      "role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history",
-      "active_projection_set_to_1_for_realized_week_records"
+      "active_projection_set_to_1_for_realized_week_records",
+      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
+      "role_volatility_derived_from_recent_opportunity_share_and_role_mix_changes"
     ],
     "dataConfidenceHint": "Broader skill-position derived export (QB/RB/WR/TE) from repo offline fixture support data for engine sanity checks; not production feed parity."
   },
@@ -321,17 +321,17 @@
     "injuryStatus": "healthy",
     "practiceParticipation": "none",
     "activeProjection": 1,
-    "roleVolatility": 0.5,
+    "roleVolatility": 0.189,
     "sourceUpdatedAt": "2026-04-06T00:00:00Z",
     "sourceSetId": "forge-weekly-derived-skill-slice-2024-w03",
-    "featureCoverage": 0.71,
+    "featureCoverage": 0.91,
     "qualityFlags": [
       "source_provenance:offline_fixture",
       "snaps_and_snap_share_approximated_from_player_opportunities_vs_team_pass_plus_rush_attempts",
-      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
       "spread_and_matchup_tier_not_available_set_to_neutral_defaults",
-      "role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history",
-      "active_projection_set_to_1_for_realized_week_records"
+      "active_projection_set_to_1_for_realized_week_records",
+      "routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume",
+      "role_volatility_derived_from_recent_opportunity_share_and_role_mix_changes"
     ],
     "dataConfidenceHint": "Broader skill-position derived export (QB/RB/WR/TE) from repo offline fixture support data for engine sanity checks; not production feed parity."
   }

@@ -50,7 +50,6 @@ describe('forge weekly derived artifact export lanes', () => {
       expect(parsed.every((record) => record.practiceParticipation === 'none')).toBe(true);
       expect(parsed.every((record) => record.opponentDefenseTier === 'neutral')).toBe(true);
       expect(parsed.every((record) => record.activeProjection === 1)).toBe(true);
-      expect(parsed.every((record) => record.roleVolatility === 0.5)).toBe(true);
       expect(parsed.every((record) => record.fantasyPointsPerOpportunity <= 3)).toBe(true);
       expect(parsed.every((record) => (record.qualityFlags ?? []).length === new Set(record.qualityFlags ?? []).size)).toBe(
         true,
@@ -76,11 +75,39 @@ describe('forge weekly derived artifact export lanes', () => {
     const stBrown = byName.get('Amon-Ra St. Brown');
     const goff = byName.get('Jared Goff');
     const robinson = byName.get('Bijan Robinson');
+    const pitts = byName.get('Kyle Pitts');
 
     expect(gibbs?.activeProjection).toBe(1);
     expect(stBrown?.routeParticipation).toBeGreaterThan(0);
     expect(goff?.opponentDefenseTier).toBe('neutral');
     expect(robinson?.practiceParticipation).toBe('none');
+    expect(new Set(weekSix.map((record) => record.roleVolatility)).size).toBeGreaterThan(1);
+    expect(new Set(weekSix.map((record) => record.featureCoverage)).size).toBeGreaterThan(1);
+    expect(gibbs?.qualityFlags).toContain(
+      'role_volatility_derived_from_recent_opportunity_share_and_role_mix_changes',
+    );
+    expect(goff?.qualityFlags).toContain('routes_and_route_participation_not_available_set_to_0_for_qb_rows');
+    expect(pitts?.qualityFlags).toContain(
+      'routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume',
+    );
+  });
+
+  it('uses fallback role-volatility defaults only when history is unavailable', () => {
+    const weekOne = buildForgeWeeklySkillDerivedArtifactFromRawSources({ season: 2024, week: 1 });
+    expect(weekOne.every((record) => record.roleVolatility === 0.5)).toBe(true);
+    expect(
+      weekOne.every((record) =>
+        (record.qualityFlags ?? []).includes('role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history'),
+      ),
+    ).toBe(true);
+
+    const weekSix = buildForgeWeeklySkillDerivedArtifactFromRawSources({ season: 2024, week: 6 });
+    expect(weekSix.some((record) => record.roleVolatility !== 0.5)).toBe(true);
+    expect(
+      weekSix.every((record) =>
+        (record.qualityFlags ?? []).includes('role_volatility_derived_from_recent_opportunity_share_and_role_mix_changes'),
+      ),
+    ).toBe(true);
   });
 
   it('is deterministic and matches committed derived artifacts', () => {

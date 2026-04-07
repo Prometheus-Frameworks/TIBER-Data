@@ -16,3 +16,13 @@
 
 ## Deferred
 - True snap/route participation and matchup/spread context still require richer upstream sources; this cleanup keeps placeholders honest without adding new feeds.
+
+---
+
+## Follow-up (less fake-flat stability/confidence inputs)
+- Previously flat in committed skill artifacts: `roleVolatility` (`0.5`), `featureCoverage` (`0.71`), and mostly identical row `qualityFlags`.
+- Now derived per row from existing repo fixture support only:
+  - `roleVolatility`: week-to-week opportunity-share + role-mix deltas when history exists; neutral `0.5` only when history is unavailable.
+  - `featureCoverage`: conservative weighted coverage based on direct support vs approximation/default usage in each row.
+  - `qualityFlags`: row-specific route semantics (QB unavailable vs non-QB approximated) and volatility derivation vs fallback.
+- Still deferred (unchanged): neutral default matchup/spread context and realized-week `activeProjection = 1` until richer upstream context exists.

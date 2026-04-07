@@ -38,6 +38,13 @@ type TeamWeekContextRecord = {
   team_points: number;
 };
 
+type PlayerWeekSupportRecord = {
+  week: number;
+  opportunities: number;
+  opportunityShare: number;
+  roleMix: number;
+};
+
 export const FORGE_WEEKLY_DERIVED_PLAYER_STATS_SOURCE_PATH =
   'data/raw/forge/weekly_player_stats.offline_fixture.json';
 export const FORGE_WEEKLY_DERIVED_TEAM_CONTEXT_SOURCE_PATH =
@@ -69,6 +76,66 @@ function cappedFantasyPointsPerOpportunity(pointsPerOpportunity: number): number
 
 function uniqueQualityFlags(flags: string[]): string[] {
   return [...new Set(flags)];
+}
+
+function averageAbsoluteSequentialDelta(values: number[]): number {
+  if (values.length < 2) {
+    return 0;
+  }
+
+  let sum = 0;
+  let pairs = 0;
+  for (let index = 1; index < values.length; index += 1) {
+    sum += Math.abs(values[index] - values[index - 1]);
+    pairs += 1;
+  }
+
+  return pairs > 0 ? sum / pairs : 0;
+}
+
+function deriveRoleVolatility(
+  player: WeeklyPlayerStatsRecord,
+  supportHistory: PlayerWeekSupportRecord[] | undefined,
+): { value: number; usedFallback: boolean } {
+  if (!supportHistory || supportHistory.length < 2) {
+    return { value: 0.5, usedFallback: true };
+  }
+
+  const ordered = [...supportHistory].sort((a, b) => a.week - b.week);
+  const opportunityShareDelta = averageAbsoluteSequentialDelta(ordered.map((record) => record.opportunityShare));
+  const roleMixDelta = averageAbsoluteSequentialDelta(ordered.map((record) => record.roleMix));
+  const opportunitiesDelta = averageAbsoluteSequentialDelta(
+    ordered.map((record) => Math.min(1, record.opportunities / 30)),
+  );
+
+  const roleMixWeight = player.position === 'QB' ? 0.2 : 0.35;
+  const volatility = clamp(
+    roundTo(0.15 + opportunityShareDelta * 1.8 + roleMixDelta * roleMixWeight + opportunitiesDelta * 0.4, 4),
+    0,
+    1,
+  );
+
+  return { value: volatility, usedFallback: false };
+}
+
+function deriveFeatureCoverage(player: WeeklyPlayerStatsRecord, usedVolatilityFallback: boolean): number {
+  let coverage = 0.42;
+
+  coverage += 0.14; // core opportunity support is directly observed in the fixture.
+  coverage += 0.1; // impliedTeamTotal is directly supported by team context.
+
+  if (player.position === 'QB') {
+    coverage += 0.05; // pass/rush usage is directly observed, route fields are intentionally unavailable.
+  } else {
+    coverage += player.targets > 0 ? 0.11 : 0.07; // non-QB route semantics remain approximated from target volume.
+  }
+
+  coverage += player.rushing_attempts > 0 ? 0.06 : 0.03; // rushing efficiency is only present with carries.
+  coverage += player.targets > 0 ? 0.06 : 0.03; // receiving efficiency is only present with targets.
+
+  coverage += usedVolatilityFallback ? 0.02 : 0.05; // role volatility has better support when history exists.
+
+  return clamp(roundTo(coverage, 2), 0, 1);
 }
 
 export type ForgeWeeklyDerivedBuildOptions = {
@@ -222,6 +289,7 @@ function deriveQbRecord(
 function deriveSkillRecord(
   player: WeeklyPlayerStatsRecord,
   teamContext: TeamWeekContextRecord,
+  supportHistory: PlayerWeekSupportRecord[] | undefined,
   asOf: string,
   playerStatsProvenance: string,
   teamContextProvenance: string,
@@ -235,6 +303,27 @@ function deriveSkillRecord(
       : teamContext.team_pass_attempts > 0
         ? clamp(roundTo(player.targets / teamContext.team_pass_attempts, 4), 0, 1)
         : 0;
+  const roleVolatility = deriveRoleVolatility(player, supportHistory);
+  const featureCoverage = deriveFeatureCoverage(player, roleVolatility.usedFallback);
+  const qualityFlags = [
+    `source_provenance:${playerStatsProvenance}`,
+    `source_provenance:${teamContextProvenance}`,
+    'snaps_and_snap_share_approximated_from_player_opportunities_vs_team_pass_plus_rush_attempts',
+    'spread_and_matchup_tier_not_available_set_to_neutral_defaults',
+    'active_projection_set_to_1_for_realized_week_records',
+  ];
+
+  if (player.position === 'QB') {
+    qualityFlags.push('routes_and_route_participation_not_available_set_to_0_for_qb_rows');
+  } else {
+    qualityFlags.push('routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume');
+  }
+
+  if (roleVolatility.usedFallback) {
+    qualityFlags.push('role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history');
+  } else {
+    qualityFlags.push('role_volatility_derived_from_recent_opportunity_share_and_role_mix_changes');
+  }
 
   return {
     playerId: player.player_id,
@@ -268,19 +357,11 @@ function deriveSkillRecord(
     injuryStatus: 'healthy',
     practiceParticipation: 'none',
     activeProjection: 1,
-    roleVolatility: 0.5,
+    roleVolatility: roleVolatility.value,
     sourceUpdatedAt: asOf,
     sourceSetId: `forge-weekly-derived-skill-slice-${player.season}-w${String(player.week).padStart(2, '0')}`,
-    featureCoverage: 0.71,
-    qualityFlags: uniqueQualityFlags([
-      `source_provenance:${playerStatsProvenance}`,
-      `source_provenance:${teamContextProvenance}`,
-      'snaps_and_snap_share_approximated_from_player_opportunities_vs_team_pass_plus_rush_attempts',
-      'routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume',
-      'spread_and_matchup_tier_not_available_set_to_neutral_defaults',
-      'role_volatility_defaulted_to_neutral_midpoint_due_to_missing_multigame_history',
-      'active_projection_set_to_1_for_realized_week_records',
-    ]),
+    featureCoverage,
+    qualityFlags: uniqueQualityFlags(qualityFlags),
     dataConfidenceHint:
       'Broader skill-position derived export (QB/RB/WR/TE) from repo offline fixture support data for engine sanity checks; not production feed parity.',
   };
@@ -334,6 +415,36 @@ export function buildForgeWeeklySkillDerivedArtifactFromRawSources(
     .filter((record) => record.season === season && record.week === week)
     .sort((a, b) => a.player_id.localeCompare(b.player_id));
 
+  const playerWeekSupport = new Map<string, PlayerWeekSupportRecord[]>();
+  const seasonRows = playerStatsPayload.records.filter(
+    (record) => record.season === season && record.week <= week,
+  );
+
+  for (const record of seasonRows) {
+    const context = teamContextByKey.get(`${record.team}-${record.season}-${record.week}`);
+    if (!context) {
+      continue;
+    }
+
+    const teamOpportunities = context.team_pass_attempts + context.team_rush_attempts;
+    const opportunities = record.pass_attempts + record.rushing_attempts + record.targets;
+    const opportunityShare = teamOpportunities > 0 ? clamp(opportunities / teamOpportunities, 0, 1) : 0;
+    const roleMixBase = opportunities > 0 ? opportunities : 1;
+    const roleMix =
+      record.position === 'QB'
+        ? clamp(record.pass_attempts / roleMixBase, 0, 1)
+        : clamp(record.targets / roleMixBase, 0, 1);
+
+    const entries = playerWeekSupport.get(record.player_id) ?? [];
+    entries.push({
+      week: record.week,
+      opportunities,
+      opportunityShare,
+      roleMix,
+    });
+    playerWeekSupport.set(record.player_id, entries);
+  }
+
   const derived: ForgeWeeklyPlayerInput[] = skillSlice.map((player) => {
     const teamContext = teamContextByKey.get(`${player.team}-${player.season}-${player.week}`);
     if (!teamContext) {
@@ -345,6 +456,7 @@ export function buildForgeWeeklySkillDerivedArtifactFromRawSources(
     return deriveSkillRecord(
       player,
       teamContext,
+      playerWeekSupport.get(player.player_id),
       asOf,
       playerStatsPayload.provenance,
       teamContextPayload.provenance,
