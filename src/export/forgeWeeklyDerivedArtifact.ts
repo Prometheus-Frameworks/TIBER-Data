@@ -55,6 +55,13 @@ export const FORGE_WEEKLY_DERIVED_SKILL_ARTIFACT_PATH =
   'data/gold/forge/forge_weekly_player_input_2024_w01.skill_offline_fixture.derived.json';
 export const FORGE_WEEKLY_DERIVED_SKILL_EXPORT_WEEKS = [1, 2, 3, 4, 5, 6] as const;
 
+export const FORGE_WEEKLY_UPSTREAM_SCAFFOLD_PLAYER_STATS_SOURCE_PATH =
+  'data/raw/forge/weekly_player_stats.upstream_public_2024_w01_w03_8player_scaffold.json';
+export const FORGE_WEEKLY_UPSTREAM_SCAFFOLD_TEAM_CONTEXT_SOURCE_PATH =
+  'data/raw/forge/team_week_context.upstream_public_2024_w01_w03_2team_scaffold.json';
+export const FORGE_WEEKLY_UPSTREAM_SCAFFOLD_DERIVED_SKILL_EXPORT_SEASON = 2024 as const;
+export const FORGE_WEEKLY_UPSTREAM_SCAFFOLD_DERIVED_SKILL_EXPORT_WEEKS = [1, 2, 3] as const;
+
 function parseRawPayload<T>(sourcePath: string): RawExportPayload<T> {
   const resolvedPath = path.resolve(sourcePath);
   const raw = readFileSync(resolvedPath, 'utf-8');
@@ -520,6 +527,10 @@ export function getForgeWeeklySkillDerivedArtifactPath(season: number, week: num
   return `data/gold/forge/forge_weekly_player_input_${season}_w${String(week).padStart(2, '0')}.skill_offline_fixture.derived.json`;
 }
 
+export function getForgeWeeklyUpstreamScaffoldSkillDerivedArtifactPath(season: number, week: number): string {
+  return `data/gold/forge/forge_weekly_player_input_${season}_w${String(week).padStart(2, '0')}.skill_upstream_public_w01_w03_8player_scaffold.derived.json`;
+}
+
 export function toDeterministicForgeWeeklyDerivedJson(
   options: ForgeWeeklyDerivedBuildOptions = {},
 ): string {
@@ -579,3 +590,31 @@ export function writeForgeWeeklySkillDerivedArtifactsForWeeks(
     return resolvedPath;
   });
 }
+export function writeForgeWeeklyUpstreamScaffoldSkillDerivedArtifactsForWeeks(
+  outputRoot: string = 'data/gold/forge',
+  options: ForgeWeeklySkillDerivedBuildForWeeksOptions = {},
+): string[] {
+  const artifactsByWeek = buildForgeWeeklySkillDerivedArtifactsForWeeks({
+    ...options,
+    playerStatsSourcePath:
+      options.playerStatsSourcePath ?? FORGE_WEEKLY_UPSTREAM_SCAFFOLD_PLAYER_STATS_SOURCE_PATH,
+    teamContextSourcePath:
+      options.teamContextSourcePath ?? FORGE_WEEKLY_UPSTREAM_SCAFFOLD_TEAM_CONTEXT_SOURCE_PATH,
+    season: options.season ?? FORGE_WEEKLY_UPSTREAM_SCAFFOLD_DERIVED_SKILL_EXPORT_SEASON,
+    weeks: options.weeks ?? [...FORGE_WEEKLY_UPSTREAM_SCAFFOLD_DERIVED_SKILL_EXPORT_WEEKS],
+  });
+
+  return artifactsByWeek.map(({ season, week, artifact }) => {
+    const defaultPath = getForgeWeeklyUpstreamScaffoldSkillDerivedArtifactPath(season, week);
+    const outputPath =
+      outputRoot === 'data/gold/forge'
+        ? defaultPath
+        : path.join(outputRoot, path.basename(defaultPath));
+
+    const resolvedPath = path.resolve(outputPath);
+    mkdirSync(path.dirname(resolvedPath), { recursive: true });
+    writeFileSync(resolvedPath, `${JSON.stringify(artifact, null, 2)}\n`, 'utf-8');
+    return resolvedPath;
+  });
+}
+

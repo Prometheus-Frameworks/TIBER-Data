@@ -20,7 +20,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "export:forge-weekly-sample": "npm run build && node scripts/export_forge_weekly_input_sample.mjs",
-    "export:forge-weekly-derived": "npm run build && node scripts/export_forge_weekly_input_derived.mjs"
+    "export:forge-weekly-derived": "npm run build && node scripts/export_forge_weekly_input_derived.mjs",
+    "export:forge-weekly-derived-upstream-scaffold": "npm run build && node scripts/export_forge_weekly_input_derived_upstream_scaffold.mjs"
   },
   "dependencies": {
     "zod": "^3.23.8"
