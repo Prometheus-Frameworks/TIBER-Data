@@ -11,8 +11,8 @@ It currently exports two required support surfaces:
 
 Outputs:
 
-- `data/raw/forge/weekly_player_stats.upstream_public_2024_w01_8player_scaffold.json`
-- `data/raw/forge/team_week_context.upstream_public_2024_w01_2team_scaffold.json`
+- `data/raw/forge/weekly_player_stats.upstream_public_2024_w01_w03_8player_scaffold.json`
+- `data/raw/forge/team_week_context.upstream_public_2024_w01_w03_2team_scaffold.json`
 
 ## Source used
 
@@ -31,7 +31,7 @@ This scaffold is fail-closed:
 The scaffold intentionally supports only one narrow, reproducible slice:
 
 - season: `2024`
-- week: `1`
+- weeks: `1, 2, 3`
 - player cohort: fixed 8-player set (ATL/DET) used for current FORGE weekly sanity coverage
 - team cohort: `ATL`, `DET`
 
@@ -51,6 +51,28 @@ New scaffold lane:
 - uses upstream-backed reads with offline fallback disabled
 - proves reproducible source-backed generation for a minimal honest slice
 - does **not** replace legacy W1–W6 support lane yet
+
+## Commands for W1–W3 visual truth-check workflow
+
+Generate upstream-backed scaffold outputs for the narrow supported slice:
+
+```bash
+python scripts/export_forge_weekly_upstream_support_scaffold.py
+```
+
+Run side-by-side terminal comparison against legacy fixture support lane:
+
+```bash
+python scripts/compare_forge_weekly_support_lanes.py --player-name "Amon-Ra St. Brown"
+```
+
+or
+
+```bash
+python scripts/compare_forge_weekly_support_lanes.py --player-id 00-0037834
+```
+
+This comparison lane is for human visual sanity checks only and is **not** a full migration path.
 
 ## What remains before migration
 

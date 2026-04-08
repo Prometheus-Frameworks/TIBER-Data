@@ -135,11 +135,14 @@ TIBER-Data now includes a separate scaffold path for **upstream-backed** weekly 
 
 - script: `python scripts/export_forge_weekly_upstream_support_scaffold.py`
 - outputs:
-  - `data/raw/forge/weekly_player_stats.upstream_public_2024_w01_8player_scaffold.json`
-  - `data/raw/forge/team_week_context.upstream_public_2024_w01_2team_scaffold.json`
+  - `data/raw/forge/weekly_player_stats.upstream_public_2024_w01_w03_8player_scaffold.json`
+  - `data/raw/forge/team_week_context.upstream_public_2024_w01_w03_2team_scaffold.json`
 - current supported scope is intentionally narrow and fail-closed:
-  - season `2024`, week `1`
+  - season `2024`, weeks `1-3`
   - fixed 8-player sanity cohort (ATL/DET) plus ATL/DET team context
+- side-by-side visual comparison script:
+  - `python scripts/compare_forge_weekly_support_lanes.py --player-name "Amon-Ra St. Brown"`
+  - (or `--player-id 00-0037834`)
 
 This is a reproducible source-backed scaffold only and does **not** replace the current W1–W6 offline fixture support lane yet.
 

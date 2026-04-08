@@ -9,7 +9,7 @@ from src.config.settings import PipelineConfig
 from src.ingest.public import PublicDataClient
 
 SUPPORTED_SEASON = 2024
-SUPPORTED_WEEK = 1
+SUPPORTED_WEEKS = (1, 2, 3)
 SUPPORTED_PLAYER_IDS = (
     "00-0033901",  # Jared Goff
     "00-0036976",  # Jahmyr Gibbs
@@ -23,10 +23,10 @@ SUPPORTED_PLAYER_IDS = (
 SUPPORTED_TEAMS = ("ATL", "DET")
 
 WEEKLY_PLAYER_STATS_OUTPUT_PATH = (
-    "data/raw/forge/weekly_player_stats.upstream_public_2024_w01_8player_scaffold.json"
+    "data/raw/forge/weekly_player_stats.upstream_public_2024_w01_w03_8player_scaffold.json"
 )
 TEAM_WEEK_CONTEXT_OUTPUT_PATH = (
-    "data/raw/forge/team_week_context.upstream_public_2024_w01_2team_scaffold.json"
+    "data/raw/forge/team_week_context.upstream_public_2024_w01_w03_2team_scaffold.json"
 )
 
 
@@ -72,46 +72,54 @@ class ForgeWeeklyUpstreamSupportScaffoldBuilder:
             record
             for record in records
             if int(record.get("season", 0)) == SUPPORTED_SEASON
-            and int(record.get("week", 0)) == SUPPORTED_WEEK
+            and int(record.get("week", 0)) in SUPPORTED_WEEKS
             and str(record.get("player_id", "")) in SUPPORTED_PLAYER_IDS
         ]
-        selected_by_id = {str(record["player_id"]): record for record in selected}
-        missing_ids = sorted(set(SUPPORTED_PLAYER_IDS) - set(selected_by_id))
-        if missing_ids:
+        selected_by_week_and_id = {
+            (int(record["week"]), str(record["player_id"])): record for record in selected
+        }
+        missing_keys: list[tuple[int, str]] = []
+        for week in SUPPORTED_WEEKS:
+            for player_id in SUPPORTED_PLAYER_IDS:
+                key = (week, player_id)
+                if key not in selected_by_week_and_id:
+                    missing_keys.append(key)
+        if missing_keys:
             raise RuntimeError(
                 "Upstream player stats slice is incomplete for supported cohort; "
-                f"missing player_ids={missing_ids}."
+                f"missing week/player_id pairs={missing_keys}."
             )
 
         ordered: list[dict[str, Any]] = []
-        for player_id in sorted(selected_by_id):
-            record = selected_by_id[player_id]
-            ordered.append(
-                {
-                    "player_id": str(record["player_id"]),
-                    "full_name": str(record["player_display_name"]),
-                    "position": str(record["position"]),
-                    "team": str(record["recent_team"]),
-                    "season": int(record["season"]),
-                    "week": int(record["week"]),
-                    "targets": int(record.get("targets", 0) or 0),
-                    "receptions": int(record.get("receptions", 0) or 0),
-                    "receiving_yards": int(record.get("receiving_yards", 0) or 0),
-                    "receiving_tds": int(record.get("receiving_tds", 0) or 0),
-                    "rushing_attempts": int(record.get("carries", 0) or 0),
-                    "rushing_yards": int(record.get("rushing_yards", 0) or 0),
-                    "rushing_tds": int(record.get("rushing_tds", 0) or 0),
-                    "pass_attempts": int(record.get("attempts", 0) or 0),
-                    "completions": int(record.get("completions", 0) or 0),
-                    "passing_yards": int(record.get("passing_yards", 0) or 0),
-                    "passing_tds": int(record.get("passing_tds", 0) or 0),
-                    "fantasy_points_ppr": float(record.get("fantasy_points_ppr", 0) or 0),
-                    "air_yards": int(record.get("air_yards", 0) or 0),
-                    "red_zone_targets": (
-                        int(record["red_zone_targets"]) if record.get("red_zone_targets") is not None else None
-                    ),
-                }
-            )
+        for week in SUPPORTED_WEEKS:
+            for player_id in sorted(SUPPORTED_PLAYER_IDS):
+                record = selected_by_week_and_id[(week, player_id)]
+                ordered.append(
+                    {
+                        "player_id": str(record["player_id"]),
+                        "full_name": str(record["player_display_name"]),
+                        "position": str(record["position"]),
+                        "team": str(record["recent_team"]),
+                        "season": int(record["season"]),
+                        "week": int(record["week"]),
+                        "targets": int(record.get("targets", 0) or 0),
+                        "receptions": int(record.get("receptions", 0) or 0),
+                        "receiving_yards": int(record.get("receiving_yards", 0) or 0),
+                        "receiving_tds": int(record.get("receiving_tds", 0) or 0),
+                        "rushing_attempts": int(record.get("carries", 0) or 0),
+                        "rushing_yards": int(record.get("rushing_yards", 0) or 0),
+                        "rushing_tds": int(record.get("rushing_tds", 0) or 0),
+                        "pass_attempts": int(record.get("attempts", 0) or 0),
+                        "completions": int(record.get("completions", 0) or 0),
+                        "passing_yards": int(record.get("passing_yards", 0) or 0),
+                        "passing_tds": int(record.get("passing_tds", 0) or 0),
+                        "fantasy_points_ppr": float(record.get("fantasy_points_ppr", 0) or 0),
+                        "air_yards": int(record.get("air_yards", 0) or 0),
+                        "red_zone_targets": (
+                            int(record["red_zone_targets"]) if record.get("red_zone_targets") is not None else None
+                        ),
+                    }
+                )
         return ordered
 
     def _select_team_records(self, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -119,31 +127,39 @@ class ForgeWeeklyUpstreamSupportScaffoldBuilder:
             record
             for record in records
             if int(record.get("season", 0)) == SUPPORTED_SEASON
-            and int(record.get("week", 0)) == SUPPORTED_WEEK
+            and int(record.get("week", 0)) in SUPPORTED_WEEKS
             and str(record.get("team", "")) in SUPPORTED_TEAMS
         ]
-        selected_by_team = {str(record["team"]): record for record in selected}
-        missing_teams = sorted(set(SUPPORTED_TEAMS) - set(selected_by_team))
-        if missing_teams:
+        selected_by_week_and_team = {
+            (int(record["week"]), str(record["team"])): record for record in selected
+        }
+        missing_keys: list[tuple[int, str]] = []
+        for week in SUPPORTED_WEEKS:
+            for team in SUPPORTED_TEAMS:
+                key = (week, team)
+                if key not in selected_by_week_and_team:
+                    missing_keys.append(key)
+        if missing_keys:
             raise RuntimeError(
                 "Upstream team context slice is incomplete for supported cohort; "
-                f"missing teams={missing_teams}."
+                f"missing week/team pairs={missing_keys}."
             )
 
         ordered: list[dict[str, Any]] = []
-        for team in sorted(selected_by_team):
-            record = selected_by_team[team]
-            ordered.append(
-                {
-                    "team": str(record["team"]),
-                    "season": int(record["season"]),
-                    "week": int(record["week"]),
-                    "team_pass_attempts": int(record.get("pass_attempts", 0) or 0),
-                    "team_rush_attempts": int(record.get("rush_attempts", 0) or 0),
-                    "team_points": int(record.get("points", 0) or 0),
-                    "team_air_yards": int(record.get("air_yards", 0) or 0),
-                }
-            )
+        for week in SUPPORTED_WEEKS:
+            for team in sorted(SUPPORTED_TEAMS):
+                record = selected_by_week_and_team[(week, team)]
+                ordered.append(
+                    {
+                        "team": str(record["team"]),
+                        "season": int(record["season"]),
+                        "week": int(record["week"]),
+                        "team_pass_attempts": int(record.get("pass_attempts", 0) or 0),
+                        "team_rush_attempts": int(record.get("rush_attempts", 0) or 0),
+                        "team_points": int(record.get("points", 0) or 0),
+                        "team_air_yards": int(record.get("air_yards", 0) or 0),
+                    }
+                )
         return ordered
 
 
