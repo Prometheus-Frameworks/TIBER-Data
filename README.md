@@ -129,6 +129,22 @@ Scope remains intentionally small and honest:
 
 This is still **not** the full live weekly production export pipeline.
 
+### Upstream-backed FORGE weekly support scaffold (proof-of-path)
+
+TIBER-Data now includes a separate scaffold path for **upstream-backed** weekly support ingestion for FORGE, distinct from the legacy offline fixture lane.
+
+- script: `python scripts/export_forge_weekly_upstream_support_scaffold.py`
+- outputs:
+  - `data/raw/forge/weekly_player_stats.upstream_public_2024_w01_8player_scaffold.json`
+  - `data/raw/forge/team_week_context.upstream_public_2024_w01_2team_scaffold.json`
+- current supported scope is intentionally narrow and fail-closed:
+  - season `2024`, week `1`
+  - fixed 8-player sanity cohort (ATL/DET) plus ATL/DET team context
+
+This is a reproducible source-backed scaffold only and does **not** replace the current W1–W6 offline fixture support lane yet.
+
+Details: `docs/data/forge-weekly-upstream-support-scaffold.md`.
+
 ## Downstream usage
 
 Downstream repos should import the top-level exports and validate their payloads before persisting or consuming them.
