@@ -72,6 +72,25 @@ or
 python scripts/compare_forge_weekly_support_lanes.py --player-id 00-0037834
 ```
 
+
+Generate upstream-backed **derived skill artifacts** for the same narrow supported slice:
+
+```bash
+npm run export:forge-weekly-derived-upstream-scaffold
+```
+
+Run side-by-side terminal comparison for legacy vs upstream-derived rows:
+
+```bash
+python scripts/compare_forge_weekly_derived_lanes.py --player-name "Amon-Ra St. Brown"
+```
+
+or
+
+```bash
+python scripts/compare_forge_weekly_derived_lanes.py --player-id 00-0037834
+```
+
 This comparison lane is for human visual sanity checks only and is **not** a full migration path.
 
 ## What remains before migration

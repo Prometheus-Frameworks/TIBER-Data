@@ -35,3 +35,16 @@ Current derived artifact slices:
   - explicit checks per generated week: non-empty artifact, coherent source metadata (`sourceSetId`/season/week), deterministic ordering, expected positions from source support, and schema validation
   - explicit gaps/defaults for now: snaps/snapShare remain opportunity-based approximations, route fields are lightweight target-share approximations for non-QB rows, and spread/matchup remain neutral/defaulted with quality flags
   - still an offline-fixture-backed constrained season-segment export path, **not** full-season production ETL parity
+
+
+- repeatable upstream-backed scaffold derived skill artifacts (parallel lane, no legacy replacement):
+  - `forge_weekly_player_input_2024_w01.skill_upstream_public_w01_w03_8player_scaffold.derived.json`
+  - `forge_weekly_player_input_2024_w02.skill_upstream_public_w01_w03_8player_scaffold.derived.json`
+  - `forge_weekly_player_input_2024_w03.skill_upstream_public_w01_w03_8player_scaffold.derived.json`
+  - represented scope: season `2024`, weeks `W1-W3` only, fixed ATL/DET 8-player scaffold cohort
+  - source inputs (upstream-backed scaffold support artifacts):
+    - `data/raw/forge/weekly_player_stats.upstream_public_2024_w01_w03_8player_scaffold.json`
+    - `data/raw/forge/team_week_context.upstream_public_2024_w01_w03_2team_scaffold.json`
+  - transformation path intentionally reuses the same skill derived logic as the legacy lane; only support provenance differs
+  - fail-closed behavior: generation errors if upstream scaffold support is missing/incomplete for W1–W3
+  - intended use: side-by-side derived-row sanity checks (for example Amon-Ra St. Brown across W1–W3), **not** full migration

@@ -9,18 +9,21 @@ import {
   FORGE_WEEKLY_DERIVED_PLAYER_STATS_SOURCE_PATH,
   FORGE_WEEKLY_DERIVED_SKILL_ARTIFACT_PATH,
   FORGE_WEEKLY_DERIVED_SKILL_EXPORT_WEEKS,
+  FORGE_WEEKLY_UPSTREAM_SCAFFOLD_DERIVED_SKILL_EXPORT_WEEKS,
   buildForgeWeeklyDerivedArtifactFromRawSources,
   buildForgeWeeklySkillDerivedArtifactFromRawSources,
   buildForgeWeeklySkillDerivedArtifactsForWeeks,
   forgeWeeklyPlayerInputArraySchema,
   getForgeWeeklySkillSupportedWeeksFromRawSources,
   getForgeWeeklySkillDerivedArtifactPath,
+  getForgeWeeklyUpstreamScaffoldSkillDerivedArtifactPath,
   toDeterministicForgeWeeklyDerivedJson,
   toDeterministicForgeWeeklySampleJson,
   toDeterministicForgeWeeklySkillDerivedJson,
   writeForgeWeeklyDerivedArtifact,
   writeForgeWeeklySkillDerivedArtifact,
   writeForgeWeeklySkillDerivedArtifactsForWeeks,
+  writeForgeWeeklyUpstreamScaffoldSkillDerivedArtifactsForWeeks,
 } from '../src/index.js';
 
 describe('forge weekly derived artifact export lanes', () => {
@@ -243,5 +246,80 @@ describe('forge weekly derived artifact export lanes', () => {
   it('keeps backward compatibility for the original skill artifact path', () => {
     const weekOneCommitted = readFileSync(path.resolve(FORGE_WEEKLY_DERIVED_SKILL_ARTIFACT_PATH), 'utf-8');
     expect(weekOneCommitted).toEqual(toDeterministicForgeWeeklySkillDerivedJson({ week: 1 }));
+  });
+
+
+  it('uses distinct artifact naming and deterministic week ordering for upstream scaffold lane', () => {
+    expect(FORGE_WEEKLY_UPSTREAM_SCAFFOLD_DERIVED_SKILL_EXPORT_WEEKS).toEqual([1, 2, 3]);
+
+    const weekThreePath = getForgeWeeklyUpstreamScaffoldSkillDerivedArtifactPath(2024, 3);
+    expect(weekThreePath).toContain('skill_upstream_public_w01_w03_8player_scaffold.derived.json');
+    expect(weekThreePath).not.toContain('skill_offline_fixture.derived.json');
+  });
+
+  it('writes upstream scaffold artifacts into separate filenames without overwriting legacy outputs', () => {
+    const playerStats = {
+      provenance: 'upstream_fixture_test',
+      source_path: 'test/player_stats',
+      records: [
+        { player_id: '00-0033901', full_name: 'Jared Goff', position: 'QB', team: 'DET', season: 2024, week: 2, targets: 0, receptions: 0, receiving_yards: 0, rushing_attempts: 2, rushing_yards: 6, pass_attempts: 30, fantasy_points_ppr: 18.1 },
+        { player_id: '00-0036976', full_name: 'Jahmyr Gibbs', position: 'RB', team: 'DET', season: 2024, week: 2, targets: 4, receptions: 3, receiving_yards: 28, rushing_attempts: 11, rushing_yards: 58, pass_attempts: 0, fantasy_points_ppr: 15.2 },
+        { player_id: '00-0037183', full_name: 'Kirk Cousins', position: 'QB', team: 'ATL', season: 2024, week: 2, targets: 0, receptions: 0, receiving_yards: 0, rushing_attempts: 1, rushing_yards: 2, pass_attempts: 33, fantasy_points_ppr: 17.4 },
+        { player_id: '00-0037834', full_name: 'Amon-Ra St. Brown', position: 'WR', team: 'DET', season: 2024, week: 2, targets: 10, receptions: 7, receiving_yards: 84, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 22.6 },
+        { player_id: '00-0038047', full_name: 'Sam LaPorta', position: 'TE', team: 'DET', season: 2024, week: 2, targets: 7, receptions: 5, receiving_yards: 61, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 14.1 },
+        { player_id: '00-0038122', full_name: 'Kyle Pitts', position: 'TE', team: 'ATL', season: 2024, week: 2, targets: 6, receptions: 4, receiving_yards: 49, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 10.9 },
+        { player_id: '00-0038134', full_name: 'Bijan Robinson', position: 'RB', team: 'ATL', season: 2024, week: 2, targets: 5, receptions: 4, receiving_yards: 31, rushing_attempts: 15, rushing_yards: 70, pass_attempts: 0, fantasy_points_ppr: 21.3 },
+        { player_id: '00-0039152', full_name: 'Drake London', position: 'WR', team: 'ATL', season: 2024, week: 2, targets: 9, receptions: 6, receiving_yards: 76, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 18.7 },
+        { player_id: '00-0033901', full_name: 'Jared Goff', position: 'QB', team: 'DET', season: 2024, week: 1, targets: 0, receptions: 0, receiving_yards: 0, rushing_attempts: 2, rushing_yards: 5, pass_attempts: 28, fantasy_points_ppr: 16.6 },
+        { player_id: '00-0036976', full_name: 'Jahmyr Gibbs', position: 'RB', team: 'DET', season: 2024, week: 1, targets: 5, receptions: 4, receiving_yards: 34, rushing_attempts: 10, rushing_yards: 54, pass_attempts: 0, fantasy_points_ppr: 16.2 },
+        { player_id: '00-0037183', full_name: 'Kirk Cousins', position: 'QB', team: 'ATL', season: 2024, week: 1, targets: 0, receptions: 0, receiving_yards: 0, rushing_attempts: 1, rushing_yards: 1, pass_attempts: 31, fantasy_points_ppr: 16.9 },
+        { player_id: '00-0037834', full_name: 'Amon-Ra St. Brown', position: 'WR', team: 'DET', season: 2024, week: 1, targets: 11, receptions: 8, receiving_yards: 96, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 24.5 },
+        { player_id: '00-0038047', full_name: 'Sam LaPorta', position: 'TE', team: 'DET', season: 2024, week: 1, targets: 8, receptions: 6, receiving_yards: 72, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 15.3 },
+        { player_id: '00-0038122', full_name: 'Kyle Pitts', position: 'TE', team: 'ATL', season: 2024, week: 1, targets: 5, receptions: 3, receiving_yards: 40, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 8.5 },
+        { player_id: '00-0038134', full_name: 'Bijan Robinson', position: 'RB', team: 'ATL', season: 2024, week: 1, targets: 6, receptions: 5, receiving_yards: 37, rushing_attempts: 14, rushing_yards: 63, pass_attempts: 0, fantasy_points_ppr: 20.4 },
+        { player_id: '00-0039152', full_name: 'Drake London', position: 'WR', team: 'ATL', season: 2024, week: 1, targets: 8, receptions: 5, receiving_yards: 68, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 16.1 },
+        { player_id: '00-0033901', full_name: 'Jared Goff', position: 'QB', team: 'DET', season: 2024, week: 3, targets: 0, receptions: 0, receiving_yards: 0, rushing_attempts: 3, rushing_yards: 8, pass_attempts: 35, fantasy_points_ppr: 19.2 },
+        { player_id: '00-0036976', full_name: 'Jahmyr Gibbs', position: 'RB', team: 'DET', season: 2024, week: 3, targets: 6, receptions: 5, receiving_yards: 41, rushing_attempts: 12, rushing_yards: 64, pass_attempts: 0, fantasy_points_ppr: 18.6 },
+        { player_id: '00-0037183', full_name: 'Kirk Cousins', position: 'QB', team: 'ATL', season: 2024, week: 3, targets: 0, receptions: 0, receiving_yards: 0, rushing_attempts: 1, rushing_yards: 2, pass_attempts: 34, fantasy_points_ppr: 18.3 },
+        { player_id: '00-0037834', full_name: 'Amon-Ra St. Brown', position: 'WR', team: 'DET', season: 2024, week: 3, targets: 12, receptions: 9, receiving_yards: 104, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 27.8 },
+        { player_id: '00-0038047', full_name: 'Sam LaPorta', position: 'TE', team: 'DET', season: 2024, week: 3, targets: 6, receptions: 5, receiving_yards: 55, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 12.4 },
+        { player_id: '00-0038122', full_name: 'Kyle Pitts', position: 'TE', team: 'ATL', season: 2024, week: 3, targets: 7, receptions: 5, receiving_yards: 63, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 13.6 },
+        { player_id: '00-0038134', full_name: 'Bijan Robinson', position: 'RB', team: 'ATL', season: 2024, week: 3, targets: 4, receptions: 3, receiving_yards: 24, rushing_attempts: 16, rushing_yards: 73, pass_attempts: 0, fantasy_points_ppr: 19.1 },
+        { player_id: '00-0039152', full_name: 'Drake London', position: 'WR', team: 'ATL', season: 2024, week: 3, targets: 10, receptions: 7, receiving_yards: 82, rushing_attempts: 0, rushing_yards: 0, pass_attempts: 0, fantasy_points_ppr: 19.9 },
+      ],
+    };
+
+    const teamContext = {
+      provenance: 'upstream_fixture_test',
+      source_path: 'test/team_context',
+      records: [
+        { team: 'ATL', season: 2024, week: 2, team_pass_attempts: 34, team_rush_attempts: 27, team_points: 24 },
+        { team: 'DET', season: 2024, week: 2, team_pass_attempts: 31, team_rush_attempts: 26, team_points: 28 },
+        { team: 'ATL', season: 2024, week: 1, team_pass_attempts: 32, team_rush_attempts: 25, team_points: 20 },
+        { team: 'DET', season: 2024, week: 1, team_pass_attempts: 30, team_rush_attempts: 24, team_points: 27 },
+        { team: 'ATL', season: 2024, week: 3, team_pass_attempts: 35, team_rush_attempts: 26, team_points: 23 },
+        { team: 'DET', season: 2024, week: 3, team_pass_attempts: 33, team_rush_attempts: 25, team_points: 30 },
+      ],
+    };
+
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'forge-weekly-upstream-skill-'));
+    const playerPath = path.join(tempRoot, 'weekly_player_stats.upstream_fixture_test.json');
+    const teamPath = path.join(tempRoot, 'team_week_context.upstream_fixture_test.json');
+
+    writeFileSync(playerPath, `${JSON.stringify(playerStats, null, 2)}\n`, 'utf-8');
+    writeFileSync(teamPath, `${JSON.stringify(teamContext, null, 2)}\n`, 'utf-8');
+
+    const outputPaths = writeForgeWeeklyUpstreamScaffoldSkillDerivedArtifactsForWeeks(tempRoot, {
+      playerStatsSourcePath: playerPath,
+      teamContextSourcePath: teamPath,
+      asOf: '2026-04-08T00:00:00Z',
+    });
+
+    expect(outputPaths).toHaveLength(3);
+
+    const weeksFromFiles = outputPaths.map((outputPath) => Number(outputPath.match(/_w(\d{2})\./)?.[1] ?? '0'));
+    expect(weeksFromFiles).toEqual([1, 2, 3]);
+    expect(outputPaths.every((outputPath) => outputPath.includes('skill_upstream_public_w01_w03_8player_scaffold.derived.json'))).toBe(true);
+    expect(outputPaths.every((outputPath) => !outputPath.includes('skill_offline_fixture.derived.json'))).toBe(true);
   });
 });
