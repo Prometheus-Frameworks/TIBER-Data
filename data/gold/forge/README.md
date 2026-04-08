@@ -29,6 +29,7 @@ Current derived artifact slices:
   - `forge_weekly_player_input_2024_w05.skill_offline_fixture.derived.json`
   - `forge_weekly_player_input_2024_w06.skill_offline_fixture.derived.json`
   - represented scope: season `2024`, maximum honest contiguous support window currently available from repo-held raw support data (`W1-W6`)
+  - provenance note: current `src/ingest/public.py::FIXTURE_DATA` directly covers W1 only; W2–W6 support rows are committed legacy repo artifacts pending full provenance reconstruction
   - attempted target for this expansion lane remains `W1-W17`, but current offline support sources stop at `W6`; no new upstream sources were introduced in this repo
   - intended use: first repeatable weekly artifact factory pattern for FORGE ingestion sanity checks
   - explicit checks per generated week: non-empty artifact, coherent source metadata (`sourceSetId`/season/week), deterministic ordering, expected positions from source support, and schema validation

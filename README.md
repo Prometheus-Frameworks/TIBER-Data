@@ -125,6 +125,7 @@ Scope remains intentionally small and honest:
 - spread/matchup and route-participation style fields still rely on explicit neutral/default placeholders where source coverage is missing
 - this is offline-fixture-backed season-segment coverage groundwork, not full-season production ETL
 - support-origin audit for this lane: `docs/data/forge-weekly-offline-support-origin-audit.md`
+- provenance status: W1 is reproducible from current `src/ingest/public.py::FIXTURE_DATA`; committed W2–W6 raw support rows remain legacy repo-held artifacts pending fully recoverable provenance
 
 This is still **not** the full live weekly production export pipeline.
 
