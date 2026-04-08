@@ -10,15 +10,15 @@ from src.ingest.public import PublicDataClient
 
 SUPPORTED_SEASON = 2024
 SUPPORTED_WEEKS = (1, 2, 3)
-SUPPORTED_PLAYER_IDS = (
-    "00-0033901",  # Jared Goff
-    "00-0036976",  # Jahmyr Gibbs
-    "00-0037183",  # Kirk Cousins
-    "00-0037834",  # Amon-Ra St. Brown
-    "00-0038047",  # Sam LaPorta
-    "00-0038122",  # Kyle Pitts
-    "00-0038134",  # Bijan Robinson
-    "00-0039152",  # Drake London
+SUPPORTED_PLAYER_COHORT = (
+    ("Amon-Ra St. Brown", "DET"),
+    ("Bijan Robinson", "ATL"),
+    ("Drake London", "ATL"),
+    ("Jahmyr Gibbs", "DET"),
+    ("Jared Goff", "DET"),
+    ("Kirk Cousins", "ATL"),
+    ("Kyle Pitts", "ATL"),
+    ("Sam LaPorta", "DET"),
 )
 SUPPORTED_TEAMS = ("ATL", "DET")
 
@@ -68,31 +68,46 @@ class ForgeWeeklyUpstreamSupportScaffoldBuilder:
         )
 
     def _select_player_records(self, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        supported_players = {(name, team) for name, team in SUPPORTED_PLAYER_COHORT}
         selected = [
             record
             for record in records
             if int(record.get("season", 0)) == SUPPORTED_SEASON
             and int(record.get("week", 0)) in SUPPORTED_WEEKS
-            and str(record.get("player_id", "")) in SUPPORTED_PLAYER_IDS
+            and (
+                str(record.get("player_display_name", "")),
+                str(record.get("recent_team", "")),
+            )
+            in supported_players
         ]
         selected_by_week_and_id = {
             (int(record["week"]), str(record["player_id"])): record for record in selected
         }
+        selected_by_week_and_player = {
+            (
+                int(record["week"]),
+                str(record["player_display_name"]),
+                str(record["recent_team"]),
+            ): record
+            for record in selected
+        }
         missing_keys: list[tuple[int, str]] = []
         for week in SUPPORTED_WEEKS:
-            for player_id in SUPPORTED_PLAYER_IDS:
-                key = (week, player_id)
-                if key not in selected_by_week_and_id:
-                    missing_keys.append(key)
+            for player_name, team in SUPPORTED_PLAYER_COHORT:
+                key = (week, player_name, team)
+                if key not in selected_by_week_and_player:
+                    missing_keys.append((week, f"{player_name} [{team}]"))
         if missing_keys:
             raise RuntimeError(
                 "Upstream player stats slice is incomplete for supported cohort; "
-                f"missing week/player_id pairs={missing_keys}."
+                f"missing week/player pairs={missing_keys}."
             )
 
         ordered: list[dict[str, Any]] = []
         for week in SUPPORTED_WEEKS:
-            for player_id in sorted(SUPPORTED_PLAYER_IDS):
+            for player_name, team in SUPPORTED_PLAYER_COHORT:
+                cohort_record = selected_by_week_and_player[(week, player_name, team)]
+                player_id = str(cohort_record["player_id"])
                 record = selected_by_week_and_id[(week, player_id)]
                 ordered.append(
                     {

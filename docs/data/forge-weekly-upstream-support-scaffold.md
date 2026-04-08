@@ -32,10 +32,12 @@ The scaffold intentionally supports only one narrow, reproducible slice:
 
 - season: `2024`
 - weeks: `1, 2, 3`
-- player cohort: fixed 8-player set (ATL/DET) used for current FORGE weekly sanity coverage
+- player cohort: fixed 8-player ATL/DET name+team set used for current FORGE weekly sanity coverage
 - team cohort: `ATL`, `DET`
 
 No broader season/week support is implied by this scaffold.
+
+Selection is fail-closed by `(week, player_display_name, recent_team)` for this cohort, then emitted with upstream `player_id` values. This keeps the proof slice honest when local placeholder ids diverge from upstream ids.
 
 ## How it differs from the legacy W1–W6 offline fixture lane
 
