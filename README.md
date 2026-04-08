@@ -13,6 +13,12 @@ Start here:
 
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 
+### Agent operating files
+
+- [AGENTS.md](AGENTS.md)
+- [TRUTH_SOURCES.md](TRUTH_SOURCES.md)
+- [HANDOFF.md](HANDOFF.md)
+
 Canonical architecture governance documents:
 
 - [TIBER Architecture Document v1.0](docs/governance/architecture/tiber-architecture-document-v1.0.md)
