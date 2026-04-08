@@ -53,7 +53,7 @@ export const FORGE_WEEKLY_DERIVED_ARTIFACT_PATH =
   'data/gold/forge/forge_weekly_player_input_2024_w01.qb_offline_fixture.derived.json';
 export const FORGE_WEEKLY_DERIVED_SKILL_ARTIFACT_PATH =
   'data/gold/forge/forge_weekly_player_input_2024_w01.skill_offline_fixture.derived.json';
-export const FORGE_WEEKLY_DERIVED_SKILL_EXPORT_WEEKS = [1, 2, 3, 4, 5, 6] as const;
+export const FORGE_WEEKLY_DERIVED_SKILL_EXPORT_WEEKS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] as const;
 
 function parseRawPayload<T>(sourcePath: string): RawExportPayload<T> {
   const resolvedPath = path.resolve(sourcePath);

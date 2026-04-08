@@ -102,7 +102,7 @@ TIBER-Data now ships two **derived** `ForgeWeeklyPlayerInput` export lanes from 
 - `data/gold/forge/forge_weekly_player_input_2024_w01.qb_offline_fixture.derived.json`
 - repeatable broader skill-position weekly artifacts for a small offline-fixture-backed set:
   - `data/gold/forge/forge_weekly_player_input_2024_w01.skill_offline_fixture.derived.json`
-  - through `data/gold/forge/forge_weekly_player_input_2024_w06.skill_offline_fixture.derived.json`
+  - through `data/gold/forge/forge_weekly_player_input_2024_w17.skill_offline_fixture.derived.json`
 
 Generate/re-generate with fail-closed validation:
 
@@ -114,7 +114,7 @@ Scope remains intentionally small and honest:
 
 - both artifacts are derived from repo-held support fixtures (`data/raw/forge/weekly_player_stats.offline_fixture.json` and `data/raw/forge/team_week_context.offline_fixture.json`)
 - the QB lane remains a narrow sanity-check slice fixed to season `2024`, week `1`
-- the skill lane now follows a repeatable weekly factory pattern for season `2024`, weeks `1-6`
+- the skill lane now follows a repeatable weekly factory pattern for season `2024`, weeks `1-17`
 - each generated skill artifact is validated fail-closed (non-empty, coherent metadata, deterministic order, expected position coverage, schema validation)
 - spread/matchup and route-participation style fields still rely on explicit neutral/default placeholders where source coverage is missing
 - this is offline-fixture-backed season-segment coverage groundwork, not full-season production ETL

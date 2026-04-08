@@ -37,7 +37,7 @@ describe('forge weekly derived artifact export lanes', () => {
     const artifacts = buildForgeWeeklySkillDerivedArtifactsForWeeks();
     const supportedWeeks = getForgeWeeklySkillSupportedWeeksFromRawSources({ season: 2024 });
 
-    expect(supportedWeeks).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(supportedWeeks).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
     expect(artifacts.map((artifact) => artifact.week)).toEqual(supportedWeeks);
 
     for (const { season, week, artifact } of artifacts) {
@@ -138,7 +138,7 @@ describe('forge weekly derived artifact export lanes', () => {
     expect(() =>
       buildForgeWeeklySkillDerivedArtifactFromRawSources({
         season: 2024,
-        week: 7,
+        week: 18,
       }),
     ).toThrow('No skill-position records found');
   });
@@ -147,9 +147,9 @@ describe('forge weekly derived artifact export lanes', () => {
     expect(() =>
       buildForgeWeeklySkillDerivedArtifactsForWeeks({
         season: 2024,
-        weeks: [1, 2, 7],
+        weeks: [1, 2, 18],
       }),
-    ).toThrow('Requested unsupported skill-derived weeks (7)');
+    ).toThrow('Requested unsupported skill-derived weeks (18)');
   });
 
   it('fails closed when source path is missing', () => {

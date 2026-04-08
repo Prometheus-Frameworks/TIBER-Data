@@ -28,8 +28,19 @@ Current derived artifact slices:
   - `forge_weekly_player_input_2024_w04.skill_offline_fixture.derived.json`
   - `forge_weekly_player_input_2024_w05.skill_offline_fixture.derived.json`
   - `forge_weekly_player_input_2024_w06.skill_offline_fixture.derived.json`
-  - represented scope: season `2024`, maximum honest contiguous support window currently available from repo-held raw support data (`W1-W6`)
-  - attempted target for this expansion lane remains `W1-W17`, but current offline support sources stop at `W6`; no new upstream sources were introduced in this repo
+  - `forge_weekly_player_input_2024_w07.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w08.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w09.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w10.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w11.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w12.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w13.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w14.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w15.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w16.skill_offline_fixture.derived.json`
+  - `forge_weekly_player_input_2024_w17.skill_offline_fixture.derived.json`
+  - represented scope: season `2024`, maximum honest contiguous support window currently available from repo-held raw support data (`W1-W17`)
+  - current offline support sources now extend through `W17`; no 2025 support expansion is included in this repo lane
   - intended use: first repeatable weekly artifact factory pattern for FORGE ingestion sanity checks
   - explicit checks per generated week: non-empty artifact, coherent source metadata (`sourceSetId`/season/week), deterministic ordering, expected positions from source support, and schema validation
   - explicit gaps/defaults for now: snaps/snapShare remain opportunity-based approximations, route fields are lightweight target-share approximations for non-QB rows, and spread/matchup remain neutral/defaulted with quality flags
