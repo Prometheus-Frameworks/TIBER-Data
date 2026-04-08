@@ -1,27 +1,48 @@
-# FORGE weekly offline support origin audit (2024 W1–W6)
+# FORGE weekly offline support provenance audit (2024 W1–W6)
 
-## Scope audited
+## Scope
 - `data/raw/forge/weekly_player_stats.offline_fixture.json`
 - `data/raw/forge/team_week_context.offline_fixture.json`
 
-## Current origin signals in-repo
-Both raw files are tagged as offline fixtures and point to `src/ingest/public.py` fixture origins:
+## Provenance result
+**State B — provenance still incomplete.**
 
-- `weekly_player_stats.offline_fixture.json`
-  - `provenance: "offline_fixture"`
-  - `source_path: "src/ingest/public.py::FIXTURE_DATA.weekly_player_stats"`
-- `team_week_context.offline_fixture.json`
-  - `provenance: "offline_fixture"`
-  - `source_path: "src/ingest/public.py::FIXTURE_DATA.team_week_context"`
+The repo contains enough evidence to explain *where* W2–W6 were committed (specific commits), but not enough to fully reconstruct a deterministic in-repo generation process that reproduces those W2–W6 rows from current fixture source alone.
 
-The repo ingestion/export path that writes these raw JSON payloads is `PublicDataClient.write_raw_exports(...)` in `src/ingest/public.py`.
+## What is known (direct evidence)
+- Both raw support files declare `provenance: "offline_fixture"` and point at `src/ingest/public.py::FIXTURE_DATA...` via `source_path`.  
+- `PublicDataClient.write_raw_exports(...)` is the only in-repo writer for this payload shape (`provenance`, `source_path`, `records`).
+- Current checked-in `FIXTURE_DATA` in `src/ingest/public.py` contains only season 2024 week 1 rows for:
+  - `weekly_player_stats`
+  - `team_week_context`
+- W2–W6 rows in raw support files were committed in two history steps:
+  - `00a43ee` added W2–W3 support rows
+  - `c0fcbea` added W4–W6 support rows
 
-## Important reproducibility finding
-Within the current checked-in `FIXTURE_DATA` in `src/ingest/public.py`, only week 1 records are present for `weekly_player_stats` and `team_week_context`.
+## What is inferred (reasonable, but not proven)
+- W2–W6 were likely assembled as repo-held offline support expansions to unblock skill weekly derived artifact exports for W2–W6.
+- The raw support rows were likely authored/updated directly in committed JSON (or from an external local process not captured in this repo), then consumed by `src/export/forgeWeeklyDerivedArtifact.ts`.
 
-That means the checked-in W2–W6 support rows in `data/raw/forge/*.offline_fixture.json` are repo-held artifacts, but **are not fully reproducible from the current `FIXTURE_DATA` block alone**.
+## What is not proven
+- A complete in-repo recipe that regenerates the committed W2–W6 raw support rows from current `FIXTURE_DATA` in `src/ingest/public.py`.
+- Any checked-in fixture builder, script, or documented source path that deterministically reconstructs W2–W6 support records from source truth currently present in this repo.
 
-## Honest-support conclusion for this PR
-From currently repo-held support inputs/process, there is no reliable, documented, reproducible in-repo basis to honestly extend support beyond the existing W1–W6 window without introducing new upstream source material/process.
+## Reproducibility status today
+- **Reproducible now:** W1 raw support rows from `src/ingest/public.py::FIXTURE_DATA`.
+- **Not reproducible from current fixture block alone:** W2–W6 raw support rows.
+- **Operationally available:** W1–W6 remain usable as committed repo-held support artifacts for downstream derived exports.
 
-Therefore this PR keeps the supported endpoint fail-closed at W6 and does not treat W7+ as supported.
+## Files/history inspected for this audit
+- `src/ingest/public.py`
+- `src/main.py`
+- `src/export/forgeWeeklyDerivedArtifact.ts`
+- `test/forgeWeeklyDerivedArtifact.export.test.ts`
+- `README.md`
+- `data/gold/forge/README.md`
+- `data/raw/forge/weekly_player_stats.offline_fixture.json`
+- `data/raw/forge/team_week_context.offline_fixture.json`
+- git history for those paths, including commits:
+  - `d36e7c0` (deterministic public ingest path)
+  - `0de9054` (first derived weekly slice)
+  - `00a43ee` (weekly factory; W2–W3 raw support additions)
+  - `c0fcbea` (coverage through W6; W4–W6 raw support additions)
