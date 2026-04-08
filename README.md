@@ -124,6 +124,7 @@ Scope remains intentionally small and honest:
 - each generated skill artifact is validated fail-closed (non-empty, coherent metadata, deterministic order, expected position coverage, schema validation)
 - spread/matchup and route-participation style fields still rely on explicit neutral/default placeholders where source coverage is missing
 - this is offline-fixture-backed season-segment coverage groundwork, not full-season production ETL
+- support-origin audit for this lane: `docs/data/forge-weekly-offline-support-origin-audit.md`
 
 This is still **not** the full live weekly production export pipeline.
 
