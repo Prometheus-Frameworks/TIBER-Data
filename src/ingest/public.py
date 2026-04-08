@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import importlib
+import inspect
 import json
 from dataclasses import dataclass
 from io import BytesIO, StringIO
@@ -448,8 +449,11 @@ class PublicDataClient:
         if not callable(loader):
             return None
 
+        accepted_params = set(inspect.signature(loader).parameters)
+        filtered_kwargs = {key: value for key, value in kwargs.items() if key in accepted_params}
+
         try:
-            result = loader(**kwargs)
+            result = loader(**filtered_kwargs)
         except Exception:
             return None
         records = self._records_from_tabular(result)
