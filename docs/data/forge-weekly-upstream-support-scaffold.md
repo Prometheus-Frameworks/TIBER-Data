@@ -20,6 +20,8 @@ Outputs:
 - `nflreadpy.load_team_stats(..., summary_level="week")`
 - fallback source path references in `src/ingest/public.py` for the equivalent nflverse parquet URLs
 
+Team-context metric mapping in the upstream scaffold intentionally coalesces known upstream field variants: attempts/pass_attempts, carries/rush_attempts, total_points/points, and passing_air_yards/air_yards.
+
 This scaffold is fail-closed:
 
 - offline fallback is disabled

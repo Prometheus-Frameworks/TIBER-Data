@@ -137,6 +137,15 @@ class ForgeWeeklyUpstreamSupportScaffoldBuilder:
                 )
         return ordered
 
+    @staticmethod
+    def _coalesce_int(record: dict[str, Any], keys: tuple[str, ...]) -> int:
+        for key in keys:
+            value = record.get(key)
+            if value is None:
+                continue
+            return int(value)
+        return 0
+
     def _select_team_records(self, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
         selected = [
             record
@@ -169,10 +178,22 @@ class ForgeWeeklyUpstreamSupportScaffoldBuilder:
                         "team": str(record["team"]),
                         "season": int(record["season"]),
                         "week": int(record["week"]),
-                        "team_pass_attempts": int(record.get("pass_attempts", 0) or 0),
-                        "team_rush_attempts": int(record.get("rush_attempts", 0) or 0),
-                        "team_points": int(record.get("points", 0) or 0),
-                        "team_air_yards": int(record.get("air_yards", 0) or 0),
+                        "team_pass_attempts": self._coalesce_int(
+                            record,
+                            ("attempts", "pass_attempts", "team_pass_attempts"),
+                        ),
+                        "team_rush_attempts": self._coalesce_int(
+                            record,
+                            ("carries", "rush_attempts", "team_rush_attempts"),
+                        ),
+                        "team_points": self._coalesce_int(
+                            record,
+                            ("total_points", "points", "team_points"),
+                        ),
+                        "team_air_yards": self._coalesce_int(
+                            record,
+                            ("passing_air_yards", "air_yards", "team_air_yards"),
+                        ),
                     }
                 )
         return ordered
