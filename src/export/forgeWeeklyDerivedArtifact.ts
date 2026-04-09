@@ -81,6 +81,14 @@ function cappedFantasyPointsPerOpportunity(pointsPerOpportunity: number): number
   return clamp(pointsPerOpportunity, 0, 3);
 }
 
+function nonNegativeYardsPerCarry(rushingYards: number, rushingAttempts: number): number {
+  if (rushingAttempts <= 0) {
+    return 0;
+  }
+
+  return Math.max(0, roundTo(rushingYards / rushingAttempts, 3));
+}
+
 function uniqueQualityFlags(flags: string[]): string[] {
   return [...new Set(flags)];
 }
@@ -278,7 +286,7 @@ function deriveQbRecord(
     rushAttempts: qb.rushing_attempts,
     targets: qb.targets,
     yardsPerRouteRun: 0,
-    yardsPerCarry: qb.rushing_attempts > 0 ? roundTo(qb.rushing_yards / qb.rushing_attempts, 3) : 0,
+    yardsPerCarry: nonNegativeYardsPerCarry(qb.rushing_yards, qb.rushing_attempts),
     catchRate: qb.targets > 0 ? roundTo(qb.receptions / qb.targets, 4) : 0,
     fantasyPointsPerOpportunity:
       opportunities > 0
@@ -365,8 +373,7 @@ function deriveSkillRecord(
     rushAttempts: player.rushing_attempts,
     targets: player.targets,
     yardsPerRouteRun: 0,
-    yardsPerCarry:
-      player.rushing_attempts > 0 ? roundTo(player.rushing_yards / player.rushing_attempts, 3) : 0,
+    yardsPerCarry: nonNegativeYardsPerCarry(player.rushing_yards, player.rushing_attempts),
     catchRate: player.targets > 0 ? roundTo(player.receptions / player.targets, 4) : 0,
     fantasyPointsPerOpportunity:
       opportunities > 0
@@ -617,4 +624,3 @@ export function writeForgeWeeklyUpstreamScaffoldSkillDerivedArtifactsForWeeks(
     return resolvedPath;
   });
 }
-

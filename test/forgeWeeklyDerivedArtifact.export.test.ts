@@ -322,4 +322,66 @@ describe('forge weekly derived artifact export lanes', () => {
     expect(outputPaths.every((outputPath) => outputPath.includes('skill_upstream_public_w01_w03_8player_scaffold.derived.json'))).toBe(true);
     expect(outputPaths.every((outputPath) => !outputPath.includes('skill_offline_fixture.derived.json'))).toBe(true);
   });
+
+  it('floors derived yardsPerCarry at 0 for negative rushing yards while preserving raw source values', () => {
+    const playerStats = {
+      provenance: 'upstream_fixture_test_negative_rush',
+      source_path: 'test/player_stats_negative_rush',
+      records: [
+        {
+          player_id: '00-0037183',
+          full_name: 'Kirk Cousins',
+          position: 'QB',
+          team: 'ATL',
+          season: 2024,
+          week: 1,
+          targets: 0,
+          receptions: 0,
+          receiving_yards: 0,
+          rushing_attempts: 4,
+          rushing_yards: -1,
+          pass_attempts: 31,
+          fantasy_points_ppr: 16.9,
+        },
+      ],
+    };
+    const teamContext = {
+      provenance: 'upstream_fixture_test_negative_rush',
+      source_path: 'test/team_context_negative_rush',
+      records: [
+        {
+          team: 'ATL',
+          season: 2024,
+          week: 1,
+          team_pass_attempts: 32,
+          team_rush_attempts: 25,
+          team_points: 20,
+        },
+      ],
+    };
+
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'forge-weekly-negative-rush-'));
+    const playerPath = path.join(tempRoot, 'weekly_player_stats.negative_rush.json');
+    const teamPath = path.join(tempRoot, 'team_week_context.negative_rush.json');
+    writeFileSync(playerPath, `${JSON.stringify(playerStats, null, 2)}\n`, 'utf-8');
+    writeFileSync(teamPath, `${JSON.stringify(teamContext, null, 2)}\n`, 'utf-8');
+
+    const artifact = buildForgeWeeklySkillDerivedArtifactFromRawSources({
+      playerStatsSourcePath: playerPath,
+      teamContextSourcePath: teamPath,
+      season: 2024,
+      week: 1,
+    });
+
+    expect(artifact).toHaveLength(1);
+    expect(artifact[0]?.playerName).toBe('Kirk Cousins');
+    expect(artifact[0]?.rushAttempts).toBe(4);
+    expect(artifact[0]?.yardsPerCarry).toBe(0);
+
+    const persistedRaw = JSON.parse(readFileSync(playerPath, 'utf-8')) as {
+      records: Array<{ player_id: string; rushing_yards: number }>;
+    };
+    expect(persistedRaw.records[0]?.player_id).toBe('00-0037183');
+    expect(persistedRaw.records[0]?.rushing_yards).toBe(-1);
+  });
 });
