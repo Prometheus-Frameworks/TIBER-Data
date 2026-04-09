@@ -37,7 +37,7 @@ The scaffold intentionally supports only one narrow, reproducible slice:
 
 No broader season/week support is implied by this scaffold.
 
-Selection is fail-closed by `(week, player_display_name, recent_team)` for this cohort, then emitted with upstream `player_id` values. This keeps the proof slice honest when local placeholder ids diverge from upstream ids.
+Selection is fail-closed by `(week, player_display_name, team)` for this cohort, then emitted with upstream `player_id` values. This keeps the proof slice honest when local placeholder ids diverge from upstream ids.
 
 ## How it differs from the legacy W1–W6 offline fixture lane
 

@@ -28,7 +28,7 @@ def test_scaffold_selection_is_deterministic_for_supported_slice() -> None:
                     "player_id": f"id-{idx}",
                     "player_display_name": player_name,
                     "position": "WR",
-                    "recent_team": team,
+                    "team": team,
                     "season": SUPPORTED_SEASON,
                     "week": week,
                     "targets": 1,
@@ -95,7 +95,7 @@ def test_scaffold_requires_complete_weekly_support_set() -> None:
                     "player_id": f"id-{idx}",
                     "player_display_name": player_name,
                     "position": "WR",
-                    "recent_team": team,
+                    "team": team,
                     "season": SUPPORTED_SEASON,
                     "week": week,
                 }

@@ -76,7 +76,7 @@ class ForgeWeeklyUpstreamSupportScaffoldBuilder:
             and int(record.get("week", 0)) in SUPPORTED_WEEKS
             and (
                 str(record.get("player_display_name", "")),
-                str(record.get("recent_team", "")),
+                str(record.get("team", "")),
             )
             in supported_players
         ]
@@ -87,7 +87,7 @@ class ForgeWeeklyUpstreamSupportScaffoldBuilder:
             (
                 int(record["week"]),
                 str(record["player_display_name"]),
-                str(record["recent_team"]),
+                str(record["team"]),
             ): record
             for record in selected
         }
@@ -114,7 +114,7 @@ class ForgeWeeklyUpstreamSupportScaffoldBuilder:
                         "player_id": str(record["player_id"]),
                         "full_name": str(record["player_display_name"]),
                         "position": str(record["position"]),
-                        "team": str(record["recent_team"]),
+                        "team": str(record["team"]),
                         "season": int(record["season"]),
                         "week": int(record["week"]),
                         "targets": int(record.get("targets", 0) or 0),
