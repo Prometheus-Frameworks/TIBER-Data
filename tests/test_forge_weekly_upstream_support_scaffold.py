@@ -106,3 +106,39 @@ def test_scaffold_requires_complete_weekly_support_set() -> None:
         assert False, "expected RuntimeError for missing supported row"
     except RuntimeError as exc:
         assert "missing week/player pairs" in str(exc)
+
+
+def test_scaffold_maps_upstream_team_field_names_without_zeroing() -> None:
+    builder = ForgeWeeklyUpstreamSupportScaffoldBuilder(
+        PipelineConfig(seasons=[SUPPORTED_SEASON], allow_offline_fallback=False)
+    )
+
+    team_rows = []
+    for week in SUPPORTED_WEEKS:
+        for team in SUPPORTED_TEAMS:
+            team_rows.append(
+                {
+                    "team": team,
+                    "season": SUPPORTED_SEASON,
+                    "week": week,
+                    "attempts": 31 + week,
+                    "carries": 22 + week,
+                    "total_points": 24 + week,
+                    "passing_air_yards": 180 + week,
+                }
+            )
+
+    selected_teams = builder._select_team_records(team_rows)
+
+    assert all(record["team_pass_attempts"] > 0 for record in selected_teams)
+    assert all(record["team_rush_attempts"] > 0 for record in selected_teams)
+    assert all(record["team_points"] > 0 for record in selected_teams)
+    assert all(record["team_air_yards"] > 0 for record in selected_teams)
+
+    first_row = selected_teams[0]
+    assert first_row["week"] == 1
+    assert first_row["team"] == "ATL"
+    assert first_row["team_pass_attempts"] == 32
+    assert first_row["team_rush_attempts"] == 23
+    assert first_row["team_points"] == 25
+    assert first_row["team_air_yards"] == 181
