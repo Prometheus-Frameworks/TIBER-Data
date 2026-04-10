@@ -148,6 +148,9 @@ This is a reproducible source-backed scaffold only and does **not** replace the 
 
 Details: `docs/data/forge-weekly-upstream-support-scaffold.md`.
 
+For the committed proof/reference specimen lane and deliberate refresh workflow, see:
+`docs/data/forge-weekly-upstream-proof-reference-snapshot.md`.
+
 ## Downstream usage
 
 Downstream repos should import the top-level exports and validate their payloads before persisting or consuming them.

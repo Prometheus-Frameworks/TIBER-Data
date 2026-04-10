@@ -48,3 +48,10 @@ Current derived artifact slices:
   - transformation path intentionally reuses the same skill derived logic as the legacy lane; only support provenance differs
   - fail-closed behavior: generation errors if upstream scaffold support is missing/incomplete for W1–W3
   - intended use: side-by-side derived-row sanity checks (for example Amon-Ra St. Brown across W1–W3), **not** full migration
+
+- committed proof/reference snapshot derived artifacts (stable review baseline lane):
+  - `forge_weekly_player_input_2024_w01.skill_upstream_public_w01_w03_8player_scaffold.proof_reference_snapshot.derived.json`
+  - `forge_weekly_player_input_2024_w02.skill_upstream_public_w01_w03_8player_scaffold.proof_reference_snapshot.derived.json`
+  - `forge_weekly_player_input_2024_w03.skill_upstream_public_w01_w03_8player_scaffold.proof_reference_snapshot.derived.json`
+  - promotion flow is manual via `scripts/promote_forge_weekly_upstream_proof_snapshot.py`
+  - this snapshot lane preserves a bounded in-repo specimen for audit/review; it does **not** replace legacy or imply broader coverage

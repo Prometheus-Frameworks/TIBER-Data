@@ -99,6 +99,7 @@ This comparison lane is for human visual sanity checks only and is **not** a ful
 
 For the current proof slice identity-truth pass, see:
 - `docs/data/forge-weekly-proof-cohort-identity-audit-2024-w01-w03.md`
+- `docs/data/forge-weekly-upstream-proof-reference-snapshot.md` (committed snapshot lane + manual refresh flow)
 
 ## What remains before migration
 

@@ -77,6 +77,7 @@ Upstream team mapping used by scaffold builder:
 ## Unresolved items that block final closure
 
 1. Commit or reproducibly generate the upstream W1–W3 scaffold raw artifacts in-repo for this environment.
+   - manual promotion path now documented/scripted via `scripts/promote_forge_weekly_upstream_proof_snapshot.py`
 2. Capture a persistent row-level diff table for the 8-player cohort + ATL/DET team rows, with per-field delta counts.
 3. Re-check residuals after those artifacts are present to separate:
    - confirmed source-semantic deltas
