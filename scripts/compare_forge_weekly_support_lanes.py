@@ -86,8 +86,14 @@ def _compare_players(
     filtered_legacy = _player_filter(legacy_records, player_id=player_id, player_name=player_name)
     filtered_upstream = _player_filter(upstream_records, player_id=player_id, player_name=player_name)
 
-    legacy_by_key = {(int(row["week"]), str(row["player_id"])): row for row in filtered_legacy}
-    upstream_by_key = {(int(row["week"]), str(row["player_id"])): row for row in filtered_upstream}
+    legacy_by_key = {
+        (int(row["week"]), str(row.get("full_name", "")).strip().lower(), str(row.get("team", ""))): row
+        for row in filtered_legacy
+    }
+    upstream_by_key = {
+        (int(row["week"]), str(row.get("full_name", "")).strip().lower(), str(row.get("team", ""))): row
+        for row in filtered_upstream
+    }
 
     print("\n=== Player lane comparison (legacy offline fixture vs upstream scaffold) ===")
     if player_id or player_name:
@@ -98,15 +104,22 @@ def _compare_players(
         print("No player rows matched filters in supported 2024 W1-W3 slice.")
         return
 
-    for week, resolved_player_id in keys:
-        legacy = legacy_by_key.get((week, resolved_player_id))
-        upstream = upstream_by_key.get((week, resolved_player_id))
-        player_name_value = (
-            str((legacy or upstream or {}).get("full_name", "unknown"))
-            if (legacy or upstream)
-            else "unknown"
+    for week, normalized_name, team in keys:
+        legacy = legacy_by_key.get((week, normalized_name, team))
+        upstream = upstream_by_key.get((week, normalized_name, team))
+        ref = legacy or upstream or {}
+        player_name_value = str(ref.get("full_name", "unknown"))
+        legacy_player_id = "-" if legacy is None else str(legacy.get("player_id", "-"))
+        upstream_player_id = "-" if upstream is None else str(upstream.get("player_id", "-"))
+        identity_status = (
+            "id_mismatch"
+            if legacy is not None and upstream is not None and legacy_player_id != upstream_player_id
+            else "id_match_or_missing_lane"
         )
-        print(f"\nW{week} | {player_name_value} ({resolved_player_id})")
+        print(
+            f"\nW{week} | {player_name_value} ({team}) | "
+            f"legacy_id={legacy_player_id} | upstream_id={upstream_player_id} | {identity_status}"
+        )
         _print_field_block("player_metrics", legacy, upstream, PLAYER_FIELDS)
 
 

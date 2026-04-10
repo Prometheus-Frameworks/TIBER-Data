@@ -97,6 +97,9 @@ python scripts/compare_forge_weekly_derived_lanes.py --player-id 00-0037834
 
 This comparison lane is for human visual sanity checks only and is **not** a full migration path.
 
+For the current proof slice identity-truth pass, see:
+- `docs/data/forge-weekly-proof-cohort-identity-audit-2024-w01-w03.md`
+
 ## What remains before migration
 
 Before replacing legacy support for broader weekly exports, the repo still needs:
