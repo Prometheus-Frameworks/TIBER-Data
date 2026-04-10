@@ -92,8 +92,14 @@ def compare_derived_rows(
     filtered_legacy = _filter_records(legacy_rows, player_id=player_id, player_name=player_name)
     filtered_upstream = _filter_records(upstream_rows, player_id=player_id, player_name=player_name)
 
-    legacy_by_key = {(int(row["week"]), str(row["playerId"])): row for row in filtered_legacy}
-    upstream_by_key = {(int(row["week"]), str(row["playerId"])): row for row in filtered_upstream}
+    legacy_by_key = {
+        (int(row["week"]), str(row.get("playerName", "")).strip().lower(), str(row.get("team", ""))): row
+        for row in filtered_legacy
+    }
+    upstream_by_key = {
+        (int(row["week"]), str(row.get("playerName", "")).strip().lower(), str(row.get("team", ""))): row
+        for row in filtered_upstream
+    }
 
     keys = sorted(set(legacy_by_key) | set(upstream_by_key))
 
@@ -105,13 +111,21 @@ def compare_derived_rows(
         print("No derived rows matched filters in supported 2024 W1-W3 slice.")
         return
 
-    for week, pid in keys:
-        legacy = legacy_by_key.get((week, pid))
-        upstream = upstream_by_key.get((week, pid))
+    for week, normalized_name, team in keys:
+        legacy = legacy_by_key.get((week, normalized_name, team))
+        upstream = upstream_by_key.get((week, normalized_name, team))
         ref = legacy or upstream or {}
+        legacy_player_id = "-" if legacy is None else str(legacy.get("playerId", "-"))
+        upstream_player_id = "-" if upstream is None else str(upstream.get("playerId", "-"))
+        identity_status = (
+            "id_mismatch"
+            if legacy is not None and upstream is not None and legacy_player_id != upstream_player_id
+            else "id_match_or_missing_lane"
+        )
         print(
-            f"\nW{week} | {ref.get('playerName', 'unknown')} ({pid}) | "
-            f"{ref.get('position', 'unknown')} {ref.get('team', 'unknown')}"
+            f"\nW{week} | {ref.get('playerName', 'unknown')} ({team}) | "
+            f"{ref.get('position', 'unknown')} | "
+            f"legacy_id={legacy_player_id} | upstream_id={upstream_player_id} | {identity_status}"
         )
         for field in ("week", "playerName", "position", "team", *DISPLAY_FIELDS):
             _print_row_block(field, legacy, upstream)

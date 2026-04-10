@@ -3,9 +3,12 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.compare_forge_weekly_support_lanes import _player_filter
+from scripts.compare_forge_weekly_support_lanes import _compare_players
 from src.ingest.forge_weekly_upstream_support_scaffold import SUPPORTED_WEEKS
 
 
@@ -33,3 +36,29 @@ def test_player_filter_supports_player_id_focus() -> None:
 
     assert len(rows) == 1
     assert rows[0]["full_name"] == "Amon-Ra St. Brown"
+
+
+def test_compare_players_marks_identity_mismatch(capsys: pytest.CaptureFixture[str]) -> None:
+    legacy = [
+        {
+            "player_id": "00-0037834",
+            "full_name": "Amon-Ra St. Brown",
+            "team": "DET",
+            "season": 2024,
+            "week": 1,
+        }
+    ]
+    upstream = [
+        {
+            "player_id": "00-0036963",
+            "full_name": "Amon-Ra St. Brown",
+            "team": "DET",
+            "season": 2024,
+            "week": 1,
+        }
+    ]
+    _compare_players(legacy, upstream, player_id=None, player_name="Amon-Ra St. Brown")
+    out = capsys.readouterr().out
+    assert "legacy_id=00-0037834" in out
+    assert "upstream_id=00-0036963" in out
+    assert "id_mismatch" in out
