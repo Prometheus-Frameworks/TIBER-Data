@@ -1,6 +1,6 @@
 # FORGE upstream proof/reference snapshot lane (2024 W1–W3 ATL/DET)
 
-This document defines the **committed proof/reference specimen lane** for the existing upstream-backed FORGE proof slice.
+This document defines the **proof/reference specimen lane** for the existing upstream-backed FORGE proof slice.
 
 ## Scope (strict)
 
@@ -23,7 +23,7 @@ This lane is intentionally narrow and does **not** imply:
 - Live upstream scaffold generation lane (unchanged):
   - `data/raw/forge/*.upstream_public_2024_w01_w03_*_scaffold.json`
   - `data/gold/forge/*.skill_upstream_public_w01_w03_8player_scaffold.derived.json`
-- Committed proof/reference snapshot lane (new baseline location):
+- Committed proof/reference snapshot lane (target baseline location):
   - `data/raw/forge/*.proof_reference_snapshot.json`
   - `data/gold/forge/*.proof_reference_snapshot.derived.json`
   - `data/forge_weekly_upstream_w01_w03_atl_det_proof_reference_snapshot_manifest.json`
@@ -40,6 +40,8 @@ python scripts/promote_forge_weekly_upstream_proof_snapshot.py --captured-at "20
 ```
 
 3. Review resulting snapshot + manifest diffs before commit.
+
+Until those promoted files are committed, the lane should be treated as defined-but-unpopulated.
 
 Refresh is manual by design (no auto-refresh in CI).
 
