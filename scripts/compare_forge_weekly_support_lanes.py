@@ -76,6 +76,20 @@ def _print_field_block(label: str, legacy: dict[str, Any] | None, upstream: dict
         print(f"  {field:20} legacy={str(legacy_value):>8} | upstream={str(upstream_value):>8}")
 
 
+def _mismatch_fields(
+    legacy: dict[str, Any] | None,
+    upstream: dict[str, Any] | None,
+    fields: tuple[str, ...],
+) -> list[str]:
+    if legacy is None or upstream is None:
+        return []
+    mismatched: list[str] = []
+    for field in fields:
+        if legacy.get(field) != upstream.get(field):
+            mismatched.append(field)
+    return mismatched
+
+
 def _compare_players(
     legacy_records: list[dict[str, Any]],
     upstream_records: list[dict[str, Any]],
@@ -104,6 +118,11 @@ def _compare_players(
         print("No player rows matched filters in supported 2024 W1-W3 slice.")
         return
 
+    compared_rows = 0
+    id_mismatch_rows = 0
+    value_mismatch_rows = 0
+    mismatched_field_total = 0
+
     for week, normalized_name, team in keys:
         legacy = legacy_by_key.get((week, normalized_name, team))
         upstream = upstream_by_key.get((week, normalized_name, team))
@@ -116,11 +135,31 @@ def _compare_players(
             if legacy is not None and upstream is not None and legacy_player_id != upstream_player_id
             else "id_match_or_missing_lane"
         )
+        field_mismatches = _mismatch_fields(legacy, upstream, PLAYER_FIELDS)
+        row_status = "value_mismatch" if field_mismatches else "value_match_or_missing_lane"
         print(
             f"\nW{week} | {player_name_value} ({team}) | "
-            f"legacy_id={legacy_player_id} | upstream_id={upstream_player_id} | {identity_status}"
+            f"legacy_id={legacy_player_id} | upstream_id={upstream_player_id} | {identity_status} | {row_status}"
         )
         _print_field_block("player_metrics", legacy, upstream, PLAYER_FIELDS)
+        if field_mismatches:
+            print(f"  mismatched_fields: {', '.join(field_mismatches)}")
+
+        if legacy is not None and upstream is not None:
+            compared_rows += 1
+            if legacy_player_id != upstream_player_id:
+                id_mismatch_rows += 1
+            if field_mismatches:
+                value_mismatch_rows += 1
+                mismatched_field_total += len(field_mismatches)
+
+    print(
+        "\nPlayer summary: "
+        f"paired_rows={compared_rows}, "
+        f"id_mismatch_rows={id_mismatch_rows}, "
+        f"value_mismatch_rows={value_mismatch_rows}, "
+        f"mismatched_field_total={mismatched_field_total}"
+    )
 
 
 def _compare_teams(legacy_records: list[dict[str, Any]], upstream_records: list[dict[str, Any]]) -> None:
@@ -136,11 +175,30 @@ def _compare_teams(legacy_records: list[dict[str, Any]], upstream_records: list[
         print("No team rows found in supported 2024 W1-W3 slice.")
         return
 
+    compared_rows = 0
+    value_mismatch_rows = 0
+    mismatched_field_total = 0
+
     for week, team in keys:
         legacy = legacy_by_key.get((week, team))
         upstream = upstream_by_key.get((week, team))
         print(f"\nW{week} | {team}")
         _print_field_block("team_metrics", legacy, upstream, TEAM_FIELDS)
+        field_mismatches = _mismatch_fields(legacy, upstream, TEAM_FIELDS)
+        if field_mismatches:
+            print(f"  mismatched_fields: {', '.join(field_mismatches)}")
+        if legacy is not None and upstream is not None:
+            compared_rows += 1
+            if field_mismatches:
+                value_mismatch_rows += 1
+                mismatched_field_total += len(field_mismatches)
+
+    print(
+        "\nTeam summary: "
+        f"paired_rows={compared_rows}, "
+        f"value_mismatch_rows={value_mismatch_rows}, "
+        f"mismatched_field_total={mismatched_field_total}"
+    )
 
 
 def main() -> None:
