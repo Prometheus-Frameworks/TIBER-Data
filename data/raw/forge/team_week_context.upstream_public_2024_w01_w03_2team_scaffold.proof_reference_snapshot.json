@@ -1,0 +1,60 @@
+{
+  "provenance": "nflreadpy_or_direct_public_source",
+  "source_path": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2024.parquet",
+  "records": [
+    {
+      "team": "ATL",
+      "season": 2024,
+      "week": 1,
+      "team_pass_attempts": 26,
+      "team_rush_attempts": 22,
+      "team_points": 0,
+      "team_air_yards": 140
+    },
+    {
+      "team": "DET",
+      "season": 2024,
+      "week": 1,
+      "team_pass_attempts": 28,
+      "team_rush_attempts": 31,
+      "team_points": 0,
+      "team_air_yards": 187
+    },
+    {
+      "team": "ATL",
+      "season": 2024,
+      "week": 2,
+      "team_pass_attempts": 29,
+      "team_rush_attempts": 28,
+      "team_points": 0,
+      "team_air_yards": 235
+    },
+    {
+      "team": "DET",
+      "season": 2024,
+      "week": 2,
+      "team_pass_attempts": 56,
+      "team_rush_attempts": 27,
+      "team_points": 0,
+      "team_air_yards": 380
+    },
+    {
+      "team": "ATL",
+      "season": 2024,
+      "week": 3,
+      "team_pass_attempts": 29,
+      "team_rush_attempts": 25,
+      "team_points": 0,
+      "team_air_yards": 163
+    },
+    {
+      "team": "DET",
+      "season": 2024,
+      "week": 3,
+      "team_pass_attempts": 23,
+      "team_rush_attempts": 43,
+      "team_points": 0,
+      "team_air_yards": 179
+    }
+  ]
+}

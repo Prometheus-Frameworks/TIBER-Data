@@ -1,0 +1,15 @@
+{
+  "snapshot_id": "forge_weekly_upstream_public_2024_w01_w03_atl_det_proof_reference",
+  "captured_at": "2026-04-10T00:00:00Z",
+  "scope": {
+    "season": 2024,
+    "weeks": [1, 2, 3],
+    "teams": ["ATL", "DET"],
+    "cohort": "fixed_8_player_proof_slice"
+  },
+  "notes": [
+    "Committed proof/reference specimen captured from the upstream-backed scaffold lane.",
+    "Not a legacy-lane replacement and not full-season coverage.",
+    "Refreshing this snapshot is deliberate/manual."
+  ]
+}
