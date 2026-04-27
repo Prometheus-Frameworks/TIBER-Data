@@ -151,6 +151,6 @@ Taste creates hypotheses. Evidence tests hypotheses. Promotion gates trust. ML c
 
 ## Current next action
 
-Create `docs/governance/tiber-intelligence-evolution-roadmap.md` in TIBER-Data and link it from `README.md`.
+Begin Phase 1 — Historical Rookie Replay v0. Define the 2025 rookie replay cohort and contract shape for comparing pre-draft grades, post-draft context, weekly PPR outcomes, role materialization, and startability/spike/bust outcomes.
 
 Issue #40 remains the live checklist and PR tracker.
