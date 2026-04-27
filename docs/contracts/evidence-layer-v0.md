@@ -7,7 +7,6 @@ Scope in this PR is documentation-level contract specification only.
 ## Canonical artifact targets
 
 - `exports/promoted/nfl/player_weekly_ppr_outcomes_v1.json`
-- `exports/promoted/nfl/player_weekly_usage_v1.json`
 - `exports/promoted/nfl/team_offense_summary_v1.json`
 - `exports/promoted/nfl/team_pace_pass_environment_v1.json`
 - `exports/promoted/nfl/roster_player_team_map_v1.json`
@@ -51,6 +50,35 @@ Minimum row fields:
 - `source`
 - `generated_at`
 
+## `player_weekly_usage_v1`
+
+Canonical file: `exports/promoted/nfl/player_weekly_usage_v1.json`
+
+Minimum row fields:
+
+- `season`
+- `week`
+- `player_id`
+- `player_name`
+- `team`
+- `position`
+- `opponent`
+- `targets`
+- `receptions`
+- `routes_run`
+- `route_participation`
+- `target_share`
+- `air_yards`
+- `air_yards_share`
+- `rushing_attempts`
+- `team_rushing_attempts`
+- `rush_share`
+- `red_zone_targets`
+- `red_zone_carries`
+- `snap_share`
+- `source`
+- `generated_at`
+
 ## `team_pace_pass_environment_v1`
 
 Canonical file: `exports/promoted/nfl/team_pace_pass_environment_v1.json`
@@ -91,7 +119,6 @@ Minimum row fields:
 
 The following artifacts are in-scope for Evidence Layer v0 governance, with field-level schemas to be frozen in follow-on contract revisions:
 
-- `exports/promoted/nfl/player_weekly_usage_v1.json`
 - `exports/promoted/nfl/team_offense_summary_v1.json`
 - `exports/promoted/nfl/roster_player_team_map_v1.json`
 
