@@ -31,6 +31,12 @@ const rawOutcomeRecordSchema = z.object({
   interceptions: z.number().nonnegative().nullable(),
 });
 
+const rawOutcomePayloadSchema = z.object({
+  provenance: z.string().min(1),
+  source_path: z.string().min(1),
+  records: z.array(rawOutcomeRecordSchema),
+});
+
 const promotedOutcomeRecordSchema = z.object({
   season: z.number().int().nonnegative(),
   week: z.number().int().positive(),
@@ -76,10 +82,21 @@ export type PlayerWeeklyPprOutcomesBuildOptions = {
   generatedAt?: string;
 };
 
-function parseRawPayload(sourcePath: string): RawExportPayload<unknown> {
+function parseRawPayload(sourcePath: string): RawExportPayload<z.infer<typeof rawOutcomeRecordSchema>> {
   const resolvedPath = path.resolve(sourcePath);
   const raw = readFileSync(resolvedPath, 'utf-8');
-  return JSON.parse(raw) as RawExportPayload<unknown>;
+  return rawOutcomePayloadSchema.parse(JSON.parse(raw));
+}
+
+function assertNoDuplicatePlayerWeeks(rows: z.infer<typeof rawOutcomeRecordSchema>[]): void {
+  const seen = new Set<string>();
+  for (const row of rows) {
+    const key = `${row.season}-${row.week}-${row.player_id}`;
+    if (seen.has(key)) {
+      throw new Error(`Duplicate player-week row detected (${key}). Export fails closed.`);
+    }
+    seen.add(key);
+  }
 }
 
 function toNumberOrZero(value: number | null): number {
@@ -135,9 +152,9 @@ export function buildPlayerWeeklyPprOutcomesV1FromRawSources(
   z.string().datetime({ offset: true }).parse(generatedAt);
 
   const payload = parseRawPayload(sourcePath);
-  const parsedRows = z.array(rawOutcomeRecordSchema).parse(payload.records);
+  assertNoDuplicatePlayerWeeks(payload.records);
 
-  const seasonRows = parsedRows.filter((row) => row.season === season);
+  const seasonRows = payload.records.filter((row) => row.season === season);
   if (seasonRows.length === 0) {
     throw new Error(`No player weekly outcome rows found for season=${season}. Export fails closed.`);
   }

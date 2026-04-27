@@ -10,6 +10,8 @@ Canonical promoted artifact target:
 - season: `2025`
 - source lane: repo-held offline fixture support only
 
+- committed artifact coverage is scaffold-only fixture data and does not represent full real 2025 season coverage.
+
 This v1 lane is intentionally bounded to deterministic fixture-backed generation until a governed, reproducible historical source lane is promoted.
 
 ## Source currently used

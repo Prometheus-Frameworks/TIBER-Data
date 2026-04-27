@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   PLAYER_WEEKLY_PPR_OUTCOMES_V1_ARTIFACT_PATH,
+  PLAYER_WEEKLY_PPR_OUTCOMES_V1_SOURCE_PATH,
   buildPlayerWeeklyPprOutcomesV1FromRawSources,
   calculatePprPoints,
   toDeterministicPlayerWeeklyPprOutcomesV1Json,
@@ -59,5 +60,40 @@ describe('player weekly ppr outcomes v1 artifact export', () => {
 
   it('fails closed for unsupported mode', () => {
     expect(() => buildPlayerWeeklyPprOutcomesV1FromRawSources({ mode: 'live_weekly_refresh' })).toThrow();
+  });
+
+  it('fails closed when provenance is missing from raw payload wrapper', () => {
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'player-weekly-ppr-outcomes-wrapper-'));
+    const source = JSON.parse(readFileSync(path.resolve(PLAYER_WEEKLY_PPR_OUTCOMES_V1_SOURCE_PATH), 'utf-8'));
+    delete source.provenance;
+
+    const invalidPath = path.join(tempRoot, 'missing-provenance.json');
+    writeFileSync(invalidPath, JSON.stringify(source, null, 2), 'utf-8');
+
+    expect(() => buildPlayerWeeklyPprOutcomesV1FromRawSources({ sourcePath: invalidPath })).toThrow();
+  });
+
+  it('fails closed when source_path is missing from raw payload wrapper', () => {
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'player-weekly-ppr-outcomes-wrapper-'));
+    const source = JSON.parse(readFileSync(path.resolve(PLAYER_WEEKLY_PPR_OUTCOMES_V1_SOURCE_PATH), 'utf-8'));
+    delete source.source_path;
+
+    const invalidPath = path.join(tempRoot, 'missing-source-path.json');
+    writeFileSync(invalidPath, JSON.stringify(source, null, 2), 'utf-8');
+
+    expect(() => buildPlayerWeeklyPprOutcomesV1FromRawSources({ sourcePath: invalidPath })).toThrow();
+  });
+
+  it('fails closed when duplicate player-week rows are present', () => {
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'player-weekly-ppr-outcomes-duplicates-'));
+    const source = JSON.parse(readFileSync(path.resolve(PLAYER_WEEKLY_PPR_OUTCOMES_V1_SOURCE_PATH), 'utf-8'));
+    source.records.push({ ...source.records[0] });
+
+    const invalidPath = path.join(tempRoot, 'duplicate-player-week.json');
+    writeFileSync(invalidPath, JSON.stringify(source, null, 2), 'utf-8');
+
+    expect(() => buildPlayerWeeklyPprOutcomesV1FromRawSources({ sourcePath: invalidPath })).toThrow(
+      'Duplicate player-week row detected',
+    );
   });
 });
