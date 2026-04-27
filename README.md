@@ -26,6 +26,8 @@ Canonical architecture governance documents:
 - [TIBER Evidence Layer v0](docs/governance/evidence-layer-v0.md)
 - [TIBER Intelligence Evolution Roadmap](docs/governance/tiber-intelligence-evolution-roadmap.md)
 - [Evidence Layer v0 Contract Shapes](docs/contracts/evidence-layer-v0.md)
+- [Historical Rookie Replay v0 Governance](docs/governance/historical-rookie-replay-v0.md)
+- [Historical Rookie Replay v0 Contract](docs/contracts/history-rookie-replay-v0.md)
 
 ## What this repo is for
 
