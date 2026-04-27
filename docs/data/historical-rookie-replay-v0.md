@@ -43,6 +43,12 @@ This artifact is designed to be contract-compatible with Evidence Layer lanes in
 
 In this first v0 scaffold, replay rows are fixture-backed and bounded; they do not attempt to claim complete 2025 joins across those artifacts.
 
+
+## Grade scale
+
+- `pre_draft_grade` in this v0 scaffold uses a **0-100** scale to match standard TIBER rookie/alpha conventions.
+- Current fixture values are bounded scaffold inputs, but they should be interpreted on the same 0-100 axis used across TIBER surfaces.
+
 ## Deterministic metric definitions
 
 From each row's `actual_weekly_ppr` ordered numeric array:

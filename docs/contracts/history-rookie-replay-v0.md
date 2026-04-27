@@ -85,6 +85,7 @@ Each row in `historical_rookie_replay_v0.json` must include:
 
 - `archetype_label`: replay-side label representing the evaluated rookie archetype in-season.
 - `archetype_comp_2026`: forward-looking comp anchor used for 2026 archetype mapping comparison.
+- `pre_draft_grade`: numeric pre-draft evaluation on a 0-100 scale for v0 artifacts.
 - `post_draft_context_tags`: bounded list of context tags that affected expectation quality.
 - `actual_weekly_ppr`: ordered weekly PPR series for the replay season, scoped only to supported weeks.
 - `weekly_volatility`: deterministic volatility measure derived from `actual_weekly_ppr`.
