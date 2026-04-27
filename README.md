@@ -24,6 +24,7 @@ Canonical architecture governance documents:
 - [TIBER Architecture Document v1.0](docs/governance/architecture/tiber-architecture-document-v1.0.md)
 - [TIBER Architecture Quick Reference v1.0](docs/governance/architecture/tiber-architecture-quick-reference-v1.0.md)
 - [TIBER Evidence Layer v0](docs/governance/evidence-layer-v0.md)
+- [TIBER Intelligence Evolution Roadmap](docs/governance/tiber-intelligence-evolution-roadmap.md)
 - [Evidence Layer v0 Contract Shapes](docs/contracts/evidence-layer-v0.md)
 
 ## What this repo is for
