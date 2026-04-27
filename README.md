@@ -288,3 +288,25 @@ npm run export:player-weekly-usage-v1
 ```
 
 Details: `docs/data/player-weekly-usage-v1.md`.
+
+
+## Historical Rookie Replay v0 (historical backtest scaffold)
+
+TIBER-Data now includes the first deterministic Historical Rookie Replay scaffold builder for:
+
+- `exports/promoted/rookie-replay/historical_rookie_replay_v0.json`
+
+Current bounded scope:
+
+- replay season `2025`
+- mode `historical_backtest` only
+- repo-held offline fixture scaffold only
+- small bounded cohort only
+
+Regenerate with:
+
+```bash
+npm run export:historical-rookie-replay-v0
+```
+
+Details: `docs/data/historical-rookie-replay-v0.md`.

@@ -23,7 +23,8 @@
     "export:forge-weekly-derived": "npm run build && node scripts/export_forge_weekly_input_derived.mjs",
     "export:forge-weekly-derived-upstream-scaffold": "npm run build && node scripts/export_forge_weekly_input_derived_upstream_scaffold.mjs",
     "export:player-weekly-ppr-outcomes-v1": "npm run build && node scripts/export_player_weekly_ppr_outcomes_v1.mjs",
-    "export:player-weekly-usage-v1": "npm run build && node scripts/export_player_weekly_usage_v1.mjs"
+    "export:player-weekly-usage-v1": "npm run build && node scripts/export_player_weekly_usage_v1.mjs",
+    "export:historical-rookie-replay-v0": "npm run build && node scripts/export_historical_rookie_replay_v0.mjs"
   },
   "dependencies": {
     "zod": "^3.23.8"
