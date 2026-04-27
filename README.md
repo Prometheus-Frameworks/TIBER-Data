@@ -268,3 +268,23 @@ npm run export:player-weekly-ppr-outcomes-v1
 ```
 
 Details: `docs/data/player-weekly-ppr-outcomes-v1.md`.
+
+## Evidence Layer: player weekly usage v1 (historical backtest scaffold)
+
+TIBER-Data now includes a deterministic Evidence Layer usage builder for:
+
+- `exports/promoted/nfl/player_weekly_usage_v1.json`
+
+Current bounded scope:
+
+- season `2025`
+- mode `historical_backtest` only
+- repo-held offline fixture source lane only
+
+Regenerate with:
+
+```bash
+npm run export:player-weekly-usage-v1
+```
+
+Details: `docs/data/player-weekly-usage-v1.md`.
