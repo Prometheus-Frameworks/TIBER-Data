@@ -247,3 +247,24 @@ Ingestion is **fail-closed**: artifacts must be directly read from TIBER-Rookies
 ## Existing data pipeline
 
 The Python ETL and read-only API remain in this repository for producing deterministic raw, silver, and gold datasets. The contract work introduced here is designed to sit alongside that pipeline and provide a cleaner handoff boundary for downstream consumers.
+
+
+## Evidence Layer: player weekly PPR outcomes v1 (historical backtest scaffold)
+
+TIBER-Data now includes the first deterministic Evidence Layer builder for:
+
+- `exports/promoted/nfl/player_weekly_ppr_outcomes_v1.json`
+
+Current bounded scope:
+
+- season `2025`
+- mode `historical_backtest` only
+- repo-held offline fixture source lane only
+
+Regenerate with:
+
+```bash
+npm run export:player-weekly-ppr-outcomes-v1
+```
+
+Details: `docs/data/player-weekly-ppr-outcomes-v1.md`.
