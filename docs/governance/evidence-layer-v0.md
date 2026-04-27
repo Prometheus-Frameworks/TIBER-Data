@@ -92,7 +92,33 @@ A claim is **not** promotable when status is:
 
 No claim is promoted solely because it appears plausible to an operator.
 
-## 8) Non-goals (v0)
+
+## 8) Historical validation / replay doctrine
+
+Before Evidence Layer artifacts are trusted for live weekly tracking, the same builders should support historical replay against the most recent completed NFL season.
+
+For 2026 development, **2025** is the initial validation season.
+
+Backtest goals:
+
+- reproduce weekly player PPR totals,
+- reproduce season-long player PPR totals,
+- generate team pace/pass/target-share summaries,
+- validate role-to-fantasy baselines against completed outcomes,
+- compare operator claim statuses against known completed outcomes.
+
+Supported modes:
+
+- `historical_backtest`
+- `live_weekly_refresh`
+
+Rule:
+
+No live evidence artifact should be promoted until the same artifact family can produce valid historical outputs for the most recent completed season.
+
+This keeps the Evidence Layer honest: **2025 proves the pipeline, 2026 uses the pipeline**.
+
+## 9) Non-goals (v0)
 
 Evidence Layer v0 does **not**:
 
