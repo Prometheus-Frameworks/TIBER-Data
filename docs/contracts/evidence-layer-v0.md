@@ -82,6 +82,7 @@ Minimum row fields:
 - `head_coach`
 - `offensive_coordinator`
 - `play_caller`
+- `source`
 - `source_status`
 - `notes`
 - `generated_at`
