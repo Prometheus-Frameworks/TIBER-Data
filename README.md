@@ -330,6 +330,27 @@ npm run export:team-offense-summary-v1
 Details: `docs/data/team-offense-summary-v1.md`.
 
 
+## Evidence Layer: roster player/team map v1 (historical backtest scaffold)
+
+TIBER-Data now includes a deterministic Evidence Layer identity mapping builder for:
+
+- `exports/promoted/nfl/roster_player_team_map_v1.json`
+
+Current bounded scope:
+
+- season `2025`
+- mode `historical_backtest` only
+- repo-held offline fixture scaffold lane only
+- small bounded cohort only (not full real 2025 roster coverage)
+
+Regenerate with:
+
+```bash
+npm run export:roster-player-team-map-v1
+```
+
+Details: `docs/data/roster-player-team-map-v1.md`.
+
 ## Historical Rookie Replay v0 (historical backtest scaffold)
 
 TIBER-Data now includes the first deterministic Historical Rookie Replay scaffold builder for:
