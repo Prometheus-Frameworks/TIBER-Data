@@ -87,6 +87,29 @@ describe('team pace/pass environment v1 artifact export', () => {
     expect(() => buildTeamPacePassEnvironmentV1FromRawSources({ mode: 'live_weekly_refresh' })).toThrow();
   });
 
+  it('allows negative pass_rate_over_expected values in signed delta bounds', () => {
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'team-pace-pass-environment-proe-negative-'));
+    const source = JSON.parse(readFileSync(path.resolve(TEAM_PACE_PASS_ENVIRONMENT_V1_SOURCE_PATH), 'utf-8'));
+    source.records[0].pass_rate_over_expected = -0.031;
+
+    const validPath = path.join(tempRoot, 'proe-negative.json');
+    writeFileSync(validPath, JSON.stringify(source, null, 2), 'utf-8');
+
+    const artifact = buildTeamPacePassEnvironmentV1FromRawSources({ sourcePath: validPath });
+    expect(artifact.find((row) => row.team === 'ARI')?.pass_rate_over_expected).toBe(-0.031);
+  });
+
+  it('fails closed when pass_rate_over_expected is outside -1..1 bounds', () => {
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'team-pace-pass-environment-proe-bounds-'));
+    const source = JSON.parse(readFileSync(path.resolve(TEAM_PACE_PASS_ENVIRONMENT_V1_SOURCE_PATH), 'utf-8'));
+    source.records[0].pass_rate_over_expected = -1.1;
+
+    const invalidPath = path.join(tempRoot, 'proe-out-of-bounds.json');
+    writeFileSync(invalidPath, JSON.stringify(source, null, 2), 'utf-8');
+
+    expect(() => buildTeamPacePassEnvironmentV1FromRawSources({ sourcePath: invalidPath })).toThrow();
+  });
+
   it('fails closed when rate/share fields are outside 0..1 bounds', () => {
     const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'team-pace-pass-environment-rate-bounds-'));
     const source = JSON.parse(readFileSync(path.resolve(TEAM_PACE_PASS_ENVIRONMENT_V1_SOURCE_PATH), 'utf-8'));

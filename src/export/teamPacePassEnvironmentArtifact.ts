@@ -12,13 +12,14 @@ type RawExportPayload<T> = {
 const exportModeSchema = z.literal('historical_backtest');
 
 const rateFieldSchema = z.number().min(0).max(1);
+const proeDeltaFieldSchema = z.number().min(-1).max(1);
 
 const rawTeamPacePassEnvironmentRecordSchema = z.object({
   season: z.number().int().nonnegative(),
   team: z.string().min(1),
   plays_per_game: z.number().nonnegative(),
   neutral_pass_rate: rateFieldSchema,
-  pass_rate_over_expected: rateFieldSchema.nullable(),
+  pass_rate_over_expected: proeDeltaFieldSchema.nullable(),
   dropbacks_per_game: z.number().nonnegative(),
   seconds_per_snap: z.number().positive().nullable(),
   red_zone_pass_rate: rateFieldSchema,

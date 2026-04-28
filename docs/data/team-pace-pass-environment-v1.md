@@ -54,13 +54,15 @@ This scaffold is for bounded evidence inspection only. It does not alter replay 
 - export fails closed on duplicate `season/team`
 - unsupported mode fails closed (`historical_backtest` only)
 - export fails closed when no rows are available for requested season
-- all rate/share fields must be in `0..1` when non-null:
+- rate/share fields must be in `0..1` when non-null:
   - `neutral_pass_rate`
-  - `pass_rate_over_expected`
   - `red_zone_pass_rate`
   - `wr_target_share`
   - `te_target_share`
   - `rb_target_share`
+- `pass_rate_over_expected` is a signed decimal delta bounded to `-1..1` when non-null:
+  - `+0.022` = 2.2 percentage points above expected
+  - `-0.031` = 3.1 percentage points below expected
 
 ## Null handling policy for this scaffold
 
