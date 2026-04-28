@@ -1,0 +1,50 @@
+[
+  {
+    "season": 2025,
+    "team": "ARI",
+    "points_per_game": 22.7,
+    "yards_per_play": 5.5,
+    "offensive_plays_per_game": 63.2,
+    "touchdowns_per_game": 2.5,
+    "scoring_drive_rate": 0.392,
+    "turnover_rate": 0.119,
+    "offensive_epa_per_play": 0.054,
+    "offensive_success_rate": 0.468,
+    "red_zone_td_rate": 0.571,
+    "third_down_conversion_rate": 0.418,
+    "source": "offline_fixture:data/raw/evidence/team_offense_summary_2025.offline_fixture.json",
+    "generated_at": "2026-04-28T00:00:00Z"
+  },
+  {
+    "season": 2025,
+    "team": "LV",
+    "points_per_game": 19.6,
+    "yards_per_play": 5.1,
+    "offensive_plays_per_game": 60.1,
+    "touchdowns_per_game": 2,
+    "scoring_drive_rate": null,
+    "turnover_rate": 0.138,
+    "offensive_epa_per_play": -0.071,
+    "offensive_success_rate": null,
+    "red_zone_td_rate": null,
+    "third_down_conversion_rate": 0.387,
+    "source": "offline_fixture:data/raw/evidence/team_offense_summary_2025.offline_fixture.json",
+    "generated_at": "2026-04-28T00:00:00Z"
+  },
+  {
+    "season": 2025,
+    "team": "TB",
+    "points_per_game": 27.4,
+    "yards_per_play": 6,
+    "offensive_plays_per_game": 64.5,
+    "touchdowns_per_game": 3.1,
+    "scoring_drive_rate": 0.437,
+    "turnover_rate": 0.101,
+    "offensive_epa_per_play": null,
+    "offensive_success_rate": 0.504,
+    "red_zone_td_rate": 0.634,
+    "third_down_conversion_rate": null,
+    "source": "offline_fixture:data/raw/evidence/team_offense_summary_2025.offline_fixture.json",
+    "generated_at": "2026-04-28T00:00:00Z"
+  }
+]

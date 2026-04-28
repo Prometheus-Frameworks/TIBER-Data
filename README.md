@@ -309,6 +309,26 @@ npm run export:team-pace-pass-environment-v1
 
 Details: `docs/data/team-pace-pass-environment-v1.md`.
 
+## Evidence Layer: team offense summary v1 (historical backtest scaffold)
+
+TIBER-Data now includes a deterministic Evidence Layer team offense quality builder for:
+
+- `exports/promoted/nfl/team_offense_summary_v1.json`
+
+Current bounded scope:
+
+- season `2025`
+- mode `historical_backtest` only
+- repo-held offline fixture scaffold lane only
+
+Regenerate with:
+
+```bash
+npm run export:team-offense-summary-v1
+```
+
+Details: `docs/data/team-offense-summary-v1.md`.
+
 
 ## Historical Rookie Replay v0 (historical backtest scaffold)
 
