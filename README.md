@@ -371,3 +371,26 @@ npm run export:historical-rookie-replay-v0
 ```
 
 Details: `docs/data/historical-rookie-replay-v0.md`.
+
+
+## Historical Rookie Replay readiness v0 (historical backtest scaffold)
+
+TIBER-Data now includes the first deterministic replay join-readiness scaffold builder for:
+
+- `exports/promoted/rookie-replay/historical_rookie_replay_readiness_v0.json`
+
+Current bounded scope:
+
+- replay season `2025`
+- mode `historical_backtest` only
+- local promoted fixture/scaffold inputs only
+- readiness audit only (not scoring)
+- small bounded cohort only; no claim of full real 2025 replay coverage
+
+Regenerate with:
+
+```bash
+npm run export:historical-rookie-replay-readiness-v0
+```
+
+Details: `docs/data/historical-rookie-replay-readiness-v0.md`.
