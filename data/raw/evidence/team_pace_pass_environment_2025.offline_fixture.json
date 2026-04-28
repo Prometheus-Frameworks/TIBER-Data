@@ -1,0 +1,45 @@
+{
+  "provenance": "offline_fixture",
+  "source_path": "data/raw/evidence/team_pace_pass_environment_2025.offline_fixture.json",
+  "records": [
+    {
+      "season": 2025,
+      "team": "ARI",
+      "plays_per_game": 63.2,
+      "neutral_pass_rate": 0.571,
+      "pass_rate_over_expected": 0.022,
+      "dropbacks_per_game": 36.4,
+      "seconds_per_snap": 28.7,
+      "red_zone_pass_rate": 0.483,
+      "wr_target_share": 0.651,
+      "te_target_share": 0.193,
+      "rb_target_share": 0.156
+    },
+    {
+      "season": 2025,
+      "team": "LV",
+      "plays_per_game": 60.1,
+      "neutral_pass_rate": 0.547,
+      "pass_rate_over_expected": null,
+      "dropbacks_per_game": 34.2,
+      "seconds_per_snap": null,
+      "red_zone_pass_rate": 0.441,
+      "wr_target_share": 0.628,
+      "te_target_share": 0.204,
+      "rb_target_share": 0.168
+    },
+    {
+      "season": 2025,
+      "team": "TB",
+      "plays_per_game": 64.5,
+      "neutral_pass_rate": 0.588,
+      "pass_rate_over_expected": 0.063,
+      "dropbacks_per_game": 37.8,
+      "seconds_per_snap": 27.9,
+      "red_zone_pass_rate": 0.512,
+      "wr_target_share": 0.674,
+      "te_target_share": 0.181,
+      "rb_target_share": 0.145
+    }
+  ]
+}

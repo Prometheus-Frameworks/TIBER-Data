@@ -7,3 +7,4 @@ export * from './export/forgeWeeklyDerivedArtifact.js';
 export * from './export/playerWeeklyPprOutcomesArtifact.js';
 export * from './export/playerWeeklyUsageArtifact.js';
 export * from './export/historicalRookieReplayArtifact.js';
+export * from './export/teamPacePassEnvironmentArtifact.js';
