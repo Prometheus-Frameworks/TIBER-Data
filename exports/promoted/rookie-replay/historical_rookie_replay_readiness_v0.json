@@ -1,0 +1,61 @@
+[
+  {
+    "replay_season": 2025,
+    "player_id": "fixture.2025.RB.AshtonJeanty",
+    "player_name": "Ashton Jeanty",
+    "position": "RB",
+    "expected_team": "LV",
+    "roster_team": null,
+    "roster_identity_found": false,
+    "team_pace_pass_found": true,
+    "team_offense_summary_found": true,
+    "team_context_ready": false,
+    "missing_evidence": [
+      "roster_identity"
+    ],
+    "readiness_status": "missing_identity",
+    "readiness_notes": "No exact player_id match in roster map; name fallback is not allowed in v0.",
+    "source": "replay:exports/promoted/rookie-replay/historical_rookie_replay_v0.json|roster:exports/promoted/nfl/roster_player_team_map_v1.json#week=1|team_pace_pass:exports/promoted/nfl/team_pace_pass_environment_v1.json|team_offense_summary:exports/promoted/nfl/team_offense_summary_v1.json",
+    "generated_at": "2026-04-28T00:00:00Z"
+  },
+  {
+    "replay_season": 2025,
+    "player_id": "fixture.2025.WR.EmekaEgbuka",
+    "player_name": "Emeka Egbuka",
+    "position": "WR",
+    "expected_team": "TB",
+    "roster_team": null,
+    "roster_identity_found": false,
+    "team_pace_pass_found": true,
+    "team_offense_summary_found": true,
+    "team_context_ready": false,
+    "missing_evidence": [
+      "roster_identity"
+    ],
+    "readiness_status": "missing_identity",
+    "readiness_notes": "No exact player_id match in roster map; name fallback is not allowed in v0.",
+    "source": "replay:exports/promoted/rookie-replay/historical_rookie_replay_v0.json|roster:exports/promoted/nfl/roster_player_team_map_v1.json#week=1|team_pace_pass:exports/promoted/nfl/team_pace_pass_environment_v1.json|team_offense_summary:exports/promoted/nfl/team_offense_summary_v1.json",
+    "generated_at": "2026-04-28T00:00:00Z"
+  },
+  {
+    "replay_season": 2025,
+    "player_id": "fixture.2025.WR.TetairoaMcMillan",
+    "player_name": "Tetairoa McMillan",
+    "position": "WR",
+    "expected_team": "CAR",
+    "roster_team": null,
+    "roster_identity_found": false,
+    "team_pace_pass_found": false,
+    "team_offense_summary_found": false,
+    "team_context_ready": false,
+    "missing_evidence": [
+      "roster_identity",
+      "team_pace_pass_environment",
+      "team_offense_summary"
+    ],
+    "readiness_status": "missing_identity",
+    "readiness_notes": "No exact player_id match in roster map; name fallback is not allowed in v0.",
+    "source": "replay:exports/promoted/rookie-replay/historical_rookie_replay_v0.json|roster:exports/promoted/nfl/roster_player_team_map_v1.json#week=1|team_pace_pass:exports/promoted/nfl/team_pace_pass_environment_v1.json|team_offense_summary:exports/promoted/nfl/team_offense_summary_v1.json",
+    "generated_at": "2026-04-28T00:00:00Z"
+  }
+]

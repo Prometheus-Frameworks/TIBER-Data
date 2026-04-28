@@ -27,7 +27,8 @@
     "export:historical-rookie-replay-v0": "npm run build && node scripts/export_historical_rookie_replay_v0.mjs",
     "export:team-pace-pass-environment-v1": "npm run build && node scripts/export_team_pace_pass_environment_v1.mjs",
     "export:team-offense-summary-v1": "npm run build && node scripts/export_team_offense_summary_v1.mjs",
-    "export:roster-player-team-map-v1": "npm run build && node scripts/export_roster_player_team_map_v1.mjs"
+    "export:roster-player-team-map-v1": "npm run build && node scripts/export_roster_player_team_map_v1.mjs",
+    "export:historical-rookie-replay-readiness-v0": "npm run build && node scripts/export_historical_rookie_replay_readiness_v0.mjs"
   },
   "dependencies": {
     "zod": "^3.23.8"
