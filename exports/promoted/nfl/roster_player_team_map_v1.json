@@ -1,0 +1,62 @@
+[
+  {
+    "season": 2025,
+    "week": 1,
+    "player_id": "fixture_zay_flowers",
+    "player_name": "Zay Flowers",
+    "position": "WR",
+    "team": "BAL",
+    "active_roster_status": "active",
+    "source_status": "offline_fixture",
+    "source": "offline_fixture:data/raw/evidence/roster_player_team_map_2025.offline_fixture.json",
+    "generated_at": "2026-04-28T00:00:00Z"
+  },
+  {
+    "season": 2025,
+    "week": 1,
+    "player_id": "fixture_tetairoa_mcmillan",
+    "player_name": "Tetairoa McMillan",
+    "position": "WR",
+    "team": "CAR",
+    "active_roster_status": "fixture_only",
+    "source_status": "offline_fixture",
+    "source": "offline_fixture:data/raw/evidence/roster_player_team_map_2025.offline_fixture.json",
+    "generated_at": "2026-04-28T00:00:00Z"
+  },
+  {
+    "season": 2025,
+    "week": 1,
+    "player_id": "fixture_ashton_jeanty",
+    "player_name": "Ashton Jeanty",
+    "position": "RB",
+    "team": "LV",
+    "active_roster_status": "fixture_only",
+    "source_status": "offline_fixture",
+    "source": "offline_fixture:data/raw/evidence/roster_player_team_map_2025.offline_fixture.json",
+    "generated_at": "2026-04-28T00:00:00Z"
+  },
+  {
+    "season": 2025,
+    "week": 1,
+    "player_id": "fixture_jalen_hurts",
+    "player_name": "Jalen Hurts",
+    "position": "QB",
+    "team": "PHI",
+    "active_roster_status": "active",
+    "source_status": "offline_fixture",
+    "source": "offline_fixture:data/raw/evidence/roster_player_team_map_2025.offline_fixture.json",
+    "generated_at": "2026-04-28T00:00:00Z"
+  },
+  {
+    "season": 2025,
+    "week": 1,
+    "player_id": "fixture_emeka_egbuka",
+    "player_name": "Emeka Egbuka",
+    "position": "WR",
+    "team": "TB",
+    "active_roster_status": "fixture_only",
+    "source_status": "offline_fixture",
+    "source": "offline_fixture:data/raw/evidence/roster_player_team_map_2025.offline_fixture.json",
+    "generated_at": "2026-04-28T00:00:00Z"
+  }
+]
