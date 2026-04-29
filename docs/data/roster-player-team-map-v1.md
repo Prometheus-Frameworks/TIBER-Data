@@ -33,6 +33,7 @@ This export now supports explicit source-lane selection through `sourceKind`:
 
 ### 2025 source audit result (current)
 
+- Detailed audit: `docs/data/roster-player-team-map-source-audit-2025.md`
 No repo-held 2025 raw/processed source artifact is currently committed that can be honestly promoted as source-backed roster identity coverage for this lane. Existing repo-held upstream snapshots are bounded to 2024 proof scaffolds and fixture/sample lanes.
 
 Boundary decision:
