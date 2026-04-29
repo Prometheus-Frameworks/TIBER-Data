@@ -22,6 +22,12 @@ This is a readiness/join audit scaffold, not a scoring or projection artifact.
 
 It explicitly reports missing identity or team context evidence and does not infer or invent missing mappings.
 
+Scaffold note:
+
+- LV/TB rows are intentionally present as fixture-backed `ready` examples proving successful joins.
+- CAR row is intentionally present as `missing_team_context` to expose absent team evidence rather than inventing it.
+
+
 ## Input artifacts
 
 - `exports/promoted/rookie-replay/historical_rookie_replay_v0.json`

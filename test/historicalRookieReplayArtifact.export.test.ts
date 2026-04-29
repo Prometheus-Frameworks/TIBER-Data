@@ -19,7 +19,7 @@ describe('historical rookie replay v0 artifact export', () => {
 
     expect(first).toMatchObject({
       replay_season: 2025,
-      player_id: 'fixture.2025.RB.AshtonJeanty',
+      player_id: 'fixture_ashton_jeanty',
       player_name: 'Ashton Jeanty',
       position: 'RB',
       draft_round: 1,
