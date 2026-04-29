@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -114,10 +114,24 @@ describe('roster player/team map v1 artifact export', () => {
     expect(defaultRows).toEqual(explicitFixtureRows);
   });
 
-  it('fails closed when source_backed source path is requested but missing', () => {
-    expect(() => buildRosterPlayerTeamMapV1FromRawSources({ sourceKind: 'source_backed' })).toThrow(
-      ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_BACKED_SOURCE_PATH,
-    );
+  it('supports source_backed lane when source artifact exists and fails closed otherwise', () => {
+    if (!existsSync(path.resolve(ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_BACKED_SOURCE_PATH))) {
+      expect(() => buildRosterPlayerTeamMapV1FromRawSources({ sourceKind: 'source_backed' })).toThrow(
+        ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_BACKED_SOURCE_PATH,
+      );
+      return;
+    }
+
+    const sourceBackedRows = buildRosterPlayerTeamMapV1FromRawSources({ sourceKind: 'source_backed' });
+    expect(sourceBackedRows.length).toBeGreaterThan(0);
+    expect(sourceBackedRows.every((row) => row.source.includes('nflreadpy.load_rosters_weekly'))).toBe(true);
+    expect(sourceBackedRows.every((row) => row.generated_at.length > 0)).toBe(true);
+    expect(sourceBackedRows.every((row) => row.active_roster_status === 'unknown')).toBe(true);
+    expect(sourceBackedRows.every((row) => row.source_status === 'source_verified')).toBe(true);
+
+    const first = toDeterministicRosterPlayerTeamMapV1Json({ sourceKind: 'source_backed' });
+    const second = toDeterministicRosterPlayerTeamMapV1Json({ sourceKind: 'source_backed' });
+    expect(first).toEqual(second);
   });
 
   it('maps Tetairoa McMillan to CAR', () => {

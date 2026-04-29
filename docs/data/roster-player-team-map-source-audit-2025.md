@@ -45,3 +45,15 @@ Therefore:
 ## Boundary statement
 
 This repository should not invent or synthesize missing 2025 roster mappings. Source-backed coverage can only be enabled after a committed repo-held source file with stable `player_id` + `season` + `week` + `team` support is introduced via approved repo conventions.
+
+## Update: approved ingestion lane added (post-audit)
+
+Since this audit was recorded, the repository added an approved source-backed ingestion script:
+
+- `scripts/build_roster_player_team_map_source_backed_2025.py`
+
+This script uses nflreadpy weekly rosters (`nflreadpy.load_rosters_weekly([2025])`) to produce:
+
+- `data/processed/evidence/roster_player_team_map_2025.source_backed.json`
+
+The original audit conclusion remains historically accurate for that point in time: the file was absent then. The lane is now implemented, but artifact availability still depends on running the script in an environment with nflverse access.
