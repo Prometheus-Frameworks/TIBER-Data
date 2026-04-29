@@ -80,10 +80,17 @@ describe('historical rookie replay readiness v0 artifact export', () => {
   });
 
   it('validates no fuzzy name matching is performed', () => {
-    const artifact = buildHistoricalRookieReplayReadinessV0FromPromotedArtifacts();
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'readiness-no-fuzzy-'));
+    const replay = JSON.parse(readFileSync(path.resolve(HISTORICAL_ROOKIE_REPLAY_READINESS_V0_SOURCE_REPLAY_PATH), 'utf-8'));
+    const emekaIndex = replay.findIndex((row: { player_name: string }) => row.player_name === 'Emeka Egbuka');
+    replay[emekaIndex].player_id = 'fixture_emeka_egbuka_wrong_id';
+    const replayPath = path.join(tempRoot, 'replay-no-fuzzy.json');
+    writeFileSync(replayPath, JSON.stringify(replay, null, 2), 'utf-8');
+
+    const artifact = buildHistoricalRookieReplayReadinessV0FromPromotedArtifacts({ replayPath });
     const emeka = artifact.find((row) => row.player_name === 'Emeka Egbuka');
-    expect(emeka?.player_id).toBe('fixture_emeka_egbuka');
-    expect(emeka?.roster_identity_found).toBe(true);
+    expect(emeka?.roster_identity_found).toBe(false);
+    expect(emeka?.readiness_status).toBe('missing_identity');
   });
 
   it('includes committed fixture-backed ready rows', () => {
