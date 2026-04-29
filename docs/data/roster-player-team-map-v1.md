@@ -4,7 +4,7 @@ Canonical promoted artifact target:
 
 - `exports/promoted/nfl/roster_player_team_map_v1.json`
 
-Planned source-backed raw lane path (not yet present in repo):
+Source-backed raw lane path:
 
 - `data/processed/evidence/roster_player_team_map_2025.source_backed.json`
 
@@ -31,18 +31,18 @@ This export now supports explicit source-lane selection through `sourceKind`:
 - `offline_fixture` (default): existing scaffold lane, unchanged
 - `source_backed`: expects `data/processed/evidence/roster_player_team_map_2025.source_backed.json`
 
-### 2025 source audit result (current)
+### 2025 source audit + ingestion status
 
-- Detailed audit: `docs/data/roster-player-team-map-source-audit-2025.md`
-No repo-held 2025 raw/processed source artifact is currently committed that can be honestly promoted as source-backed roster identity coverage for this lane. Existing repo-held upstream snapshots are bounded to 2024 proof scaffolds and fixture/sample lanes.
+- Audit baseline: `docs/data/roster-player-team-map-source-audit-2025.md`
+- Approved ingestion lane doc: `docs/data/roster-player-team-map-source-backed-2025.md`
+- Source-backed generator: `scripts/build_roster_player_team_map_source_backed_2025.py`
 
-Boundary decision:
+Boundary decisions preserved:
 
-- keep fixture promoted artifact as canonical scaffold output
-- wire fail-closed `source_backed` lane support in exporter
-- do **not** invent or synthesize `source_backed` rows
-
-When the source-backed file is introduced via an approved ingestion convention, `active_roster_status` may remain `unknown` unless the source explicitly encodes active/inactive roster status.
+- default promoted behavior remains fixture lane (`offline_fixture`)
+- source-backed lane is explicit (`sourceKind=source_backed`) and still fail-closed if file is missing
+- no synthetic rows or fabricated IDs are permitted
+- `active_roster_status` remains `unknown` for current nflreadpy v1 ingest lane
 
 ## Field semantics
 
@@ -86,5 +86,6 @@ When the source-backed file is introduced via an approved ingestion convention, 
 ## Regeneration
 
 ```bash
+python scripts/build_roster_player_team_map_source_backed_2025.py
 npm run export:roster-player-team-map-v1
 ```

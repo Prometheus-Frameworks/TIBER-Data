@@ -395,3 +395,5 @@ npm run export:historical-rookie-replay-readiness-v0
 ```
 
 Details: `docs/data/historical-rookie-replay-readiness-v0.md`.
+
+- `python scripts/build_roster_player_team_map_source_backed_2025.py` — generate 2025 source-backed weekly roster identity evidence via nflreadpy
