@@ -4,6 +4,10 @@ Canonical promoted artifact target:
 
 - `exports/promoted/nfl/roster_player_team_map_v1.json`
 
+Planned source-backed raw lane path (not yet present in repo):
+
+- `data/processed/evidence/roster_player_team_map_2025.source_backed.json`
+
 ## Scope and mode (initial release)
 
 - mode: `historical_backtest` only
@@ -19,6 +23,25 @@ This lane is an identity/referee layer for Evidence Layer joins. Downstream repo
 
 - `data/raw/evidence/roster_player_team_map_2025.offline_fixture.json`
 - source provenance label on every row: `offline_fixture:data/raw/evidence/roster_player_team_map_2025.offline_fixture.json`
+
+## Source-backed transition
+
+This export now supports explicit source-lane selection through `sourceKind`:
+
+- `offline_fixture` (default): existing scaffold lane, unchanged
+- `source_backed`: expects `data/processed/evidence/roster_player_team_map_2025.source_backed.json`
+
+### 2025 source audit result (current)
+
+No repo-held 2025 raw/processed source artifact is currently committed that can be honestly promoted as source-backed roster identity coverage for this lane. Existing repo-held upstream snapshots are bounded to 2024 proof scaffolds and fixture/sample lanes.
+
+Boundary decision:
+
+- keep fixture promoted artifact as canonical scaffold output
+- wire fail-closed `source_backed` lane support in exporter
+- do **not** invent or synthesize `source_backed` rows
+
+When the source-backed file is introduced via an approved ingestion convention, `active_roster_status` may remain `unknown` unless the source explicitly encodes active/inactive roster status.
 
 ## Field semantics
 

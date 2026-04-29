@@ -54,17 +54,35 @@ export type RosterPlayerTeamMapV1Array = RosterPlayerTeamMapV1Record[];
 
 export const ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_PATH =
   'data/raw/evidence/roster_player_team_map_2025.offline_fixture.json';
+export const ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_BACKED_SOURCE_PATH =
+  'data/processed/evidence/roster_player_team_map_2025.source_backed.json';
 export const ROSTER_PLAYER_TEAM_MAP_V1_ARTIFACT_PATH = 'exports/promoted/nfl/roster_player_team_map_v1.json';
 export const ROSTER_PLAYER_TEAM_MAP_V1_DEFAULT_SEASON = 2025;
 export const ROSTER_PLAYER_TEAM_MAP_V1_DEFAULT_MODE = 'historical_backtest' as const;
 export const ROSTER_PLAYER_TEAM_MAP_V1_DEFAULT_GENERATED_AT = '2026-04-28T00:00:00Z';
+export const ROSTER_PLAYER_TEAM_MAP_V1_DEFAULT_SOURCE_KIND = 'offline_fixture' as const;
+
+const sourceKindSchema = z.enum(['offline_fixture', 'source_backed']);
 
 export type RosterPlayerTeamMapBuildOptions = {
+  sourceKind?: 'offline_fixture' | 'source_backed';
   sourcePath?: string;
   season?: number;
   mode?: string;
   generatedAt?: string;
 };
+
+function resolveSourcePath(options: RosterPlayerTeamMapBuildOptions): string {
+  if (options.sourcePath) {
+    return options.sourcePath;
+  }
+
+  const sourceKind = sourceKindSchema.parse(options.sourceKind ?? ROSTER_PLAYER_TEAM_MAP_V1_DEFAULT_SOURCE_KIND);
+  if (sourceKind === 'source_backed') {
+    return ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_BACKED_SOURCE_PATH;
+  }
+  return ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_PATH;
+}
 
 function parseRawPayload(sourcePath: string): RawExportPayload<z.infer<typeof rawRosterPlayerTeamMapRecordSchema>> {
   const resolvedPath = path.resolve(sourcePath);
@@ -86,7 +104,7 @@ function assertNoDuplicateSeasonWeekPlayerRows(rows: z.infer<typeof rawRosterPla
 export function buildRosterPlayerTeamMapV1FromRawSources(
   options: RosterPlayerTeamMapBuildOptions = {},
 ): RosterPlayerTeamMapV1Array {
-  const sourcePath = options.sourcePath ?? ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_PATH;
+  const sourcePath = resolveSourcePath(options);
   const season = options.season ?? ROSTER_PLAYER_TEAM_MAP_V1_DEFAULT_SEASON;
   const mode = exportModeSchema.parse(options.mode ?? ROSTER_PLAYER_TEAM_MAP_V1_DEFAULT_MODE);
   const generatedAt = options.generatedAt ?? ROSTER_PLAYER_TEAM_MAP_V1_DEFAULT_GENERATED_AT;
