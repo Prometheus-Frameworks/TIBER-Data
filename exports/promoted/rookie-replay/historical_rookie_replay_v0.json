@@ -1,7 +1,7 @@
 [
   {
     "replay_season": 2025,
-    "player_id": "fixture.2025.RB.AshtonJeanty",
+    "player_id": "fixture_ashton_jeanty",
     "player_name": "Ashton Jeanty",
     "position": "RB",
     "draft_round": 1,
@@ -42,7 +42,7 @@
   },
   {
     "replay_season": 2025,
-    "player_id": "fixture.2025.WR.EmekaEgbuka",
+    "player_id": "fixture_emeka_egbuka",
     "player_name": "Emeka Egbuka",
     "position": "WR",
     "draft_round": 1,
@@ -83,7 +83,7 @@
   },
   {
     "replay_season": 2025,
-    "player_id": "fixture.2025.WR.TetairoaMcMillan",
+    "player_id": "fixture_tetairoa_mcmillan",
     "player_name": "Tetairoa McMillan",
     "position": "WR",
     "draft_round": 1,
