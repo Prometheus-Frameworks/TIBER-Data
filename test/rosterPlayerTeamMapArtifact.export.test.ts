@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   ROSTER_PLAYER_TEAM_MAP_V1_ARTIFACT_PATH,
+  ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_BACKED_SOURCE_PATH,
   ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_PATH,
   buildRosterPlayerTeamMapV1FromRawSources,
   toDeterministicRosterPlayerTeamMapV1Json,
@@ -104,6 +105,19 @@ describe('roster player/team map v1 artifact export', () => {
     writeFileSync(invalidPath, JSON.stringify(source, null, 2), 'utf-8');
 
     expect(() => buildRosterPlayerTeamMapV1FromRawSources({ sourcePath: invalidPath })).toThrow();
+  });
+
+  it('defaults to fixture source and keeps existing scaffold behavior', () => {
+    const defaultRows = buildRosterPlayerTeamMapV1FromRawSources();
+    const explicitFixtureRows = buildRosterPlayerTeamMapV1FromRawSources({ sourceKind: 'offline_fixture' });
+
+    expect(defaultRows).toEqual(explicitFixtureRows);
+  });
+
+  it('fails closed when source_backed source path is requested but missing', () => {
+    expect(() => buildRosterPlayerTeamMapV1FromRawSources({ sourceKind: 'source_backed' })).toThrow(
+      ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_BACKED_SOURCE_PATH,
+    );
   });
 
   it('maps Tetairoa McMillan to CAR', () => {
