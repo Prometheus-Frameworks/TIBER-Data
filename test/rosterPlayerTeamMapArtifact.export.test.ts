@@ -13,6 +13,10 @@ import {
   writeRosterPlayerTeamMapV1Artifact,
 } from '../src/index.js';
 
+function normalizeLineEndings(value: string): string {
+  return value.replace(/\r\n/g, '\n');
+}
+
 describe('roster player/team map v1 artifact export', () => {
   it('validates required fields with deterministic fixture-backed rows', () => {
     const artifact = buildRosterPlayerTeamMapV1FromRawSources();
@@ -54,7 +58,7 @@ describe('roster player/team map v1 artifact export', () => {
     const committed = readFileSync(path.resolve(ROSTER_PLAYER_TEAM_MAP_V1_ARTIFACT_PATH), 'utf-8');
 
     expect(first).toEqual(second);
-    expect(first).toEqual(committed);
+    expect(normalizeLineEndings(first)).toEqual(normalizeLineEndings(committed));
   });
 
   it('fails closed for unsupported mode', () => {
@@ -128,10 +132,13 @@ describe('roster player/team map v1 artifact export', () => {
     expect(sourceBackedRows.every((row) => row.generated_at.length > 0)).toBe(true);
     expect(sourceBackedRows.every((row) => row.active_roster_status === 'unknown')).toBe(true);
     expect(sourceBackedRows.every((row) => row.source_status === 'source_verified')).toBe(true);
+    expect(sourceBackedRows.every((row) => ['QB', 'RB', 'WR', 'TE'].includes(row.position))).toBe(true);
 
     const first = toDeterministicRosterPlayerTeamMapV1Json({ sourceKind: 'source_backed' });
     const second = toDeterministicRosterPlayerTeamMapV1Json({ sourceKind: 'source_backed' });
+    const committed = readFileSync(path.resolve(ROSTER_PLAYER_TEAM_MAP_V1_SOURCE_BACKED_SOURCE_PATH), 'utf-8');
     expect(first).toEqual(second);
+    expect(normalizeLineEndings(first)).toEqual(normalizeLineEndings(committed));
   });
 
   it('maps Tetairoa McMillan to CAR', () => {
@@ -147,6 +154,8 @@ describe('roster player/team map v1 artifact export', () => {
     const written = writeRosterPlayerTeamMapV1Artifact(outputPath);
 
     expect(written).toEqual(path.resolve(outputPath));
-    expect(readFileSync(written, 'utf-8')).toEqual(toDeterministicRosterPlayerTeamMapV1Json());
+    expect(normalizeLineEndings(readFileSync(written, 'utf-8'))).toEqual(
+      normalizeLineEndings(toDeterministicRosterPlayerTeamMapV1Json()),
+    );
   });
 });
