@@ -21,6 +21,12 @@ def _resolve_column(columns: set[str], candidates: list[str], field_name: str) -
     )
 
 
+def _records_from_dataframe(df) -> list[dict]:
+    if hasattr(df, "to_dicts"):
+        return df.to_dicts()
+    return df.to_dict("records")
+
+
 def build_source_backed_payload() -> dict:
     df = nfl.load_rosters_weekly([SEASON])
     source_columns = list(df.columns)
@@ -38,7 +44,7 @@ def build_source_backed_payload() -> dict:
     records: list[dict] = []
     seen = set()
 
-    for row in df.to_dict("records"):
+    for row in _records_from_dataframe(df):
         player_id = row.get(player_id_col)
         team = row.get(team_col)
         if player_id is None or str(player_id).strip() == "":
