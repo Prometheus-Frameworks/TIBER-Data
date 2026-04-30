@@ -8,11 +8,16 @@ Canonical promoted artifact target:
 
 - mode: `historical_backtest` only
 - season: `2025`
-- source lane: repo-held offline fixture support only
+- source lane: `offline_fixture` default, plus explicit `source_backed` lane
 
 - committed artifact coverage is scaffold-only fixture data and does not represent full real 2025 season coverage.
 
 This v1 lane is intentionally bounded to deterministic fixture-backed generation until a governed, reproducible historical source lane is promoted.
+
+## Source lanes
+
+- `offline_fixture`: `data/raw/evidence/player_weekly_box_scores_2025.offline_fixture.json`
+- `source_backed`: `data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json` (generated from nflreadpy player stats)
 
 ## Source currently used
 
