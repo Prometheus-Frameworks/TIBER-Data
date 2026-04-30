@@ -50,7 +50,7 @@ describe('player weekly ppr outcomes v1 artifact export', () => {
     const committed = readFileSync(path.resolve(PLAYER_WEEKLY_PPR_OUTCOMES_V1_ARTIFACT_PATH), 'utf-8');
 
     expect(first).toEqual(second);
-    expect(first).toEqual(committed);
+    expect(normalizeLineEndings(first)).toEqual(normalizeLineEndings(committed));
   });
 
 
@@ -88,7 +88,9 @@ describe('player weekly ppr outcomes v1 artifact export', () => {
     const written = writePlayerWeeklyPprOutcomesV1Artifact(outputPath);
 
     expect(written).toEqual(path.resolve(outputPath));
-    expect(readFileSync(written, 'utf-8')).toEqual(toDeterministicPlayerWeeklyPprOutcomesV1Json());
+    expect(normalizeLineEndings(readFileSync(written, 'utf-8'))).toEqual(
+      normalizeLineEndings(toDeterministicPlayerWeeklyPprOutcomesV1Json()),
+    );
   });
 
   it('fails closed for unsupported mode', () => {
