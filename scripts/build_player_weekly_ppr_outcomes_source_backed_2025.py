@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -27,6 +28,19 @@ def _records_from_dataframe(df) -> list[dict]:
     if hasattr(df, "to_dicts"):
         return df.to_dicts()
     return df.to_dict("records")
+
+
+def _json_safe_value(value):
+    if value is None:
+        return None
+    try:
+        if isinstance(value, float) and math.isnan(value):
+            return None
+        if isinstance(value, float) and not math.isfinite(value):
+            return None
+    except TypeError:
+        pass
+    return value
 
 
 def _load_roster_position_map() -> dict[tuple[int, int, str], str]:
@@ -68,7 +82,7 @@ def build_source_backed_payload() -> dict:
     passing_tds_col = _resolve_column(columns, ["passing_tds"], "passing_tds", required=False)
     interceptions_col = _resolve_column(columns, ["interceptions"], "interceptions", required=False)
 
-    roster_position_map = _load_roster_position_map() if position_col is None else {}
+    roster_position_map = _load_roster_position_map()
 
     records: list[dict] = []
     seen = set()
@@ -85,10 +99,11 @@ def build_source_backed_payload() -> dict:
         week = int(row[week_col])
         player_id_str = str(player_id).strip()
 
-        if position_col is None:
+        position = ""
+        if position_col is not None:
+            position = str(_json_safe_value(row.get(position_col, "")) or "").strip().upper()
+        if position not in INCLUDED_POSITIONS:
             position = roster_position_map.get((season, week, player_id_str), "")
-        else:
-            position = str(row.get(position_col, "")).strip().upper()
         if position not in INCLUDED_POSITIONS:
             continue
 
@@ -98,7 +113,7 @@ def build_source_backed_payload() -> dict:
         seen.add(key)
 
         def _value(col: str | None):
-            return None if col is None else row.get(col)
+            return None if col is None else _json_safe_value(row.get(col))
 
         records.append(
             {
@@ -141,7 +156,7 @@ def build_source_backed_payload() -> dict:
 def main() -> int:
     payload = build_source_backed_payload()
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
+    OUTPUT_PATH.write_text(f"{json.dumps(payload, indent=2, allow_nan=False)}\n", encoding="utf-8")
     print(f"Wrote source-backed player weekly ppr outcomes artifact: {OUTPUT_PATH.resolve()}")
     print(f"Record count: {len(payload['records'])}")
     return 0
