@@ -79,3 +79,9 @@ No synthetic missing-week rows are inserted.
 ```bash
 npm run export:player-weekly-usage-v1
 ```
+
+
+## Source lanes
+- Default lane: `sourceKind: "offline_fixture"` using `data/raw/evidence/player_weekly_usage_2025.offline_fixture.json`.
+- Source-backed lane: `sourceKind: "source_backed"` using `data/processed/evidence/player_weekly_usage_2025.source_backed.json`.
+- In source-backed rows, unsupported route/snap/red-zone fields are `null` (unavailable), never inferred and never forced to zero.

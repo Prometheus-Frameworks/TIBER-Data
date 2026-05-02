@@ -21,17 +21,17 @@ const rawUsageRecordSchema = z.object({
   opponent: z.string().min(1),
   targets: z.number().nonnegative(),
   receptions: z.number().nonnegative(),
-  routes_run: z.number().nonnegative(),
-  route_participation: z.number().min(0).max(1),
+  routes_run: z.number().nonnegative().nullable(),
+  route_participation: z.number().min(0).max(1).nullable(),
   target_share: z.number().min(0).max(1),
   air_yards: z.number(),
   air_yards_share: z.number().min(0).max(1),
   rushing_attempts: z.number().nonnegative(),
-  team_rushing_attempts: z.number().nonnegative(),
-  rush_share: z.number().min(0).max(1),
-  red_zone_targets: z.number().nonnegative(),
-  red_zone_carries: z.number().nonnegative(),
-  snap_share: z.number().min(0).max(1),
+  team_rushing_attempts: z.number().nonnegative().nullable(),
+  rush_share: z.number().min(0).max(1).nullable(),
+  red_zone_targets: z.number().nonnegative().nullable(),
+  red_zone_carries: z.number().nonnegative().nullable(),
+  snap_share: z.number().min(0).max(1).nullable(),
 });
 
 const rawUsagePayloadSchema = z.object({
@@ -50,17 +50,36 @@ export type PlayerWeeklyUsageV1Array = PlayerWeeklyUsageV1Record[];
 
 export const PLAYER_WEEKLY_USAGE_V1_SOURCE_PATH =
   'data/raw/evidence/player_weekly_usage_2025.offline_fixture.json';
+export const PLAYER_WEEKLY_USAGE_V1_SOURCE_BACKED_SOURCE_PATH =
+  'data/processed/evidence/player_weekly_usage_2025.source_backed.json';
 export const PLAYER_WEEKLY_USAGE_V1_ARTIFACT_PATH = 'exports/promoted/nfl/player_weekly_usage_v1.json';
 export const PLAYER_WEEKLY_USAGE_V1_DEFAULT_SEASON = 2025;
 export const PLAYER_WEEKLY_USAGE_V1_DEFAULT_MODE = 'historical_backtest' as const;
 export const PLAYER_WEEKLY_USAGE_V1_DEFAULT_GENERATED_AT = '2026-04-27T00:00:00Z';
+export const PLAYER_WEEKLY_USAGE_V1_DEFAULT_SOURCE_KIND = 'offline_fixture' as const;
+
+const sourceKindSchema = z.enum(['offline_fixture', 'source_backed']);
 
 export type PlayerWeeklyUsageBuildOptions = {
+  sourceKind?: 'offline_fixture' | 'source_backed';
   sourcePath?: string;
   season?: number;
   mode?: string;
   generatedAt?: string;
 };
+
+
+function resolveSourcePath(options: PlayerWeeklyUsageBuildOptions): string {
+  if (options.sourcePath) {
+    return options.sourcePath;
+  }
+
+  const sourceKind = sourceKindSchema.parse(options.sourceKind ?? PLAYER_WEEKLY_USAGE_V1_DEFAULT_SOURCE_KIND);
+  if (sourceKind === 'source_backed') {
+    return PLAYER_WEEKLY_USAGE_V1_SOURCE_BACKED_SOURCE_PATH;
+  }
+  return PLAYER_WEEKLY_USAGE_V1_SOURCE_PATH;
+}
 
 function parseRawPayload(sourcePath: string): RawExportPayload<z.infer<typeof rawUsageRecordSchema>> {
   const resolvedPath = path.resolve(sourcePath);
@@ -82,7 +101,7 @@ function assertNoDuplicatePlayerWeeks(rows: z.infer<typeof rawUsageRecordSchema>
 export function buildPlayerWeeklyUsageV1FromRawSources(
   options: PlayerWeeklyUsageBuildOptions = {},
 ): PlayerWeeklyUsageV1Array {
-  const sourcePath = options.sourcePath ?? PLAYER_WEEKLY_USAGE_V1_SOURCE_PATH;
+  const sourcePath = resolveSourcePath(options);
   const season = options.season ?? PLAYER_WEEKLY_USAGE_V1_DEFAULT_SEASON;
   const mode = exportModeSchema.parse(options.mode ?? PLAYER_WEEKLY_USAGE_V1_DEFAULT_MODE);
   const generatedAt = options.generatedAt ?? PLAYER_WEEKLY_USAGE_V1_DEFAULT_GENERATED_AT;
