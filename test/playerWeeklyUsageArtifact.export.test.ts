@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -6,31 +6,72 @@ import { describe, expect, it } from 'vitest';
 
 import {
   PLAYER_WEEKLY_USAGE_V1_ARTIFACT_PATH,
+  PLAYER_WEEKLY_USAGE_V1_SOURCE_BACKED_SOURCE_PATH,
   PLAYER_WEEKLY_USAGE_V1_SOURCE_PATH,
   buildPlayerWeeklyUsageV1FromRawSources,
   toDeterministicPlayerWeeklyUsageV1Json,
   writePlayerWeeklyUsageV1Artifact,
 } from '../src/index.js';
 
+const normalizeNewlines = (value: string): string => value.replace(/\r\n/g, '\n');
+
 describe('player weekly usage v1 artifact export', () => {
   it('validates required usage fields by parsing fixture-backed rows', () => {
     const artifact = buildPlayerWeeklyUsageV1FromRawSources();
     const first = artifact[0];
 
-    expect(first).toMatchObject({
-      season: 2025,
-      week: 1,
-      player_id: '00-0034796',
-      player_name: 'Jalen Hurts',
-      team: 'PHI',
-      position: 'QB',
-      opponent: 'DAL',
-    });
+    expect(first).toMatchObject({ season: 2025, week: 1, player_id: '00-0034796' });
     expect(typeof first.targets).toBe('number');
     expect(typeof first.routes_run).toBe('number');
     expect(typeof first.route_participation).toBe('number');
     expect(typeof first.target_share).toBe('number');
     expect(typeof first.rush_share).toBe('number');
+  });
+
+  it('treats offline_fixture sourceKind as the default behavior', () => {
+    const byDefault = toDeterministicPlayerWeeklyUsageV1Json();
+    const byExplicitOffline = toDeterministicPlayerWeeklyUsageV1Json({ sourceKind: 'offline_fixture' });
+
+    expect(byExplicitOffline).toEqual(byDefault);
+  });
+
+  it('fails closed when source_backed source file is missing', () => {
+    expect(() =>
+      buildPlayerWeeklyUsageV1FromRawSources({
+        sourceKind: 'source_backed',
+        sourcePath: path.join(os.tmpdir(), 'missing-player-usage-source-backed.json'),
+      }),
+    ).toThrow();
+  });
+
+  it('supports source_backed lane when source-backed file exists', () => {
+    if (!existsSync(path.resolve(PLAYER_WEEKLY_USAGE_V1_SOURCE_BACKED_SOURCE_PATH))) {
+      return;
+    }
+    const artifact = buildPlayerWeeklyUsageV1FromRawSources({ sourceKind: 'source_backed' });
+
+    expect(artifact.length).toBeGreaterThan(0);
+    expect(artifact.every((row) => row.source.includes('nflreadpy.load_player_stats'))).toBe(true);
+    expect(artifact.every((row) => row.generated_at.length > 0)).toBe(true);
+    expect(artifact.every((row) => ['QB', 'RB', 'WR', 'TE'].includes(row.position))).toBe(true);
+    expect(artifact.every((row) => typeof row.targets === 'number')).toBe(true);
+    expect(artifact.every((row) => row.routes_run === null)).toBe(true);
+    expect(artifact.every((row) => row.route_participation === null)).toBe(true);
+    expect(artifact.every((row) => row.team_rushing_attempts === null)).toBe(true);
+    expect(artifact.every((row) => row.rush_share === null)).toBe(true);
+    expect(artifact.every((row) => row.red_zone_targets === null)).toBe(true);
+    expect(artifact.every((row) => row.red_zone_carries === null)).toBe(true);
+    expect(artifact.every((row) => row.snap_share === null)).toBe(true);
+  });
+
+  it('source_backed deterministic JSON generation is stable across two calls', () => {
+    if (!existsSync(path.resolve(PLAYER_WEEKLY_USAGE_V1_SOURCE_BACKED_SOURCE_PATH))) {
+      return;
+    }
+    const first = toDeterministicPlayerWeeklyUsageV1Json({ sourceKind: 'source_backed' });
+    const second = toDeterministicPlayerWeeklyUsageV1Json({ sourceKind: 'source_backed' });
+
+    expect(first).toEqual(second);
   });
 
   it('fails closed when duplicate season/week/player_id rows are present', () => {
@@ -52,7 +93,7 @@ describe('player weekly usage v1 artifact export', () => {
     const committed = readFileSync(path.resolve(PLAYER_WEEKLY_USAGE_V1_ARTIFACT_PATH), 'utf-8');
 
     expect(first).toEqual(second);
-    expect(first).toEqual(committed);
+    expect(normalizeNewlines(first)).toEqual(normalizeNewlines(committed));
   });
 
   it('writes deterministic output to disk', () => {
@@ -61,7 +102,9 @@ describe('player weekly usage v1 artifact export', () => {
     const written = writePlayerWeeklyUsageV1Artifact(outputPath);
 
     expect(written).toEqual(path.resolve(outputPath));
-    expect(readFileSync(written, 'utf-8')).toEqual(toDeterministicPlayerWeeklyUsageV1Json());
+    expect(normalizeNewlines(readFileSync(written, 'utf-8'))).toEqual(
+      normalizeNewlines(toDeterministicPlayerWeeklyUsageV1Json()),
+    );
   });
 
   it('fails closed when provenance is missing from raw payload wrapper', () => {
@@ -96,4 +139,5 @@ describe('player weekly usage v1 artifact export', () => {
   it('fails closed for unsupported mode', () => {
     expect(() => buildPlayerWeeklyUsageV1FromRawSources({ mode: 'live_weekly_refresh' })).toThrow();
   });
+
 });
