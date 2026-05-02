@@ -124,3 +124,52 @@ def test_payload_serializes_allow_nan_false(monkeypatch) -> None:
     )
     payload = module.build_source_backed_payload()
     json.dumps(payload, allow_nan=False)
+
+
+def test_nan_player_id_row_is_dropped(monkeypatch) -> None:
+    module = _load_module()
+    monkeypatch.setattr(
+        module.nfl,
+        "load_player_stats",
+        lambda _: _FakeFrame(
+            [
+                {"season": 2025, "week": 1, "player_id": math.nan, "player_name": "A", "team": "PHI", "position": "WR"},
+                {"season": 2025, "week": 1, "player_id": "00-2", "player_name": "B", "team": "PHI", "position": "WR"},
+            ]
+        ),
+    )
+    payload = module.build_source_backed_payload()
+    assert [r["player_id"] for r in payload["records"]] == ["00-2"]
+
+
+def test_nan_team_row_is_dropped(monkeypatch) -> None:
+    module = _load_module()
+    monkeypatch.setattr(
+        module.nfl,
+        "load_player_stats",
+        lambda _: _FakeFrame(
+            [
+                {"season": 2025, "week": 1, "player_id": "00-1", "player_name": "A", "team": math.nan, "position": "WR"},
+                {"season": 2025, "week": 1, "player_id": "00-2", "player_name": "B", "team": "PHI", "position": "WR"},
+            ]
+        ),
+    )
+    payload = module.build_source_backed_payload()
+    assert [r["player_id"] for r in payload["records"]] == ["00-2"]
+
+
+def test_string_nan_identity_rows_are_dropped(monkeypatch) -> None:
+    module = _load_module()
+    monkeypatch.setattr(
+        module.nfl,
+        "load_player_stats",
+        lambda _: _FakeFrame(
+            [
+                {"season": 2025, "week": 1, "player_id": "nan", "player_name": "A", "team": "PHI", "position": "WR"},
+                {"season": 2025, "week": 1, "player_id": "00-2", "player_name": "B", "team": "nan", "position": "WR"},
+                {"season": 2025, "week": 1, "player_id": "00-3", "player_name": "C", "team": "PHI", "position": "WR"},
+            ]
+        ),
+    )
+    payload = module.build_source_backed_payload()
+    assert [r["player_id"] for r in payload["records"]] == ["00-3"]

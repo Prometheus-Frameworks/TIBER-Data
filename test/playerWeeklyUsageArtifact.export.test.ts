@@ -102,6 +102,42 @@ describe('player weekly usage v1 artifact export', () => {
     const written = writePlayerWeeklyUsageV1Artifact(outputPath);
 
     expect(written).toEqual(path.resolve(outputPath));
-    expect(readFileSync(written, 'utf-8')).toEqual(toDeterministicPlayerWeeklyUsageV1Json());
+    expect(normalizeNewlines(readFileSync(written, 'utf-8'))).toEqual(
+      normalizeNewlines(toDeterministicPlayerWeeklyUsageV1Json()),
+    );
   });
+
+  it('fails closed when provenance is missing from raw payload wrapper', () => {
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'player-weekly-usage-wrapper-'));
+    const source = JSON.parse(readFileSync(path.resolve(PLAYER_WEEKLY_USAGE_V1_SOURCE_PATH), 'utf-8'));
+    delete source.provenance;
+
+    const invalidPath = path.join(tempRoot, 'missing-provenance.json');
+    writeFileSync(invalidPath, JSON.stringify(source, null, 2), 'utf-8');
+
+    expect(() => buildPlayerWeeklyUsageV1FromRawSources({ sourcePath: invalidPath })).toThrow();
+  });
+
+  it('fails closed when source_path is missing from raw payload wrapper', () => {
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'player-weekly-usage-wrapper-'));
+    const source = JSON.parse(readFileSync(path.resolve(PLAYER_WEEKLY_USAGE_V1_SOURCE_PATH), 'utf-8'));
+    delete source.source_path;
+
+    const invalidPath = path.join(tempRoot, 'missing-source-path.json');
+    writeFileSync(invalidPath, JSON.stringify(source, null, 2), 'utf-8');
+
+    expect(() => buildPlayerWeeklyUsageV1FromRawSources({ sourcePath: invalidPath })).toThrow();
+  });
+
+  it('includes source and generated_at on every row', () => {
+    const artifact = buildPlayerWeeklyUsageV1FromRawSources();
+
+    expect(artifact.every((row) => row.source.length > 0)).toBe(true);
+    expect(artifact.every((row) => row.generated_at.length > 0)).toBe(true);
+  });
+
+  it('fails closed for unsupported mode', () => {
+    expect(() => buildPlayerWeeklyUsageV1FromRawSources({ mode: 'live_weekly_refresh' })).toThrow();
+  });
+
 });

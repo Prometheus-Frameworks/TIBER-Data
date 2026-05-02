@@ -42,6 +42,15 @@ def _json_safe_value(value):
     return value
 
 
+
+
+def _is_missing_identity(value) -> bool:
+    safe = _json_safe_value(value)
+    if safe is None:
+        return True
+    text = str(safe).strip()
+    return text == "" or text.lower() in {"nan", "inf", "-inf", "infinity", "-infinity"}
+
 def build_source_backed_payload() -> dict:
     df = nfl.load_player_stats([SEASON])
     source_columns = list(df.columns)
@@ -71,16 +80,17 @@ def build_source_backed_payload() -> dict:
         return None if col is None else _json_safe_value(row.get(col))
 
     for row in _records_from_dataframe(df):
-        player_id = row.get(player_id_col)
-        team = row.get(team_col)
-        if player_id is None or str(player_id).strip() == "":
+        player_id = _json_safe_value(row.get(player_id_col))
+        team = _json_safe_value(row.get(team_col))
+        if _is_missing_identity(player_id):
             continue
-        if team is None or str(team).strip() == "":
+        if _is_missing_identity(team):
             continue
 
         season = int(row[season_col])
         week = int(row[week_col])
         player_id_str = str(player_id).strip()
+        team_str = str(team).strip()
         position = str(_json_safe_value(row.get(position_col, "")) or "").strip().upper()
         if position not in INCLUDED_POSITIONS:
             continue
@@ -96,7 +106,7 @@ def build_source_backed_payload() -> dict:
                 "week": week,
                 "player_id": player_id_str,
                 "player_name": str(_json_safe_value(row.get(player_name_col, "")) or "").strip() or player_id_str,
-                "team": str(team).strip(),
+                "team": team_str,
                 "position": position,
                 "opponent": _value(row, opponent_col) or "",
                 "targets": _value(row, targets_col) or 0,
