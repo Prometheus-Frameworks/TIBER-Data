@@ -87,6 +87,47 @@ describe('player weekly usage v1 artifact export', () => {
     );
   });
 
+  it('parses source-backed rows with negative air_yards_share', () => {
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'player-weekly-usage-negative-air-yards-share-'));
+    const source = JSON.parse(readFileSync(path.resolve(PLAYER_WEEKLY_USAGE_V1_SOURCE_PATH), 'utf-8'));
+    source.records = [
+      {
+        ...source.records[0],
+        target_share: 0.2,
+        air_yards_share: -0.15,
+      },
+    ];
+    source.provenance = 'nflreadpy.load_player_stats';
+    source.source_path = 'nflverse player stats via nflreadpy';
+
+    const sourceBackedPath = path.join(tempRoot, 'source-backed-negative-air-yards-share.json');
+    writeFileSync(sourceBackedPath, JSON.stringify(source, null, 2), 'utf-8');
+
+    const artifact = buildPlayerWeeklyUsageV1FromRawSources({
+      sourceKind: 'source_backed',
+      sourcePath: sourceBackedPath,
+    });
+
+    expect(artifact).toHaveLength(1);
+    expect(artifact[0]?.air_yards_share).toBe(-0.15);
+  });
+
+  it('fails closed when target_share is out of [0, 1] bounds', () => {
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'player-weekly-usage-invalid-target-share-'));
+    const source = JSON.parse(readFileSync(path.resolve(PLAYER_WEEKLY_USAGE_V1_SOURCE_PATH), 'utf-8'));
+    source.records = [
+      {
+        ...source.records[0],
+        target_share: -0.01,
+      },
+    ];
+
+    const invalidPath = path.join(tempRoot, 'invalid-target-share.json');
+    writeFileSync(invalidPath, JSON.stringify(source, null, 2), 'utf-8');
+
+    expect(() => buildPlayerWeeklyUsageV1FromRawSources({ sourcePath: invalidPath })).toThrow();
+  });
+
   it('is deterministic and matches committed promoted artifact', () => {
     const first = toDeterministicPlayerWeeklyUsageV1Json();
     const second = toDeterministicPlayerWeeklyUsageV1Json();

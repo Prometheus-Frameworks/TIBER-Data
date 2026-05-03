@@ -66,9 +66,10 @@ No scoring changes are introduced in this lane.
 
 ## Null handling policy for this scaffold
 
-- Initial scaffold requires non-null values for all minimum row fields.
-- No null-imputation behavior is active in this v1 scaffold.
-- Future nullable expansion must be explicitly documented before contract changes.
+- Offline fixture scaffold rows remain fully populated for deterministic fixture coverage.
+- Source-backed rows preserve unavailable source fields as `null` (no fake zeros, no inference).
+- `target_share` is bounded to `[0, 1]` when present and may be `null` when unavailable.
+- `air_yards_share` may be negative when source-backed receiving air yards are negative; negative values are valid source signal, not an error.
 
 ## Missing-week policy
 
