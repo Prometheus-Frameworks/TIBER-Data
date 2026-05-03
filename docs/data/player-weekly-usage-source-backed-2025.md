@@ -38,6 +38,11 @@ The following fields are emitted as `null` in the source-backed lane because the
 
 `null` means "not available from this source", not zero usage. No route/snap/red-zone inference is performed.
 
+## Share-field validation notes
+- `target_share` must stay within `[0, 1]` when present; out-of-range values fail export validation.
+- `air_yards_share` is preserved as a finite source-backed number and may be negative.
+- Negative `air_yards_share` can occur when receiving air yards are negative (for example, shallow/checkdown profiles); this is valid football signal and is not clamped or rewritten.
+
 ## Regeneration
 ```bash
 python scripts/build_player_weekly_usage_source_backed_2025.py

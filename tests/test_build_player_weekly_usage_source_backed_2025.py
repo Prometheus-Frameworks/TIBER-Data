@@ -173,3 +173,26 @@ def test_string_nan_identity_rows_are_dropped(monkeypatch) -> None:
     )
     payload = module.build_source_backed_payload()
     assert [r["player_id"] for r in payload["records"]] == ["00-3"]
+
+
+def test_negative_air_yards_share_is_preserved(monkeypatch) -> None:
+    module = _load_module()
+    monkeypatch.setattr(
+        module.nfl,
+        "load_player_stats",
+        lambda _: _FakeFrame(
+            [
+                {
+                    "season": 2025,
+                    "week": 1,
+                    "player_id": "00-1",
+                    "player_name": "A",
+                    "team": "PHI",
+                    "position": "RB",
+                    "air_yards_share": -0.35,
+                }
+            ]
+        ),
+    )
+    payload = module.build_source_backed_payload()
+    assert payload["records"][0]["air_yards_share"] == -0.35
