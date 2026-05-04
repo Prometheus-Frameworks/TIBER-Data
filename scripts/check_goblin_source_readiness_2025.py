@@ -179,16 +179,26 @@ def generate_readiness_report(
     usage_keys = {_row_key(r) for r in usage_records}
     identity_keys = {_row_key(r) for r in identity_records}
 
-    ppr_usage_intersection = ppr_keys & usage_keys
-    if not ppr_usage_intersection:
+    joined_keys = ppr_keys & usage_keys
+    if not joined_keys:
         raise ReadinessError("PPR and usage join is empty on season/week/player_id")
-    if ppr_usage_intersection != ppr_keys or ppr_usage_intersection != usage_keys:
+
+    usage_without_ppr = usage_keys - ppr_keys
+    if usage_without_ppr:
         raise ReadinessError(
-            f"PPR and usage join coverage incomplete: ppr={len(ppr_usage_intersection)}/{len(ppr_keys)}, "
-            f"usage={len(ppr_usage_intersection)}/{len(usage_keys)}"
+            f"PPR and usage join coverage incomplete: ppr={len(joined_keys)}/{len(ppr_keys)}, "
+            f"usage={len(joined_keys)}/{len(usage_keys)}"
         )
 
-    identity_join = ppr_usage_intersection & identity_keys
+    ppr_only = ppr_keys - usage_keys
+
+    identity_join = joined_keys & identity_keys
+    if identity_join != joined_keys:
+        missing_identity = len(joined_keys - identity_keys)
+        raise ReadinessError(
+            f"Identity join coverage incomplete for candidate rows: "
+            f"{len(identity_join)}/{len(joined_keys)} (missing={missing_identity})"
+        )
 
     usage_null_counts = {
         field: sum(1 for row in usage_records if field not in row or row.get(field) is None)
@@ -233,8 +243,9 @@ def generate_readiness_report(
         f"- usage: available, path={usage_path}, provenance={usage['provenance']}, records={len(usage_records)}, required_fields=ok, duplicates={usage_duplicates}",
         "",
         "Joins:",
-        f"- ppr_usage_join_coverage: {len(ppr_usage_intersection)}/{len(ppr_keys)} ppr, {len(ppr_usage_intersection)}/{len(usage_keys)} usage",
-        f"- identity_join_coverage: {len(identity_join)}/{len(ppr_usage_intersection)}",
+        f"- ppr_usage_join_coverage: joined usage rows {len(joined_keys)}/{len(usage_keys)}, joined ppr rows {len(joined_keys)}/{len(ppr_keys)}, ppr_only_rows={len(ppr_only)}, usage_without_ppr_rows={len(usage_without_ppr)}",
+        f"- candidate_eligible_rows: {len(joined_keys)}",
+        f"- identity_join_coverage: {len(identity_join)}/{len(joined_keys)}",
         "",
         "Field coverage:",
     ]
