@@ -35,6 +35,8 @@ Only player-weeks with at least one computable legitimate indicator flag are emi
 
 ## Deterministic v0 legitimate indicator flags
 
+Thresholds below are **v0 review thresholds** for deterministic scanning and are **not calibrated model thresholds**.
+
 1. `low_ppr_high_targets`: `ppr_points <= 8.0` and `targets >= 6`
 2. `low_ppr_high_target_share`: `ppr_points <= 8.0` and `target_share >= 0.20`
 3. `air_yards_without_output`: `ppr_points <= 8.0` and `air_yards >= 70`

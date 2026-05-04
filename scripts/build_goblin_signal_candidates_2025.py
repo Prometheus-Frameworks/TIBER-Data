@@ -129,6 +129,7 @@ def build_goblin_signal_candidates(
     usage_path: Path = USAGE_PATH,
     ppr_path: Path = PPR_PATH,
     output_path: Path | None = None,
+    generated_at: str | None = None,
 ) -> dict[str, Any]:
     identity = _load_wrapper(identity_path)
     usage = _load_wrapper(usage_path)
@@ -174,7 +175,7 @@ def build_goblin_signal_candidates(
             prior = (usage_row, ppr_row)
 
     records: list[dict[str, Any]] = []
-    generated_at = datetime.now(timezone.utc).isoformat()
+    resolved_generated_at = generated_at or datetime.now(timezone.utc).isoformat()
 
     for key in candidate_keys:
         season, week, player_id = key
@@ -282,7 +283,7 @@ def build_goblin_signal_candidates(
                 },
                 "evidence_status": "source_backed_research_candidate",
                 "source_artifacts": SOURCE_ARTIFACTS,
-                "generated_at": generated_at,
+                "generated_at": resolved_generated_at,
             }
         )
 
