@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 IDENTITY_PATH = Path("data/processed/evidence/roster_player_team_map_2025.source_backed.json")
-PPR_PATH = Path("data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json")
+PPR_PATH = Path("data/processed/evidence/player_weekly_ppr_outcomes_2025.computed_source_backed.json")
 USAGE_PATH = Path("data/processed/evidence/player_weekly_usage_2025.source_backed.json")
 
 WRAPPER_FIELDS = ("provenance", "source_path", "records")

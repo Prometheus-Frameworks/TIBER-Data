@@ -24,10 +24,11 @@ GOBLIN is not:
 - **Limitations:** Does not provide usage intensity or fantasy outcome fields by itself; identity/class details (for rookie-specific logic) may require explicit schema confirmation/extension.
 
 ### B) PPR outcomes artifact
-- **Path:** `data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json`
-- **Source / provenance:** `nflreadpy.load_player_stats([2025])`
-- **Contribution to GOBLIN:** Supplies weekly surface-output evidence (for “grossness”), such as low PPR and weak box-score outcomes.
-- **Limitations:** Outcome-only perspective cannot explain whether opportunity existed; requires usage join for legitimacy interpretation.
+- **Path:** `data/processed/evidence/player_weekly_ppr_outcomes_2025.computed_source_backed.json`
+- **Build rule:** generated from the existing TypeScript PPR builder with `toDeterministicPlayerWeeklyPprOutcomesV1Json({ sourceKind: "source_backed" })` via `npm run export:player-weekly-ppr-source-backed-2025`.
+- **Source / provenance:** computed from `data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json` raw wrapper records.
+- **Contribution to GOBLIN:** supplies deterministic weekly output evidence including computed `ppr_points`, rolling windows, and season accumulators used by readiness checks and future candidate generation.
+- **Limitations:** raw source-backed input remains an input wrapper without computed `ppr_points`; GOBLIN consumers should use this governed computed handoff and must not silently recompute PPR internally.
 
 ### C) Usage artifact
 - **Path:** `data/processed/evidence/player_weekly_usage_2025.source_backed.json`
