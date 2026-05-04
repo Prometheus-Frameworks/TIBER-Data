@@ -75,6 +75,11 @@ def test_missing_artifact_fails_closed(tmp_path):
         assert "Missing required artifact" in str(exc)
 
 
+def test_default_ppr_path_points_to_computed_source_backed_artifact():
+    module = _load_module()
+    assert str(module.PPR_PATH) == "data/processed/evidence/player_weekly_ppr_outcomes_2025.computed_source_backed.json"
+
+
 def test_invalid_json_fails_closed(tmp_path):
     module = _load_module()
     idp, pprp, usp = tmp_path / "id.json", tmp_path / "ppr.json", tmp_path / "usage.json"
@@ -114,6 +119,21 @@ def test_duplicate_keys_fail_closed(tmp_path):
         assert False
     except Exception as exc:
         assert "duplicate key rows" in str(exc)
+
+
+def test_duplicate_usage_keys_fail_closed(tmp_path):
+    module = _load_module()
+    identity, ppr, usage = _base_rows()
+    usage.append(dict(usage[0]))
+    idp, pprp, usp = tmp_path / "id.json", tmp_path / "ppr.json", tmp_path / "usage.json"
+    _write_payload(idp, identity)
+    _write_payload(pprp, ppr)
+    _write_payload(usp, usage)
+    try:
+        module.generate_readiness_report(idp, pprp, usp)
+        assert False
+    except Exception as exc:
+        assert "Usage duplicate key rows detected" in str(exc)
 
 
 def test_join_succeeds_when_keys_match_and_reports_fields(tmp_path):

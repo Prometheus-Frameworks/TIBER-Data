@@ -71,6 +71,8 @@ export const PLAYER_WEEKLY_PPR_OUTCOMES_V1_SOURCE_PATH =
   'data/raw/evidence/player_weekly_box_scores_2025.offline_fixture.json';
 export const PLAYER_WEEKLY_PPR_OUTCOMES_V1_SOURCE_BACKED_SOURCE_PATH =
   'data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json';
+export const PLAYER_WEEKLY_PPR_OUTCOMES_V1_COMPUTED_SOURCE_BACKED_ARTIFACT_PATH =
+  'data/processed/evidence/player_weekly_ppr_outcomes_2025.computed_source_backed.json';
 export const PLAYER_WEEKLY_PPR_OUTCOMES_V1_ARTIFACT_PATH =
   'exports/promoted/nfl/player_weekly_ppr_outcomes_v1.json';
 export const PLAYER_WEEKLY_PPR_OUTCOMES_V1_DEFAULT_SEASON = 2025;
