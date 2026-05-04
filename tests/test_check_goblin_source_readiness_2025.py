@@ -203,7 +203,11 @@ def test_join_succeeds_when_keys_match_and_reports_fields(tmp_path):
     report, ok = module.generate_readiness_report(idp, pprp, usp)
     assert ok is True
     assert "Status: READY" in report
-    assert "ppr_usage_join_coverage: 1/1 ppr, 1/1 usage" in report
+    assert "joined usage rows 1/1" in report
+    assert "joined ppr rows 1/1" in report
+    assert "ppr_only_rows=0" in report
+    assert "usage_without_ppr_rows=0" in report
+    assert "candidate_eligible_rows: 1" in report
     assert "negative air_yards_share count: 1" in report
     assert "routes_run null count: 1" in report
     assert "low_ppr_high_targets: ready" in report
@@ -223,3 +227,104 @@ def test_missing_required_field_fails_closed(tmp_path):
         assert False
     except Exception as exc:
         assert "Usage rows missing required fields" in str(exc)
+
+
+def test_ppr_superset_usage_subset_succeeds_and_reports_ppr_only(tmp_path):
+    module = _load_module()
+    identity, ppr, usage = _base_rows()
+    ppr.append({
+        "season": 2025,
+        "week": 1,
+        "player_id": "p2",
+        "player_name": "P2",
+        "team": "A",
+        "position": "RB",
+        "ppr_points": 0.0,
+        "receiving_tds": 0,
+        "rushing_tds": 0,
+        "passing_tds": 0,
+    })
+    idp, pprp, usp = tmp_path / "id.json", tmp_path / "ppr.json", tmp_path / "usage.json"
+    _write_payload(idp, identity)
+    _write_payload(pprp, ppr)
+    _write_payload(usp, usage)
+
+    report, ok = module.generate_readiness_report(idp, pprp, usp)
+    assert ok is True
+    assert "Status: READY" in report
+    assert "joined usage rows 1/1" in report
+    assert "joined ppr rows 1/2" in report
+    assert "ppr_only_rows=1" in report
+    assert "usage_without_ppr_rows=0" in report
+    assert "candidate_eligible_rows: 1" in report
+
+
+def test_usage_row_missing_ppr_fails_closed(tmp_path):
+    module = _load_module()
+    identity, ppr, usage = _base_rows()
+    usage.append({
+        "season": 2025,
+        "week": 1,
+        "player_id": "p2",
+        "player_name": "P2",
+        "team": "A",
+        "position": "RB",
+        "targets": 1,
+        "receptions": 0,
+        "target_share": None,
+        "air_yards": 0,
+        "air_yards_share": 0.0,
+        "rushing_attempts": 1,
+    })
+    idp, pprp, usp = tmp_path / "id.json", tmp_path / "ppr.json", tmp_path / "usage.json"
+    _write_payload(idp, identity + [{"season": 2025, "week": 1, "player_id": "p2", "player_name": "P2", "team": "A", "position": "RB"}])
+    _write_payload(pprp, ppr)
+    _write_payload(usp, usage)
+
+    try:
+        module.generate_readiness_report(idp, pprp, usp)
+        assert False
+    except Exception as exc:
+        assert "join coverage incomplete" in str(exc)
+
+
+def test_identity_coverage_measured_against_joined_rows(tmp_path):
+    module = _load_module()
+    identity, ppr, usage = _base_rows()
+    ppr.append({
+        "season": 2025,
+        "week": 1,
+        "player_id": "p2",
+        "player_name": "P2",
+        "team": "A",
+        "position": "RB",
+        "ppr_points": 0.0,
+        "receiving_tds": 0,
+        "rushing_tds": 0,
+        "passing_tds": 0,
+    })
+    usage.append({
+        "season": 2025,
+        "week": 1,
+        "player_id": "p2",
+        "player_name": "P2",
+        "team": "A",
+        "position": "RB",
+        "targets": 1,
+        "receptions": 0,
+        "target_share": None,
+        "air_yards": 0,
+        "air_yards_share": 0.0,
+        "rushing_attempts": 1,
+    })
+    # identity intentionally missing p2 while joined rows include p2
+    idp, pprp, usp = tmp_path / "id.json", tmp_path / "ppr.json", tmp_path / "usage.json"
+    _write_payload(idp, identity)
+    _write_payload(pprp, ppr)
+    _write_payload(usp, usage)
+
+    try:
+        module.generate_readiness_report(idp, pprp, usp)
+        assert False
+    except Exception as exc:
+        assert "Identity join coverage incomplete for candidate rows: 1/2" in str(exc)
