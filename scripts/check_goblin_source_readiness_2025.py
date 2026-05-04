@@ -65,7 +65,7 @@ class ReadinessError(ValueError):
     pass
 
 
-def _load_payload(path: Path) -> dict[str, Any]:
+def _load_wrapped_payload(path: Path) -> dict[str, Any]:
     if not path.exists():
         raise ReadinessError(f"Missing required artifact: {path}")
     try:
@@ -83,6 +83,41 @@ def _load_payload(path: Path) -> dict[str, Any]:
     if not records:
         raise ReadinessError(f"Artifact records are empty (fails closed): {path}")
     return payload
+
+
+def _load_records_payload(path: Path, *, allow_array: bool = False) -> tuple[list[dict[str, Any]], str, str]:
+    if not path.exists():
+        raise ReadinessError(f"Missing required artifact: {path}")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ReadinessError(f"Invalid JSON artifact: {path} ({exc})") from exc
+
+    if isinstance(payload, list):
+        if not allow_array:
+            raise ReadinessError(f"Artifact payload must be an object: {path}")
+        if not payload:
+            raise ReadinessError(f"Artifact records are empty (fails closed): {path}")
+        first_source = payload[0].get("source") if isinstance(payload[0], dict) else None
+        if first_source and all(isinstance(row, dict) and row.get("source") == first_source for row in payload):
+            provenance = str(first_source)
+            source_path = str(first_source)
+        else:
+            provenance = "computed_source_backed_ppr"
+            source_path = str(path)
+        return payload, provenance, source_path
+
+    if not isinstance(payload, dict):
+        raise ReadinessError(f"Artifact payload must be an object: {path}")
+    missing_wrapper = [field for field in WRAPPER_FIELDS if field not in payload]
+    if missing_wrapper:
+        raise ReadinessError(f"Artifact missing wrapper fields {missing_wrapper}: {path}")
+    records = payload.get("records")
+    if not isinstance(records, list):
+        raise ReadinessError(f"Artifact records must be an array: {path}")
+    if not records:
+        raise ReadinessError(f"Artifact records are empty (fails closed): {path}")
+    return records, str(payload["provenance"]), str(payload["source_path"])
 
 
 def _collect_missing_fields(records: list[dict[str, Any]], required_fields: tuple[str, ...]) -> set[str]:
@@ -115,12 +150,11 @@ def generate_readiness_report(
     ppr_path: Path = PPR_PATH,
     usage_path: Path = USAGE_PATH,
 ) -> tuple[str, bool]:
-    identity = _load_payload(identity_path)
-    ppr = _load_payload(ppr_path)
-    usage = _load_payload(usage_path)
+    identity = _load_wrapped_payload(identity_path)
+    usage = _load_wrapped_payload(usage_path)
+    ppr_records, ppr_provenance, ppr_source_path = _load_records_payload(ppr_path, allow_array=True)
 
     identity_records = identity["records"]
-    ppr_records = ppr["records"]
     usage_records = usage["records"]
 
     identity_missing = _collect_missing_fields(identity_records, IDENTITY_REQUIRED_FIELDS)
@@ -195,7 +229,7 @@ def generate_readiness_report(
         "",
         "Artifacts:",
         f"- identity: available, path={identity_path}, provenance={identity['provenance']}, records={len(identity_records)}, required_fields=ok",
-        f"- ppr: available, path={ppr_path}, provenance={ppr['provenance']}, records={len(ppr_records)}, required_fields=ok, duplicates={ppr_duplicates}",
+        f"- ppr: available, path={ppr_path}, provenance={ppr_provenance}, source_path={ppr_source_path}, records={len(ppr_records)}, required_fields=ok, duplicates={ppr_duplicates}",
         f"- usage: available, path={usage_path}, provenance={usage['provenance']}, records={len(usage_records)}, required_fields=ok, duplicates={usage_duplicates}",
         "",
         "Joins:",

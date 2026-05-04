@@ -18,6 +18,9 @@ def _write_payload(path: Path, records: list[dict], provenance: str = "test") ->
         encoding="utf-8",
     )
 
+def _write_array_payload(path: Path, rows: list[dict]) -> None:
+    path.write_text(json.dumps(rows), encoding="utf-8")
+
 
 def _base_rows():
     identity = [{"season": 2025, "week": 1, "player_id": "p1", "player_name": "P1", "team": "A", "position": "WR"}]
@@ -104,6 +107,60 @@ def test_empty_records_fails_closed(tmp_path):
         assert False
     except Exception as exc:
         assert "records are empty" in str(exc)
+
+
+def test_computed_ppr_direct_array_succeeds(tmp_path):
+    module = _load_module()
+    identity, ppr, usage = _base_rows()
+    ppr[0]["source"] = "src/ppr_raw.json"
+    idp, pprp, usp = tmp_path / "id.json", tmp_path / "ppr.json", tmp_path / "usage.json"
+    _write_payload(idp, identity)
+    _write_array_payload(pprp, ppr)
+    _write_payload(usp, usage)
+    report, ok = module.generate_readiness_report(idp, pprp, usp)
+    assert ok is True
+    assert "Status: READY" in report
+    assert "provenance=src/ppr_raw.json" in report
+
+
+def test_computed_ppr_empty_array_fails_closed(tmp_path):
+    module = _load_module()
+    identity, _, usage = _base_rows()
+    idp, pprp, usp = tmp_path / "id.json", tmp_path / "ppr.json", tmp_path / "usage.json"
+    _write_payload(idp, identity)
+    _write_array_payload(pprp, [])
+    _write_payload(usp, usage)
+    try:
+        module.generate_readiness_report(idp, pprp, usp)
+        assert False
+    except Exception as exc:
+        assert "records are empty" in str(exc)
+
+
+def test_computed_ppr_wrapper_still_succeeds(tmp_path):
+    module = _load_module()
+    identity, ppr, usage = _base_rows()
+    idp, pprp, usp = tmp_path / "id.json", tmp_path / "ppr.json", tmp_path / "usage.json"
+    _write_payload(idp, identity)
+    _write_payload(pprp, ppr, provenance="wrapped")
+    _write_payload(usp, usage)
+    report, ok = module.generate_readiness_report(idp, pprp, usp)
+    assert ok is True
+    assert "provenance=wrapped" in report
+
+
+def test_identity_usage_still_require_wrapper_fields(tmp_path):
+    module = _load_module()
+    _, ppr, _ = _base_rows()
+    idp, pprp, usp = tmp_path / "id.json", tmp_path / "ppr.json", tmp_path / "usage.json"
+    idp.write_text(json.dumps([{"season": 2025, "week": 1, "player_id": "p1"}]), encoding="utf-8")
+    _write_payload(pprp, ppr)
+    usp.write_text(json.dumps([{"season": 2025, "week": 1, "player_id": "p1"}]), encoding="utf-8")
+    try:
+        module.generate_readiness_report(idp, pprp, usp)
+        assert False
+    except Exception as exc:
+        assert "payload must be an object" in str(exc)
 
 
 def test_duplicate_keys_fail_closed(tmp_path):
