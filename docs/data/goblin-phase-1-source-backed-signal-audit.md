@@ -27,6 +27,7 @@ GOBLIN is not:
 - **Path:** `data/processed/evidence/player_weekly_ppr_outcomes_2025.computed_source_backed.json`
 - **Build rule:** generated from the existing TypeScript PPR builder with `toDeterministicPlayerWeeklyPprOutcomesV1Json({ sourceKind: "source_backed" })` via `npm run export:player-weekly-ppr-source-backed-2025`.
 - **Source / provenance:** computed from `data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json` raw wrapper records.
+- **Artifact shape note:** identity/usage source-backed handoffs are wrapper objects (`provenance`, `source_path`, `records`), while this computed PPR handoff is currently a deterministic computed row array emitted by the TypeScript builder; readiness checks accept this governed computed-array shape without requiring GOBLIN to recompute PPR.
 - **Contribution to GOBLIN:** supplies deterministic weekly output evidence including computed `ppr_points`, rolling windows, and season accumulators used by readiness checks and future candidate generation.
 - **Limitations:** raw source-backed input remains an input wrapper without computed `ppr_points`; GOBLIN consumers should use this governed computed handoff and must not silently recompute PPR internally.
 
