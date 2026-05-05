@@ -125,6 +125,14 @@ function uniqueSorted(records, field) {
   });
 }
 
+function uniqueSortedValues(values) {
+  return [...new Set(
+    values
+      .filter(v => v !== null && v !== undefined && v !== '')
+      .map(String)
+  )].sort((a, b) => a.localeCompare(b));
+}
+
 const ROSTER = ARTIFACTS.roster_source_backed;
 const PPR = ARTIFACTS.ppr_source_backed;
 
@@ -616,8 +624,8 @@ ${a.status === 'missing'
   const legitFlagQ = query.legit_flag || '';
   const grossFlagQ = query.gross_flag || '';
   const page = Math.max(1, parseInt(query.page || '1', 10));
-  const legitFlags = uniqueSorted(a.records.flatMap(r => Array.isArray(r.legitimate_indicator_flags) ? r.legitimate_indicator_flags : []), '');
-  const grossFlags = uniqueSorted(a.records.flatMap(r => Array.isArray(r.gross_output_flags) ? r.gross_output_flags : []), '');
+  const legitFlags = uniqueSortedValues(a.records.flatMap(r => Array.isArray(r.legitimate_indicator_flags) ? r.legitimate_indicator_flags : []));
+  const grossFlags = uniqueSortedValues(a.records.flatMap(r => Array.isArray(r.gross_output_flags) ? r.gross_output_flags : []));
 
   let rows = a.records;
   if (nameQ) rows = rows.filter(r => (r.player_name || '').toLowerCase().includes(nameQ));
