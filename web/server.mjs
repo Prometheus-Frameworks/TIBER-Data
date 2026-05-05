@@ -21,10 +21,31 @@ const ARTIFACT_DEFS = [
   },
   {
     key: 'ppr_source_backed',
-    name: 'Player Weekly PPR Outcomes 2025',
+    name: 'Player Weekly PPR Outcomes 2025 (Raw Source-Backed Input)',
     path: 'data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json',
     kind: 'source_backed',
     viewerPath: '/ppr',
+  },
+  {
+    key: 'usage_source_backed',
+    name: 'Player Weekly Usage 2025',
+    path: 'data/processed/evidence/player_weekly_usage_2025.source_backed.json',
+    kind: 'source_backed',
+    viewerPath: null,
+  },
+  {
+    key: 'ppr_computed_source_backed',
+    name: 'Player Weekly PPR Outcomes 2025 (Computed Source-Backed Handoff)',
+    path: 'data/processed/evidence/player_weekly_ppr_outcomes_2025.computed_source_backed.json',
+    kind: 'source_backed',
+    viewerPath: null,
+  },
+  {
+    key: 'goblin_candidates_2025',
+    name: 'GOBLIN Signal Candidates 2025',
+    path: 'data/processed/research/goblin_signal_candidates_2025.source_backed.json',
+    kind: 'source_backed_research',
+    viewerPath: '/goblin',
   },
   {
     key: 'roster_promoted',
@@ -113,6 +134,10 @@ const ROSTER_WEEKS = ROSTER.status === 'available' ? uniqueSorted(ROSTER.records
 const PPR_TEAMS = PPR.status === 'available' ? uniqueSorted(PPR.records, 'team') : [];
 const PPR_POSITIONS = PPR.status === 'available' ? uniqueSorted(PPR.records, 'position') : [];
 const PPR_WEEKS = PPR.status === 'available' ? uniqueSorted(PPR.records, 'week') : [];
+const GOBLIN = ARTIFACTS.goblin_candidates_2025;
+const GOBLIN_TEAMS = GOBLIN.status === 'available' ? uniqueSorted(GOBLIN.records, 'team') : [];
+const GOBLIN_POSITIONS = GOBLIN.status === 'available' ? uniqueSorted(GOBLIN.records, 'position') : [];
+const GOBLIN_WEEKS = GOBLIN.status === 'available' ? uniqueSorted(GOBLIN.records, 'week') : [];
 
 // ---------------------------------------------------------------------------
 // HTML helpers
@@ -230,6 +255,7 @@ function layout(title, activeRoute, content) {
     ['/artifacts', 'Artifacts'],
     ['/roster', 'Roster'],
     ['/ppr', 'PPR Outcomes'],
+    ['/goblin', 'GOBLIN'],
     ['/docs', 'Docs'],
   ].map(([href, label]) =>
     `<a href="${href}" class="${activeRoute === href ? 'active' : ''}">${label}</a>`
@@ -259,6 +285,7 @@ function layout(title, activeRoute, content) {
 
 function kindBadge(kind) {
   if (kind === 'source_backed') return `<span class="badge badge-source">source_backed</span>`;
+  if (kind === 'source_backed_research') return `<span class="badge badge-source">source_backed_research</span>`;
   if (kind === 'promoted_fixture') return `<span class="badge badge-promoted">promoted_fixture</span>`;
   return `<span class="badge badge-fixture">offline_fixture</span>`;
 }
@@ -302,7 +329,16 @@ function homePage() {
     <h3>Source-Backed Artifacts</h3>
     <ul>
       <li><a href="/roster">Roster Player-Team Map 2025</a></li>
-      <li><a href="/ppr">Player Weekly PPR Outcomes 2025</a></li>
+      <li><a href="/ppr">Player Weekly PPR Outcomes 2025 (Raw Source-Backed Input)</a></li>
+      <li><a href="/goblin">GOBLIN Research Candidates 2025</a></li>
+    </ul>
+  </div>
+  <div class="section-card">
+    <h3>GOBLIN Data Lab</h3>
+    <ul>
+      <li><a href="/goblin">Research Candidates &rarr;</a></li>
+      <li>Label: source-backed research</li>
+      <li>Review candidates, not recommendations</li>
     </ul>
   </div>
   <div class="section-card">
@@ -561,6 +597,89 @@ ${filters}
 ${pagLinks}`);
 }
 
+function goblinPage(query) {
+  const a = GOBLIN;
+  if (a.status !== 'available') {
+    return layout('GOBLIN Research Viewer', '/goblin', `
+<h1>GOBLIN Data Lab — Research Viewer</h1>
+${a.status === 'missing'
+  ? '<div class="error-box">Artifact not found: ' + esc(a.path) + '</div>'
+  : '<div class="error-box">Artifact invalid: ' + esc(a.error) + '</div>'}
+<p>GOBLIN candidates are research review rows. This is not a recommendation engine.</p>`);
+  }
+
+  const nameQ = (query.name || '').trim().toLowerCase();
+  const teamQ = query.team || '';
+  const posQ = query.position || '';
+  const weekQ = query.week || '';
+  const legitFlagQ = query.legit_flag || '';
+  const grossFlagQ = query.gross_flag || '';
+  const page = Math.max(1, parseInt(query.page || '1', 10));
+  const legitFlags = uniqueSorted(a.records.flatMap(r => Array.isArray(r.legitimate_indicator_flags) ? r.legitimate_indicator_flags : []), '');
+  const grossFlags = uniqueSorted(a.records.flatMap(r => Array.isArray(r.gross_output_flags) ? r.gross_output_flags : []), '');
+
+  let rows = a.records;
+  if (nameQ) rows = rows.filter(r => (r.player_name || '').toLowerCase().includes(nameQ));
+  if (teamQ) rows = rows.filter(r => String(r.team || '') === teamQ);
+  if (posQ) rows = rows.filter(r => String(r.position || '') === posQ);
+  if (weekQ) rows = rows.filter(r => String(r.week ?? '') === weekQ);
+  if (legitFlagQ) rows = rows.filter(r => Array.isArray(r.legitimate_indicator_flags) && r.legitimate_indicator_flags.includes(legitFlagQ));
+  if (grossFlagQ) rows = rows.filter(r => Array.isArray(r.gross_output_flags) && r.gross_output_flags.includes(grossFlagQ));
+
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const clampedPage = Math.min(page, totalPages);
+  const pageRows = rows.slice((clampedPage - 1) * PAGE_SIZE, clampedPage * PAGE_SIZE);
+  const currentParams = { name: nameQ, team: teamQ, position: posQ, week: weekQ, legit_flag: legitFlagQ, gross_flag: grossFlagQ };
+  const selectOpts = (opts, val) => ['', ...opts].map(o => `<option value="${esc(o)}" ${o === val ? 'selected' : ''}>${esc(o) || 'All'}</option>`).join('');
+
+  const flagCounts = {};
+  for (const r of a.records) for (const f of (r.legitimate_indicator_flags || [])) flagCounts[f] = (flagCounts[f] || 0) + 1;
+  const nullScoreCount = a.records.filter(r => r.candidate_score == null).length;
+  const uniquePlayers = new Set(a.records.map(r => r.player_id)).size;
+  const uniqueTeams = new Set(a.records.map(r => r.team)).size;
+
+  const colVal = (r, key) => {
+    const usage = r.usage_snapshot || {};
+    if (key in usage) return tdVal(usage[key]);
+    if (key === 'target_share' && usage.targets_share !== undefined) return tdVal(usage.targets_share);
+    return tdVal(null);
+  };
+
+  const COLS = ['season','week','player_name','team','position','ppr_points','legitimate_indicator_flags','gross_output_flags','targets','target_share','air_yards','air_yards_share','rushing_attempts','candidate_score','evidence_status'];
+  const tbody = pageRows.length ? pageRows.map(r => `<tr>
+<td>${tdVal(r.season)}</td><td>${tdVal(r.week)}</td><td>${tdVal(r.player_name)}</td><td>${tdVal(r.team)}</td><td>${tdVal(r.position)}</td><td>${tdVal(r.ppr_points)}</td>
+<td>${tdVal(Array.isArray(r.legitimate_indicator_flags) ? r.legitimate_indicator_flags.join(', ') : null)}</td>
+<td>${tdVal(Array.isArray(r.gross_output_flags) ? r.gross_output_flags.join(', ') : null)}</td>
+<td>${colVal(r,'targets')}</td><td>${colVal(r,'target_share')}</td><td>${colVal(r,'air_yards')}</td><td>${colVal(r,'air_yards_share')}</td><td>${colVal(r,'rushing_attempts')}</td>
+<td><span class="null-val">not implemented</span></td><td>${tdVal(r.evidence_status)}</td></tr>`).join('') : `<tr><td colspan="${COLS.length}" class="empty">No records match the current filters.</td></tr>`;
+
+  const filters = `<form method="GET" action="/goblin"><div class="filters">
+  <div class="fg" style="flex:2;min-width:180px"><label>Player name</label><input type="text" name="name" value="${esc(nameQ)}" placeholder="Search name..."></div>
+  <div class="fg"><label>Team</label><select name="team">${selectOpts(GOBLIN_TEAMS, teamQ)}</select></div>
+  <div class="fg"><label>Position</label><select name="position">${selectOpts(GOBLIN_POSITIONS, posQ)}</select></div>
+  <div class="fg"><label>Week</label><select name="week">${selectOpts(GOBLIN_WEEKS, weekQ)}</select></div>
+  <div class="fg"><label>Legitimate flag</label><select name="legit_flag">${selectOpts(legitFlags, legitFlagQ)}</select></div>
+  <div class="fg"><label>Gross output flag</label><select name="gross_flag">${selectOpts(grossFlags, grossFlagQ)}</select></div>
+  <button type="submit" class="btn">Filter</button><a href="/goblin" class="btn-ghost">Reset</a></div></form>`;
+
+  const flagSummary = Object.entries(flagCounts).sort((a1, b1) => b1[1] - a1[1]).map(([k,v]) => `<li>${esc(k)}: ${v.toLocaleString()}</li>`).join('');
+  return layout('GOBLIN Research Viewer', '/goblin', `
+<h1>GOBLIN Data Lab — Research Viewer</h1>
+<p>GOBLIN candidates are research review rows. This is not a recommendation engine. candidate_score is not implemented. Blocked fields are shown so the operator knows what evidence is unavailable.</p>
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-val">${a.recordCount.toLocaleString()}</div><div class="stat-lbl">Total candidate rows</div></div>
+  <div class="stat-card"><div class="stat-val">${uniquePlayers.toLocaleString()}</div><div class="stat-lbl">Unique players</div></div>
+  <div class="stat-card"><div class="stat-val">${uniqueTeams.toLocaleString()}</div><div class="stat-lbl">Unique teams</div></div>
+  <div class="stat-card"><div class="stat-val">${nullScoreCount.toLocaleString()}</div><div class="stat-lbl">Null candidate_score rows</div></div>
+</div>
+<div class="artifact-card"><h3>Legitimate indicator flag counts</h3><ul>${flagSummary || '<li>No flags present.</li>'}</ul><div class="artifact-meta">generated_at: ${esc(a.generatedAt || 'not available')}</div></div>
+${filters}
+<div class="table-meta">Showing ${((clampedPage-1)*PAGE_SIZE+1).toLocaleString()}–${Math.min(clampedPage*PAGE_SIZE, total).toLocaleString()} of ${total.toLocaleString()} matching rows</div>
+<div class="table-wrap"><table><thead><tr>${COLS.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${tbody}</tbody></table></div>
+${buildPager('/goblin', currentParams, clampedPage, totalPages)}`);
+}
+
 function buildPager(base, params, page, totalPages) {
   if (totalPages <= 1) return '';
 
@@ -682,6 +801,7 @@ const server = http.createServer((req, res) => {
     if (pathname === '/artifacts') return send(200, 'text/html', artifactsPage());
     if (pathname === '/roster') return send(200, 'text/html', rosterPage(query));
     if (pathname === '/ppr') return send(200, 'text/html', pprPage(query));
+    if (pathname === '/goblin') return send(200, 'text/html', goblinPage(query));
     if (pathname === '/docs') return send(200, 'text/html', docsPage());
 
     send(404, 'text/html', layout('Not Found', '', '<h1>404</h1><p>Page not found.</p>'));
