@@ -86,6 +86,7 @@ function loadArtifact(def) {
       provenance = data.provenance ?? null;
       sourcePath = data.source_path ?? null;
       generatedFrom = data.generated_from ?? null;
+      generatedAt = data.generated_at ?? records[0]?.generated_at ?? null;
     }
 
     const fields = records.length > 0 ? Object.keys(records[0]) : [];
@@ -522,8 +523,8 @@ function pprPage(query) {
   const a = PPR;
 
   if (a.status !== 'available') {
-    return layout('PPR Outcomes Viewer', '/ppr', `
-<h1>Player Weekly PPR Outcomes Viewer</h1>
+    return layout('Raw Source-Backed PPR Input Viewer', '/ppr', `
+<h1>Raw Source-Backed PPR Input Viewer</h1>
 ${a.status === 'missing'
   ? '<div class="error-box">Artifact not found: ' + esc(a.path) + '</div>'
   : '<div class="error-box">Artifact invalid: ' + esc(a.error) + '</div>'}`);
@@ -582,9 +583,9 @@ ${a.status === 'missing'
   <b>generated_from:</b> ${esc(Array.isArray(a.generatedFrom) ? a.generatedFrom.join(', ') : String(a.generatedFrom ?? ''))}
 </div>` : '';
 
-  return layout('PPR Outcomes Viewer', '/ppr', `
-<h1>Source-Backed Player Weekly PPR Outcomes Viewer</h1>
-<p>Read-only view of <code class="mono">${esc(a.path)}</code> — ${a.recordCount.toLocaleString()} records. Rows are raw source-backed input records from committed artifact. Data reflects committed artifact, not live fetch.</p>
+  return layout('Raw Source-Backed PPR Input Viewer', '/ppr', `
+<h1>Raw Source-Backed PPR Input Viewer</h1>
+<p>Read-only view of <code class="mono">${esc(a.path)}</code> — ${a.recordCount.toLocaleString()} records. Rows are raw source-backed input records from committed artifact. Computed <code class="mono">ppr_points</code> live in <code class="mono">data/processed/evidence/player_weekly_ppr_outcomes_2025.computed_source_backed.json</code> (see Artifact Inventory) and are consumed by GOBLIN research rows. Data reflects committed artifact, not live fetch.</p>
 ${provHtml}
 ${filters}
 <div class="table-meta">Showing ${((clampedPage-1)*PAGE_SIZE+1).toLocaleString()}–${Math.min(clampedPage*PAGE_SIZE, total).toLocaleString()} of ${total.toLocaleString()} matching records</div>
