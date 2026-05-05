@@ -229,9 +229,8 @@ input[type=text]:focus,select:focus{outline:none;border-color:var(--accent)}
 
 .table-meta{color:var(--muted);font-size:12px;margin-bottom:10px}
 .table-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
-table{width:100%;border-collapse:collapse;font-size:12px}
-thead{position:sticky;top:52px;z-index:5}
-th{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 10px;text-align:left;font-weight:500;color:var(--muted);white-space:nowrap;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+th{position:sticky;top:52px;z-index:6;background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 10px;text-align:left;font-weight:500;color:var(--muted);white-space:nowrap;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
 td{border-bottom:1px solid #21262d;padding:7px 10px;vertical-align:top;color:var(--text)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.025)}
