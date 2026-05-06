@@ -66,8 +66,8 @@ function parseArgs(argv) {
 
   if (options.limit !== undefined) {
     const limit = Number(options.limit);
-    if (!Number.isInteger(limit) || limit < 0) {
-      throw new Error('--limit must be a non-negative integer');
+    if (!Number.isInteger(limit) || limit <= 0) {
+      throw new Error('--limit must be a positive integer');
     }
     options.limit = limit;
   }
