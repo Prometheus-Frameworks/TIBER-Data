@@ -156,6 +156,10 @@ Details: `docs/data/forge-weekly-upstream-support-scaffold.md`.
 For the committed proof/reference specimen lane and deliberate refresh workflow, see:
 `docs/data/forge-weekly-upstream-proof-reference-snapshot.md`.
 
+## Research lane scaffolds
+
+- Play-caller pass rate over expectation is scaffolded as a research-only lane for future TIBER-Teamstate input. It does not generate artifacts, transcribe reference-table values, fabricate play-caller mappings, or change GOBLIN candidates. See `docs/data/play-caller-pass-rate-over-expectation.md`.
+
 ## Evidence artifact ownership note
 
 TIBER-Data owns canonical evidence artifacts used for operator-claim verification and promotion gating.
