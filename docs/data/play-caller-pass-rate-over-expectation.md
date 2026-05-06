@@ -4,7 +4,7 @@
 
 This lane is a bounded research scaffold for a future historical play-caller pass rate over expectation artifact. The target metric family is inspired by public work titled "Play Caller Historical Pass Rates Over Expectation" covering 2006-2025 with nflfastR data, but this repository must not copy that table into source artifacts.
 
-The immediate purpose of this first PR is only to establish:
+The immediate purpose of this scaffold lane is to establish:
 
 - the repository boundary for this metric family;
 - a deterministic bucket taxonomy helper for future aggregation work;
@@ -48,17 +48,26 @@ nflfastR/nflverse play-by-play exposes or can derive expected pass fields throug
 
 The nflfastR documentation notes that `add_xpass()` adds `xpass` and `pass_oe`, and that those values return `NA` before 2006 because scrambles were not marked before then. The complete `build_nflfastR_pbp()` workflow includes `add_xpass()` in the play-by-play build.
 
-Candidate raw fields for future investigation include:
+Required future play-by-play input fields, using nflverse/nflfastR-style naming, are:
 
-- `season`
-- `posteam`
-- `down`
-- `ydstogo`
-- `yardline_100`
-- `play_type` or a quarterback dropback/pass indicator
-- `epa`
-- `xpass`
-- `pass_oe`
+- `season`: season identifier for grouping and provenance;
+- `week`: week identifier for grouping, validation, and future play-caller validity-window joins;
+- `game_id`: stable game identifier for auditability and duplicate detection;
+- `posteam`: possession/offense team identifier for team attribution;
+- `down`: down value for outside-red-zone situational bucket classification;
+- `ydstogo`: yards-to-go value for outside-red-zone situational bucket classification;
+- `yardline_100`: distance from opponent goal line for red-zone and outside-red-zone classification;
+- `pass`: observed pass/dropback indicator for aggregation and auditability;
+- `xpass`: expected pass probability, scaled 0-1, for aggregation;
+- `pass_oe`: pass over expectation, scaled consistently with the selected nflfastR/nflverse extraction, for aggregation or audit comparison.
+
+Field responsibilities are intentionally split:
+
+- Bucket classification requires `yardline_100` for red-zone versus outside-red-zone boundaries. Outside-red-zone situational buckets also require `down` and `ydstogo`.
+- Aggregation requires the identity/grouping fields (`season`, `week`, `game_id`, `posteam`) plus expected-pass fields (`pass`, `xpass`, `pass_oe`).
+- Future play-caller aggregation will also require a separate play-caller mapping layer joined by documented team/week or game validity windows. That mapping is not derivable from these play-by-play rows alone.
+
+The synthetic fixture at `test/fixtures/play_caller_proe_pbp.synthetic.json` exists only to test validation behavior for these input requirements. It is not source-backed football history and must not be promoted as evidence.
 
 Open source-field questions that must be settled before artifact generation:
 
@@ -70,7 +79,7 @@ Open source-field questions that must be settled before artifact generation:
 
 ## Bucket scaffold
 
-The first deterministic helper for this lane classifies rows into exact Issue #84 bucket strings. Every valid row belongs to `overall`. Outside-red-zone situational buckets apply only when `yardline_100 > 20`. Red-zone buckets apply when `yardline_100 <= 20`, with `red_zone_inside_5` also applying when `yardline_100 <= 5`.
+The deterministic helper for this lane classifies rows into exact Issue #84 bucket strings. Every valid row belongs to `overall`. Outside-red-zone situational buckets apply only when `yardline_100 > 20`. Red-zone buckets apply when `yardline_100 <= 20`, with `red_zone_inside_5` also applying when `yardline_100 <= 5`.
 
 The current bucket labels are:
 

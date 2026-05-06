@@ -1,0 +1,57 @@
+[
+  {
+    "season": 2025,
+    "week": 1,
+    "game_id": "SYN_2025_01_AAA_BBB",
+    "posteam": "AAA",
+    "down": 1,
+    "ydstogo": 10,
+    "yardline_100": 65,
+    "pass": 1,
+    "xpass": 0.58,
+    "pass_oe": 42
+  },
+  {
+    "season": 2025,
+    "week": 1,
+    "game_id": "SYN_2025_01_AAA_BBB",
+    "posteam": "AAA",
+    "down": 2,
+    "ydstogo": 4,
+    "yardline_100": 4,
+    "pass": 0,
+    "xpass": 0.47,
+    "pass_oe": -47
+  },
+  {
+    "season": 2025,
+    "week": 1,
+    "game_id": "SYN_2025_01_AAA_BBB",
+    "posteam": "BBB",
+    "down": 3,
+    "ydstogo": 7,
+    "yardline_100": 55,
+    "pass": 1
+  },
+  {
+    "season": 2025,
+    "week": 1,
+    "game_id": "SYN_2025_01_AAA_BBB",
+    "posteam": "BBB",
+    "yardline_100": 48,
+    "pass": 0,
+    "xpass": 0.43,
+    "pass_oe": -43
+  },
+  {
+    "season": 2025,
+    "week": 1,
+    "game_id": "SYN_2025_01_AAA_BBB",
+    "posteam": "AAA",
+    "down": 2,
+    "ydstogo": 9,
+    "pass": 1,
+    "xpass": 0.61,
+    "pass_oe": 39
+  }
+]
