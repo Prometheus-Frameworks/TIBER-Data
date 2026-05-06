@@ -31,7 +31,8 @@
     "export:roster-player-team-map-v1": "npm run build && node scripts/export_roster_player_team_map_v1.mjs",
     "export:historical-rookie-replay-readiness-v0": "npm run build && node scripts/export_historical_rookie_replay_readiness_v0.mjs",
     "export:player-weekly-ppr-source-backed-2025": "npm run build && node scripts/export_player_weekly_ppr_outcomes_source_backed_2025.mjs",
-    "inspect:goblin-room": "node scripts/inspect_goblin_room.mjs"
+    "inspect:goblin-room": "node scripts/inspect_goblin_room.mjs",
+    "build:play-caller-proe": "node scripts/build_play_caller_pass_rate_over_expectation.mjs"
   },
   "dependencies": {
     "zod": "^3.23.8"

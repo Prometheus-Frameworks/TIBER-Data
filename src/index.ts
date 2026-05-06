@@ -11,3 +11,4 @@ export * from './export/teamPacePassEnvironmentArtifact.js';
 export * from './export/teamOffenseSummaryArtifact.js';
 export * from './export/rosterPlayerTeamMapArtifact.js';
 export * from './export/historicalRookieReplayReadinessArtifact.js';
+export * from './research/playCallerProeBuckets.js';
