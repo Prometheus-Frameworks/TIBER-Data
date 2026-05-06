@@ -13,6 +13,11 @@ The near-term question is what TIBER-Data can safely support from nflverse/nflre
 - This lane is **not** a GOBLIN scoring change, candidate-generation change, FORGE change, Teamstate change, Role-and-opportunity change, or TIBER-Fantasy change.
 - Existing nflverse participation probing is documented separately in `docs/data/nflverse-participation-route-proxy-audit.md`; that audit found the local environment could import `nflreadpy`, but could not source-verify 2025 participation columns because the data download was blocked.
 
+
+## Public participation availability note
+
+Existing nflverse participation probing notes that `nflreadr::load_participation()` documentation describes 2023+ participation as FTN Data distributed via nflverse. Future work must verify release timing and availability for the requested season/window; participation data should not be assumed to be live in-season. Any current-season artifact must fail closed when the participation stream is unavailable instead of fabricating continuity from snaps, targets, or prior weeks.
+
 ## Metric distinctions
 
 | Term | Meaning | Safe current TIBER-Data treatment |

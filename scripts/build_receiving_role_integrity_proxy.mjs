@@ -3,7 +3,7 @@
 const requiredFutureInputFields = [
   'season',
   'week',
-  'game_id',
+  'game_id or nflverse_game_id',
   'player_id',
   'player_name',
   'team',

@@ -17,6 +17,21 @@
   {
     "season": 2025,
     "week": 1,
+    "nflverse_game_id": "2025_01_ARI_BUF",
+    "player_id": "00-0030005",
+    "player_name": "Example Nflverse Id Receiver",
+    "team": "ARI",
+    "position": "WR",
+    "offense_snaps": 40,
+    "snap_share": 0.63,
+    "pass_play_participation": 25,
+    "targets": 5,
+    "receptions": 4,
+    "receiving_yards": 54
+  },
+  {
+    "season": 2025,
+    "week": 1,
     "game_id": "2025_01_ARI_BUF",
     "player_id": "00-0030002",
     "player_name": "Example Tight End",

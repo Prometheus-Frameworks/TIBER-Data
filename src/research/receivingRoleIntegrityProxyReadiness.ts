@@ -1,11 +1,15 @@
 export const RECEIVING_ROLE_PROXY_IDENTITY_FIELDS = [
   'season',
   'week',
-  'game_id',
   'player_id',
   'player_name',
   'team',
   'position',
+] as const;
+
+export const RECEIVING_ROLE_PROXY_GAME_IDENTIFIER_CANDIDATE_FIELDS = [
+  'game_id',
+  'nflverse_game_id',
 ] as const;
 
 export const RECEIVING_ROLE_PROXY_SNAP_FIELDS = ['offense_snaps', 'snap_share'] as const;
@@ -38,6 +42,8 @@ export const RECEIVING_ROLE_PROXY_REQUIRED_BASE_FIELDS = [
 ] as const;
 
 export type ReceivingRoleProxyIdentityField = (typeof RECEIVING_ROLE_PROXY_IDENTITY_FIELDS)[number];
+export type ReceivingRoleProxyGameIdentifierCandidateField =
+  (typeof RECEIVING_ROLE_PROXY_GAME_IDENTIFIER_CANDIDATE_FIELDS)[number];
 export type ReceivingRoleProxySnapField = (typeof RECEIVING_ROLE_PROXY_SNAP_FIELDS)[number];
 export type ReceivingRoleProxyJoinableUsageField =
   (typeof RECEIVING_ROLE_PROXY_JOINABLE_USAGE_FIELDS)[number];
@@ -50,6 +56,7 @@ export type ReceivingRoleProxyRequiredBaseField =
 
 export type ReceivingRoleProxyValidationIssueCode =
   | 'missing_identity_fields'
+  | 'missing_game_identifier_fields'
   | 'missing_snap_fields'
   | 'missing_pass_play_participation_proxy'
   | 'missing_joinable_receiving_usage_fields'
@@ -71,6 +78,7 @@ export type ReceivingRoleProxyValidationIssue = {
 export type ReceivingRoleProxyValidatedInputRow = {
   rowIndex: number;
   row: ReceivingRoleProxyInputRow;
+  gameIdentifierField: ReceivingRoleProxyGameIdentifierCandidateField | null;
   participationDenominatorField: ReceivingRoleProxyParticipationDenominatorCandidateField | null;
   status: ReceivingRoleProxyReadinessStatus;
 };
@@ -107,6 +115,10 @@ export const validateReceivingRoleProxyInputRows = (
 
   const validatedRows = rows.map((row, rowIndex) => {
     const missingIdentityFields = missingFields(row, RECEIVING_ROLE_PROXY_IDENTITY_FIELDS);
+    const gameIdentifierField = firstPresentField(
+      row,
+      RECEIVING_ROLE_PROXY_GAME_IDENTIFIER_CANDIDATE_FIELDS,
+    );
     const missingSnapFields = missingFields(row, RECEIVING_ROLE_PROXY_SNAP_FIELDS);
     const missingJoinableUsageFields = missingFields(row, RECEIVING_ROLE_PROXY_JOINABLE_USAGE_FIELDS);
     const blockedTrueRouteFields = presentFields(row, RECEIVING_ROLE_PROXY_BLOCKED_TRUE_ROUTE_FIELDS);
@@ -120,6 +132,14 @@ export const validateReceivingRoleProxyInputRows = (
         rowIndex,
         code: 'missing_identity_fields',
         fields: [...missingIdentityFields],
+      });
+    }
+
+    if (!gameIdentifierField) {
+      issues.push({
+        rowIndex,
+        code: 'missing_game_identifier_fields',
+        fields: [...RECEIVING_ROLE_PROXY_GAME_IDENTIFIER_CANDIDATE_FIELDS],
       });
     }
 
@@ -153,6 +173,7 @@ export const validateReceivingRoleProxyInputRows = (
 
     const hasMissingShape =
       missingIdentityFields.length > 0 ||
+      !gameIdentifierField ||
       missingSnapFields.length > 0 ||
       missingJoinableUsageFields.length > 0 ||
       !participationDenominatorField;
@@ -167,6 +188,7 @@ export const validateReceivingRoleProxyInputRows = (
     return {
       rowIndex,
       row,
+      gameIdentifierField,
       participationDenominatorField,
       status,
     } satisfies ReceivingRoleProxyValidatedInputRow;
