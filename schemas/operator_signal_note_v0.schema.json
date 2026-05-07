@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber-data.local/schemas/operator_signal_note_v0.schema.json",
+  "title": "operator_signal_note_v0",
+  "description": "Inspectable artifact for extracting hypotheses and structured signals from operator-entered football notes. This schema does not authorize downstream ranking mutation or autonomous decision-making.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "note_id",
+    "source_type",
+    "raw_note",
+    "created_at",
+    "entities",
+    "detected_metrics",
+    "signal_tags",
+    "reasoning_status",
+    "required_followups",
+    "do_not_apply",
+    "uncertainty",
+    "interpretation_summary"
+  ],
+  "properties": {
+    "note_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier for the operator signal note artifact."
+    },
+    "source_type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Origin class for the note, for example operator_entered_note."
+    },
+    "raw_note": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact freeform football note entered by the operator."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp for artifact creation."
+    },
+    "entities": {
+      "type": "array",
+      "description": "Detected football entities preserved for inspection.",
+      "items": {
+        "$ref": "#/$defs/entity"
+      }
+    },
+    "detected_metrics": {
+      "type": "array",
+      "description": "Metrics detected from the raw note. Metric extraction confidence is not source-truth confidence.",
+      "items": {
+        "$ref": "#/$defs/detected_metric"
+      }
+    },
+    "signal_tags": {
+      "type": "array",
+      "description": "Inspectable tags for triage. Tags do not imply verified truth or downstream application.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "reasoning_status": {
+      "type": "string",
+      "enum": [
+        "hypothesis_only",
+        "requires_followup",
+        "source_verified_signal",
+        "rejected_or_out_of_scope"
+      ],
+      "description": "Reasoning posture for the artifact; no value permits automatic ranking mutation by default."
+    },
+    "required_followups": {
+      "type": "array",
+      "description": "Checks required before any downstream interpretation or application.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "do_not_apply": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Explicit non-application rules that prevent automatic ranking, projection, recommendation, or decision changes from this note alone.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "uncertainty": {
+      "type": "array",
+      "description": "Preserved ambiguity, missing context, or source-verification gaps.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "interpretation_summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short human-readable summary of the extracted hypothesis or signal."
+    }
+  },
+  "$defs": {
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entity_type", "raw_text"],
+      "properties": {
+        "entity_type": {
+          "type": "string",
+          "enum": ["player", "team", "division", "season"],
+          "description": "Minimum supported entity classes for operator football notes."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Canonical or display name when available from the note or verified identity resolution."
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional stable identifier if known; must not be fabricated."
+        },
+        "value": {
+          "type": ["string", "number", "integer"],
+          "description": "Literal entity value, useful for season entities such as 2025."
+        },
+        "raw_text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Exact entity text span or literal fragment from the operator note."
+        }
+      }
+    },
+    "detected_metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric",
+        "value",
+        "unit",
+        "context",
+        "confidence",
+        "sample_filter"
+      ],
+      "properties": {
+        "metric": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Generic football metric name such as catchable_target_rate, epa_per_play, route_participation, target_share, or pressure_rate."
+        },
+        "value": {
+          "type": ["number", "string", "null"],
+          "description": "Metric value as detected from the note. Null is allowed when a metric is referenced without a value."
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unit for the metric value, such as percent, epa_per_play, share, count, rate, text, or unknown."
+        },
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable context for the metric as expressed by the note."
+        },
+        "confidence": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Extraction confidence or verification posture. This must not be read as proof that the football claim is true."
+        },
+        "sample_filter": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Sample or filter phrase from the note, such as red-zone targets or with CMC on field."
+        }
+      }
+    }
+  }
+}
