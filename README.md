@@ -21,6 +21,7 @@ Start here:
 
 Canonical architecture governance documents:
 
+- [TIBER-Data Doctrine](docs/TIBER_DOCTRINE.md)
 - [TIBER Architecture Document v1.0](docs/governance/architecture/tiber-architecture-document-v1.0.md)
 - [TIBER Architecture Quick Reference v1.0](docs/governance/architecture/tiber-architecture-quick-reference-v1.0.md)
 - [TIBER Evidence Layer v0](docs/governance/evidence-layer-v0.md)
@@ -28,6 +29,10 @@ Canonical architecture governance documents:
 - [Evidence Layer v0 Contract Shapes](docs/contracts/evidence-layer-v0.md)
 - [Historical Rookie Replay v0 Governance](docs/governance/historical-rookie-replay-v0.md)
 - [Historical Rookie Replay v0 Contract](docs/contracts/history-rookie-replay-v0.md)
+
+## Engineering posture
+
+TIBER-Data preserves contact with football reality while increasing system autonomy across downstream repos, agents, models, and future reasoning systems. The internal doctrine for that posture lives in [docs/TIBER_DOCTRINE.md](docs/TIBER_DOCTRINE.md).
 
 ## What this repo is for
 
