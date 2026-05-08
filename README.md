@@ -29,6 +29,7 @@ Canonical architecture governance documents:
 - [Evidence Layer v0 Contract Shapes](docs/contracts/evidence-layer-v0.md)
 - [Historical Rookie Replay v0 Governance](docs/governance/historical-rookie-replay-v0.md)
 - [Historical Rookie Replay v0 Contract](docs/contracts/history-rookie-replay-v0.md)
+- [Roster Snapshot v0 Contract](docs/contracts/roster-snapshot-v0.md) — canonical roster identity, team membership, source metadata, and time-bounded snapshot scaffold
 
 ## Engineering posture
 
