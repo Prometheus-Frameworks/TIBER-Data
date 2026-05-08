@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber-data.local/schemas/roster_snapshot_v0.schema.json",
+  "title": "roster_snapshot_v0",
+  "description": "Canonical, source-linked, time-bounded roster identity snapshot artifact. This schema defines roster truth only and does not authorize fantasy interpretation, Teamstate scoring, or speculative roster inference.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "contract_version",
+    "generated_at",
+    "source_updated_at",
+    "data_window_start",
+    "data_window_end",
+    "season",
+    "week",
+    "team_id",
+    "team_abbr",
+    "team_name",
+    "roster_entries"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier for this roster snapshot artifact."
+    },
+    "contract_version": {
+      "type": "string",
+      "const": "roster_snapshot_v0",
+      "description": "Contract version for this roster snapshot payload."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp for artifact generation."
+    },
+    "source_updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Latest known update timestamp from the underlying source set. Null when sources do not expose an update timestamp."
+    },
+    "data_window_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Inclusive ISO-8601 UTC start of the snapshot validity window."
+    },
+    "data_window_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC end of the snapshot validity window. Consumers must preserve this bound."
+    },
+    "season": {
+      "type": "integer",
+      "minimum": 1900,
+      "description": "NFL season represented by the roster snapshot."
+    },
+    "week": {
+      "type": ["integer", "null"],
+      "minimum": 1,
+      "description": "NFL week represented by the roster snapshot, or null when the artifact is date-only or season-level."
+    },
+    "team_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Canonical TIBER team identifier. Null is required when the canonical ID is unknown; do not invent IDs."
+    },
+    "team_abbr": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Team abbreviation from canonical mapping or source. Null when unknown."
+    },
+    "team_name": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Human-readable team name from canonical mapping or source. Null when unknown."
+    },
+    "roster_entries": {
+      "type": "array",
+      "description": "Source-linked roster membership entries for the team within the artifact window.",
+      "items": {
+        "$ref": "#/$defs/roster_entry"
+      }
+    }
+  },
+  "$defs": {
+    "roster_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "player_id",
+        "player_name",
+        "position",
+        "status",
+        "source_refs"
+      ],
+      "properties": {
+        "player_id": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Canonical TIBER player identifier. Null is required when the canonical ID is unknown; do not invent IDs."
+        },
+        "player_name": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Player display name from canonical identity resolution or source. Null when unknown."
+        },
+        "position": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Player position if source-backed. Null when unknown."
+        },
+        "status": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Roster status if source-backed. Null when unknown."
+        },
+        "jersey_number": {
+          "type": ["integer", "string", "null"],
+          "minimum": 0,
+          "minLength": 1,
+          "description": "Jersey number when source-backed. Null when unknown."
+        },
+        "roster_role": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Source-backed roster role only. This must not be Teamstate or fantasy interpretation."
+        },
+        "acquired_via": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Source-backed acquisition mode, such as draft, trade, signing, waiver claim, or null when unknown."
+        },
+        "transaction_context": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/transaction_context"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Source-linked transaction metadata only. Null when not applicable or unknown."
+        },
+        "source_refs": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Source references supporting this roster entry. Transaction claims must remain traceable here.",
+          "items": {
+            "$ref": "#/$defs/source_ref"
+          }
+        },
+        "valid_from": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Entry-level validity start timestamp when known. Null when only the artifact window is known."
+        },
+        "valid_to": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Entry-level validity end timestamp when known. Null when open or unknown inside the artifact window."
+        }
+      }
+    },
+    "transaction_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "transaction_id": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Stable transaction identifier if known. Null when unknown."
+        },
+        "transaction_type": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Source-backed transaction type. Null when unknown."
+        },
+        "transaction_date": {
+          "type": ["string", "null"],
+          "format": "date",
+          "description": "Source-backed transaction date. Null when unknown."
+        },
+        "source_statement": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Short source-grounded statement of the transaction claim. Null when unavailable."
+        },
+        "related_team_id": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Related canonical team identifier if source-backed. Null when unknown."
+        },
+        "related_team_abbr": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Related team abbreviation if source-backed. Null when unknown."
+        },
+        "notes": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Bounded source/provenance note. Null when unnecessary."
+        }
+      }
+    },
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_name",
+        "observed_at",
+        "confidence"
+      ],
+      "properties": {
+        "source_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of the source system, document, feed, or fixture supporting the roster claim."
+        },
+        "source_url": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "Source URL when available. Null when unavailable."
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 UTC timestamp when TIBER-Data observed the source."
+        },
+        "source_updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Source's own update timestamp when available. Null when unavailable."
+        },
+        "confidence": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Source confidence or verification posture for the roster fact. This is not a downstream interpretation score."
+        },
+        "notes": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Short bounded source note. Null when unnecessary."
+        }
+      }
+    }
+  }
+}
