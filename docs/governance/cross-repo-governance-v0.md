@@ -39,7 +39,8 @@ Each principle below corresponds to a stage of that loop. The point of governanc
 **Existing support.**
 - Versioned contracts under `src/contracts/v1/` (entry point: `src/contracts/v1/index.ts`).
 - Promoted artifact targets enumerated in `docs/contracts/evidence-layer-v0.md` (e.g. `roster_player_team_map_v1`, `team_offense_summary_v1`, `team_pace_pass_environment_v1`, `player_weekly_ppr_outcomes_v1`, `player_weekly_usage_v1`, `coaching_staff_context_v1`).
-- Per-artifact contract docs under `docs/contracts/` (players, teams, weekly stats, role inputs, opportunity context).
+- Per-artifact schema docs under `docs/schemas/` (`players.md`, `teams.md`, `weekly_player_stats.md`, `weekly_team_stats.md`, `player_role_inputs_weekly.md`, `team_context_weekly.md`, `team_opportunity_context_compatibility_weekly.md`, `player_role_profile_compatibility_weekly.md`).
+- Versioned contract docs under `docs/contracts/` (`evidence-layer-v0.md`, `history-rookie-replay-v0.md`, `operator-signal-note-v0.md`, `roster-snapshot-v0.md`).
 - Truth-source rules in `TRUTH_SOURCES.md` and fail-closed posture in `AGENTS.md`.
 
 **Gaps to flag.**
@@ -78,7 +79,7 @@ Each principle below corresponds to a stage of that loop. The point of governanc
 **Gaps to flag.**
 - No `model_claim_vs_outcome_v0` contract exists. A v0 shape would carry: `claim_id`, `producer_repo`, `claim_type` (e.g. `breakout_flag`, `role_opportunity_score`, `forge_score`, `rookie_projection`), `subject_id` (player or team), `season`, `week_or_window`, `predicted_value`, `realized_value`, `realized_source_artifact`, `delta`, `failure_mode_tag`, `generated_at`.
 - No standardized `failure_mode_tag` vocabulary (e.g. `right_for_wrong_reason`, `wrong_for_right_reason`, `role_did_not_materialize`, `environment_changed`, `injury_disrupted`).
-- `coaching_staff_context_v1` is referenced in evidence-layer contracts but its contract doc is not yet present alongside the others under `docs/contracts/`.
+- `coaching_staff_context_v1` is referenced in evidence-layer contracts but no per-artifact contract doc exists yet under `docs/contracts/` to match the other versioned contracts.
 
 ### 4. World Modeling
 
@@ -87,9 +88,9 @@ Each principle below corresponds to a stage of that loop. The point of governanc
 **Owner.** TIBER-Teamstate owns the environmental interpretation. TIBER-Data owns the contract surface that exposes it to other repos. Role-and-Opportunity-Model and downstream consumers read these contracts, do not redefine them.
 
 **Existing support.**
-- Team-context contracts present: `docs/contracts/team_context_weekly.md`, `docs/contracts/team_opportunity_context_compatibility_weekly.md`, `docs/contracts/teams.md`.
+- Team-context schema docs present: `docs/schemas/team_context_weekly.md`, `docs/schemas/team_opportunity_context_compatibility_weekly.md`, `docs/schemas/teams.md`.
 - Promoted artifact targets: `team_pace_pass_environment_v1`, `team_offense_summary_v1`, `coaching_staff_context_v1` (see `docs/contracts/evidence-layer-v0.md`).
-- Roster/depth context: `docs/contracts/players.md`, planned `roster_player_team_map_v1`.
+- Roster/depth context: `docs/schemas/players.md` and the versioned `docs/contracts/roster-snapshot-v0.md`; planned promoted artifact `roster_player_team_map_v1`.
 - `team-state/` directory is wired in at the repo level for environment data handoff.
 
 **Gaps to flag.**
