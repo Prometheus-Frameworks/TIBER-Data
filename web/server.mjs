@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const PORT = parseInt(process.env.PORT || '5000', 10);
 
 // ---------------------------------------------------------------------------
 // Artifact definitions
@@ -931,6 +931,6 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`TIBER-Data Evidence Layer → http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`TIBER-Data Evidence Layer → http://0.0.0.0:${PORT}`);
 });
