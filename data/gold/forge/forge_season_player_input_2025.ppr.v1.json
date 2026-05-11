@@ -1,0 +1,2572 @@
+{
+  "artifactId": "forge_season_player_input_2025.ppr.v1",
+  "season": 2025,
+  "schemaVersion": "v1",
+  "scoringFormat": "PPR",
+  "regularSeasonWeeks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "availableWeeks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "playerCount": 50,
+  "scoringRules": {
+    "passingYards": "yards / 25",
+    "passingTds": "td * 4",
+    "interceptions": "interception * -2",
+    "rushingYards": "yards / 10",
+    "rushingTds": "td * 6",
+    "receivingYards": "yards / 10",
+    "receivingTds": "td * 6",
+    "receptions": "reception * 1",
+    "fumblesLost": "fumble lost * -2 when available"
+  },
+  "metadata": {
+    "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+    "asOf": "2026-04-27T00:00:00Z",
+    "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+    "buildId": "forge-2025-ppr-v1:source-backed:regular-season",
+    "sourceProviders": [
+      "nflverse via nflreadpy"
+    ],
+    "sourcePaths": [
+      "data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json",
+      "data/processed/evidence/roster_player_team_map_2025.source_backed.json"
+    ],
+    "sourceProvenance": "nflreadpy.load_player_stats",
+    "sourcePathLabel": "nflverse player stats via nflreadpy",
+    "generatedFrom": [
+      "scripts/build_player_weekly_ppr_outcomes_source_backed_2025.py",
+      "nflreadpy.load_player_stats([2025])"
+    ],
+    "scoringFormat": "PPR"
+  },
+  "records": [
+    {
+      "playerId": "00-0033106",
+      "playerName": "Jared Goff",
+      "team": "DET",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 323.06,
+      "ppg": 19.0,
+      "opportunities": 19,
+      "stats": {
+        "passingYards": 4564,
+        "passingTds": 34,
+        "interceptions": null,
+        "rushingAttempts": 19,
+        "rushingYards": 45,
+        "rushingTds": 0,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0039139",
+      "playerName": "Jahmyr Gibbs",
+      "team": "DET",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 368.9,
+      "ppg": 21.7,
+      "opportunities": 337,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 243,
+        "rushingYards": 1223,
+        "rushingTds": 13,
+        "targets": 94,
+        "receptions": 77,
+        "receivingYards": 616,
+        "receivingTds": 5,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0029604",
+      "playerName": "Kirk Cousins",
+      "team": "ATL",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        3,
+        8,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 10,
+      "scoringFormat": "PPR",
+      "pprTotal": 115.54,
+      "ppg": 11.55,
+      "opportunities": 14,
+      "stats": {
+        "passingYards": 1721,
+        "passingTds": 10,
+        "interceptions": null,
+        "rushingAttempts": 14,
+        "rushingYards": 7,
+        "rushingTds": 1,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0038542",
+      "playerName": "Bijan Robinson",
+      "team": "ATL",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 374.8,
+      "ppg": 22.05,
+      "opportunities": 390,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 287,
+        "rushingYards": 1478,
+        "rushingTds": 7,
+        "targets": 103,
+        "receptions": 79,
+        "receivingYards": 820,
+        "receivingTds": 4,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036963",
+      "playerName": "Amon-Ra St. Brown",
+      "team": "DET",
+      "position": "WR",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 324.0,
+      "ppg": 19.06,
+      "opportunities": 175,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 3,
+        "rushingYards": 9,
+        "rushingTds": 0,
+        "targets": 172,
+        "receptions": 117,
+        "receivingYards": 1401,
+        "receivingTds": 11,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036309",
+      "playerName": "Darnell Mooney",
+      "team": "ATL",
+      "position": "WR",
+      "season": 2025,
+      "weeks": [
+        2,
+        3,
+        4,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 15,
+      "scoringFormat": "PPR",
+      "pprTotal": 82.3,
+      "ppg": 5.49,
+      "opportunities": 72,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 0,
+        "rushingYards": 0,
+        "rushingTds": 0,
+        "targets": 72,
+        "receptions": 32,
+        "receivingYards": 443,
+        "receivingTds": 1,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0039065",
+      "playerName": "Sam LaPorta",
+      "team": "DET",
+      "position": "TE",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10
+      ],
+      "games": 9,
+      "scoringFormat": "PPR",
+      "pprTotal": 106.9,
+      "ppg": 11.88,
+      "opportunities": 49,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 0,
+        "rushingYards": 0,
+        "rushingTds": 0,
+        "targets": 49,
+        "receptions": 40,
+        "receivingYards": 489,
+        "receivingTds": 3,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0039064",
+      "playerName": "Zay Flowers",
+      "team": "BAL",
+      "position": "WR",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 249.3,
+      "ppg": 14.66,
+      "opportunities": 128,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 10,
+        "rushingYards": 62,
+        "rushingTds": 1,
+        "targets": 118,
+        "receptions": 86,
+        "receivingYards": 1211,
+        "receivingTds": 5,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0037840",
+      "playerName": "Kyren Williams",
+      "team": "LA",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 267.3,
+      "ppg": 15.72,
+      "opportunities": 309,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 259,
+        "rushingYards": 1252,
+        "rushingTds": 10,
+        "targets": 50,
+        "receptions": 36,
+        "receivingYards": 281,
+        "receivingTds": 3,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036389",
+      "playerName": "Jalen Hurts",
+      "team": "PHI",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 319.06,
+      "ppg": 19.94,
+      "opportunities": 105,
+      "stats": {
+        "passingYards": 3224,
+        "passingTds": 25,
+        "interceptions": null,
+        "rushingAttempts": 105,
+        "rushingYards": 421,
+        "rushingTds": 8,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0033280",
+      "playerName": "Christian McCaffrey",
+      "team": "SF",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 416.6,
+      "ppg": 24.51,
+      "opportunities": 440,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 311,
+        "rushingYards": 1202,
+        "rushingTds": 10,
+        "targets": 129,
+        "receptions": 102,
+        "receivingYards": 924,
+        "receivingTds": 7,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0034857",
+      "playerName": "Josh Allen",
+      "team": "BUF",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 388.62,
+      "ppg": 24.29,
+      "opportunities": 112,
+      "stats": {
+        "passingYards": 3668,
+        "passingTds": 25,
+        "interceptions": null,
+        "rushingAttempts": 112,
+        "rushingYards": 579,
+        "rushingTds": 14,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0039075",
+      "playerName": "Puka Nacua",
+      "team": "LA",
+      "position": "WR",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 377.0,
+      "ppg": 23.56,
+      "opportunities": 176,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 10,
+        "rushingYards": 105,
+        "rushingTds": 1,
+        "targets": 166,
+        "receptions": 129,
+        "receivingYards": 1715,
+        "receivingTds": 10,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0026498",
+      "playerName": "Matthew Stafford",
+      "team": "LA",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 372.38,
+      "ppg": 21.9,
+      "opportunities": 29,
+      "stats": {
+        "passingYards": 4707,
+        "passingTds": 46,
+        "interceptions": null,
+        "rushingAttempts": 29,
+        "rushingYards": 1,
+        "rushingTds": 0,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0039851",
+      "playerName": "Drake Maye",
+      "team": "NE",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 369.96,
+      "ppg": 21.76,
+      "opportunities": 104,
+      "stats": {
+        "passingYards": 4394,
+        "passingTds": 31,
+        "interceptions": null,
+        "rushingAttempts": 103,
+        "rushingYards": 450,
+        "rushingTds": 4,
+        "targets": 1,
+        "receptions": 1,
+        "receivingYards": 2,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036971",
+      "playerName": "Trevor Lawrence",
+      "team": "JAX",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 366.18,
+      "ppg": 21.54,
+      "opportunities": 82,
+      "stats": {
+        "passingYards": 4007,
+        "passingTds": 29,
+        "interceptions": null,
+        "rushingAttempts": 82,
+        "rushingYards": 359,
+        "rushingTds": 9,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036223",
+      "playerName": "Jonathan Taylor",
+      "team": "IND",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 362.3,
+      "ppg": 21.31,
+      "opportunities": 378,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 323,
+        "rushingYards": 1585,
+        "rushingTds": 18,
+        "targets": 55,
+        "receptions": 46,
+        "receivingYards": 378,
+        "receivingTds": 2,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0038543",
+      "playerName": "Jaxon Smith-Njigba",
+      "team": "SEA",
+      "position": "WR",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 361.9,
+      "ppg": 21.29,
+      "opportunities": 170,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 7,
+        "rushingYards": 36,
+        "rushingTds": 0,
+        "targets": 163,
+        "receptions": 119,
+        "receivingYards": 1793,
+        "receivingTds": 10,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0039918",
+      "playerName": "Caleb Williams",
+      "team": "CHI",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 332.18,
+      "ppg": 19.54,
+      "opportunities": 79,
+      "stats": {
+        "passingYards": 3942,
+        "passingTds": 27,
+        "interceptions": null,
+        "rushingAttempts": 77,
+        "rushingYards": 383,
+        "rushingTds": 3,
+        "targets": 2,
+        "receptions": 2,
+        "receivingYards": 22,
+        "receivingTds": 1,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0033077",
+      "playerName": "Dak Prescott",
+      "team": "DAL",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 331.78,
+      "ppg": 19.52,
+      "opportunities": 53,
+      "stats": {
+        "passingYards": 4552,
+        "passingTds": 30,
+        "interceptions": null,
+        "rushingAttempts": 53,
+        "rushingYards": 177,
+        "rushingTds": 2,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0039732",
+      "playerName": "Bo Nix",
+      "team": "DEN",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 322.84,
+      "ppg": 18.99,
+      "opportunities": 84,
+      "stats": {
+        "passingYards": 3931,
+        "passingTds": 25,
+        "interceptions": null,
+        "rushingAttempts": 83,
+        "rushingYards": 356,
+        "rushingTds": 5,
+        "targets": 1,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0039040",
+      "playerName": "De'Von Achane",
+      "team": "MIA",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 322.8,
+      "ppg": 20.18,
+      "opportunities": 323,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 238,
+        "rushingYards": 1350,
+        "rushingTds": 8,
+        "targets": 85,
+        "receptions": 67,
+        "receivingYards": 488,
+        "receivingTds": 4,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0037744",
+      "playerName": "Trey McBride",
+      "team": "ARI",
+      "position": "TE",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 315.9,
+      "ppg": 18.58,
+      "opportunities": 169,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 0,
+        "rushingYards": 0,
+        "rushingTds": 0,
+        "targets": 169,
+        "receptions": 126,
+        "receivingYards": 1239,
+        "receivingTds": 11,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036900",
+      "playerName": "Ja'Marr Chase",
+      "team": "CIN",
+      "position": "WR",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 315.6,
+      "ppg": 19.73,
+      "opportunities": 188,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 3,
+        "rushingYards": 14,
+        "rushingTds": 0,
+        "targets": 185,
+        "receptions": 125,
+        "receivingYards": 1412,
+        "receivingTds": 8,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036355",
+      "playerName": "Justin Herbert",
+      "team": "LAC",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 314.88,
+      "ppg": 19.68,
+      "opportunities": 83,
+      "stats": {
+        "passingYards": 3727,
+        "passingTds": 26,
+        "interceptions": null,
+        "rushingAttempts": 83,
+        "rushingYards": 498,
+        "rushingTds": 2,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0037248",
+      "playerName": "James Cook",
+      "team": "BUF",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 308.2,
+      "ppg": 18.13,
+      "opportunities": 349,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 309,
+        "rushingYards": 1621,
+        "rushingTds": 12,
+        "targets": 40,
+        "receptions": 33,
+        "receivingYards": 291,
+        "receivingTds": 2,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0033873",
+      "playerName": "Patrick Mahomes",
+      "team": "KC",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "games": 14,
+      "scoringFormat": "PPR",
+      "pprTotal": 303.68,
+      "ppg": 21.69,
+      "opportunities": 65,
+      "stats": {
+        "passingYards": 3587,
+        "passingTds": 22,
+        "interceptions": null,
+        "rushingAttempts": 64,
+        "rushingYards": 422,
+        "rushingTds": 5,
+        "targets": 1,
+        "receptions": 1,
+        "receivingYards": -10,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0034855",
+      "playerName": "Baker Mayfield",
+      "team": "TB",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 295.92,
+      "ppg": 17.41,
+      "opportunities": 55,
+      "stats": {
+        "passingYards": 3693,
+        "passingTds": 26,
+        "interceptions": null,
+        "rushingAttempts": 55,
+        "rushingYards": 382,
+        "rushingTds": 1,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0037247",
+      "playerName": "George Pickens",
+      "team": "DAL",
+      "position": "WR",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 289.9,
+      "ppg": 17.05,
+      "opportunities": 137,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 0,
+        "rushingYards": 0,
+        "rushingTds": 0,
+        "targets": 137,
+        "receptions": 93,
+        "receivingYards": 1429,
+        "receivingTds": 9,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0032764",
+      "playerName": "Derrick Henry",
+      "team": "BAL",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 285.5,
+      "ppg": 16.79,
+      "opportunities": 328,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 307,
+        "rushingYards": 1595,
+        "rushingTds": 16,
+        "targets": 21,
+        "receptions": 15,
+        "receivingYards": 150,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0038597",
+      "playerName": "Chase Brown",
+      "team": "CIN",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 280.6,
+      "ppg": 16.51,
+      "opportunities": 320,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 232,
+        "rushingYards": 1019,
+        "rushingTds": 6,
+        "targets": 88,
+        "receptions": 69,
+        "receivingYards": 437,
+        "receivingTds": 5,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0034869",
+      "playerName": "Sam Darnold",
+      "team": "SEA",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 271.42,
+      "ppg": 15.97,
+      "opportunities": 35,
+      "stats": {
+        "passingYards": 4048,
+        "passingTds": 25,
+        "interceptions": null,
+        "rushingAttempts": 35,
+        "rushingYards": 95,
+        "rushingTds": 0,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0037239",
+      "playerName": "Chris Olave",
+      "team": "NO",
+      "position": "WR",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 270.0,
+      "ppg": 16.88,
+      "opportunities": 157,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 1,
+        "rushingYards": -3,
+        "rushingTds": 0,
+        "targets": 156,
+        "receptions": 100,
+        "receivingYards": 1163,
+        "receivingTds": 9,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036973",
+      "playerName": "Travis Etienne",
+      "team": "JAX",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 253.9,
+      "ppg": 14.94,
+      "opportunities": 312,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 260,
+        "rushingYards": 1107,
+        "rushingTds": 7,
+        "targets": 52,
+        "receptions": 36,
+        "receivingYards": 292,
+        "receivingTds": 6,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0040691",
+      "playerName": "Jaxson Dart",
+      "team": "NYG",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        13,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 14,
+      "scoringFormat": "PPR",
+      "pprTotal": 253.58,
+      "ppg": 18.11,
+      "opportunities": 86,
+      "stats": {
+        "passingYards": 2272,
+        "passingTds": 15,
+        "interceptions": null,
+        "rushingAttempts": 86,
+        "rushingYards": 487,
+        "rushingTds": 9,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0033119",
+      "playerName": "Jacoby Brissett",
+      "team": "ARI",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        2,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 14,
+      "scoringFormat": "PPR",
+      "pprTotal": 249.44,
+      "ppg": 17.82,
+      "opportunities": 38,
+      "stats": {
+        "passingYards": 3366,
+        "passingTds": 23,
+        "interceptions": null,
+        "rushingAttempts": 38,
+        "rushingYards": 168,
+        "rushingTds": 1,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036264",
+      "playerName": "Jordan Love",
+      "team": "GB",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "games": 15,
+      "scoringFormat": "PPR",
+      "pprTotal": 247.14,
+      "ppg": 16.48,
+      "opportunities": 47,
+      "stats": {
+        "passingYards": 3381,
+        "passingTds": 23,
+        "interceptions": null,
+        "rushingAttempts": 47,
+        "rushingYards": 199,
+        "rushingTds": 0,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0040122",
+      "playerName": "Ashton Jeanty",
+      "team": "LV",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 247.1,
+      "ppg": 14.54,
+      "opportunities": 339,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 266,
+        "rushingYards": 975,
+        "rushingTds": 5,
+        "targets": 73,
+        "receptions": 55,
+        "receivingYards": 346,
+        "receivingTds": 5,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036997",
+      "playerName": "Javonte Williams",
+      "team": "DAL",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 246.8,
+      "ppg": 15.43,
+      "opportunities": 303,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 252,
+        "rushingYards": 1201,
+        "rushingTds": 11,
+        "targets": 51,
+        "receptions": 35,
+        "receivingYards": 137,
+        "receivingTds": 2,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0035710",
+      "playerName": "Daniel Jones",
+      "team": "IND",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12,
+        13,
+        14
+      ],
+      "games": 13,
+      "scoringFormat": "PPR",
+      "pprTotal": 246.44,
+      "ppg": 18.96,
+      "opportunities": 45,
+      "stats": {
+        "passingYards": 3101,
+        "passingTds": 19,
+        "interceptions": null,
+        "rushingAttempts": 45,
+        "rushingYards": 164,
+        "rushingTds": 5,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0039150",
+      "playerName": "Bryce Young",
+      "team": "CAR",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 246.04,
+      "ppg": 15.38,
+      "opportunities": 54,
+      "stats": {
+        "passingYards": 3011,
+        "passingTds": 23,
+        "interceptions": null,
+        "rushingAttempts": 54,
+        "rushingYards": 216,
+        "rushingTds": 2,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0035700",
+      "playerName": "Josh Jacobs",
+      "team": "GB",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "games": 15,
+      "scoringFormat": "PPR",
+      "pprTotal": 241.1,
+      "ppg": 16.07,
+      "opportunities": 278,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 234,
+        "rushingYards": 929,
+        "rushingTds": 13,
+        "targets": 44,
+        "receptions": 36,
+        "receivingYards": 282,
+        "receivingTds": 1,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0023459",
+      "playerName": "Aaron Rodgers",
+      "team": "PIT",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 241.08,
+      "ppg": 15.07,
+      "opportunities": 22,
+      "stats": {
+        "passingYards": 3322,
+        "passingTds": 24,
+        "interceptions": null,
+        "rushingAttempts": 21,
+        "rushingYards": 61,
+        "rushingTds": 1,
+        "targets": 1,
+        "receptions": 1,
+        "receivingYards": -9,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0034796",
+      "playerName": "Lamar Jackson",
+      "team": "BAL",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        18
+      ],
+      "games": 13,
+      "scoringFormat": "PPR",
+      "pprTotal": 232.86,
+      "ppg": 17.91,
+      "opportunities": 67,
+      "stats": {
+        "passingYards": 2549,
+        "passingTds": 21,
+        "interceptions": null,
+        "rushingAttempts": 67,
+        "rushingYards": 349,
+        "rushingTds": 2,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036275",
+      "playerName": "D'Andre Swift",
+      "team": "CHI",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 232.6,
+      "ppg": 14.54,
+      "opportunities": 271,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 223,
+        "rushingYards": 1087,
+        "rushingTds": 9,
+        "targets": 48,
+        "receptions": 34,
+        "receivingYards": 299,
+        "receivingTds": 1,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0034844",
+      "playerName": "Saquon Barkley",
+      "team": "PHI",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "games": 16,
+      "scoringFormat": "PPR",
+      "pprTotal": 232.3,
+      "ppg": 14.52,
+      "opportunities": 330,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 280,
+        "rushingYards": 1140,
+        "rushingTds": 7,
+        "targets": 50,
+        "receptions": 37,
+        "receivingYards": 273,
+        "receivingTds": 2,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036554",
+      "playerName": "Nico Collins",
+      "team": "HOU",
+      "position": "WR",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "games": 15,
+      "scoringFormat": "PPR",
+      "pprTotal": 226.2,
+      "ppg": 15.08,
+      "opportunities": 122,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 2,
+        "rushingYards": 15,
+        "rushingTds": 1,
+        "targets": 120,
+        "receptions": 71,
+        "receivingYards": 1117,
+        "receivingTds": 6,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0039163",
+      "playerName": "C.J. Stroud",
+      "team": "HOU",
+      "position": "QB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 14,
+      "scoringFormat": "PPR",
+      "pprTotal": 224.54,
+      "ppg": 16.04,
+      "opportunities": 48,
+      "stats": {
+        "passingYards": 3041,
+        "passingTds": 19,
+        "interceptions": null,
+        "rushingAttempts": 48,
+        "rushingYards": 209,
+        "rushingTds": 1,
+        "targets": 0,
+        "receptions": 0,
+        "receivingYards": 0,
+        "receivingTds": 0,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0036919",
+      "playerName": "Kenneth Gainwell",
+      "team": "PIT",
+      "position": "RB",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "games": 17,
+      "scoringFormat": "PPR",
+      "pprTotal": 223.3,
+      "ppg": 13.14,
+      "opportunities": 199,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 114,
+        "rushingYards": 537,
+        "rushingTds": 5,
+        "targets": 85,
+        "receptions": 73,
+        "receivingYards": 486,
+        "receivingTds": 3,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    },
+    {
+      "playerId": "00-0031381",
+      "playerName": "Davante Adams",
+      "team": "LA",
+      "position": "WR",
+      "season": 2025,
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "games": 14,
+      "scoringFormat": "PPR",
+      "pprTotal": 222.9,
+      "ppg": 15.92,
+      "opportunities": 114,
+      "stats": {
+        "passingYards": 0,
+        "passingTds": 0,
+        "interceptions": null,
+        "rushingAttempts": 0,
+        "rushingYards": 0,
+        "rushingTds": 0,
+        "targets": 114,
+        "receptions": 60,
+        "receivingYards": 789,
+        "receivingTds": 14,
+        "fumblesLost": null
+      },
+      "source": {
+        "sourceSetId": "nflreadpy.load_player_stats.2025.regular_season.source_backed",
+        "sourceUpdatedAt": "2026-04-27T00:00:00Z",
+        "sourceProviders": [
+          "nflverse via nflreadpy"
+        ]
+      }
+    }
+  ]
+}
