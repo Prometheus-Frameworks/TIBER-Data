@@ -36,6 +36,7 @@
     "build:receiving-role-integrity-proxy": "node scripts/build_receiving_role_integrity_proxy.mjs"
   },
   "dependencies": {
+    "@replit/connectors-sdk": "^0.4.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
