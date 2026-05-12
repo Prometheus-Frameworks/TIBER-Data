@@ -456,10 +456,10 @@ function homePage() {
 
   const statCards = `
 <div class="stats-grid">
-  <div class="stat-card"><div class="stat-val">${available}</div><div class="stat-lbl">Artifacts loaded</div></div>
+  <div class="stat-card"><div class="stat-val">${available}</div><div class="stat-lbl">Data files loaded</div></div>
   <div class="stat-card"><div class="stat-val">${totalRecords.toLocaleString()}</div><div class="stat-lbl">Total records</div></div>
-  <div class="stat-card"><div class="stat-val">${ROSTER.recordCount.toLocaleString()}</div><div class="stat-lbl">Roster records</div></div>
-  <div class="stat-card"><div class="stat-val">${PPR.recordCount.toLocaleString()}</div><div class="stat-lbl">PPR outcome records</div></div>
+  <div class="stat-card"><div class="stat-val">${ROSTER.recordCount.toLocaleString()}</div><div class="stat-lbl">Player roster rows</div></div>
+  <div class="stat-card"><div class="stat-val">${PPR.recordCount.toLocaleString()}</div><div class="stat-lbl">Weekly box-score rows</div></div>
 </div>`;
 
   const sections = `
@@ -476,27 +476,27 @@ function homePage() {
     <h3>Research signal review</h3>
     <ul>
       <li><a href="/goblin">Review research signals &rarr;</a></li>
-      <li>Rows are verified research evidence</li>
-      <li>Review candidates, not recommendations</li>
+      <li>Each row is a flagged player-week worth reviewing</li>
+      <li>These are research rows, not recommendations</li>
     </ul>
   </div>
   <div class="section-card">
     <h3>Published files</h3>
     <ul>
-      <li>Roster Player-Team Map v1</li>
-      <li>Player Weekly PPR Outcomes v1</li>
+      <li>Player team assignments v1</li>
+      <li>Weekly player box scores v1</li>
     </ul>
   </div>
   <div class="section-card">
-    <h3>Data file inventory</h3>
+    <h3>All data files</h3>
     <ul>
-      <li><a href="/artifacts">View all artifacts &rarr;</a></li>
+      <li><a href="/artifacts">View full file inventory &rarr;</a></li>
     </ul>
   </div>
   <div class="section-card">
-    <h3>Data contracts</h3>
+    <h3>Schema docs</h3>
     <ul>
-      <li><a href="/docs">Evidence Layer &amp; contracts &rarr;</a></li>
+      <li><a href="/docs">Field definitions &amp; contracts &rarr;</a></li>
     </ul>
   </div>
 </div>`;
@@ -512,19 +512,18 @@ function homePage() {
 
 ${statCards}
 
-<h2>What this viewer does</h2>
+<h2>What you can do here</h2>
 <p>
-  Inspect what data artifacts exist, where they came from, how many records they contain,
-  what fields are available, and whether they are verified or published.
-  This is a read-only data lab — not a fantasy product surface.
+  Browse the verified data files in this repository — see what's available, how many records each file contains,
+  what fields are in each file, and where the data came from. Nothing here changes any files.
 </p>
 
 ${sections}
 
-<h2>What this viewer does not do</h2>
+<h2>What this viewer is not for</h2>
 <p>
-  This viewer does not answer who to start, who to trade for, player rankings, or final
-  player grades. Those belong in TIBER-Fantasy, FORGE, or downstream scoring surfaces.
+  This viewer does not give player rankings, start/sit advice, trade recommendations, or fantasy scores.
+  Those outputs come from separate downstream tools that consume these data files.
 </p>`);
 }
 
@@ -812,7 +811,7 @@ ${a.status === 'missing'
 
   return layout('Research signal review', '/goblin', `
 <h1>Research signal review</h1>
-<p>These rows highlight verified research signals for review. Candidate scores are not calculated here, and these rows are not start/sit, trade, ranking, or recommendation outputs.</p>
+<p>GOBLIN flags player-weeks where usage patterns didn't match box-score output — for example, a player who saw heavy targets but produced little fantasy value. Each row here is a verified data point flagged for analyst review. These are not start/sit picks, rankings, or trade recommendations.</p>
 ${sourceHtml}
 <div class="stats-grid">
   <div class="stat-card"><div class="stat-val">${a.recordCount.toLocaleString()}</div><div class="stat-lbl">Research rows</div></div>
@@ -991,9 +990,9 @@ function docsPage() {
   }).join('');
 
   return layout('Docs', '/docs', `
-<h1>Docs &amp; Contracts</h1>
+<h1>Schema docs &amp; contracts</h1>
 <p>
-  Contract and governance documentation for TIBER-Data artifacts. These docs live in the repository at <code class="mono">docs/</code>.
+  Field definitions, schema documentation, and data contracts for each file in this repository.
   For full content, browse the repository directly.
 </p>
 <div class="doc-links">${cards}</div>`);
