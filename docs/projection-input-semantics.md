@@ -61,6 +61,19 @@ node scripts/inspect_projection_input_semantics.mjs --group opportunity
 node scripts/inspect_projection_input_semantics.mjs --consumer Point-prediction-model
 ```
 
+## High-value usage ownership
+
+High-value fantasy usage fields are inspection semantics only until a governed projection-input adapter exists. TIBER-Data may own factual or derived evidence fields such as red-zone targets per game, red-zone carries per game, inside-10 carries per game, goal-line rushing attempts per game, end-zone targets per game, and player red-zone target share only when the underlying source path, denominator, sample window, and null policy are governed.
+
+Interpretive composites remain outside this repo. `rush_td_opportunity`, touchdown fragility, touchdown regression modifiers, and ceiling/floor adjustments from high-value usage belong in `Point-prediction-model` or another downstream modeling repo because they combine evidence with model judgment. The semantics registry may name those concepts to mark the boundary, but `needs_verification` entries must stay unavailable and not consumed here.
+
+Denominator policy must be explicit before consumption:
+
+- per-game fields must say whether the denominator is active games, games with source coverage, all team games, or another governed sample;
+- red-zone target share must use governed player red-zone targets divided by governed team red-zone targets over the same sample, not all team targets or implied attempts;
+- route participation and targets per route must preserve route denominator uncertainty until source coverage and route opportunity definitions are documented;
+- unavailable high-value usage remains `null` / unavailable, never zero, unless the source row explicitly says the player had zero opportunities.
+
 ## Status vocabulary
 
 | status | meaning |
