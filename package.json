@@ -33,7 +33,9 @@
     "export:player-weekly-ppr-source-backed-2025": "npm run build && node scripts/export_player_weekly_ppr_outcomes_source_backed_2025.mjs",
     "inspect:goblin-room": "node scripts/inspect_goblin_room.mjs",
     "build:play-caller-proe": "node scripts/build_play_caller_pass_rate_over_expectation.mjs",
-    "build:receiving-role-integrity-proxy": "node scripts/build_receiving_role_integrity_proxy.mjs"
+    "build:receiving-role-integrity-proxy": "node scripts/build_receiving_role_integrity_proxy.mjs",
+    "inspect:projection-input-semantics": "node scripts/inspect_projection_input_semantics.mjs",
+    "docs:projection-input-semantics": "node scripts/inspect_projection_input_semantics.mjs --write"
   },
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.0",
