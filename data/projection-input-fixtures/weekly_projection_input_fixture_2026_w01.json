@@ -51,10 +51,17 @@
       "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
       "data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json"
     ],
-    "identity_fields": ["player_id", "player_name", "team", "position", "season", "week"],
+    "identity_fields": [
+      "player_id",
+      "player_name",
+      "team",
+      "position",
+      "season",
+      "week"
+    ],
     "projection_label_policy": "season/week values use the 2026_w01 rehearsal label; source evidence remains bounded to 2025_w01 and does not claim 2026 production roster continuity."
   },
-  "league_context": {
+  "projection_context": {
     "season": 2026,
     "week": 1,
     "league": "NFL",
@@ -63,6 +70,27 @@
     "production_ingestion": false,
     "source_evidence_season": 2025,
     "source_evidence_week": 1
+  },
+  "league_context": {
+    "teams": 12,
+    "starters": {
+      "QB": 1,
+      "RB": 2,
+      "WR": 2,
+      "TE": 1,
+      "FLEX": 1
+    },
+    "flex_allocation": {
+      "RB": 0.35,
+      "WR": 0.55,
+      "TE": 0.1
+    },
+    "replacement_buffer": {
+      "QB": 2,
+      "RB": 8,
+      "WR": 10,
+      "TE": 4
+    }
   },
   "player_opportunities": [
     {
@@ -156,44 +184,52 @@
   ],
   "missing_fields": [
     {
-      "field_name": "routes_pg",
-      "applies_to": "all_players",
-      "reason": "routes_run is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture."
+      "field": "routes_pg",
+      "severity": "warning",
+      "reason": "routes_run is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture.",
+      "impact": "Route-volume inputs are unavailable for every fixture player; downstream rehearsal should not infer routes. Applies to: all_players."
     },
     {
-      "field_name": "route_participation",
-      "applies_to": "all_players",
-      "reason": "route_participation is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture."
+      "field": "route_participation",
+      "severity": "warning",
+      "reason": "route_participation is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture.",
+      "impact": "Route participation is unavailable for every fixture player; downstream rehearsal should not infer route share. Applies to: all_players."
     },
     {
-      "field_name": "targets_per_route",
-      "applies_to": "all_players",
-      "reason": "requires route denominator support, which is unavailable in the bounded source rows."
+      "field": "targets_per_route",
+      "severity": "warning",
+      "reason": "requires route denominator support, which is unavailable in the bounded source rows.",
+      "impact": "Target-per-route efficiency is unavailable because the route denominator is missing. Applies to: all_players."
     },
     {
-      "field_name": "red_zone_targets_pg",
-      "applies_to": "all_players",
-      "reason": "red_zone_targets is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture."
+      "field": "red_zone_targets_pg",
+      "severity": "warning",
+      "reason": "red_zone_targets is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture.",
+      "impact": "Red-zone target opportunity is unavailable; downstream rehearsal should keep this high-value usage input missing. Applies to: all_players."
     },
     {
-      "field_name": "red_zone_carries_pg",
-      "applies_to": "all_players",
-      "reason": "red_zone_carries is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture."
+      "field": "red_zone_carries_pg",
+      "severity": "warning",
+      "reason": "red_zone_carries is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture.",
+      "impact": "Red-zone carry opportunity is unavailable; downstream rehearsal should keep this high-value usage input missing. Applies to: all_players."
     },
     {
-      "field_name": "goal_line_rush_attempts_pg",
-      "applies_to": "all_players",
-      "reason": "high-value usage field is marked not_consumed_yet/needs_verification in the semantics registry and has no governed source artifact in this fixture."
+      "field": "goal_line_rush_attempts_pg",
+      "severity": "warning",
+      "reason": "high-value usage field is marked not_consumed_yet/needs_verification in the semantics registry and has no governed source artifact in this fixture.",
+      "impact": "Goal-line rushing opportunity is unavailable and not consumed yet; downstream rehearsal should not synthesize touchdown opportunity. Applies to: all_players."
     },
     {
-      "field_name": "end_zone_targets_pg",
-      "applies_to": "WR_TE_players",
-      "reason": "high-value usage field is marked not_consumed_yet/needs_verification in the semantics registry and has no governed source artifact in this fixture."
+      "field": "end_zone_targets_pg",
+      "severity": "warning",
+      "reason": "high-value usage field is marked not_consumed_yet/needs_verification in the semantics registry and has no governed source artifact in this fixture.",
+      "impact": "End-zone target opportunity is unavailable and not consumed yet; downstream rehearsal should not synthesize touchdown opportunity. Applies to: WR_TE_players."
     },
     {
-      "field_name": "inside_10_carries_pg",
-      "applies_to": "RB_players",
-      "reason": "high-value usage field is marked not_consumed_yet/needs_verification in the semantics registry and has no governed source artifact in this fixture."
+      "field": "inside_10_carries_pg",
+      "severity": "warning",
+      "reason": "high-value usage field is marked not_consumed_yet/needs_verification in the semantics registry and has no governed source artifact in this fixture.",
+      "impact": "Inside-10 rushing opportunity is unavailable and not consumed yet; downstream rehearsal should not synthesize touchdown opportunity. Applies to: RB_players."
     }
   ],
   "adapter_warnings": [

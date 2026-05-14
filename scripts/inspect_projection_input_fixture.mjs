@@ -21,7 +21,8 @@ const PLAYER_REQUIRED_FIELDS = ['player_id', 'player_name', 'team', 'position', 
 const REQUIRED_STRING_PLAYER_FIELDS = ['player_id', 'player_name', 'team', 'position'];
 const ALLOWED_POSITIONS = new Set(['QB', 'RB', 'WR', 'TE']);
 const IDENTITY_FIELD_NAMES = new Set(PLAYER_REQUIRED_FIELDS);
-const ALLOWED_EXTRA_TOP_LEVEL_FIELDS = new Set(['fixture_scope']);
+const ALLOWED_EXTRA_TOP_LEVEL_FIELDS = new Set(['fixture_scope', 'projection_context']);
+const MISSING_FIELD_SEVERITIES = new Set(['info', 'warning', 'error']);
 
 function printUsage() {
   console.log(`Usage: node scripts/inspect_projection_input_fixture.mjs [options]\n\nOptions:\n  --fixture <path>   Projection input fixture JSON path (default: ${DEFAULT_FIXTURE})\n  --registry <path>  Projection input semantics registry path (default: ${DEFAULT_REGISTRY})\n  --write            Write generated markdown summary\n  --output <path>    Generated markdown output path (default: ${DEFAULT_OUTPUT})\n  --help, -h         Show this help\n\nExamples:\n  node scripts/inspect_projection_input_fixture.mjs\n  node scripts/inspect_projection_input_fixture.mjs --write`);
@@ -97,6 +98,48 @@ function findNulls(value, fieldPath, errors) {
   }
 }
 
+function assertPositiveNumber(value, fieldPath, errors) {
+  if (!isFiniteNumber(value) || value <= 0) {
+    errors.push(`${fieldPath} must be a positive finite number`);
+  }
+}
+
+function assertNonNegativeNumber(value, fieldPath, errors) {
+  if (!isFiniteNumber(value) || value < 0) {
+    errors.push(`${fieldPath} must be a non-negative finite number`);
+  }
+}
+
+function validateNumberRecord(value, fieldPath, errors, requiredKeys) {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    errors.push(`${fieldPath} must be an object`);
+    return;
+  }
+
+  for (const key of requiredKeys) {
+    if (!Object.hasOwn(value, key)) {
+      errors.push(`${fieldPath}.${key} is required`);
+      continue;
+    }
+    assertNonNegativeNumber(value[key], `${fieldPath}.${key}`, errors);
+  }
+}
+
+function validateLeagueContext(leagueContext, fieldPath, errors) {
+  assertPositiveNumber(leagueContext.teams, `${fieldPath}.teams`, errors);
+  validateNumberRecord(leagueContext.starters, `${fieldPath}.starters`, errors, ['QB', 'RB', 'WR', 'TE']);
+
+  if (leagueContext.starters && Object.hasOwn(leagueContext.starters, 'FLEX')) {
+    assertNonNegativeNumber(leagueContext.starters.FLEX, `${fieldPath}.starters.FLEX`, errors);
+  }
+  if (Object.hasOwn(leagueContext, 'flex_allocation')) {
+    validateNumberRecord(leagueContext.flex_allocation, `${fieldPath}.flex_allocation`, errors, ['RB', 'WR', 'TE']);
+  }
+  if (Object.hasOwn(leagueContext, 'replacement_buffer')) {
+    validateNumberRecord(leagueContext.replacement_buffer, `${fieldPath}.replacement_buffer`, errors, ['QB', 'RB', 'WR', 'TE']);
+  }
+}
+
 function registryFieldMap(registry) {
   if (!Array.isArray(registry.entries)) {
     throw new Error('registry.entries must be an array');
@@ -145,6 +188,8 @@ function validateFixture(fixture, registry) {
   }
   if (typeof fixture.league_context !== 'object' || fixture.league_context === null || Array.isArray(fixture.league_context)) {
     errors.push('league_context must be an object');
+  } else {
+    validateLeagueContext(fixture.league_context, 'league_context', errors);
   }
   if (!Array.isArray(fixture.player_opportunities) || fixture.player_opportunities.length === 0) {
     errors.push('player_opportunities must be a non-empty array');
@@ -203,11 +248,26 @@ function validateFixture(fixture, registry) {
       errors.push(`${missingPath} must be an object`);
       continue;
     }
-    assertNonEmptyString(missing.field_name, `${missingPath}.field_name`, errors);
-    assertNonEmptyString(missing.applies_to, `${missingPath}.applies_to`, errors);
+    assertNonEmptyString(missing.field, `${missingPath}.field`, errors);
+    assertNonEmptyString(missing.severity, `${missingPath}.severity`, errors);
     assertNonEmptyString(missing.reason, `${missingPath}.reason`, errors);
-    if (typeof missing.field_name === 'string' && !registryFields.has(missing.field_name)) {
-      errors.push(`${missingPath}.field_name is not present in the semantics registry: ${missing.field_name}`);
+    if (Object.hasOwn(missing, 'player_id')) {
+      assertNonEmptyString(missing.player_id, `${missingPath}.player_id`, errors);
+    }
+    if (Object.hasOwn(missing, 'impact')) {
+      assertNonEmptyString(missing.impact, `${missingPath}.impact`, errors);
+    }
+    if (typeof missing.severity === 'string' && !MISSING_FIELD_SEVERITIES.has(missing.severity)) {
+      errors.push(`${missingPath}.severity must be one of: ${[...MISSING_FIELD_SEVERITIES].join(', ')}`);
+    }
+    if (typeof missing.field === 'string' && !registryFields.has(missing.field)) {
+      errors.push(`${missingPath}.field is not present in the semantics registry: ${missing.field}`);
+    }
+    if (Object.hasOwn(missing, 'field_name')) {
+      errors.push(`${missingPath}.field_name is not adapter-compatible; use field`);
+    }
+    if (Object.hasOwn(missing, 'applies_to')) {
+      errors.push(`${missingPath}.applies_to is not adapter-compatible; use player_id or impact`);
     }
   }
 
@@ -227,7 +287,7 @@ function groupByPosition(players) {
 function missingFieldCounts(missingFields) {
   const counts = new Map();
   for (const missing of missingFields) {
-    const key = missing.field_name;
+    const key = missing.field;
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   return [...counts.entries()].sort(([a], [b]) => a.localeCompare(b));
@@ -252,14 +312,18 @@ function renderMarkdown(fixture, fixturePath) {
     .map(([field, count]) => `| ${field} | ${count} |`)
     .join('\n');
 
-  return `# Projection input fixture inspection\n\nGenerated from \`${fixturePath}\`.\n\n## Bundle\n\n- Contract: \`${fixture.input_contract_version}\`\n- TIBER-Data schema: \`${fixture.tiber_data_schema_version}\`\n- Player rows: ${players.length}\n- Fixture only: ${fixture.league_context.fixture_only === true ? 'yes' : 'no'}\n\n## Position counts\n\n| Position | Count |\n| --- | ---: |\n${positionRows}\n\n## Players\n\n| Player | Position | Team | Numeric opportunity/context fields present |\n| --- | --- | --- | --- |\n${playerRows}\n\n## Missing-field counts\n\n| Field | Count |\n| --- | ---: |\n${missingRows}\n`;
+  return `# Projection input fixture inspection\n\nGenerated from \`${fixturePath}\`.\n\n## Bundle\n\n- Contract: \`${fixture.input_contract_version}\`\n- TIBER-Data schema: \`${fixture.tiber_data_schema_version}\`\n- Player rows: ${players.length}\n- Fixture only: ${fixture.projection_context?.fixture_only === true ? 'yes' : 'no'}\n\n## Position counts\n\n| Position | Count |\n| --- | ---: |\n${positionRows}\n\n## Players\n\n| Player | Position | Team | Numeric opportunity/context fields present |\n| --- | --- | --- | --- |\n${playerRows}\n\n## Missing-field counts\n\n| Field | Count |\n| --- | ---: |\n${missingRows}\n`;
 }
 
 function printSummary(fixture, fixturePath) {
   console.log(`Projection input fixture: ${fixturePath}`);
   console.log(`Contract: ${fixture.input_contract_version}`);
   console.log(`TIBER-Data schema: ${fixture.tiber_data_schema_version}`);
-  console.log(`League context: ${fixture.league_context.league} ${fixture.league_context.season} W${fixture.league_context.week}`);
+  const projectionContext = fixture.projection_context;
+  if (projectionContext) {
+    console.log(`Projection context: ${projectionContext.league} ${projectionContext.season} W${projectionContext.week}`);
+  }
+  console.log(`League context: ${fixture.league_context.teams} teams, starters ${JSON.stringify(fixture.league_context.starters)}`);
   console.log(`Player rows: ${fixture.player_opportunities.length}`);
   console.log('\nPlayers:');
   for (const player of fixture.player_opportunities) {
