@@ -1,0 +1,204 @@
+{
+  "input_contract_version": "tiber-data.projection-input-fixture.v0.1.0",
+  "tiber_data_schema_version": "projection_input_semantics.v0.1.0",
+  "fixture_scope": {
+    "kind": "bounded_rehearsal_fixture",
+    "production_coverage_claim": false,
+    "projection_label": "2026_w01",
+    "evidence_window": "2025_w01_source_backed_and_offline_fixture_artifacts",
+    "notes": [
+      "This bundle is for Point-prediction-model rehearsal only.",
+      "Player identity and opportunity values are carried from bounded 2025 week 1 TIBER-Data artifacts; they are not an assertion of 2026 roster or production projection coverage.",
+      "Unavailable optional fields are omitted from player records and listed in missing_fields."
+    ]
+  },
+  "source_dataset_refs": [
+    {
+      "name": "projection_input_semantics",
+      "path": "data/semantics/projection_input_semantics.json",
+      "version": "0.1.0",
+      "usage": "field readiness and consumption-boundary registry"
+    },
+    {
+      "name": "player_weekly_usage_2025_source_backed",
+      "path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
+      "provenance": "nflreadpy.load_player_stats",
+      "source_path": "nflverse player stats via nflreadpy",
+      "usage": "week 1 targets, receptions, and rushing attempts source evidence"
+    },
+    {
+      "name": "player_weekly_ppr_outcomes_2025_source_backed",
+      "path": "data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json",
+      "provenance": "nflreadpy.load_player_stats",
+      "source_path": "nflverse player stats via nflreadpy",
+      "usage": "week 1 receiving yards and rushing yards source evidence for bounded efficiency derivation"
+    },
+    {
+      "name": "team_pace_pass_environment_2025_offline_fixture",
+      "path": "data/raw/evidence/team_pace_pass_environment_2025.offline_fixture.json",
+      "provenance": "offline_fixture",
+      "usage": "bounded team pass-rate and pace context for fixture rehearsal"
+    },
+    {
+      "name": "team_offense_summary_2025_offline_fixture",
+      "path": "data/raw/evidence/team_offense_summary_2025.offline_fixture.json",
+      "provenance": "offline_fixture",
+      "usage": "bounded team offensive environment context for fixture rehearsal"
+    }
+  ],
+  "identity_ref": {
+    "source_paths": [
+      "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
+      "data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json"
+    ],
+    "identity_fields": ["player_id", "player_name", "team", "position", "season", "week"],
+    "projection_label_policy": "season/week values use the 2026_w01 rehearsal label; source evidence remains bounded to 2025_w01 and does not claim 2026 production roster continuity."
+  },
+  "league_context": {
+    "season": 2026,
+    "week": 1,
+    "league": "NFL",
+    "scoring_format": "PPR",
+    "fixture_only": true,
+    "production_ingestion": false,
+    "source_evidence_season": 2025,
+    "source_evidence_week": 1
+  },
+  "player_opportunities": [
+    {
+      "player_id": "00-0033553",
+      "player_name": "J.Conner",
+      "team": "ARI",
+      "position": "RB",
+      "season": 2026,
+      "week": 1,
+      "targets_pg": 4,
+      "carries_pg": 12,
+      "yards_per_target": 1.25,
+      "yards_per_carry": 3.25,
+      "yards_per_reception": 1.25,
+      "catch_rate": 1,
+      "games_sampled": 1,
+      "team_pass_rate_environment": 0.571,
+      "team_pace": 63.2,
+      "offensive_environment": 22.7
+    },
+    {
+      "player_id": "00-0037744",
+      "player_name": "T.McBride",
+      "team": "ARI",
+      "position": "TE",
+      "season": 2026,
+      "week": 1,
+      "targets_pg": 9,
+      "carries_pg": 0,
+      "yards_per_target": 6.7778,
+      "yards_per_reception": 10.1667,
+      "catch_rate": 0.6667,
+      "games_sampled": 1,
+      "team_pass_rate_environment": 0.571,
+      "team_pace": 63.2,
+      "offensive_environment": 22.7
+    },
+    {
+      "player_id": "00-0039849",
+      "player_name": "M.Harrison",
+      "team": "ARI",
+      "position": "WR",
+      "season": 2026,
+      "week": 1,
+      "targets_pg": 6,
+      "carries_pg": 0,
+      "yards_per_target": 11.8333,
+      "yards_per_reception": 14.2,
+      "catch_rate": 0.8333,
+      "games_sampled": 1,
+      "team_pass_rate_environment": 0.571,
+      "team_pace": 63.2,
+      "offensive_environment": 22.7
+    },
+    {
+      "player_id": "00-0039361",
+      "player_name": "B.Irving",
+      "team": "TB",
+      "position": "RB",
+      "season": 2026,
+      "week": 1,
+      "targets_pg": 4,
+      "carries_pg": 14,
+      "yards_per_target": 2,
+      "yards_per_carry": 2.6429,
+      "yards_per_reception": 2,
+      "catch_rate": 1,
+      "games_sampled": 1,
+      "team_pass_rate_environment": 0.588,
+      "team_pace": 64.5,
+      "offensive_environment": 27.4
+    },
+    {
+      "player_id": "00-0040129",
+      "player_name": "E.Egbuka",
+      "team": "TB",
+      "position": "WR",
+      "season": 2026,
+      "week": 1,
+      "targets_pg": 6,
+      "carries_pg": 1,
+      "yards_per_target": 11.1667,
+      "yards_per_carry": 9,
+      "yards_per_reception": 16.75,
+      "catch_rate": 0.6667,
+      "games_sampled": 1,
+      "team_pass_rate_environment": 0.588,
+      "team_pace": 64.5,
+      "offensive_environment": 27.4
+    }
+  ],
+  "missing_fields": [
+    {
+      "field_name": "routes_pg",
+      "applies_to": "all_players",
+      "reason": "routes_run is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture."
+    },
+    {
+      "field_name": "route_participation",
+      "applies_to": "all_players",
+      "reason": "route_participation is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture."
+    },
+    {
+      "field_name": "targets_per_route",
+      "applies_to": "all_players",
+      "reason": "requires route denominator support, which is unavailable in the bounded source rows."
+    },
+    {
+      "field_name": "red_zone_targets_pg",
+      "applies_to": "all_players",
+      "reason": "red_zone_targets is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture."
+    },
+    {
+      "field_name": "red_zone_carries_pg",
+      "applies_to": "all_players",
+      "reason": "red_zone_carries is null in the bounded player_weekly_usage_2025 source-backed rows used for this fixture."
+    },
+    {
+      "field_name": "goal_line_rush_attempts_pg",
+      "applies_to": "all_players",
+      "reason": "high-value usage field is marked not_consumed_yet/needs_verification in the semantics registry and has no governed source artifact in this fixture."
+    },
+    {
+      "field_name": "end_zone_targets_pg",
+      "applies_to": "WR_TE_players",
+      "reason": "high-value usage field is marked not_consumed_yet/needs_verification in the semantics registry and has no governed source artifact in this fixture."
+    },
+    {
+      "field_name": "inside_10_carries_pg",
+      "applies_to": "RB_players",
+      "reason": "high-value usage field is marked not_consumed_yet/needs_verification in the semantics registry and has no governed source artifact in this fixture."
+    }
+  ],
+  "adapter_warnings": [
+    "Fixture-only rehearsal bundle; do not treat as production ingestion or a 2026 roster/projection truth source.",
+    "High-value touchdown opportunity fields are intentionally omitted from player_opportunities when unsupported or marked not_consumed_yet in the semantics registry.",
+    "Team context values come from bounded offline fixture artifacts and should be treated as rehearsal context only."
+  ]
+}
