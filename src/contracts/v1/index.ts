@@ -3,3 +3,4 @@ export * from './examples.js';
 export * from './forgeWeeklyExamples.js';
 export * from './forgeWeeklyPlayerInput.js';
 export * from './roleOpportunity.js';
+export * from './projectionInputFixture.js';

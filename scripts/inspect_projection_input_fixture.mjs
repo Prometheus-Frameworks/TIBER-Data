@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
+import { projectionInputFixtureBundleSchema } from '../src/contracts/v1/projectionInputFixture.ts';
+
 const DEFAULT_FIXTURE = 'data/projection-input-fixtures/weekly_projection_input_fixture_2026_w01.json';
 const DEFAULT_OUTPUT = 'docs/projection-input-fixtures.generated.md';
 const DEFAULT_REGISTRY = 'data/semantics/projection_input_semantics.json';
@@ -22,7 +24,7 @@ const REQUIRED_STRING_PLAYER_FIELDS = ['player_id', 'player_name', 'team', 'posi
 const ALLOWED_POSITIONS = new Set(['QB', 'RB', 'WR', 'TE']);
 const IDENTITY_FIELD_NAMES = new Set(PLAYER_REQUIRED_FIELDS);
 const ALLOWED_EXTRA_TOP_LEVEL_FIELDS = new Set(['fixture_scope', 'projection_context']);
-const MISSING_FIELD_SEVERITIES = new Set(['info', 'warning', 'error']);
+const MISSING_FIELD_SEVERITIES = new Set(['warning']);
 
 function printUsage() {
   console.log(`Usage: node scripts/inspect_projection_input_fixture.mjs [options]\n\nOptions:\n  --fixture <path>   Projection input fixture JSON path (default: ${DEFAULT_FIXTURE})\n  --registry <path>  Projection input semantics registry path (default: ${DEFAULT_REGISTRY})\n  --write            Write generated markdown summary\n  --output <path>    Generated markdown output path (default: ${DEFAULT_OUTPUT})\n  --help, -h         Show this help\n\nExamples:\n  node scripts/inspect_projection_input_fixture.mjs\n  node scripts/inspect_projection_input_fixture.mjs --write`);
@@ -152,6 +154,18 @@ function registryFieldMap(registry) {
     }
   }
   return fields;
+}
+
+function validateFixtureContract(fixture) {
+  const parsed = projectionInputFixtureBundleSchema.safeParse(fixture);
+  if (!parsed.success) {
+    const errors = parsed.error.issues.map((issue) => {
+      const fieldPath = issue.path.length > 0 ? issue.path.join('.') : 'fixture';
+      return `${fieldPath}: ${issue.message}`;
+    });
+    throw new Error(`fixture v1 contract validation failed:\n- ${errors.join('\\n- ')}`);
+  }
+  return parsed.data;
 }
 
 function validateFixture(fixture, registry) {
@@ -348,8 +362,9 @@ function main() {
       return;
     }
 
-    const { value: fixture } = loadJson(options.fixture, 'fixture');
+    const { value: rawFixture } = loadJson(options.fixture, 'fixture');
     const { value: registry } = loadJson(options.registry, 'registry');
+    const fixture = validateFixtureContract(rawFixture);
     validateFixture(fixture, registry);
     printSummary(fixture, options.fixture);
 

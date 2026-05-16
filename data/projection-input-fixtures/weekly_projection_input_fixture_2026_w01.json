@@ -1,5 +1,5 @@
 {
-  "input_contract_version": "tiber-data.projection-input-fixture.v0.1.0",
+  "input_contract_version": "tiber-data.projection-input-fixture.v1.0.0",
   "tiber_data_schema_version": "projection_input_semantics.v0.1.0",
   "fixture_scope": {
     "kind": "bounded_rehearsal_fixture",
