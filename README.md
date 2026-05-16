@@ -169,6 +169,14 @@ For the committed proof/reference specimen lane and deliberate refresh workflow,
 
 - Play-caller pass rate over expectation is scaffolded as a research-only lane for future TIBER-Teamstate input. It does not generate artifacts, transcribe reference-table values, fabricate play-caller mappings, or change GOBLIN candidates. See `docs/data/play-caller-pass-rate-over-expectation.md`.
 
+## NFL Draft results contract foundation
+
+TIBER-Data now defines the first-pass canonical NFL Draft results v1 contract and documents the future promoted export path:
+
+- `exports/promoted/nfl_draft_results/nfl_draft_results_{year}.json`
+
+This is contract and validation groundwork only. The committed one-year validation fixture is `fixture_only`, no official draft result artifact is promoted, and no historical draft results are backfilled without repo-held source truth and provenance. TIBER-Rookies remains the owner of draft capital proxy scoring and prospect interpretation, and FORGE is not wired to consume raw draft facts in this change. See `docs/data/nfl-draft-results-v1.md`.
+
 ## Evidence artifact ownership note
 
 TIBER-Data owns canonical evidence artifacts used for operator-claim verification and promotion gating.

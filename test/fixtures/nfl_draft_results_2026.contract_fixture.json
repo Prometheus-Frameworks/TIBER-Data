@@ -1,0 +1,16 @@
+[
+  {
+    "draft_year": 2026,
+    "player_id": null,
+    "player_name": "Contract Fixture Player",
+    "position": "WR",
+    "team": "TST",
+    "round": 1,
+    "pick_in_round": 1,
+    "overall_pick": 1,
+    "source": "contract_validation_fixture_not_official_draft_result",
+    "source_url": null,
+    "generated_at": "2026-05-16T00:00:00Z",
+    "provenance_status": "fixture_only"
+  }
+]
