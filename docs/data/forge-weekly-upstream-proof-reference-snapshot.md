@@ -13,11 +13,11 @@ This lane is intentionally narrow and does **not** imply:
 
 - full-season support
 - production ETL readiness
-- replacement of the legacy W1–W6 offline fixture lane
+- replacement of the legacy W2–W6 offline fixture rows or any W4–W6 upstream-backed support
 
 ## Lane separation
 
-- Legacy lane (unchanged):
+- Legacy offline lane (unchanged; W1 fixture-reproducible, W2–W6 repo-held legacy):
   - `data/raw/forge/*.offline_fixture.json`
   - `data/gold/forge/*.skill_offline_fixture.derived.json`
 - Live upstream scaffold generation lane (unchanged):
@@ -41,9 +41,7 @@ python scripts/promote_forge_weekly_upstream_proof_snapshot.py --captured-at "20
 
 3. Review resulting snapshot + manifest diffs before commit.
 
-Until those promoted files are committed, the lane should be treated as defined-but-unpopulated.
-
-Refresh is manual by design (no auto-refresh in CI).
+The current W1–W3 proof/reference files are committed. Future refreshes remain manual by design (no auto-refresh in CI), and any refreshed output should be reviewed before commit.
 
 ## Review baseline guidance
 

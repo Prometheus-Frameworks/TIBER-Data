@@ -131,12 +131,14 @@ Scope remains intentionally small and honest:
 
 - both artifacts are derived from repo-held support fixtures (`data/raw/forge/weekly_player_stats.offline_fixture.json` and `data/raw/forge/team_week_context.offline_fixture.json`)
 - the QB lane remains a narrow sanity-check slice fixed to season `2024`, week `1`
-- the skill lane now follows a repeatable weekly factory pattern for season `2024`, weeks `1-6`
+- the skill lane can still emit committed legacy weekly artifacts for season `2024`, weeks `1-6`, but only W1 is fixture-reproducible from current repo truth
 - each generated skill artifact is validated fail-closed (non-empty, coherent metadata, deterministic order, expected position coverage, schema validation)
 - spread/matchup and route-participation style fields still rely on explicit neutral/default placeholders where source coverage is missing
 - this is offline-fixture-backed season-segment coverage groundwork, not full-season production ETL
 - support-origin audit for this lane: `docs/data/forge-weekly-offline-support-origin-audit.md`
-- provenance status: W1 is reproducible from current `src/ingest/public.py::FIXTURE_DATA`; committed W2–W6 raw support rows remain legacy repo-held artifacts pending fully recoverable provenance
+- W2–W6 provenance status: committed legacy/repo-held offline artifacts, **not** fully reproducible from current `src/ingest/public.py::FIXTURE_DATA` and not promoted as source-backed support
+- current provenance manifest: `data/forge_weekly_offline_support_provenance_manifest.json`
+- W2–W6 gap audit: `docs/data/forge-weekly-w2-w6-provenance-gap-audit-2026-05-16.md`
 
 This is still **not** the full live weekly production export pipeline.
 
@@ -155,7 +157,7 @@ TIBER-Data now includes a separate scaffold path for **upstream-backed** weekly 
   - `python scripts/compare_forge_weekly_support_lanes.py --player-name "Amon-Ra St. Brown"`
   - (or `--player-id 00-0037834`)
 
-This is a reproducible source-backed scaffold only and does **not** replace the current W1–W6 offline fixture support lane yet.
+This is a reproducible source-backed scaffold only for the stated W1–W3 proof slice. It does **not** replace the legacy W2–W6 offline fixture rows and does not provide W4–W6 upstream-backed support.
 
 Details: `docs/data/forge-weekly-upstream-support-scaffold.md`.
 

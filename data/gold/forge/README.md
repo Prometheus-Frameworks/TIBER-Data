@@ -28,10 +28,13 @@ Current derived artifact slices:
   - `forge_weekly_player_input_2024_w04.skill_offline_fixture.derived.json`
   - `forge_weekly_player_input_2024_w05.skill_offline_fixture.derived.json`
   - `forge_weekly_player_input_2024_w06.skill_offline_fixture.derived.json`
-  - represented scope: season `2024`, maximum honest contiguous support window currently available from repo-held raw support data (`W1-W6`)
-  - provenance note: current `src/ingest/public.py::FIXTURE_DATA` directly covers W1 only; W2–W6 support rows are committed legacy repo artifacts pending full provenance reconstruction
+  - represented artifact availability: season `2024`, weeks `W1-W6` from committed repo-held raw support data
+  - reproducible fixture support: W1 only from current `src/ingest/public.py::FIXTURE_DATA`
+  - provenance note: W2–W6 support rows are committed legacy repo-held artifacts pending full provenance reconstruction; they are not promoted as fixture-reproducible or source-backed support
   - attempted target for this expansion lane remains `W1-W17`, but current offline support sources stop at `W6`; no new upstream sources were introduced in this repo
-  - intended use: first repeatable weekly artifact factory pattern for FORGE ingestion sanity checks
+  - current provenance manifest: `data/forge_weekly_offline_support_provenance_manifest.json`
+  - W2–W6 gap audit: `docs/data/forge-weekly-w2-w6-provenance-gap-audit-2026-05-16.md`
+  - intended use: backward-compatible weekly artifact factory pattern for FORGE ingestion sanity checks, with W2-W6 labeled legacy for provenance purposes
   - explicit checks per generated week: non-empty artifact, coherent source metadata (`sourceSetId`/season/week), deterministic ordering, expected positions from source support, and schema validation
   - explicit gaps/defaults for now: snaps/snapShare remain opportunity-based approximations, route fields are lightweight target-share approximations for non-QB rows, and spread/matchup remain neutral/defaulted with quality flags
   - still an offline-fixture-backed constrained season-segment export path, **not** full-season production ETL parity
@@ -55,4 +58,4 @@ Current derived artifact slices:
   - `forge_weekly_player_input_2024_w03.skill_upstream_public_w01_w03_8player_scaffold.proof_reference_snapshot.derived.json`
   - promotion flow is manual via `scripts/promote_forge_weekly_upstream_proof_snapshot.py`
   - if these files are absent, the lane is defined but not yet populated in-repo
-  - this snapshot lane preserves a bounded in-repo specimen for audit/review; it does **not** replace legacy or imply broader coverage
+  - this snapshot lane preserves a bounded in-repo specimen for audit/review; it does **not** replace legacy, does not cover W4-W6, and does not imply broader coverage

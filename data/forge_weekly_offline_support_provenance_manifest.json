@@ -1,0 +1,24 @@
+{
+  "manifest_id": "forge_weekly_offline_support_provenance_2024_w01_w06",
+  "audited_at": "2026-05-16T00:00:00Z",
+  "scope": {
+    "season": 2024,
+    "raw_support_files": [
+      "data/raw/forge/weekly_player_stats.offline_fixture.json",
+      "data/raw/forge/team_week_context.offline_fixture.json"
+    ],
+    "offline_fixture_source_path": "src/ingest/public.py::FIXTURE_DATA"
+  },
+  "reproducibility": {
+    "fixture_reproducible_weeks": [1],
+    "legacy_repo_held_weeks": [2, 3, 4, 5, 6],
+    "blocked_weeks": [4, 5, 6],
+    "separate_upstream_proof_reference_weeks": [1, 2, 3]
+  },
+  "notes": [
+    "W1 offline support is reproducible from the checked-in src/ingest/public.py::FIXTURE_DATA block.",
+    "W2-W6 offline support rows remain committed legacy repo-held artifacts and are not promoted as fixture-reproducible support.",
+    "The existing upstream proof/reference snapshot covers a separate fixed ATL/DET 8-player W1-W3 scaffold lane only; it does not reproduce or replace the W2-W6 offline fixture lane.",
+    "No W4-W6 upstream-backed support artifacts are committed in this repo as of this audit."
+  ]
+}

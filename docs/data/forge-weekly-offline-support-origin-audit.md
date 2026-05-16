@@ -28,9 +28,11 @@ The repo contains enough evidence to explain *where* W2–W6 were committed (spe
 - Any checked-in fixture builder, script, or documented source path that deterministically reconstructs W2–W6 support records from source truth currently present in this repo.
 
 ## Reproducibility status today
-- **Reproducible now:** W1 raw support rows from `src/ingest/public.py::FIXTURE_DATA`.
+- **Fixture-reproducible now:** W1 raw support rows from `src/ingest/public.py::FIXTURE_DATA`.
 - **Not reproducible from current fixture block alone:** W2–W6 raw support rows.
-- **Operationally available:** W1–W6 remain usable as committed repo-held support artifacts for downstream derived exports.
+- **Operationally available but legacy:** W2–W6 remain usable as committed repo-held support artifacts for backward-compatible downstream derived export checks, but are not promoted as fully reproducible or source-backed support.
+- **Current machine-readable manifest:** `data/forge_weekly_offline_support_provenance_manifest.json`.
+- **Current gap audit:** `docs/data/forge-weekly-w2-w6-provenance-gap-audit-2026-05-16.md`.
 
 ## Files/history inspected for this audit
 - `src/ingest/public.py`
