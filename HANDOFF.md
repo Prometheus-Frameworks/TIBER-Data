@@ -37,6 +37,7 @@ If still unclear:
 Every material handoff should state:
 - active task
 - files touched
+- audit-trigger status: not triggered, Claude audit happened, Claude audit pending, or Claude audit skipped with reason
 - what is now true
 - what is still missing
 - what must not be assumed

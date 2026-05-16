@@ -58,6 +58,15 @@ Claude should be used when:
 - a builder agent may have over-completed the task
 - the repo is at risk of saying more than it truly knows
 
+Audit triggers:
+- PR adds or changes a contract under `src/contracts/v1/`
+- PR touches `data/raw/**` or `exports/promoted/**`
+- PR expands a supported season, week, or window claim
+- PR adds large generated JSON artifacts
+- PR adds builder code without matching test coverage
+- PR changes README, support claims, or provenance wording
+- PR feels technically correct but semantically suspicious
+
 ## Operating style
 
 Think like a foreman-managed job site:
