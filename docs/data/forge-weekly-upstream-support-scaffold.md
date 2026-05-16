@@ -54,7 +54,7 @@ New scaffold lane:
 - writes separate `*.upstream_public_*_scaffold.json` raw artifacts
 - uses upstream-backed reads with offline fallback disabled
 - proves reproducible source-backed generation for a minimal honest slice
-- does **not** replace legacy W1–W6 support lane yet
+- does **not** replace the legacy W2–W6 offline support rows and does not provide W4–W6 upstream-backed support
 
 ## Commands for W1–W3 visual truth-check workflow
 
@@ -108,4 +108,5 @@ Before replacing legacy support for broader weekly exports, the repo still needs
 1. explicit supported-week expansion policy and fail-closed gating per week
 2. broader cohort/season handling without introducing silent fallback behavior
 3. downstream validation that derived FORGE exports from this lane meet required operational quality
-4. migration plan that preserves compatibility while retiring legacy-only support rows
+4. committed W4–W6 upstream-backed support/proof artifacts before any claim that the W2–W6 provenance gap is closed
+5. migration plan that preserves compatibility while retiring legacy-only support rows
