@@ -171,11 +171,11 @@ For the committed proof/reference specimen lane and deliberate refresh workflow,
 
 ## NFL Draft results contract foundation
 
-TIBER-Data now defines the first-pass canonical NFL Draft results v1 contract and documents the future promoted export path:
+TIBER-Data defines the first-pass canonical NFL Draft results v1 contract and promoted export path:
 
 - `exports/promoted/nfl_draft_results/nfl_draft_results_{year}.json`
 
-This is contract and validation groundwork only. The committed one-year validation fixture is `fixture_only`, no official draft result artifact is promoted, and no historical draft results are backfilled without repo-held source truth and provenance. TIBER-Rookies remains the owner of draft capital proxy scoring and prospect interpretation, and FORGE is not wired to consume raw draft facts in this change. See `docs/data/nfl-draft-results-v1.md`.
+The first official promoted artifact is now committed for the 2026 NFL Draft at `exports/promoted/nfl_draft_results/nfl_draft_results_2026.json`. The committed one-year validation fixture remains `fixture_only`; the promoted artifact is source-backed, keeps unresolved player IDs explicit as `source_verified_player_id_unresolved`, and does not backfill historical draft results without repo-held source truth and provenance. TIBER-Rookies remains the owner of draft capital proxy scoring and prospect interpretation, and FORGE is not wired to consume raw draft facts in this change. See `docs/data/nfl-draft-results-v1.md`.
 
 ## Evidence artifact ownership note
 
