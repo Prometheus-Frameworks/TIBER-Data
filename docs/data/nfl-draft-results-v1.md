@@ -13,7 +13,7 @@ The v1 contract now has its first official promoted artifact for the 2026 NFL Dr
 - Promoted artifact: `exports/promoted/nfl_draft_results/nfl_draft_results_2026.json`
 - Validation test: `test/nflDraftResults.v1.test.ts`
 
-The committed validation fixture remains marked `fixture_only` and is not an official NFL Draft result row. The promoted 2026 artifact contains 257 source-backed rows sourced from NBC Sports ProFootballTalk's published 2026 NFL Draft picks tracker. Player IDs are intentionally `null` with `provenance_status=source_verified_player_id_unresolved` because this repo does not yet hold stable player identifiers for those selections. No historical draft results are backfilled without repo-held source truth and provenance.
+The committed validation fixture remains marked `fixture_only` and is not an official NFL Draft result row. The promoted 2026 artifact contains 257 source-backed rows sourced from NBC Sports ProFootballTalk's published 2026 NFL Draft picks tracker. TIBER-Rookies-relevant QB/RB/WR/TE rows are resolved through the committed overall-pick keyed TIBER-Rookies identity reference at `data/raw/rookies/2026/2026_tiber_rookies_draft_result_id_reference_v0.json`; rows outside that confirmed reference remain `player_id=null` with `provenance_status=source_verified_player_id_unresolved`. No historical draft results are backfilled without repo-held source truth and provenance.
 
 ## Ownership boundary
 
@@ -62,13 +62,15 @@ The official 2026 promoted artifact is:
 Promotion boundaries:
 
 - Coverage is limited to the 2026 NFL Draft only.
-- The artifact contains no fabricated player IDs; unresolved IDs are represented as `player_id=null` with `source_verified_player_id_unresolved`.
+- The artifact contains no fabricated player IDs; confirmed QB/RB/WR/TE IDs are applied only through the TIBER-Rookies overall-pick keyed reference, and unresolved IDs are represented as `player_id=null` with `source_verified_player_id_unresolved`.
 - Every row carries the same non-empty source label and source URL for the published draft tracker used to build the artifact.
-- Rows are draft facts only: player name, position, drafting team label as sourced, round, pick in round, and overall pick.
+- Rows are draft facts plus confirmed TIBER player identity where available: player name, position, drafting team label as sourced, round, pick in round, overall pick, and `player_id` when resolved.
+- The 2026 TIBER-Rookies identity reference uses `overall_pick` as its join key. Player names in that reference are audit context only and must not be used as the sole mapping key because known name variants can exist between draft result sources and TIBER-Rookies records.
+- The current resolved coverage is 81 QB/RB/WR/TE rows; the remaining 176 rows stay visibly unresolved.
 
 ## Audit-trigger status
 
-Audit trigger is active for this change because it adds a promoted artifact under `exports/promoted/**`, documents promoted export semantics, and updates validation coverage. No raw source data is touched and no historical coverage window is expanded beyond the single 2026 artifact.
+Audit trigger is active for this change because it adds a promoted artifact under `exports/promoted/**`, documents promoted export semantics, and updates validation coverage. The change touches the committed raw TIBER-Rookies identity reference used for the overall-pick join, the promoted 2026 artifact, and validation coverage; no historical coverage window is expanded beyond the single 2026 artifact.
 
 ## Not included in this PR
 
