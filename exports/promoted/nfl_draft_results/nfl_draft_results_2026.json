@@ -1,7 +1,7 @@
 [
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "qb-fernando-mendoza",
     "player_name": "Fernando Mendoza",
     "position": "QB",
     "team": "Las Vegas Raiders",
@@ -11,7 +11,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -29,7 +29,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-jeremiah-love",
     "player_name": "Jeremiah Love",
     "position": "RB",
     "team": "Arizona Cardinals",
@@ -39,11 +39,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-carnell-tate",
     "player_name": "Carnell Tate",
     "position": "WR",
     "team": "Tennessee Titans",
@@ -53,7 +53,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -99,7 +99,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-jordyn-tyson",
     "player_name": "Jordyn Tyson",
     "position": "WR",
     "team": "New Orleans Saints",
@@ -109,7 +109,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -169,7 +169,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "qb-ty-simpson",
     "player_name": "Ty Simpson",
     "position": "QB",
     "team": "Los Angeles Rams from Atlanta Falcons",
@@ -179,7 +179,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -211,7 +211,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-kenyon-sadiq",
     "player_name": "Kenyon Sadiq",
     "position": "TE",
     "team": "New York Jets from Indianapolis Colts",
@@ -221,7 +221,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -267,7 +267,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-makai-lemon",
     "player_name": "Makai Lemon",
     "position": "WR",
     "team": "Philadelphia Eagles",
@@ -277,7 +277,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -323,7 +323,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-kc-concepcion",
     "player_name": "KC Concepcion",
     "position": "WR",
     "team": "Cleveland Browns from Jacksonville Jaguars",
@@ -333,7 +333,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -407,7 +407,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-omar-cooper-jr",
     "player_name": "Omar Cooper Jr.",
     "position": "WR",
     "team": "New York Jets",
@@ -417,7 +417,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -435,7 +435,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-jadarian-price",
     "player_name": "Jadarian Price",
     "position": "RB",
     "team": "Seattle Seahawks",
@@ -445,11 +445,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-dezhaun-stribling",
     "player_name": "De’Zhaun Stribling",
     "position": "WR",
     "team": "San Francisco 49ers",
@@ -459,7 +459,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -533,7 +533,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-denzel-boston",
     "player_name": "Denzel Boston",
     "position": "WR",
     "team": "Cleveland Browns",
@@ -543,7 +543,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -645,7 +645,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-germie-bernard",
     "player_name": "Germie Bernard",
     "position": "WR",
     "team": "Pittsburgh Steelers",
@@ -655,7 +655,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -743,7 +743,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-eli-stowers",
     "player_name": "Eli Stowers",
     "position": "TE",
     "team": "Philadelphia Eagles",
@@ -753,7 +753,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -771,7 +771,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-nate-boerkircher",
     "player_name": "Nate Boerkircher",
     "position": "TE",
     "team": "Jacksonville Jaguars",
@@ -781,7 +781,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -813,7 +813,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-marlin-klein",
     "player_name": "Marlin Klein",
     "position": "TE",
     "team": "Houston Texans",
@@ -823,7 +823,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -841,7 +841,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-max-klare",
     "player_name": "Max Klare",
     "position": "TE",
     "team": "Los Angeles Rams",
@@ -851,7 +851,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -897,7 +897,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "qb-carson-beck",
     "player_name": "Carson Beck",
     "position": "QB",
     "team": "Arizona Cardinals",
@@ -907,7 +907,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -953,7 +953,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-sam-roush",
     "player_name": "Sam Roush",
     "position": "TE",
     "team": "Chicago Bears",
@@ -963,7 +963,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -981,7 +981,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-antonio-williams",
     "player_name": "Antonio Williams",
     "position": "WR",
     "team": "Washington Commanders",
@@ -991,7 +991,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1009,7 +1009,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-oscar-delp",
     "player_name": "Oscar Delp",
     "position": "TE",
     "team": "New Orleans Saints",
@@ -1019,11 +1019,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-malachi-fields",
     "player_name": "Malachi Fields",
     "position": "WR",
     "team": "New York Giants",
@@ -1033,11 +1033,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-caleb-douglas",
     "player_name": "Caleb Douglas",
     "position": "WR",
     "team": "Miami Dolphins",
@@ -1047,11 +1047,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "qb-drew-allar",
     "player_name": "Drew Allar",
     "position": "QB",
     "team": "Pittsburgh Steelers",
@@ -1061,7 +1061,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1093,7 +1093,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-zachariah-branch",
     "player_name": "Zachariah Branch",
     "position": "WR",
     "team": "Atlanta Falcons",
@@ -1103,11 +1103,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-jakobi-lane",
     "player_name": "Ja’Kobi Lane",
     "position": "WR",
     "team": "Baltimore Ravens",
@@ -1117,7 +1117,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1149,7 +1149,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-chris-brazzell-ii",
     "player_name": "Chris Brazzell II",
     "position": "WR",
     "team": "Carolina Panthers",
@@ -1159,11 +1159,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-ted-hurst",
     "player_name": "Ted Hurst",
     "position": "WR",
     "team": "Tampa Bay Buccaneers",
@@ -1173,7 +1173,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1205,7 +1205,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-will-kacmarek",
     "player_name": "Will Kacmarek",
     "position": "TE",
     "team": "Miami Dolphins",
@@ -1215,7 +1215,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1233,7 +1233,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-zavion-thomas",
     "player_name": "Zavion Thomas",
     "position": "WR",
     "team": "Chicago Bears",
@@ -1243,11 +1243,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-kaelon-black",
     "player_name": "Kaelon Black",
     "position": "RB",
     "team": "San Francisco 49ers",
@@ -1257,7 +1257,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1303,7 +1303,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-chris-bell",
     "player_name": "Chris Bell",
     "position": "WR",
     "team": "Miami Dolphins",
@@ -1313,11 +1313,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-eli-raridon",
     "player_name": "Eli Raridon",
     "position": "TE",
     "team": "New England Patriots",
@@ -1327,7 +1327,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1457,7 +1457,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-brenen-thompson",
     "player_name": "Brenen Thompson",
     "position": "WR",
     "team": "Los Angeles Chargers",
@@ -1467,7 +1467,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1499,7 +1499,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-jonah-coleman",
     "player_name": "Jonah Coleman",
     "position": "RB",
     "team": "Denver Broncos",
@@ -1509,7 +1509,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1527,7 +1527,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "qb-cade-klubnik",
     "player_name": "Cade Klubnik",
     "position": "QB",
     "team": "New York Jets",
@@ -1537,7 +1537,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1597,7 +1597,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-elijah-sarratt",
     "player_name": "Elijah Sarratt",
     "position": "WR",
     "team": "Baltimore Ravens",
@@ -1607,7 +1607,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1681,7 +1681,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-kaden-wetjen",
     "player_name": "Kaden Wetjen",
     "position": "WR",
     "team": "Pittsburgh Steelers",
@@ -1691,11 +1691,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-mike-washington-jr",
     "player_name": "Mike Washington Jr.",
     "position": "RB",
     "team": "Las Vegas Raiders",
@@ -1705,7 +1705,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1737,7 +1737,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-skyler-bell",
     "player_name": "Skyler Bell",
     "position": "WR",
     "team": "Buffalo Bills",
@@ -1747,7 +1747,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1849,7 +1849,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-matthew-hibner",
     "player_name": "Matthew Hibner",
     "position": "TE",
     "team": "Baltimore Ravens",
@@ -1859,7 +1859,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1891,7 +1891,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-bryce-lance",
     "player_name": "Bryce Lance",
     "position": "WR",
     "team": "New Orleans Saints",
@@ -1901,7 +1901,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1947,7 +1947,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-colbie-young",
     "player_name": "Colbie Young",
     "position": "WR",
     "team": "Cincinnati Bengals",
@@ -1957,7 +1957,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -1989,7 +1989,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-reggie-virgil",
     "player_name": "Reggie Virgil",
     "position": "WR",
     "team": "Arizona Cardinals",
@@ -1999,7 +1999,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2115,7 +2115,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-justin-joly",
     "player_name": "Justin Joly",
     "position": "TE",
     "team": "Denver Broncos",
@@ -2125,7 +2125,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2213,7 +2213,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-max-bredeson",
     "player_name": "Max Bredeson",
     "position": "TE",
     "team": "Minnesota Vikings",
@@ -2223,7 +2223,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2241,7 +2241,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-emmett-johnson",
     "player_name": "Emmett Johnson",
     "position": "RB",
     "team": "Kansas City Chiefs",
@@ -2251,7 +2251,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2283,7 +2283,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-tanner-koziol",
     "player_name": "Tanner Koziol",
     "position": "TE",
     "team": "Jacksonville Jaguars",
@@ -2293,11 +2293,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-nicholas-singleton",
     "player_name": "Nicholas Singleton",
     "position": "RB",
     "team": "Tennessee Titans",
@@ -2307,7 +2307,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2339,7 +2339,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-kendrick-law",
     "player_name": "Kendrick Law",
     "position": "WR",
     "team": "Detroit Lions",
@@ -2349,11 +2349,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-riley-nowakowski",
     "player_name": "Riley Nowakowski",
     "position": "TE",
     "team": "Pittsburgh Steelers",
@@ -2363,11 +2363,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-joe-royer",
     "player_name": "Joe Royer",
     "position": "TE",
     "team": "Denver Broncos",
@@ -2377,7 +2377,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2409,7 +2409,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-josh-cuevas",
     "player_name": "Josh Cuevas",
     "position": "TE",
     "team": "Baltimore Ravens",
@@ -2419,11 +2419,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-adam-randall",
     "player_name": "Adam Randall",
     "position": "RB",
     "team": "Baltimore Ravens",
@@ -2433,7 +2433,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2451,7 +2451,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-cyrus-allen",
     "player_name": "Cyrus Allen",
     "position": "WR",
     "team": "Kansas City Chiefs",
@@ -2461,11 +2461,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-kevin-coleman-jr",
     "player_name": "Kevin Coleman Jr.",
     "position": "WR",
     "team": "Miami Dolphins",
@@ -2475,11 +2475,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "qb-cole-payton",
     "player_name": "Cole Payton",
     "position": "QB",
     "team": "Philadelphia Eagles",
@@ -2489,7 +2489,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2507,7 +2507,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-seydou-traore",
     "player_name": "Seydou Traore",
     "position": "TE",
     "team": "Miami Dolphins",
@@ -2517,7 +2517,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2535,7 +2535,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "qb-taylen-green",
     "player_name": "Taylen Green",
     "position": "QB",
     "team": "Cleveland Browns",
@@ -2545,7 +2545,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2577,7 +2577,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-bauer-sharp",
     "player_name": "Bauer Sharp",
     "position": "TE",
     "team": "Tampa Bay Buccaneers",
@@ -2587,7 +2587,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2605,7 +2605,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-kaytron-allen",
     "player_name": "Kaytron Allen",
     "position": "RB",
     "team": "Washington Commanders",
@@ -2615,7 +2615,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2647,7 +2647,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-barion-brown",
     "player_name": "Barion Brown",
     "position": "WR",
     "team": "New Orleans Saints",
@@ -2657,11 +2657,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-josh-cameron",
     "player_name": "Josh Cameron",
     "position": "WR",
     "team": "Jacksonville Jaguars",
@@ -2671,7 +2671,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2717,7 +2717,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-malik-benson",
     "player_name": "Malik Benson",
     "position": "WR",
     "team": "Las Vegas Raiders",
@@ -2727,7 +2727,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2745,7 +2745,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-cj-daniels",
     "player_name": "CJ Daniels",
     "position": "WR",
     "team": "Los Angeles Rams",
@@ -2755,11 +2755,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-demond-claiborne",
     "player_name": "Demond Claiborne",
     "position": "RB",
     "team": "Minnesota Vikings",
@@ -2769,11 +2769,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-emmanuel-henderson-jr",
     "player_name": "Emmanuel Henderson Jr.",
     "position": "WR",
     "team": "Seattle Seahawks",
@@ -2783,7 +2783,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -2829,7 +2829,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-cj-williams",
     "player_name": "CJ Williams",
     "position": "WR",
     "team": "Jacksonville Jaguars",
@@ -2839,11 +2839,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-lewis-bond",
     "player_name": "Lewis Bond",
     "position": "WR",
     "team": "Houston Texans",
@@ -2853,7 +2853,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -3039,7 +3039,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-anthony-smith",
     "player_name": "Anthony Smith",
     "position": "WR",
     "team": "Dallas Cowboys",
@@ -3049,7 +3049,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -3081,7 +3081,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-jack-endries",
     "player_name": "Jack Endries",
     "position": "TE",
     "team": "Cincinnati Bengals",
@@ -3091,7 +3091,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -3109,7 +3109,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "qb-athan-kaliakmanis",
     "player_name": "Athan Kaliakmanis",
     "position": "QB",
     "team": "Washington Commanders",
@@ -3119,7 +3119,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -3137,7 +3137,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-jaren-kanak",
     "player_name": "Jaren Kanak",
     "position": "TE",
     "team": "Tennessee Titans",
@@ -3147,7 +3147,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -3207,7 +3207,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-eli-heidenreich",
     "player_name": "Eli Heidenreich",
     "position": "RB",
     "team": "Pittsburgh Steelers",
@@ -3217,7 +3217,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -3263,7 +3263,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "qb-behren-morton",
     "player_name": "Behren Morton",
     "position": "QB",
     "team": "New England Patriots",
@@ -3273,7 +3273,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -3305,7 +3305,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-seth-mcgowan",
     "player_name": "Seth McGowan",
     "position": "RB",
     "team": "Indianapolis Colts",
@@ -3315,7 +3315,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -3417,7 +3417,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "rb-jam-miller",
     "player_name": "Jam Miller",
     "position": "RB",
     "team": "New England Patriots",
@@ -3427,7 +3427,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -3459,7 +3459,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-carsen-ryan",
     "player_name": "Carsen Ryan",
     "position": "TE",
     "team": "Cleveland Browns",
@@ -3469,11 +3469,11 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "qb-garrett-nussmeier",
     "player_name": "Garrett Nussmeier",
     "position": "QB",
     "team": "Kansas City Chiefs",
@@ -3483,7 +3483,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -3543,7 +3543,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "wr-deion-burks",
     "player_name": "Deion Burks",
     "position": "WR",
     "team": "Indianapolis Colts",
@@ -3553,7 +3553,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
@@ -3571,7 +3571,7 @@
   },
   {
     "draft_year": 2026,
-    "player_id": null,
+    "player_id": "te-dallen-bentley",
     "player_name": "Dallen Bentley",
     "position": "TE",
     "team": "Denver Broncos",
@@ -3581,7 +3581,7 @@
     "source": "NBC Sports ProFootballTalk 2026 NFL Draft picks full tracker, published 2026-04-25",
     "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
     "generated_at": "2026-05-17T00:00:00Z",
-    "provenance_status": "source_verified_player_id_unresolved"
+    "provenance_status": "source_verified"
   },
   {
     "draft_year": 2026,
