@@ -64,7 +64,7 @@ The following flows are allowed as first-pass intended channels.
 - `Teamstate -> Point Prediction`
 - `Point Prediction -> FORGE` (bounded projection signal only; does not replace grading ownership)
 - `FORGE -> TIBER-Fantasy`
-- `Rookies -> TIBER-Fantasy`
+- `Rookies -> TIBER-Data -> TIBER-Fantasy` (reusable rookie artifacts pass through TIBER-Data validation, provenance, and manifest gates before downstream display)
 
 ## Suspicious or review-required flows
 
@@ -74,6 +74,8 @@ The following directions are not approved as default behavior and require explic
 - `FORGE -> TIBER-Data`
 - `Point Prediction -> TIBER-Data`
 - `FORGE -> Point Prediction`
+- Direct `Rookies -> TIBER-Fantasy` bypasses are review-required unless there is an explicitly approved exception.
+- Any flow bypassing TIBER-Data source/provenance gates is not approved by default.
 - Any downstream display/model output becoming upstream source truth without declared provenance separation and promotion review.
 
 ## Loop classification
