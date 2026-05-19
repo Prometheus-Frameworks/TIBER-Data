@@ -1,0 +1,188 @@
+{
+  "registry_version": "v1",
+  "status": "first_pass_governance_contract",
+  "source_map": "docs/governance/tiber-system-flow-map.md",
+  "flows": [
+    {
+      "producer_repo": "TIBER-Data",
+      "consumer_repo": "Point Prediction",
+      "artifact_type": "canonical_input",
+      "source_layer": "normalized",
+      "authority_level": "canonical_fact",
+      "flow_status": "approved",
+      "may_feed_back_upstream": false,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "declared_by_artifact_or_contract",
+      "rollback_path": "stop consuming artifact and revert to last valid promoted artifact",
+      "notes": "Canonical inputs may feed model consumers through validated contracts."
+    },
+    {
+      "producer_repo": "TIBER-Data",
+      "consumer_repo": "FORGE",
+      "artifact_type": "canonical_input",
+      "source_layer": "normalized",
+      "authority_level": "canonical_fact",
+      "flow_status": "approved",
+      "may_feed_back_upstream": false,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "declared_by_artifact_or_contract",
+      "rollback_path": "stop consuming artifact and revert to last valid promoted artifact",
+      "notes": "Canonical inputs may feed grading consumers through validated contracts."
+    },
+    {
+      "producer_repo": "Role & Opportunity",
+      "consumer_repo": "Point Prediction",
+      "artifact_type": "role_usage_interpretation",
+      "source_layer": "derived",
+      "authority_level": "validated_signal",
+      "flow_status": "approved",
+      "may_feed_back_upstream": false,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "declared_by_artifact_or_contract",
+      "rollback_path": "disable upstream use and revert to last validated role/usage artifact",
+      "notes": "Role interpretation supports model consumers but does not own canonical truth."
+    },
+    {
+      "producer_repo": "Teamstate",
+      "consumer_repo": "Point Prediction",
+      "artifact_type": "environment_context",
+      "source_layer": "derived",
+      "authority_level": "validated_signal",
+      "flow_status": "approved",
+      "may_feed_back_upstream": false,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "declared_by_artifact_or_contract",
+      "rollback_path": "disable upstream use and revert to last validated context artifact",
+      "notes": "Environment context can inform projections without shifting canonical ownership."
+    },
+    {
+      "producer_repo": "Point Prediction",
+      "consumer_repo": "FORGE",
+      "artifact_type": "bounded_projection_signal",
+      "source_layer": "model_output",
+      "authority_level": "projection",
+      "flow_status": "approved",
+      "may_feed_back_upstream": false,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "declared_by_artifact_or_contract",
+      "rollback_path": "remove projection feature dependency and revert to prior FORGE input set",
+      "notes": "Projection signal is bounded and must not replace FORGE grading ownership."
+    },
+    {
+      "producer_repo": "FORGE",
+      "consumer_repo": "TIBER-Fantasy",
+      "artifact_type": "grading_output",
+      "source_layer": "derived",
+      "authority_level": "validated_signal",
+      "flow_status": "approved",
+      "may_feed_back_upstream": false,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "declared_by_artifact_or_contract",
+      "rollback_path": "stop display consumption and pin to last valid FORGE artifact",
+      "notes": "FORGE outputs are downstream consumables and do not become upstream truth by default."
+    },
+    {
+      "producer_repo": "Rookies",
+      "consumer_repo": "TIBER-Data",
+      "artifact_type": "rookie_evaluation_artifact",
+      "source_layer": "derived",
+      "authority_level": "validated_signal",
+      "flow_status": "approved",
+      "may_feed_back_upstream": false,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "declared_by_artifact_or_contract",
+      "rollback_path": "stop intake and retain last promoted rookie artifact within TIBER-Data gates",
+      "notes": "Rookie artifacts must pass TIBER-Data validation, provenance, and manifest gates before downstream use."
+    },
+    {
+      "producer_repo": "TIBER-Data",
+      "consumer_repo": "TIBER-Fantasy",
+      "artifact_type": "governed_rookie_artifact",
+      "source_layer": "derived",
+      "authority_level": "validated_signal",
+      "flow_status": "approved",
+      "may_feed_back_upstream": false,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "declared_by_artifact_or_contract",
+      "rollback_path": "halt downstream delivery and pin to last valid promoted rookie artifact",
+      "notes": "Represents the second hop of the approved rookie flow through TIBER-Data governance; validation and provenance gates make it safe for downstream use without converting rookie evaluation output into canonical fact."
+    },
+    {
+      "producer_repo": "TIBER-Fantasy",
+      "consumer_repo": "TIBER-Data",
+      "artifact_type": "display_feedback_candidate",
+      "source_layer": "display_output",
+      "authority_level": "ui_state",
+      "flow_status": "review_required",
+      "may_feed_back_upstream": true,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "must_be_declared_before_any_promotion",
+      "rollback_path": "block intake and preserve canonical contracts unchanged",
+      "notes": "Display state cannot become canonical fact without explicit provenance separation and promotion review."
+    },
+    {
+      "producer_repo": "FORGE",
+      "consumer_repo": "TIBER-Data",
+      "artifact_type": "derived_grade_feedback_candidate",
+      "source_layer": "model_output",
+      "authority_level": "projection",
+      "flow_status": "review_required",
+      "may_feed_back_upstream": true,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "must_be_declared_before_any_promotion",
+      "rollback_path": "block intake and preserve canonical contracts unchanged",
+      "notes": "Derived grading outputs are not upstream source truth by default."
+    },
+    {
+      "producer_repo": "Point Prediction",
+      "consumer_repo": "TIBER-Data",
+      "artifact_type": "projection_feedback_candidate",
+      "source_layer": "model_output",
+      "authority_level": "projection",
+      "flow_status": "review_required",
+      "may_feed_back_upstream": true,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "must_be_declared_before_any_promotion",
+      "rollback_path": "block intake and preserve canonical contracts unchanged",
+      "notes": "Model outputs are downstream projections and cannot auto-promote to canonical fact."
+    },
+    {
+      "producer_repo": "FORGE",
+      "consumer_repo": "Point Prediction",
+      "artifact_type": "cross_model_feedback_candidate",
+      "source_layer": "model_output",
+      "authority_level": "projection",
+      "flow_status": "review_required",
+      "may_feed_back_upstream": true,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "must_be_declared_before_any_promotion",
+      "rollback_path": "disable coupling and revert to independent validated inputs",
+      "notes": "Cross-model coupling is review-required to prevent unsafe loops."
+    },
+    {
+      "producer_repo": "Rookies",
+      "consumer_repo": "TIBER-Fantasy",
+      "artifact_type": "direct_rookie_bypass",
+      "source_layer": "derived",
+      "authority_level": "validated_signal",
+      "flow_status": "review_required",
+      "may_feed_back_upstream": false,
+      "requires_human_review_if_feedback": true,
+      "staleness_policy": "not_applicable_unless_exception_approved",
+      "rollback_path": "enforce routing through TIBER-Data validation and provenance gates",
+      "notes": "Direct rookie bypass is review-required and only allowed when an explicit exception is approved."
+    }
+  ],
+  "global_rules": [
+    {
+      "rule_id": "no-provenance-bypass",
+      "flow_status": "blocked",
+      "description": "Any flow bypassing TIBER-Data source/provenance gates is not approved by default."
+    },
+    {
+      "rule_id": "no-unreviewed-upstream-authority",
+      "flow_status": "blocked",
+      "description": "Downstream model/display outputs must not become upstream canonical facts without declared provenance separation and promotion review."
+    }
+  ]
+}
