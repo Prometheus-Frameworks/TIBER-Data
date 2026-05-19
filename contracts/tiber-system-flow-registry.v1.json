@@ -98,14 +98,14 @@
       "producer_repo": "TIBER-Data",
       "consumer_repo": "TIBER-Fantasy",
       "artifact_type": "governed_rookie_artifact",
-      "source_layer": "normalized",
-      "authority_level": "canonical_fact",
+      "source_layer": "derived",
+      "authority_level": "validated_signal",
       "flow_status": "approved",
       "may_feed_back_upstream": false,
       "requires_human_review_if_feedback": true,
       "staleness_policy": "declared_by_artifact_or_contract",
       "rollback_path": "halt downstream delivery and pin to last valid promoted rookie artifact",
-      "notes": "Represents the second hop of the approved rookie flow through TIBER-Data."
+      "notes": "Represents the second hop of the approved rookie flow through TIBER-Data governance; validation and provenance gates make it safe for downstream use without converting rookie evaluation output into canonical fact."
     },
     {
       "producer_repo": "TIBER-Fantasy",
@@ -165,12 +165,12 @@
       "artifact_type": "direct_rookie_bypass",
       "source_layer": "derived",
       "authority_level": "validated_signal",
-      "flow_status": "blocked",
+      "flow_status": "review_required",
       "may_feed_back_upstream": false,
       "requires_human_review_if_feedback": true,
       "staleness_policy": "not_applicable_unless_exception_approved",
       "rollback_path": "enforce routing through TIBER-Data validation and provenance gates",
-      "notes": "Direct rookie bypass is blocked unless an explicit exception is approved."
+      "notes": "Direct rookie bypass is review-required and only allowed when an explicit exception is approved."
     }
   ],
   "global_rules": [
