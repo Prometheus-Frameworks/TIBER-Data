@@ -231,20 +231,22 @@ These fixtures are intentionally internally consistent and can be reused in down
 
 ## Validate locally
 
-Install Node dependencies and run the contract checks locally:
+Install dependencies and run the deterministic pre-PR checks locally:
 
 ```bash
 npm install
-npm run typecheck
-npm run test
+python -m pip install -e .[dev]
+./scripts/pre_pr.sh
 npm run build
 ```
 
 ## Command list
 
 - `npm install` — install the lightweight TypeScript validation toolchain
+- `./scripts/pre_pr.sh` — deterministic pre-PR gate (TypeScript + Python tests)
 - `npm run typecheck` — verify TypeScript types
-- `npm run test` — run the acceptance tests and fixture validation
+- `npm run test` — run the TypeScript acceptance tests and fixture validation
+- `python -m pytest` — run the Python test suite
 - `npm run build` — emit the distributable TypeScript build into `dist/`
 
 
