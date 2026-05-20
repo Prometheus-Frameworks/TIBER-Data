@@ -148,6 +148,28 @@ const GOBLIN_TEAMS = GOBLIN.status === 'available' ? uniqueSorted(GOBLIN.records
 const GOBLIN_POSITIONS = GOBLIN.status === 'available' ? uniqueSorted(GOBLIN.records, 'position') : [];
 const GOBLIN_WEEKS = GOBLIN.status === 'available' ? uniqueSorted(GOBLIN.records, 'week') : [];
 
+const SYSTEM_FLOW_REGISTRY_PATH = 'contracts/tiber-system-flow-registry.v1.json';
+const LOCAL_VIEWER_ROUTES = ['/health', '/artifacts', '/roster', '/ppr', '/goblin', '/docs', '/system-flow'];
+
+function loadSystemFlowRegistry() {
+  const fullPath = path.join(ROOT, SYSTEM_FLOW_REGISTRY_PATH);
+  if (!existsSync(fullPath)) {
+    return { status: 'missing', path: SYSTEM_FLOW_REGISTRY_PATH, error: 'File not found', registry: null, flows: [], globalRules: [] };
+  }
+
+  try {
+    const raw = readFileSync(fullPath, 'utf-8');
+    const parsed = JSON.parse(raw);
+    const flows = Array.isArray(parsed?.flows) ? parsed.flows : [];
+    const globalRules = Array.isArray(parsed?.global_rules) ? parsed.global_rules : [];
+    return { status: 'available', path: SYSTEM_FLOW_REGISTRY_PATH, error: null, registry: parsed, flows, globalRules };
+  } catch (e) {
+    return { status: 'invalid', path: SYSTEM_FLOW_REGISTRY_PATH, error: e.message, registry: null, flows: [], globalRules: [] };
+  }
+}
+
+const SYSTEM_FLOW_REGISTRY = loadSystemFlowRegistry();
+
 // ---------------------------------------------------------------------------
 // HTML helpers
 // ---------------------------------------------------------------------------
@@ -225,6 +247,9 @@ p{color:var(--muted);margin-bottom:14px;max-width:720px}
 .badge-ok{background:#1a7f3733;color:#3fb950;border:1px solid #1a7f3755}
 .badge-missing{background:#f8514922;color:#f85149;border:1px solid #f8514955}
 .badge-invalid{background:#d2992222;color:#d29922;border:1px solid #d2992255}
+.badge-approved{background:#1a7f3733;color:#3fb950;border:1px solid #1a7f3755}
+.badge-review{background:#d2992222;color:#d29922;border:1px solid #d2992255}
+.badge-blocked{background:#f8514922;color:#f85149;border:1px solid #f8514955}
 
 .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:20px}
 .fg{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
@@ -274,6 +299,7 @@ function layout(title, activeRoute, content) {
     ['/ppr', 'Weekly Stats'],
     ['/goblin', 'Research Signals'],
     ['/docs', 'Contracts'],
+    ['/system-flow', 'System Flow'],
   ].map(([href, label]) =>
     `<a href="${href}" class="${activeRoute === href ? 'active' : ''}">${label}</a>`
   ).join('');
@@ -823,6 +849,93 @@ function buildPager(base, params, page, totalPages) {
   return `<div class="pager"><span class="pager-info">Page ${page} of ${totalPages}</span>${links.join('')}</div>`;
 }
 
+
+function flowStatusBadge(status) {
+  const label = displayValue(status);
+  if (status === 'approved') return `<span class="badge badge-approved">${esc(label)}</span>`;
+  if (status === 'review_required') return `<span class="badge badge-review">${esc(label)}</span>`;
+  if (status === 'blocked') return `<span class="badge badge-blocked">${esc(label)}</span>`;
+  return `<span class="badge badge-fixture">${esc(label)}</span>`;
+}
+
+function systemFlowPage(query) {
+  const reg = SYSTEM_FLOW_REGISTRY;
+  if (reg.status !== 'available') {
+    const message = reg.status === 'missing'
+      ? `Registry file not found: ${esc(reg.path)}`
+      : `Registry file could not be parsed: ${esc(reg.error)}`;
+    return layout('System flow registry', '/system-flow', `
+<h1>System flow registry</h1>
+<p>Read-only inspection surface for the committed TIBER system flow governance registry.</p>
+<div class="error-box">${message}</div>`);
+  }
+
+  const statusQ = query.status || '';
+  const producerQ = query.producer || '';
+  const consumerQ = query.consumer || '';
+  const authorityQ = query.authority_level || '';
+  const sourceLayerQ = query.source_layer || '';
+
+  const options = (vals, selected) => ['', ...vals].map(v => `<option value="${esc(v)}" ${v === selected ? 'selected' : ''}>${esc(v || 'All')}</option>`).join('');
+  const producerOpts = uniqueSorted(reg.flows, 'producer_repo');
+  const consumerOpts = uniqueSorted(reg.flows, 'consumer_repo');
+  const statusOpts = uniqueSorted(reg.flows, 'flow_status');
+  const authorityOpts = uniqueSorted(reg.flows, 'authority_level');
+  const sourceLayerOpts = uniqueSorted(reg.flows, 'source_layer');
+
+  let rows = reg.flows;
+  if (statusQ) rows = rows.filter(r => String(r.flow_status || '') === statusQ);
+  if (producerQ) rows = rows.filter(r => String(r.producer_repo || '') === producerQ);
+  if (consumerQ) rows = rows.filter(r => String(r.consumer_repo || '') === consumerQ);
+  if (authorityQ) rows = rows.filter(r => String(r.authority_level || '') === authorityQ);
+  if (sourceLayerQ) rows = rows.filter(r => String(r.source_layer || '') === sourceLayerQ);
+
+  const statusCounts = reg.flows.reduce((acc, flow) => {
+    const k = String(flow.flow_status || 'unknown');
+    acc[k] = (acc[k] || 0) + 1;
+    return acc;
+  }, {});
+  const upstreamCount = reg.flows.filter(f => f.may_feed_back_upstream === true).length;
+  const loadedArtifacts = Object.values(ARTIFACTS).filter(a => a.status === 'available').length;
+  const missingArtifacts = Object.values(ARTIFACTS).filter(a => a.status !== 'available').length;
+
+  const filters = `<form method="GET" action="/system-flow"><div class="filters">
+  <div class="fg"><label>Status</label><select name="status">${options(statusOpts, statusQ)}</select></div>
+  <div class="fg"><label>Producer</label><select name="producer">${options(producerOpts, producerQ)}</select></div>
+  <div class="fg"><label>Consumer</label><select name="consumer">${options(consumerOpts, consumerQ)}</select></div>
+  <div class="fg"><label>Authority level</label><select name="authority_level">${options(authorityOpts, authorityQ)}</select></div>
+  <div class="fg"><label>Source layer</label><select name="source_layer">${options(sourceLayerOpts, sourceLayerQ)}</select></div>
+  <button type="submit" class="btn">Filter</button><a href="/system-flow" class="btn-ghost">Reset</a>
+</div></form>`;
+
+  const table = rows.length ? rows.map(r => `<tr>
+<td>${tdVal(r.producer_repo)}</td><td>${tdVal(r.consumer_repo)}</td><td>${tdVal(r.artifact_type)}</td><td>${tdVal(r.source_layer)}</td><td>${tdVal(r.authority_level)}</td><td>${flowStatusBadge(r.flow_status)}</td><td>${tdVal(r.may_feed_back_upstream)}</td><td>${tdVal(r.requires_human_review_if_feedback)}</td><td>${tdVal(r.staleness_policy)}</td><td>${tdVal(r.rollback_path)}</td><td>${tdVal(r.notes)}</td></tr>`).join('') : `<tr><td colspan="11" class="empty">No flows match the current filters.</td></tr>`;
+
+  const rulesTable = reg.globalRules.length ? reg.globalRules.map(rule => `<tr><td>${tdVal(rule.rule_id)}</td><td>${flowStatusBadge(rule.flow_status)}</td><td>${tdVal(rule.description)}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">No global rules found.</td></tr>';
+
+  return layout('System flow registry', '/system-flow', `
+<h1>System flow registry</h1>
+<p>Read-only inspection surface for the committed TIBER system flow governance registry. This page does not perform remote checks.</p>
+<div class="error-box">Truthfulness warning: This registry is a governance contract map. It does not prove downstream repos or APIs are live, does not perform cross-repo health checks, does not authorize runtime coupling, and approved status means governance approval only.</div>
+${sourceSummary({recordCount: reg.flows.length})}
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-val">${reg.flows.length.toLocaleString()}</div><div class="stat-lbl">Total flows</div></div>
+  <div class="stat-card"><div class="stat-val">${(statusCounts.approved || 0).toLocaleString()}</div><div class="stat-lbl">Approved flows</div></div>
+  <div class="stat-card"><div class="stat-val">${(statusCounts.review_required || 0).toLocaleString()}</div><div class="stat-lbl">Review-required flows</div></div>
+  <div class="stat-card"><div class="stat-val">${(statusCounts.blocked || 0).toLocaleString()}</div><div class="stat-lbl">Blocked flows</div></div>
+  <div class="stat-card"><div class="stat-val">${upstreamCount.toLocaleString()}</div><div class="stat-lbl">May feed upstream</div></div>
+  <div class="stat-card"><div class="stat-val">${loadedArtifacts.toLocaleString()} / ${missingArtifacts.toLocaleString()}</div><div class="stat-lbl">Artifacts loaded / missing</div></div>
+</div>
+${filters}
+<div class="table-meta">Showing ${rows.length.toLocaleString()} flow rows</div>
+<div class="table-wrap"><table><thead><tr><th>Producer repo</th><th>Consumer repo</th><th>Artifact type</th><th>Source layer</th><th>Authority level</th><th>Flow status</th><th>May feed upstream</th><th>Review required if feedback</th><th>Staleness policy</th><th>Rollback path</th><th>Notes</th></tr></thead><tbody>${table}</tbody></table></div>
+<h2>Global rules</h2>
+<div class="table-wrap"><table><thead><tr><th>Rule ID</th><th>Flow status</th><th>Description</th></tr></thead><tbody>${rulesTable}</tbody></table></div>
+<h2>Local evidence viewer routes</h2>
+<p>This list describes local viewer endpoints only; it is not proof that downstream repos are online.</p>
+<div class="artifact-card"><ul>${LOCAL_VIEWER_ROUTES.map(route => `<li><code class="mono">${route}</code></li>`).join('')}</ul></div>`);
+}
+
 function docsPage() {
   const docs = [
     {
@@ -923,6 +1036,7 @@ const server = http.createServer((req, res) => {
     if (pathname === '/ppr') return send(200, 'text/html', pprPage(query));
     if (pathname === '/goblin') return send(200, 'text/html', goblinPage(query));
     if (pathname === '/docs') return send(200, 'text/html', docsPage());
+    if (pathname === '/system-flow') return send(200, 'text/html', systemFlowPage(query));
 
     send(404, 'text/html', layout('Not Found', '', '<h1>404</h1><p>Page not found.</p>'));
   } catch (err) {
