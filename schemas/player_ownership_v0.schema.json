@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber-data.local/schemas/player_ownership_v0.schema.json",
+  "title": "player_ownership_v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "generated_at", "players"],
+  "properties": {
+    "contract_version": {"type": "string", "const": "player_ownership_v0"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "players": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/player_ownership"}
+    }
+  },
+  "$defs": {
+    "player_ownership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["player_id", "player_name", "position", "football_level", "current_team_id", "current_team_abbr", "current_team_name", "ownership_status", "valid_from", "valid_to", "last_verified_at", "confidence", "source_refs"],
+      "properties": {
+        "player_id": {"type": ["string", "null"], "minLength": 1},
+        "player_name": {"type": ["string", "null"], "minLength": 1},
+        "position": {"type": ["string", "null"], "minLength": 1},
+        "football_level": {"type": ["string", "null"], "enum": ["NFL", "COLLEGE", "DEVY", null]},
+        "current_team_id": {"type": ["string", "null"], "minLength": 1},
+        "current_team_abbr": {"type": ["string", "null"], "minLength": 1},
+        "current_team_name": {"type": ["string", "null"], "minLength": 1},
+        "ownership_status": {"type": "string", "enum": ["active_roster", "practice_squad", "unsigned_draft_pick", "college", "devy", "free_agent", "retired", "injured_reserve", "suspended", "unknown"]},
+        "valid_from": {"type": ["string", "null"], "format": "date-time"},
+        "valid_to": {"type": ["string", "null"], "format": "date-time"},
+        "last_verified_at": {"type": "string", "format": "date-time"},
+        "confidence": {"type": "string", "enum": ["source_verified", "multi_source_verified", "provisional", "unverified"]},
+        "source_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_ref"}}
+      }
+    },
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_name", "observed_at", "confidence"],
+      "properties": {
+        "source_name": {"type": "string", "minLength": 1},
+        "source_url": {"type": ["string", "null"], "format": "uri"},
+        "observed_at": {"type": "string", "format": "date-time"},
+        "source_updated_at": {"type": ["string", "null"], "format": "date-time"},
+        "confidence": {"type": "string", "minLength": 1},
+        "notes": {"type": ["string", "null"], "minLength": 1}
+      }
+    }
+  }
+}
