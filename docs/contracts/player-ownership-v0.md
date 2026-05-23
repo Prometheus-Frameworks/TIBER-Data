@@ -21,6 +21,14 @@ This change introduces a player-centric ownership truth layer that complements t
 
 Latest state and change events are intentionally separate artifacts: one answers current lookup, the other preserves auditable transition history.
 
+## Fixture safety note
+
+The included artifacts under `exports/promoted/player_ownership/**` are **contract-validation scaffolds only** in this PR:
+
+- they use provisional verification/confidence status;
+- they include `source_name: fixture_demonstration_only`; and
+- they must not be interpreted as source-backed promoted ownership truth.
+
 ## Contract rules
 
 - Do not invent player IDs.

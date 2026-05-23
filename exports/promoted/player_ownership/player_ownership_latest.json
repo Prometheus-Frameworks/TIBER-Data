@@ -14,7 +14,7 @@
       "valid_from": "2025-03-01T00:00:00Z",
       "valid_to": null,
       "last_verified_at": "2026-05-23T13:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "fixture_demonstration_only",
@@ -22,7 +22,7 @@
           "observed_at": "2026-05-23T13:00:00Z",
           "source_updated_at": null,
           "confidence": "fixture_only",
-          "notes": "Deterministic fixture for contract validation only."
+          "notes": "Fixture-only scaffold artifact; not promoted source-backed ownership truth."
         }
       ]
     }
