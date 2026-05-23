@@ -1,0 +1,30 @@
+{
+  "contract_version": "player_ownership_v0",
+  "generated_at": "2026-05-23T13:00:00Z",
+  "players": [
+    {
+      "player_id": "wr-tee-higgins",
+      "player_name": "Tee Higgins",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-cin",
+      "current_team_abbr": "CIN",
+      "current_team_name": "Cincinnati Bengals",
+      "ownership_status": "active_roster",
+      "valid_from": "2025-03-01T00:00:00Z",
+      "valid_to": null,
+      "last_verified_at": "2026-05-23T13:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "fixture_demonstration_only",
+          "source_url": null,
+          "observed_at": "2026-05-23T13:00:00Z",
+          "source_updated_at": null,
+          "confidence": "fixture_only",
+          "notes": "Deterministic fixture for contract validation only."
+        }
+      ]
+    }
+  ]
+}

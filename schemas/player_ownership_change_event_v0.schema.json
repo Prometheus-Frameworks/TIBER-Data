@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber-data.local/schemas/player_ownership_change_event_v0.schema.json",
+  "title": "player_ownership_change_event_v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "event_type", "player_id", "player_name", "position", "from_team_id", "from_team_abbr", "from_team_name", "to_team_id", "to_team_abbr", "to_team_name", "detected_at", "effective_date", "verification_status", "confidence", "source_refs"],
+  "properties": {
+    "event_id": {"type": "string", "minLength": 1},
+    "event_type": {"type": "string", "enum": ["team_change", "status_change", "signing", "release", "trade", "draft_selection", "practice_squad_change", "injured_reserve_change", "free_agent_status_change", "college_program_change"]},
+    "player_id": {"type": ["string", "null"], "minLength": 1},
+    "player_name": {"type": ["string", "null"], "minLength": 1},
+    "position": {"type": ["string", "null"], "minLength": 1},
+    "from_team_id": {"type": ["string", "null"], "minLength": 1},
+    "from_team_abbr": {"type": ["string", "null"], "minLength": 1},
+    "from_team_name": {"type": ["string", "null"], "minLength": 1},
+    "to_team_id": {"type": ["string", "null"], "minLength": 1},
+    "to_team_abbr": {"type": ["string", "null"], "minLength": 1},
+    "to_team_name": {"type": ["string", "null"], "minLength": 1},
+    "detected_at": {"type": "string", "format": "date-time"},
+    "effective_date": {"type": "string", "format": "date"},
+    "verification_status": {"type": "string", "enum": ["verified", "provisional", "unverified"]},
+    "confidence": {"type": "string", "enum": ["source_verified", "multi_source_verified", "provisional", "unverified"]},
+    "source_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_ref"}}
+  },
+  "$defs": {
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_name", "observed_at", "confidence"],
+      "properties": {
+        "source_name": {"type": "string", "minLength": 1},
+        "source_url": {"type": ["string", "null"], "format": "uri"},
+        "observed_at": {"type": "string", "format": "date-time"},
+        "source_updated_at": {"type": ["string", "null"], "format": "date-time"},
+        "confidence": {"type": "string", "minLength": 1},
+        "notes": {"type": ["string", "null"], "minLength": 1}
+      }
+    }
+  }
+}
