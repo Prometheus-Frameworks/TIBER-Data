@@ -1,0 +1,25 @@
+{
+  "source_name": "player_ownership_dry_run_fixture",
+  "observed_at": "2026-05-23T13:30:00Z",
+  "source_confidence": "fixture_only",
+  "notes": "Fixture source for dry-run ingestion tests and operator examples.",
+  "players": [
+    {
+      "player_id": "wr-tee-higgins",
+      "player_name": " Tee   Higgins ",
+      "position": "wr",
+      "football_level": "nfl",
+      "team_id": "NFL-CIN",
+      "team_abbr": "cin",
+      "team_name": "Cincinnati Bengals",
+      "ownership_status": "active roster",
+      "valid_from": "2025-03-01T00:00:00Z",
+      "valid_to": null,
+      "ownership_confidence": "source_verified",
+      "source_url": null,
+      "source_updated_at": null,
+      "source_confidence": "fixture_only",
+      "notes": "Dry-run fixture row matching the latest ownership scaffold."
+    }
+  ]
+}
