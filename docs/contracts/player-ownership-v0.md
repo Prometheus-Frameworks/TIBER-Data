@@ -37,11 +37,11 @@ The included artifacts under `exports/promoted/player_ownership/**` are **contra
 - Every ownership claim must include `source_refs` with source metadata.
 - Invalid timestamps, invalid status values, malformed event records, or missing source metadata should fail validation.
 
-## Dry-run ingestion
+## Ingestion and promotion
 
 `scripts/ingest_player_ownership.py` reads a repo-held source roster or ownership fixture, normalizes rows into the `player_ownership_v0` latest-state shape, validates the normalized payload, compares it with a previous latest artifact, and prints a JSON dry-run report.
 
-Example:
+Dry-run is the default behavior and does not write promoted artifacts or event ledgers. Operators can pass `--dry-run` explicitly for clarity:
 
 ```bash
 python scripts/ingest_player_ownership.py \
@@ -58,4 +58,22 @@ Operators should inspect the report before any future promotion path exists. In 
 - `removed_or_missing_from_source` is uncertainty, not a release or free-agent claim.
 - `validation_errors` must be resolved before treating any dry-run output as reliable.
 
-The dry-run command never writes `player_ownership_latest.json` and never appends ownership change events.
+The dry-run command never writes `player_ownership_latest.json`, never appends ownership change events, and never writes a run manifest.
+
+Promotion mode is available through `--write`:
+
+```bash
+python scripts/ingest_player_ownership.py \
+  --source data/raw/player_ownership/source_roster_input.json \
+  --previous exports/promoted/player_ownership/player_ownership_latest.json \
+  --write
+```
+
+Promotion mode remains fail-closed:
+
+- no-change runs write only `exports/promoted/player_ownership/manifests/player_ownership_ingestion_runs.json`;
+- verified team and status changes write an updated latest-state artifact and append JSONL events under `exports/promoted/player_ownership/events/`;
+- schema errors, invalid timestamps, invalid status values, unresolved identity, source conflicts, unverified changes, new players, and football-level changes block promotion and are reported in the run manifest;
+- source rows missing from a run are preserved from the previous latest artifact and are not interpreted as releases or free-agent claims.
+
+The latest-state artifact is written only after the normalized source, previous latest state, merged promoted latest state, and candidate event records validate. Promoted latest-state players are ordered deterministically by `player_id` and `player_name`.

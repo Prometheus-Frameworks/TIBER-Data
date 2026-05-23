@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.ingest_player_ownership import build_dry_run_report
+from scripts.ingest_player_ownership import build_dry_run_report, run_player_ownership_ingestion
 
 ROOT = Path(__file__).resolve().parents[1]
 STARTED_AT = "2026-05-23T14:00:00Z"
@@ -94,6 +94,33 @@ def _report(tmp_path: Path, *, previous_players: list[dict], source_rows: list[d
     )
 
 
+def _write_run(
+    tmp_path: Path,
+    *,
+    previous_players: list[dict],
+    source_rows: list[dict],
+) -> tuple[dict, Path, Path, Path]:
+    latest_path = _write_json(
+        tmp_path / "player_ownership_latest.json",
+        _previous_payload(previous_players),
+    )
+    source_path = _write_json(tmp_path / "source.json", _source_payload(source_rows))
+    events_dir = tmp_path / "events"
+    manifest_path = tmp_path / "manifests" / "player_ownership_ingestion_runs.json"
+    report = run_player_ownership_ingestion(
+        source_path=source_path,
+        previous_path=latest_path,
+        mode="write",
+        latest_output_path=latest_path,
+        events_dir=events_dir,
+        manifest_path=manifest_path,
+        started_at=STARTED_AT,
+        completed_at=COMPLETED_AT,
+    )
+    event_path = events_dir / "player_ownership_events_2026.jsonl"
+    return report, latest_path, event_path, manifest_path
+
+
 def test_fixture_dry_run_reports_unchanged_against_latest_artifact() -> None:
     report = build_dry_run_report(
         source_path=ROOT / "data/fixtures/player_ownership/source_roster_fixture.json",
@@ -110,6 +137,149 @@ def test_fixture_dry_run_reports_unchanged_against_latest_artifact() -> None:
     assert report["validation_errors"] == []
     assert report["would_write_latest_artifact"] is False
     assert report["would_append_change_events"] is False
+
+
+def test_no_change_write_run_writes_manifest_without_latest_or_events(tmp_path: Path) -> None:
+    report, latest_path, event_path, manifest_path = _write_run(
+        tmp_path,
+        previous_players=[_player()],
+        source_rows=[_source_row()],
+    )
+
+    assert report["mode"] == "write"
+    assert report["promotion_status"] == "no_changes"
+    assert report["changes_detected"] == 0
+    assert report["latest_artifact_written"] is False
+    assert report["artifact_written"] is False
+    assert report["events_appended"] == 0
+    assert event_path.exists() is False
+    assert json.loads(latest_path.read_text(encoding="utf-8")) == _previous_payload([_player()])
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["promotion_status"] == "no_changes"
+    assert manifest["latest_artifact_written"] is False
+
+
+def test_verified_team_change_write_promotes_latest_and_appends_event(tmp_path: Path) -> None:
+    report, latest_path, event_path, manifest_path = _write_run(
+        tmp_path,
+        previous_players=[_player()],
+        source_rows=[
+            _source_row(
+                team_id="nfl-no",
+                team_abbr="NO",
+                team_name="New Orleans Saints",
+                valid_from="2026-03-14T00:00:00Z",
+            )
+        ],
+    )
+
+    assert report["promotion_status"] == "promoted"
+    assert report["latest_artifact_written"] is True
+    assert report["artifact_written"] is True
+    assert report["events_appended"] == 1
+    latest = json.loads(latest_path.read_text(encoding="utf-8"))
+    assert latest["generated_at"] == STARTED_AT
+    assert latest["players"][0]["current_team_abbr"] == "NO"
+    assert latest["players"][0]["confidence"] == "source_verified"
+    event = json.loads(event_path.read_text(encoding="utf-8").splitlines()[0])
+    assert event["event_type"] == "team_change"
+    assert event["verification_status"] == "verified"
+    assert event["from_team_abbr"] == "CIN"
+    assert event["to_team_abbr"] == "NO"
+    assert event["effective_date"] == "2026-03-14"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["promotion_status"] == "promoted"
+    assert manifest["events_appended"] == 1
+
+
+def test_verified_status_change_write_promotes_latest_and_appends_event(tmp_path: Path) -> None:
+    report, latest_path, event_path, _ = _write_run(
+        tmp_path,
+        previous_players=[_player()],
+        source_rows=[
+            _source_row(
+                ownership_status="injured reserve",
+                valid_from="2026-05-22T00:00:00Z",
+            )
+        ],
+    )
+
+    assert report["promotion_status"] == "promoted"
+    latest = json.loads(latest_path.read_text(encoding="utf-8"))
+    assert latest["players"][0]["ownership_status"] == "injured_reserve"
+    event = json.loads(event_path.read_text(encoding="utf-8").splitlines()[0])
+    assert event["event_type"] == "status_change"
+    assert event["from_team_abbr"] == "CIN"
+    assert event["to_team_abbr"] == "CIN"
+    assert event["effective_date"] == "2026-05-22"
+
+
+def test_unresolved_identity_write_blocks_promotion_and_writes_manifest(tmp_path: Path) -> None:
+    report, latest_path, event_path, manifest_path = _write_run(
+        tmp_path,
+        previous_players=[],
+        source_rows=[_source_row(player_id=None, player_name="Mystery Receiver")],
+    )
+
+    assert report["promotion_status"] == "blocked"
+    assert "identity_unresolved" in report["blocked_reasons"]
+    assert report["latest_artifact_written"] is False
+    assert event_path.exists() is False
+    assert json.loads(latest_path.read_text(encoding="utf-8")) == _previous_payload([])
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["promotion_status"] == "blocked"
+
+
+def test_source_conflict_write_blocks_promotion(tmp_path: Path) -> None:
+    report, latest_path, event_path, _ = _write_run(
+        tmp_path,
+        previous_players=[_player()],
+        source_rows=[
+            _source_row(team_id="nfl-cin", team_abbr="CIN", team_name="Cincinnati Bengals"),
+            _source_row(team_id="nfl-no", team_abbr="NO", team_name="New Orleans Saints"),
+        ],
+    )
+
+    assert report["promotion_status"] == "blocked"
+    assert "source_conflict" in report["blocked_reasons"]
+    assert event_path.exists() is False
+    assert json.loads(latest_path.read_text(encoding="utf-8")) == _previous_payload([_player()])
+
+
+def test_unverified_change_write_blocks_promotion(tmp_path: Path) -> None:
+    report, latest_path, event_path, _ = _write_run(
+        tmp_path,
+        previous_players=[_player()],
+        source_rows=[
+            _source_row(
+                team_id="nfl-no",
+                team_abbr="NO",
+                team_name="New Orleans Saints",
+                ownership_confidence="provisional",
+            )
+        ],
+    )
+
+    assert report["promotion_status"] == "blocked"
+    assert "change_not_verified" in report["blocked_reasons"]
+    assert event_path.exists() is False
+    assert json.loads(latest_path.read_text(encoding="utf-8")) == _previous_payload([_player()])
+
+
+def test_schema_validation_failure_write_blocks_promotion(tmp_path: Path) -> None:
+    report, latest_path, event_path, manifest_path = _write_run(
+        tmp_path,
+        previous_players=[_player()],
+        source_rows=[_source_row(ownership_status="starter lock")],
+    )
+
+    assert report["promotion_status"] == "blocked"
+    assert "invalid_status" in report["blocked_reasons"]
+    assert report["validation_error_count"] == 1
+    assert event_path.exists() is False
+    assert json.loads(latest_path.read_text(encoding="utf-8")) == _previous_payload([_player()])
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["validation_error_count"] == 1
 
 
 def test_team_change_candidate_is_reported_with_source_evidence(tmp_path: Path) -> None:
