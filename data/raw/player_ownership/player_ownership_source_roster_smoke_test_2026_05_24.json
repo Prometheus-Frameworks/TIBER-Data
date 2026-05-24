@@ -1,6 +1,6 @@
 {
   "source_name": "tiber_data_roster_smoke_test_2026_05_24",
-  "generated_at": "2026-05-24T14:01:35Z",
+  "generated_at": "2026-05-24T14:10:55Z",
   "sources": [
     "data/processed/evidence/roster_player_team_map_2025.source_backed.json",
     "exports/promoted/nfl_draft_results/nfl_draft_results_2026.json"
@@ -18,11 +18,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-12T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 19."
+      "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0030565",
@@ -35,11 +35,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-05T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 18."
+      "notes": "nflreadpy 2025 roster week 18. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0039917",
@@ -52,11 +52,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-05T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "Input name 'Michael Penix' normalized to 'Michael Penix Jr.'. nflreadpy 2025 roster week 18."
+      "notes": "Input name 'Michael Penix' normalized to 'Michael Penix Jr.'. nflreadpy 2025 roster week 18. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "qb-garrett-nussmeier",
@@ -87,11 +87,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-12T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 19."
+      "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0038611",
@@ -104,11 +104,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-05T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "Input name 'Chris Rodriguez' normalized to 'Chris Rodriguez Jr.'. nflreadpy 2025 roster week 18."
+      "notes": "Input name 'Chris Rodriguez' normalized to 'Chris Rodriguez Jr.'. nflreadpy 2025 roster week 18. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "rb-jonah-coleman",
@@ -139,11 +139,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-19T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 20."
+      "notes": "nflreadpy 2025 roster week 20. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0038555",
@@ -156,11 +156,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-12T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 19."
+      "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "rb-eli-heidenreich",
@@ -227,11 +227,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-12T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 19."
+      "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0039915",
@@ -244,11 +244,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-12T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 19."
+      "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0040124",
@@ -261,11 +261,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-12T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "Input name 'Tet McMillan' normalized to 'Tetairoa McMillan'. nflreadpy 2025 roster week 19."
+      "notes": "Input name 'Tet McMillan' normalized to 'Tetairoa McMillan'. nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "wr-jordyn-tyson",
@@ -296,11 +296,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-19T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 20."
+      "notes": "nflreadpy 2025 roster week 20. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0040648",
@@ -313,11 +313,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-02-09T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 22."
+      "notes": "nflreadpy 2025 roster week 22. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0039901",
@@ -330,11 +330,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-19T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 20."
+      "notes": "nflreadpy 2025 roster week 20. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0040138",
@@ -347,11 +347,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-19T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 20."
+      "notes": "nflreadpy 2025 roster week 20. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0040131",
@@ -364,11 +364,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-02-09T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 22."
+      "notes": "nflreadpy 2025 roster week 22. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0037816",
@@ -381,11 +381,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-12T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 19."
+      "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "wr-antonio-williams",
@@ -416,11 +416,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-19T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 20."
+      "notes": "nflreadpy 2025 roster week 20. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0034351",
@@ -433,11 +433,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-12T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 19."
+      "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     },
     {
       "player_id": "00-0036040",
@@ -450,11 +450,11 @@
       "ownership_status": "active_roster",
       "valid_from": null,
       "valid_to": null,
-      "ownership_confidence": "source_verified",
+      "ownership_confidence": "provisional",
       "source_name": "nflreadpy_load_rosters_weekly_2025",
       "observed_at": "2026-01-05T00:00:00Z",
       "source_confidence": "source_verified",
-      "notes": "nflreadpy 2025 roster week 18."
+      "notes": "nflreadpy 2025 roster week 18. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
     }
   ]
 }

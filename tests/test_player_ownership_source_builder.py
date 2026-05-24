@@ -144,8 +144,22 @@ def test_build_roster_row_sets_required_ownership_fields() -> None:
     assert row["team_name"] == "Philadelphia Eagles"
     assert row["ownership_status"] == "active_roster"
     assert row["football_level"] == "NFL"
-    assert row["ownership_confidence"] == "source_verified"
     assert RFC3339_UTC_RE.match(row["observed_at"])
+
+
+def test_build_roster_row_uses_provisional_confidence_not_source_verified() -> None:
+    """nflreadpy rows are 2025-season snapshots; current team membership is not confirmed."""
+    record = {
+        "player_id": "00-0036389",
+        "player_name": "Jalen Hurts",
+        "position": "QB",
+        "team": "PHI",
+        "week": 19,
+    }
+    row = build_roster_row("Jalen Hurts", record)
+    assert row["ownership_confidence"] == "provisional"
+    assert row["source_confidence"] == "source_verified"
+    assert "source_snapshot_stale_for_current_roster" in row["notes"]
 
 
 def test_build_roster_row_includes_alias_note_when_name_normalized() -> None:
@@ -233,6 +247,22 @@ def test_build_source_output_all_26_players_matched() -> None:
     assert len(matched) == 26
     assert len(unmatched) == 0
     assert len(source_payload["players"]) == 26
+
+
+def test_build_source_output_roster_rows_are_provisional_draft_rows_are_source_verified() -> None:
+    roster = load_roster_by_latest_week(ROSTER_SOURCE_PATH)
+    draft = load_draft_by_name(DRAFT_SOURCE_PATH)
+    source_payload, match_results = build_source_output(
+        SMOKE_TEST_NAMES, roster, draft, generated_at="2026-05-24T00:00:00Z"
+    )
+    roster_rows = [r for r in source_payload["players"] if r["source_name"] == "nflreadpy_load_rosters_weekly_2025"]
+    draft_rows = [r for r in source_payload["players"] if r["source_name"] == "nfl_draft_results_2026_nbcsports_profootballtalk"]
+    assert len(roster_rows) == 19
+    assert len(draft_rows) == 7
+    for row in roster_rows:
+        assert row["ownership_confidence"] == "provisional", f"{row['player_name']} should be provisional"
+    for row in draft_rows:
+        assert row["ownership_confidence"] == "source_verified", f"{row['player_name']} should be source_verified"
 
 
 def test_build_source_output_timestamps_are_rfc3339() -> None:

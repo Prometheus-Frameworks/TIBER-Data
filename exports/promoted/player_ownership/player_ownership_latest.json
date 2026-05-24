@@ -1,6 +1,6 @@
 {
   "contract_version": "player_ownership_v0",
-  "generated_at": "2026-05-24T14:01:35Z",
+  "generated_at": "2026-05-24T14:10:55Z",
   "players": [
     {
       "player_id": "00-0030565",
@@ -14,7 +14,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-05T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -22,7 +22,7 @@
           "observed_at": "2026-01-05T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 18."
+          "notes": "nflreadpy 2025 roster week 18. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -38,7 +38,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-19T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -46,7 +46,7 @@
           "observed_at": "2026-01-19T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 20."
+          "notes": "nflreadpy 2025 roster week 20. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -62,7 +62,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-12T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -70,7 +70,7 @@
           "observed_at": "2026-01-12T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 19."
+          "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -86,7 +86,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-05T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -94,7 +94,7 @@
           "observed_at": "2026-01-05T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 18."
+          "notes": "nflreadpy 2025 roster week 18. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -110,7 +110,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-12T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -118,7 +118,7 @@
           "observed_at": "2026-01-12T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 19."
+          "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -134,7 +134,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-19T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -142,7 +142,7 @@
           "observed_at": "2026-01-19T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 20."
+          "notes": "nflreadpy 2025 roster week 20. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -158,7 +158,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-12T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -166,7 +166,7 @@
           "observed_at": "2026-01-12T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 19."
+          "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -182,7 +182,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-12T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -190,7 +190,7 @@
           "observed_at": "2026-01-12T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 19."
+          "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -206,7 +206,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-12T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -214,7 +214,7 @@
           "observed_at": "2026-01-12T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 19."
+          "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -230,7 +230,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-05T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -238,7 +238,7 @@
           "observed_at": "2026-01-05T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "Input name 'Chris Rodriguez' normalized to 'Chris Rodriguez Jr.'. nflreadpy 2025 roster week 18."
+          "notes": "Input name 'Chris Rodriguez' normalized to 'Chris Rodriguez Jr.'. nflreadpy 2025 roster week 18. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -254,7 +254,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-19T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -262,7 +262,7 @@
           "observed_at": "2026-01-19T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 20."
+          "notes": "nflreadpy 2025 roster week 20. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -278,7 +278,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-12T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -286,7 +286,7 @@
           "observed_at": "2026-01-12T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 19."
+          "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -302,7 +302,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-05T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -310,7 +310,7 @@
           "observed_at": "2026-01-05T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "Input name 'Michael Penix' normalized to 'Michael Penix Jr.'. nflreadpy 2025 roster week 18."
+          "notes": "Input name 'Michael Penix' normalized to 'Michael Penix Jr.'. nflreadpy 2025 roster week 18. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -326,7 +326,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-12T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -334,7 +334,7 @@
           "observed_at": "2026-01-12T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "Input name 'Tet McMillan' normalized to 'Tetairoa McMillan'. nflreadpy 2025 roster week 19."
+          "notes": "Input name 'Tet McMillan' normalized to 'Tetairoa McMillan'. nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -350,7 +350,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-19T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -358,7 +358,7 @@
           "observed_at": "2026-01-19T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 20."
+          "notes": "nflreadpy 2025 roster week 20. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -374,7 +374,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-02-09T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -382,7 +382,7 @@
           "observed_at": "2026-02-09T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 22."
+          "notes": "nflreadpy 2025 roster week 22. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -398,7 +398,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-19T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -406,7 +406,7 @@
           "observed_at": "2026-01-19T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 20."
+          "notes": "nflreadpy 2025 roster week 20. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -422,7 +422,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-02-09T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -430,7 +430,7 @@
           "observed_at": "2026-02-09T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 22."
+          "notes": "nflreadpy 2025 roster week 22. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },
@@ -446,7 +446,7 @@
       "valid_from": null,
       "valid_to": null,
       "last_verified_at": "2026-01-12T00:00:00Z",
-      "confidence": "source_verified",
+      "confidence": "provisional",
       "source_refs": [
         {
           "source_name": "nflreadpy_load_rosters_weekly_2025",
@@ -454,7 +454,7 @@
           "observed_at": "2026-01-12T00:00:00Z",
           "source_updated_at": null,
           "confidence": "source_verified",
-          "notes": "nflreadpy 2025 roster week 19."
+          "notes": "nflreadpy 2025 roster week 19. source_snapshot_stale_for_current_roster: team membership verified at observation date only; current roster status as of 2026-05-24 not confirmed."
         }
       ]
     },

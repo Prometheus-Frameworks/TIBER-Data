@@ -160,7 +160,13 @@ def match_draft_player(
 
 
 def build_roster_row(input_name: str, record: dict[str, Any]) -> dict[str, Any]:
-    """Build a source ownership row from an nflreadpy 2025 roster record."""
+    """Build a source ownership row from an nflreadpy 2025 roster record.
+
+    Ownership confidence is set to ``provisional`` because the nflreadpy observation
+    is a 2025-season roster snapshot (Jan/Feb 2026). It is source-backed evidence of
+    team membership at that point in time, not verified current roster truth as of the
+    build date. Use a live 2026 roster source to upgrade to ``source_verified``.
+    """
     team_abbr = (record.get("team") or "").upper()
     team_name = NFL_TEAM_NAMES.get(team_abbr, team_abbr)
     week = record.get("week", 18)
@@ -181,11 +187,15 @@ def build_roster_row(input_name: str, record: dict[str, Any]) -> dict[str, Any]:
         "ownership_status": "active_roster",
         "valid_from": None,
         "valid_to": None,
-        "ownership_confidence": "source_verified",
+        "ownership_confidence": "provisional",
         "source_name": ROSTER_SOURCE_NAME,
         "observed_at": observed_at,
         "source_confidence": "source_verified",
-        "notes": f"{alias_note}nflreadpy 2025 roster week {week}.",
+        "notes": (
+            f"{alias_note}nflreadpy 2025 roster week {week}. "
+            "source_snapshot_stale_for_current_roster: team membership verified at "
+            f"observation date only; current roster status as of 2026-05-24 not confirmed."
+        ),
     }
 
 
@@ -431,14 +441,31 @@ def _atomic_write(path: Path, payload: dict[str, Any]) -> None:
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build player ownership source input for the 2026-05-24 smoke-test roster."
+        description="Build player ownership source input for the 2026-05-24 smoke-test roster.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "BOOTSTRAP NOTE\n"
+            "--------------\n"
+            "The --bootstrap-promote-new-players flag bypasses the ingestion pipeline's\n"
+            "new_player_requires_operator_review gate. This is intentional for one-time\n"
+            "initial population when the promoted latest artifact is empty or scaffold-only.\n"
+            "\n"
+            "DO NOT use --bootstrap-promote-new-players as a routine promotion path.\n"
+            "Ongoing ownership updates must go through ingest_player_ownership.py --write,\n"
+            "which enforces source-conflict detection, identity resolution, and change-event\n"
+            "gating. The bootstrap path has none of those guards.\n"
+        ),
     )
     parser.add_argument(
-        "--write",
+        "--bootstrap-promote-new-players",
         action="store_true",
+        dest="bootstrap_promote",
         help=(
-            "Write the source JSON and promote validated rows to player_ownership_latest.json. "
-            "Without --write, prints a dry-run summary only."
+            "ONE-TIME BOOTSTRAP ONLY. Write the source JSON and directly merge validated rows "
+            "into player_ownership_latest.json, bypassing the ingestion pipeline's "
+            "new_player_requires_operator_review gate. Use only when initially populating an "
+            "empty or scaffold-only latest artifact. For ongoing updates, use "
+            "ingest_player_ownership.py --write instead."
         ),
     )
     parser.add_argument(
@@ -497,15 +524,24 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"\nValidation: OK ({len(source_payload['players'])} rows pass schema)")
 
-    if args.write:
+    if args.bootstrap_promote:
+        print(
+            "\nWARNING: --bootstrap-promote-new-players bypasses ingestion pipeline promotion "
+            "gates (new_player_requires_operator_review). Use only for initial population of "
+            "an empty or scaffold-only latest artifact."
+        )
         _atomic_write(args.source_output, source_payload)
         print(f"Source written: {args.source_output}")
 
         promoted = build_promoted_payload(source_payload, args.previous)
         _atomic_write(args.latest_output, promoted)
-        print(f"Promoted latest written: {args.latest_output} ({len(promoted['players'])} players)")
+        print(f"Bootstrap promoted: {args.latest_output} ({len(promoted['players'])} players)")
     else:
-        print(f"\nDry-run complete. Use --write to write source and promoted artifacts.")
+        print(
+            "\nDry-run complete. Use --bootstrap-promote-new-players for one-time initial "
+            "population, or feed the source file into ingest_player_ownership.py --write "
+            "for ongoing ingestion."
+        )
 
     return 0
 
