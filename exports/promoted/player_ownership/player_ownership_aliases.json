@@ -1,0 +1,34 @@
+{
+  "artifact": "player_ownership_aliases_v0",
+  "generated_at": "2026-05-24T00:00:00Z",
+  "aliases": [
+    {
+      "alias": "Michael Penix",
+      "canonical_player_name": "Michael Penix Jr.",
+      "player_id": "00-0039917",
+      "alias_type": "known_suffix_normalization",
+      "source": "player_ownership_source_builder_2026_05_24"
+    },
+    {
+      "alias": "Chris Rodriguez",
+      "canonical_player_name": "Chris Rodriguez Jr.",
+      "player_id": "00-0038611",
+      "alias_type": "known_suffix_normalization",
+      "source": "player_ownership_source_builder_2026_05_24"
+    },
+    {
+      "alias": "Tet McMillan",
+      "canonical_player_name": "Tetairoa McMillan",
+      "player_id": "00-0040124",
+      "alias_type": "known_nickname",
+      "source": "player_ownership_source_builder_2026_05_24"
+    },
+    {
+      "alias": "Mike Washington",
+      "canonical_player_name": "Mike Washington Jr.",
+      "player_id": "rb-mike-washington-jr",
+      "alias_type": "known_suffix_normalization",
+      "source": "player_ownership_source_builder_2026_05_24"
+    }
+  ]
+}
