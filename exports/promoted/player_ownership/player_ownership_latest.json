@@ -1,7 +1,631 @@
 {
   "contract_version": "player_ownership_v0",
-  "generated_at": "2026-05-23T13:00:00Z",
+  "generated_at": "2026-05-24T14:01:35Z",
   "players": [
+    {
+      "player_id": "00-0030565",
+      "player_name": "Geno Smith",
+      "position": "QB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-lv",
+      "current_team_abbr": "LV",
+      "current_team_name": "Las Vegas Raiders",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-05T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-05T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 18."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0033897",
+      "player_name": "Joe Mixon",
+      "position": "RB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-hou",
+      "current_team_abbr": "HOU",
+      "current_team_name": "Houston Texans",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-19T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-19T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 20."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0034351",
+      "player_name": "Dallas Goedert",
+      "position": "TE",
+      "football_level": "NFL",
+      "current_team_id": "nfl-phi",
+      "current_team_abbr": "PHI",
+      "current_team_name": "Philadelphia Eagles",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-12T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-12T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 19."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0036040",
+      "player_name": "Juwan Johnson",
+      "position": "TE",
+      "football_level": "NFL",
+      "current_team_id": "nfl-no",
+      "current_team_abbr": "NO",
+      "current_team_name": "New Orleans Saints",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-05T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-05T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 18."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0036389",
+      "player_name": "Jalen Hurts",
+      "position": "QB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-phi",
+      "current_team_abbr": "PHI",
+      "current_team_name": "Philadelphia Eagles",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-12T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-12T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 19."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0037261",
+      "player_name": "Khalil Shakir",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-buf",
+      "current_team_abbr": "BUF",
+      "current_team_name": "Buffalo Bills",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-19T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-19T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 20."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0037816",
+      "player_name": "Romeo Doubs",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-gb",
+      "current_team_abbr": "GB",
+      "current_team_name": "Green Bay Packers",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-12T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-12T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 19."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0038124",
+      "player_name": "Christian Watson",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-gb",
+      "current_team_abbr": "GB",
+      "current_team_name": "Green Bay Packers",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-12T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-12T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 19."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0038555",
+      "player_name": "Tank Bigsby",
+      "position": "RB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-phi",
+      "current_team_abbr": "PHI",
+      "current_team_name": "Philadelphia Eagles",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-12T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-12T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 19."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0038611",
+      "player_name": "Chris Rodriguez Jr.",
+      "position": "RB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-was",
+      "current_team_abbr": "WAS",
+      "current_team_name": "Washington Commanders",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-05T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-05T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "Input name 'Chris Rodriguez' normalized to 'Chris Rodriguez Jr.'. nflreadpy 2025 roster week 18."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0039901",
+      "player_name": "Keon Coleman",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-buf",
+      "current_team_abbr": "BUF",
+      "current_team_name": "Buffalo Bills",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-19T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-19T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 20."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0039915",
+      "player_name": "Ladd McConkey",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-lac",
+      "current_team_abbr": "LAC",
+      "current_team_name": "Los Angeles Chargers",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-12T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-12T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 19."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0039917",
+      "player_name": "Michael Penix Jr.",
+      "position": "QB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-atl",
+      "current_team_abbr": "ATL",
+      "current_team_name": "Atlanta Falcons",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-05T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-05T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "Input name 'Michael Penix' normalized to 'Michael Penix Jr.'. nflreadpy 2025 roster week 18."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0040124",
+      "player_name": "Tetairoa McMillan",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-car",
+      "current_team_abbr": "CAR",
+      "current_team_name": "Carolina Panthers",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-12T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-12T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "Input name 'Tet McMillan' normalized to 'Tetairoa McMillan'. nflreadpy 2025 roster week 19."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0040126",
+      "player_name": "Colston Loveland",
+      "position": "TE",
+      "football_level": "NFL",
+      "current_team_id": "nfl-chi",
+      "current_team_abbr": "CHI",
+      "current_team_name": "Chicago Bears",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-19T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-19T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 20."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0040131",
+      "player_name": "Kyle Williams",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-ne",
+      "current_team_abbr": "NE",
+      "current_team_name": "New England Patriots",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-02-09T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-02-09T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 22."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0040138",
+      "player_name": "Jaylin Noel",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-hou",
+      "current_team_abbr": "HOU",
+      "current_team_name": "Houston Texans",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-19T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-19T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 20."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0040648",
+      "player_name": "Tory Horton",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-sea",
+      "current_team_abbr": "SEA",
+      "current_team_name": "Seattle Seahawks",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-02-09T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-02-09T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 22."
+        }
+      ]
+    },
+    {
+      "player_id": "00-0040666",
+      "player_name": "Omarion Hampton",
+      "position": "RB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-lac",
+      "current_team_abbr": "LAC",
+      "current_team_name": "Los Angeles Chargers",
+      "ownership_status": "active_roster",
+      "valid_from": null,
+      "valid_to": null,
+      "last_verified_at": "2026-01-12T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "source_url": null,
+          "observed_at": "2026-01-12T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "nflreadpy 2025 roster week 19."
+        }
+      ]
+    },
+    {
+      "player_id": "qb-garrett-nussmeier",
+      "player_name": "Garrett Nussmeier",
+      "position": "QB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-kc",
+      "current_team_abbr": "KC",
+      "current_team_name": "Kansas City Chiefs",
+      "ownership_status": "unsigned_draft_pick",
+      "valid_from": "2026-04-25T00:00:00Z",
+      "valid_to": null,
+      "last_verified_at": "2026-04-25T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nfl_draft_results_2026_nbcsports_profootballtalk",
+          "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
+          "observed_at": "2026-04-25T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "2026 NFL Draft round 7, overall pick 249."
+        }
+      ]
+    },
+    {
+      "player_id": "rb-eli-heidenreich",
+      "player_name": "Eli Heidenreich",
+      "position": "RB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-pit",
+      "current_team_abbr": "PIT",
+      "current_team_name": "Pittsburgh Steelers",
+      "ownership_status": "unsigned_draft_pick",
+      "valid_from": "2026-04-25T00:00:00Z",
+      "valid_to": null,
+      "last_verified_at": "2026-04-25T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nfl_draft_results_2026_nbcsports_profootballtalk",
+          "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
+          "observed_at": "2026-04-25T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "2026 NFL Draft round 7, overall pick 230."
+        }
+      ]
+    },
+    {
+      "player_id": "rb-jonah-coleman",
+      "player_name": "Jonah Coleman",
+      "position": "RB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-den",
+      "current_team_abbr": "DEN",
+      "current_team_name": "Denver Broncos",
+      "ownership_status": "unsigned_draft_pick",
+      "valid_from": "2026-04-25T00:00:00Z",
+      "valid_to": null,
+      "last_verified_at": "2026-04-25T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nfl_draft_results_2026_nbcsports_profootballtalk",
+          "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
+          "observed_at": "2026-04-25T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "2026 NFL Draft round 4, overall pick 108."
+        }
+      ]
+    },
+    {
+      "player_id": "rb-mike-washington-jr",
+      "player_name": "Mike Washington Jr.",
+      "position": "RB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-lv",
+      "current_team_abbr": "LV",
+      "current_team_name": "Las Vegas Raiders",
+      "ownership_status": "unsigned_draft_pick",
+      "valid_from": "2026-04-25T00:00:00Z",
+      "valid_to": null,
+      "last_verified_at": "2026-04-25T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nfl_draft_results_2026_nbcsports_profootballtalk",
+          "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
+          "observed_at": "2026-04-25T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "Input name 'Mike Washington' normalized to 'Mike Washington Jr.'. 2026 NFL Draft round 4, overall pick 122."
+        }
+      ]
+    },
+    {
+      "player_id": "rb-seth-mcgowan",
+      "player_name": "Seth McGowan",
+      "position": "RB",
+      "football_level": "NFL",
+      "current_team_id": "nfl-ind",
+      "current_team_abbr": "IND",
+      "current_team_name": "Indianapolis Colts",
+      "ownership_status": "unsigned_draft_pick",
+      "valid_from": "2026-04-25T00:00:00Z",
+      "valid_to": null,
+      "last_verified_at": "2026-04-25T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nfl_draft_results_2026_nbcsports_profootballtalk",
+          "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
+          "observed_at": "2026-04-25T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "2026 NFL Draft round 7, overall pick 237."
+        }
+      ]
+    },
+    {
+      "player_id": "wr-antonio-williams",
+      "player_name": "Antonio Williams",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-was",
+      "current_team_abbr": "WAS",
+      "current_team_name": "Washington Commanders",
+      "ownership_status": "unsigned_draft_pick",
+      "valid_from": "2026-04-25T00:00:00Z",
+      "valid_to": null,
+      "last_verified_at": "2026-04-25T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nfl_draft_results_2026_nbcsports_profootballtalk",
+          "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
+          "observed_at": "2026-04-25T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "2026 NFL Draft round 3, overall pick 71."
+        }
+      ]
+    },
+    {
+      "player_id": "wr-jordyn-tyson",
+      "player_name": "Jordyn Tyson",
+      "position": "WR",
+      "football_level": "NFL",
+      "current_team_id": "nfl-no",
+      "current_team_abbr": "NO",
+      "current_team_name": "New Orleans Saints",
+      "ownership_status": "unsigned_draft_pick",
+      "valid_from": "2026-04-25T00:00:00Z",
+      "valid_to": null,
+      "last_verified_at": "2026-04-25T00:00:00Z",
+      "confidence": "source_verified",
+      "source_refs": [
+        {
+          "source_name": "nfl_draft_results_2026_nbcsports_profootballtalk",
+          "source_url": "https://www.nbcsports.com/nfl/profootballtalk/news/2026-nfl-draft-picks-full-tracker-of-every-selection-rounds-1-7",
+          "observed_at": "2026-04-25T00:00:00Z",
+          "source_updated_at": null,
+          "confidence": "source_verified",
+          "notes": "2026 NFL Draft round 1, overall pick 8."
+        }
+      ]
+    },
     {
       "player_id": "wr-tee-higgins",
       "player_name": "Tee Higgins",
