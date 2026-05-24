@@ -83,3 +83,24 @@ def test_event_schema_rejects_malformed_event_record() -> None:
     event["event_type"] = "tradee"
     with pytest.raises(Exception):
         validator.validate(event)
+
+
+def test_player_ownership_alias_fixture_validates_against_schema() -> None:
+    validator = _validator("schemas/player_ownership_aliases_v0.schema.json")
+    payload = _load_json(ROOT / "exports/promoted/player_ownership/player_ownership_aliases.json")
+    validator.validate(payload)
+
+
+def test_player_ownership_alias_fixture_includes_required_tet_alias() -> None:
+    payload = _load_json(ROOT / "exports/promoted/player_ownership/player_ownership_aliases.json")
+    tet = next((row for row in payload["aliases"] if row["alias"] == "Tet McMillan"), None)
+    assert tet is not None
+    assert tet["canonical_player_name"] == "Tetairoa McMillan"
+    assert tet["player_id"] == "00-0040124"
+    assert tet["alias_type"] == "known_nickname"
+
+
+def test_player_ownership_alias_lookup_returns_none_for_unknown_alias() -> None:
+    payload = _load_json(ROOT / "exports/promoted/player_ownership/player_ownership_aliases.json")
+    alias_map = {row["alias"]: row for row in payload["aliases"]}
+    assert alias_map.get("Not A Real Alias") is None

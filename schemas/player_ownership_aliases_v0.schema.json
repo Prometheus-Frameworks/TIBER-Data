@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber.dev/schemas/player_ownership_aliases_v0.schema.json",
+  "title": "TIBER Player Ownership Aliases v0",
+  "type": "object",
+  "required": ["artifact", "generated_at", "aliases"],
+  "additionalProperties": false,
+  "properties": {
+    "artifact": {
+      "const": "player_ownership_aliases_v0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "alias",
+          "canonical_player_name",
+          "player_id",
+          "alias_type",
+          "source"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "alias": {"type": "string", "minLength": 1},
+          "canonical_player_name": {"type": "string", "minLength": 1},
+          "player_id": {
+            "type": "string",
+            "pattern": "^00-[0-9]{7}$"
+          },
+          "alias_type": {
+            "type": "string",
+            "enum": ["known_nickname", "known_suffix_normalization"]
+          },
+          "source": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
