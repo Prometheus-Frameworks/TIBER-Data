@@ -5,3 +5,4 @@ export * from './forgeWeeklyPlayerInput.js';
 export * from './roleOpportunity.js';
 export * from './projectionInputFixture.js';
 export * from './nflDraftResults.js';
+export * from './teamWeekRawV0.js';
