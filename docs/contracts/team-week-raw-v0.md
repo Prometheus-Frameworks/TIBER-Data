@@ -120,6 +120,16 @@ This repository now includes a sample fixture artifact (scaffold-level), contain
 
 This fixture is explicitly non-full-league and non-full-calendar.
 
+
+### Scaffold value preservation status (current)
+
+The fixture is intended to preserve scaffold metric values from `TIBER-Teamstate/data/sample/team_week_raw.sample.json` when available.
+
+- DET values are populated from the currently reviewed scaffold excerpt.
+- PIT/TEN/MIA values remain `null` until direct source-row import is available in-repo for this contract fixture lane.
+
+This remains `fixture_scaffold` provenance and must not be interpreted as governed real data.
+
 ## Future governed batching plan
 
 Intended expansion path (batch by week, all teams per batch):
