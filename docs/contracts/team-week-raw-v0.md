@@ -104,6 +104,11 @@ Each row represents a team-week context with nullable metric fields allowed wher
 
 `isByeWeek` may be used when a week is intentionally represented as a bye slot.
 
+
+## Team code canonicalization (current alignment)
+
+For this v0 fixture lane, Washington is represented as `WAS` to match the current Teamstate/Fantasy canonical abbreviation path and avoid cross-repo adapter alias friction.
+
 ## Current fixture lane in this repo
 
 This repository now includes a sample fixture artifact (scaffold-level), containing **4 rows for 2025 Week 8 only**:
