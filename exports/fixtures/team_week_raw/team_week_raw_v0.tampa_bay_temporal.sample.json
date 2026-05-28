@@ -1,0 +1,53 @@
+{
+  "artifact": "team_week_raw_v0",
+  "generatedAt": "2026-05-28T00:00:00Z",
+  "season": 2025,
+  "sourceArtifacts": [
+    "manual:fixture_scaffold:tb_temporal_story_v0"
+  ],
+  "metadata": {
+    "provenanceStatus": "fixture_scaffold",
+    "provenanceNotes": [
+      "Hand-authored fixture scaffold for Teamstate temporal regression testing.",
+      "Values are synthetic sample-level signals and are not governed real data.",
+      "Fixture intentionally models a hot start followed by midseason offensive instability for TB.",
+      "Coverage is single-team and partial-season only; not valid for leaguewide inference."
+    ],
+    "inputSources": [
+      {
+        "source": "manual:fixture_scaffold:tb_temporal_story_v0",
+        "sourceType": "fixture",
+        "sourceSnapshotAt": null,
+        "notes": "Story/regression scaffold for cross-repo TeamWeekRawV0 adapter testing."
+      }
+    ],
+    "coverage": {
+      "season": 2025,
+      "expectedTeams": [
+        "TB"
+      ],
+      "presentTeams": [
+        "TB"
+      ],
+      "missingTeams": [],
+      "unexpectedTeams": [],
+      "weeks": [1,2,3,4,5,6,7,8],
+      "expectedWeeks": [1,2,3,4,5,6,7,8],
+      "isFullLeague": false,
+      "isFullRegularSeasonCalendar": false,
+      "expectedTeamGameRows": null,
+      "actualTeamGameRows": 8,
+      "byeWeeksHandled": false
+    }
+  },
+  "rows": [
+    {"season":2025,"week":1,"teamCode":"TB","opponentCode":"ATL","gameId":null,"isByeWeek":false,"pointsFor":34,"pointsAgainst":20,"offensivePlays":69,"neutralPlays":48,"secondsPerPlay":25.4,"passRate":0.61,"neutralPassRate":0.63,"rushRate":0.39,"epaPerPlay":0.20,"passEpaPerPlay":0.27,"rushEpaPerPlay":0.09,"successRate":0.52,"explosivePlayRate":0.15,"drives":10,"pointsPerDrive":2.9,"redZoneTrips":5,"redZoneTdRate":0.8,"sacksAllowed":1,"pressureRateAllowed":0.18,"turnovers":0,"fantasyPointsForQB":25.6,"fantasyPointsForRB":22.8,"fantasyPointsForWR":34.4,"fantasyPointsForTE":11.1,"fantasyPointsAllowedQB":18.2,"fantasyPointsAllowedRB":20.1,"fantasyPointsAllowedWR":27.2,"fantasyPointsAllowedTE":9.3},
+    {"season":2025,"week":2,"teamCode":"TB","opponentCode":"DET","gameId":null,"isByeWeek":false,"pointsFor":31,"pointsAgainst":24,"offensivePlays":67,"neutralPlays":47,"secondsPerPlay":25.9,"passRate":0.60,"neutralPassRate":0.62,"rushRate":0.40,"epaPerPlay":0.16,"passEpaPerPlay":0.22,"rushEpaPerPlay":0.07,"successRate":0.50,"explosivePlayRate":0.14,"drives":10,"pointsPerDrive":2.6,"redZoneTrips":5,"redZoneTdRate":0.6,"sacksAllowed":2,"pressureRateAllowed":0.21,"turnovers":1,"fantasyPointsForQB":23.4,"fantasyPointsForRB":20.6,"fantasyPointsForWR":31.9,"fantasyPointsForTE":10.8,"fantasyPointsAllowedQB":21.4,"fantasyPointsAllowedRB":19.6,"fantasyPointsAllowedWR":30.1,"fantasyPointsAllowedTE":8.6},
+    {"season":2025,"week":3,"teamCode":"TB","opponentCode":"NO","gameId":null,"isByeWeek":false,"pointsFor":28,"pointsAgainst":23,"offensivePlays":66,"neutralPlays":46,"secondsPerPlay":26.5,"passRate":0.59,"neutralPassRate":0.60,"rushRate":0.41,"epaPerPlay":0.11,"passEpaPerPlay":0.15,"rushEpaPerPlay":0.05,"successRate":0.48,"explosivePlayRate":0.12,"drives":10,"pointsPerDrive":2.3,"redZoneTrips":4,"redZoneTdRate":0.5,"sacksAllowed":2,"pressureRateAllowed":0.24,"turnovers":1,"fantasyPointsForQB":21.1,"fantasyPointsForRB":19.2,"fantasyPointsForWR":28.5,"fantasyPointsForTE":9.7,"fantasyPointsAllowedQB":20.2,"fantasyPointsAllowedRB":22.4,"fantasyPointsAllowedWR":26.8,"fantasyPointsAllowedTE":9.9},
+    {"season":2025,"week":4,"teamCode":"TB","opponentCode":"PHI","gameId":null,"isByeWeek":false,"pointsFor":24,"pointsAgainst":27,"offensivePlays":64,"neutralPlays":44,"secondsPerPlay":27.1,"passRate":0.58,"neutralPassRate":0.59,"rushRate":0.42,"epaPerPlay":0.05,"passEpaPerPlay":0.08,"rushEpaPerPlay":0.01,"successRate":0.45,"explosivePlayRate":0.10,"drives":10,"pointsPerDrive":1.9,"redZoneTrips":4,"redZoneTdRate":0.5,"sacksAllowed":3,"pressureRateAllowed":0.28,"turnovers":1,"fantasyPointsForQB":18.4,"fantasyPointsForRB":16.8,"fantasyPointsForWR":24.6,"fantasyPointsForTE":8.4,"fantasyPointsAllowedQB":22.8,"fantasyPointsAllowedRB":24.1,"fantasyPointsAllowedWR":29.7,"fantasyPointsAllowedTE":10.4},
+    {"season":2025,"week":5,"teamCode":"TB","opponentCode":"CAR","gameId":null,"isByeWeek":false,"pointsFor":20,"pointsAgainst":24,"offensivePlays":62,"neutralPlays":42,"secondsPerPlay":28.0,"passRate":0.56,"neutralPassRate":0.57,"rushRate":0.44,"epaPerPlay":-0.01,"passEpaPerPlay":0.01,"rushEpaPerPlay":-0.03,"successRate":0.42,"explosivePlayRate":0.09,"drives":9,"pointsPerDrive":1.6,"redZoneTrips":3,"redZoneTdRate":0.33,"sacksAllowed":4,"pressureRateAllowed":0.32,"turnovers":2,"fantasyPointsForQB":15.9,"fantasyPointsForRB":15.1,"fantasyPointsForWR":21.8,"fantasyPointsForTE":7.3,"fantasyPointsAllowedQB":19.5,"fantasyPointsAllowedRB":23.7,"fantasyPointsAllowedWR":25.4,"fantasyPointsAllowedTE":11.2},
+    {"season":2025,"week":6,"teamCode":"TB","opponentCode":"SF","gameId":null,"isByeWeek":false,"pointsFor":17,"pointsAgainst":30,"offensivePlays":59,"neutralPlays":40,"secondsPerPlay":29.3,"passRate":0.55,"neutralPassRate":0.55,"rushRate":0.45,"epaPerPlay":-0.08,"passEpaPerPlay":-0.06,"rushEpaPerPlay":-0.10,"successRate":0.39,"explosivePlayRate":0.07,"drives":9,"pointsPerDrive":1.2,"redZoneTrips":2,"redZoneTdRate":0.5,"sacksAllowed":5,"pressureRateAllowed":0.36,"turnovers":2,"fantasyPointsForQB":13.8,"fantasyPointsForRB":13.4,"fantasyPointsForWR":18.6,"fantasyPointsForTE":6.2,"fantasyPointsAllowedQB":24.6,"fantasyPointsAllowedRB":21.3,"fantasyPointsAllowedWR":31.8,"fantasyPointsAllowedTE":12.6},
+    {"season":2025,"week":7,"teamCode":"TB","opponentCode":"BAL","gameId":null,"isByeWeek":false,"pointsFor":27,"pointsAgainst":26,"offensivePlays":65,"neutralPlays":45,"secondsPerPlay":26.8,"passRate":0.62,"neutralPassRate":0.64,"rushRate":0.38,"epaPerPlay":0.09,"passEpaPerPlay":0.16,"rushEpaPerPlay":-0.02,"successRate":0.46,"explosivePlayRate":0.13,"drives":10,"pointsPerDrive":2.1,"redZoneTrips":4,"redZoneTdRate":0.5,"sacksAllowed":3,"pressureRateAllowed":0.29,"turnovers":2,"fantasyPointsForQB":21.9,"fantasyPointsForRB":14.2,"fantasyPointsForWR":30.2,"fantasyPointsForTE":8.7,"fantasyPointsAllowedQB":23.7,"fantasyPointsAllowedRB":24.9,"fantasyPointsAllowedWR":28.3,"fantasyPointsAllowedTE":9.8},
+    {"season":2025,"week":8,"teamCode":"TB","opponentCode":"KC","gameId":null,"isByeWeek":false,"pointsFor":16,"pointsAgainst":28,"offensivePlays":58,"neutralPlays":39,"secondsPerPlay":29.7,"passRate":0.57,"neutralPassRate":0.58,"rushRate":0.43,"epaPerPlay":-0.10,"passEpaPerPlay":-0.08,"rushEpaPerPlay":-0.12,"successRate":0.37,"explosivePlayRate":0.06,"drives":9,"pointsPerDrive":1.1,"redZoneTrips":2,"redZoneTdRate":0.0,"sacksAllowed":4,"pressureRateAllowed":0.35,"turnovers":3,"fantasyPointsForQB":12.7,"fantasyPointsForRB":12.3,"fantasyPointsForWR":16.9,"fantasyPointsForTE":5.8,"fantasyPointsAllowedQB":26.1,"fantasyPointsAllowedRB":22.7,"fantasyPointsAllowedWR":33.5,"fantasyPointsAllowedTE":10.7}
+  ]
+}
