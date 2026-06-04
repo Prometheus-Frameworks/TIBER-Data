@@ -1,0 +1,68 @@
+{
+  "contract_version": "tiber-data.point-prediction-scenario-export.v1.0.0",
+  "artifact_status": "fixture_only",
+  "scenario_id": "fixture-2026-w01-cin-target-share-shift",
+  "scenario_name": "Fixture target-share shift rehearsal",
+  "scenario_type": "role_change",
+  "event_type": "target_share_shift",
+  "season": 2026,
+  "week": 1,
+  "model_version": "point-prediction-model.fixture.v0",
+  "generated_at": "2026-05-24T00:00:00Z",
+  "provenance": {
+    "source_repo": "Point-prediction-model",
+    "source_artifact": "fixture-only scenario export for TIBER-Data contract conformance",
+    "source_run_id": "fixture-contract-validation",
+    "tiber_data_contract_owner": "TIBER-Data",
+    "emitted_by": "Point-prediction-model fixture lane",
+    "validated_by": "TIBER-Data pointPredictionScenarioExportSchema",
+    "notes": [
+      "Contract fixture only; not a source-backed projection or production coverage claim.",
+      "Rows are deterministic examples for schema conformance and downstream adapter rehearsal."
+    ]
+  },
+  "rows": [
+    {
+      "player": {
+        "player_id": "wr-fixture-alpha",
+        "player_name": "Fixture Alpha",
+        "source_player_id": "ppm-fixture-alpha"
+      },
+      "team": "CIN",
+      "position": "WR",
+      "baseline_projection": 14.25,
+      "adjusted_projection": 16.75,
+      "delta": 2.5,
+      "confidence_score": 0.72,
+      "confidence_tier": "medium",
+      "confidence_notes": [
+        "Fixture confidence value for contract validation only."
+      ],
+      "explanation": "Example role-change scenario increases target expectation for a fixture wide receiver.",
+      "notes": [
+        "No real injury, role, roster, or projection claim is made by this row."
+      ]
+    },
+    {
+      "player": {
+        "player_id": "rb-fixture-beta",
+        "player_name": "Fixture Beta",
+        "source_player_id": "ppm-fixture-beta"
+      },
+      "team": "CIN",
+      "position": "RB",
+      "baseline_projection": 11.1,
+      "adjusted_projection": 9.85,
+      "delta": -1.25,
+      "confidence_score": 0.61,
+      "confidence_tier": "medium",
+      "confidence_notes": [
+        "Fixture confidence value for contract validation only."
+      ],
+      "explanation": "Example role-change scenario decreases expected opportunity for a fixture running back.",
+      "notes": [
+        "No real injury, role, roster, or projection claim is made by this row."
+      ]
+    }
+  ]
+}

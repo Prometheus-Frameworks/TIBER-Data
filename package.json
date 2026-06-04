@@ -35,7 +35,8 @@
     "build:play-caller-proe": "node scripts/build_play_caller_pass_rate_over_expectation.mjs",
     "build:receiving-role-integrity-proxy": "node scripts/build_receiving_role_integrity_proxy.mjs",
     "inspect:projection-input-semantics": "node scripts/inspect_projection_input_semantics.mjs",
-    "docs:projection-input-semantics": "node scripts/inspect_projection_input_semantics.mjs --write"
+    "docs:projection-input-semantics": "node scripts/inspect_projection_input_semantics.mjs --write",
+    "check:point-prediction-scenario-export": "node scripts/check_point_prediction_scenario_export_contract.mjs"
   },
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.0",

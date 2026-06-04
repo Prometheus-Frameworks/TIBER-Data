@@ -6,3 +6,4 @@ export * from './roleOpportunity.js';
 export * from './projectionInputFixture.js';
 export * from './nflDraftResults.js';
 export * from './teamWeekRawV0.js';
+export * from './pointPredictionScenarioExport.js';
