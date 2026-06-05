@@ -31,6 +31,7 @@ Canonical architecture governance documents:
 - [Historical Rookie Replay v0 Contract](docs/contracts/history-rookie-replay-v0.md)
 - [Roster Snapshot v0 Contract](docs/contracts/roster-snapshot-v0.md) — canonical roster identity, team membership, source metadata, and time-bounded snapshot scaffold
 - [Projection Input Fixture v1 Contract](docs/contracts/projection-input-fixture-v1.md) — bounded rehearsal fixture contract for Point-prediction-model adapter practice, not live ingestion or production projection coverage
+- [Point-prediction Scenario Export v1 Contract](docs/contracts/point-prediction-scenario-export-v1.md) — pinned TIBER-Data-owned output contract for Point-prediction-model scenario exports consumed read-only by TIBER-Fantasy
 
 ## Engineering posture
 
