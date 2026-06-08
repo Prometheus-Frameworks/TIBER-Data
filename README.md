@@ -34,6 +34,10 @@ Canonical architecture governance documents:
 - [Projection Input Fixture v1 Contract](docs/contracts/projection-input-fixture-v1.md) — bounded rehearsal fixture contract for Point-prediction-model adapter practice, not live ingestion or production projection coverage
 - [Point-prediction Scenario Export v1 Contract](docs/contracts/point-prediction-scenario-export-v1.md) — pinned TIBER-Data-owned output contract for Point-prediction-model scenario exports consumed read-only by TIBER-Fantasy
 
+## Promoted identity crosswalks
+
+TIBER-Data owns durable provider-to-TIBER identity bridges. The first promoted identity artifact is `TIBER_IDENTITY_CROSSWALK_V1` at `exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v1.json`, with documentation in [docs/data/tiber-identity-crosswalk-v1.md](docs/data/tiber-identity-crosswalk-v1.md). Downstream consumers such as TIBER-Fantasy should consume the promoted artifact instead of hardcoding provider identity bridges.
+
 ## Engineering posture
 
 TIBER-Data preserves contact with football reality while increasing system autonomy across downstream repos, agents, models, and future reasoning systems. The internal doctrine for that posture lives in [docs/TIBER_DOCTRINE.md](docs/TIBER_DOCTRINE.md).
