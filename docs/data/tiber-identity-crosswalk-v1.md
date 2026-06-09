@@ -16,13 +16,15 @@ This keeps Fantasy as a consumer shell and keeps identity truth in the data repo
 
 ## Current scope
 
-The V1 artifact currently supports only the `sleeper` provider namespace and only contains operator-verified seed mappings proven during the Management production smoke:
+The V1 artifact currently supports only the `sleeper` provider namespace and only contains operator-verified seed mappings. The first three rows were proven during the Management production smoke:
 
 - `sleeper:6797` → `tiber-data-player-2025-justin-herbert`
 - `sleeper:9493` → `tiber-data-player-2025-puka-nacua`
 - `sleeper:9509` → `tiber-data-player-2025-bijan-robinson`
 
-This is not a claim of full Sleeper player-universe coverage. If a player is absent, downstream consumers should treat that player as unmapped rather than inferring a match. No additional starter rows were added because this repo did not contain reliable Sleeper IDs beyond the operator-verified Management smoke mappings at the time of this artifact.
+The 2026-06-09 expansion was seeded by `TIBER_MANAGEMENT_SNAPSHOT_EXPORT` / embedded `TIBER_MANAGEMENT_IDENTITY_SEED_REPORT` and promoted only the candidate Sleeper IDs that could be paired with existing source-backed TIBER-Data player records from `data/processed/evidence/roster_player_team_map_2025.source_backed.json`. That expansion added 22 verified active-roster mappings. Five candidates were intentionally omitted because this repo did not contain an existing source-backed canonical player record for them: `sleeper:13299` Nate Boerkircher, `sleeper:13322` Sam Roush, `sleeper:13408` Tanner Koziol, `sleeper:13413` Cyrus Allen, and `sleeper:13414` Kaelon Black.
+
+This is not a claim of full Sleeper player-universe coverage. If a player is absent, downstream consumers should treat that player as unmapped rather than inferring a match. TIBER-Data should only add additional rows when the provider identity is operator-reviewed and the target TIBER player record already exists.
 
 ## Row contract
 
@@ -33,7 +35,7 @@ Each row includes:
 - `provider_canonical_id` — provider-prefixed canonical ID, for example `sleeper:6797`
 - `tiber_player_id` — TIBER canonical player ID consumed by FORGE-aligned artifacts
 - `player_name`, `position`, `team` — human-auditable descriptors
-- `confidence` — mapping confidence; seeded rows are `exact`
+- `confidence` — mapping confidence; seeded rows are `exact` when the Management seed and source-backed record names align directly, or `high` when the promoted row required a documented suffix-normalized canonical name
 - `match_method` — mapping method; seeded rows are `verified_manual_seed`
 - `source` — provenance label
 - `source_updated_at` — UTC timestamp for the source assertion
@@ -61,6 +63,7 @@ Validation fails closed on:
 - conflicting TIBER IDs for the same provider
 - missing provenance fields
 - non-deterministic record ordering
+- silent promotion of Management seed candidates that are listed as omitted because no existing source-backed TIBER-Data player record is present
 
 The JSON Schema companion is:
 
