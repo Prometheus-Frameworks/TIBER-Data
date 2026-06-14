@@ -1,7 +1,7 @@
 [
   {
     "playerId": "00-0029604",
-    "externalIds": {
+    "externalPlayerIds": {
       "gsisId": "00-0029604"
     },
     "playerName": "Kirk Cousins",
@@ -43,7 +43,7 @@
   },
   {
     "playerId": "00-0033106",
-    "externalIds": {
+    "externalPlayerIds": {
       "gsisId": "00-0033106"
     },
     "playerName": "Jared Goff",
@@ -85,7 +85,7 @@
   },
   {
     "playerId": "00-0036963",
-    "externalIds": {
+    "externalPlayerIds": {
       "gsisId": "00-0036963"
     },
     "playerName": "Amon-Ra St. Brown",
@@ -127,7 +127,7 @@
   },
   {
     "playerId": "00-0036970",
-    "externalIds": {
+    "externalPlayerIds": {
       "gsisId": "00-0036970"
     },
     "playerName": "Kyle Pitts",
@@ -169,7 +169,7 @@
   },
   {
     "playerId": "00-0037238",
-    "externalIds": {
+    "externalPlayerIds": {
       "gsisId": "00-0037238"
     },
     "playerName": "Drake London",
@@ -211,7 +211,7 @@
   },
   {
     "playerId": "00-0038542",
-    "externalIds": {
+    "externalPlayerIds": {
       "gsisId": "00-0038542"
     },
     "playerName": "Bijan Robinson",
@@ -253,7 +253,7 @@
   },
   {
     "playerId": "00-0039065",
-    "externalIds": {
+    "externalPlayerIds": {
       "gsisId": "00-0039065"
     },
     "playerName": "Sam LaPorta",
@@ -295,7 +295,7 @@
   },
   {
     "playerId": "00-0039139",
-    "externalIds": {
+    "externalPlayerIds": {
       "gsisId": "00-0039139"
     },
     "playerName": "Jahmyr Gibbs",

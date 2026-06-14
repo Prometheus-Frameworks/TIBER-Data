@@ -58,6 +58,60 @@ describe('forge weekly player input contract v1', () => {
     ).toThrow();
   });
 
+  it('future season weekly input passes schema validation', () => {
+    expect(
+      forgeWeeklyPlayerInputSchema.parse({
+        ...forgeWeeklyWrExample,
+        season: 2026,
+      }),
+    ).toEqual({
+      ...forgeWeeklyWrExample,
+      season: 2026,
+    });
+  });
+
+  it('obviously invalid historical season fails', () => {
+    expect(() =>
+      forgeWeeklyPlayerInputSchema.parse({
+        ...forgeWeeklyWrExample,
+        season: 1899,
+      }),
+    ).toThrow();
+  });
+
+  it('canonical external player IDs survive validation', () => {
+    const parsed = forgeWeeklyPlayerInputSchema.parse({
+      ...forgeWeeklyWrExample,
+      externalPlayerIds: {
+        gsisId: '00-0037834',
+        pfrId: 'FlowZa00',
+        sleeperId: '7564',
+      },
+    });
+
+    expect(parsed.externalPlayerIds).toEqual({
+      gsisId: '00-0037834',
+      pfrId: 'FlowZa00',
+      sleeperId: '7564',
+    });
+  });
+
+  it('legacy externalIds key is rejected instead of silently stripped', () => {
+    const {
+      externalPlayerIds: _externalPlayerIds,
+      ...withoutCanonicalExternalIds
+    } = forgeWeeklyWrExample;
+
+    expect(() =>
+      forgeWeeklyPlayerInputSchema.parse({
+        ...withoutCanonicalExternalIds,
+        externalIds: {
+          gsisId: '00-0037834',
+        },
+      }),
+    ).toThrow();
+  });
+
   it('array and type guard remain directly usable', () => {
     expect(isForgeWeeklyPlayerInput(forgeWeeklyWrExample)).toBe(true);
     expect(forgeWeeklyPlayerInputArraySchema.safeParse(mixedForgeWeeklyExamples).success).toBe(true);

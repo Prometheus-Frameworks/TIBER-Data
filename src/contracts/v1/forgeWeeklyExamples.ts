@@ -5,7 +5,7 @@ import type {
 
 export const forgeWeeklyWrExample: ForgeWeeklyPlayerInput = {
   playerId: '00-0037834',
-  externalIds: {
+  externalPlayerIds: {
     gsisId: '00-0037834',
     pfrId: 'FlowZa00',
   },
@@ -42,7 +42,7 @@ export const forgeWeeklyWrExample: ForgeWeeklyPlayerInput = {
 
 export const forgeWeeklyRbExample: ForgeWeeklyPlayerInput = {
   playerId: '00-0036164',
-  externalIds: {
+  externalPlayerIds: {
     gsisId: '00-0036164',
     pfrId: 'WillKy00',
   },
@@ -78,7 +78,7 @@ export const forgeWeeklyRbExample: ForgeWeeklyPlayerInput = {
 
 export const forgeWeeklyQbExample: ForgeWeeklyPlayerInput = {
   playerId: '00-0034796',
-  externalIds: {
+  externalPlayerIds: {
     gsisId: '00-0034796',
     pfrId: 'HurtJa00',
   },

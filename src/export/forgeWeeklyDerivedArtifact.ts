@@ -270,7 +270,7 @@ function deriveQbRecord(
 
   return {
     playerId: qb.player_id,
-    externalIds: {
+    externalPlayerIds: {
       gsisId: qb.player_id,
     },
     playerName: qb.full_name,
@@ -357,7 +357,7 @@ function deriveSkillRecord(
 
   return {
     playerId: player.player_id,
-    externalIds: {
+    externalPlayerIds: {
       gsisId: player.player_id,
     },
     playerName: player.full_name,
