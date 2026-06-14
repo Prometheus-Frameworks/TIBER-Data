@@ -25,6 +25,56 @@ describe('forge weekly player input contract v1', () => {
     expect(validateForgeWeeklyPlayerInput(forgeWeeklyQbExample)).toEqual(forgeWeeklyQbExample);
   });
 
+  it('allows future season inputs without pinning the contract to 2025', () => {
+    expect(
+      forgeWeeklyPlayerInputSchema.parse({
+        ...forgeWeeklyWrExample,
+        season: 2026,
+      }).season,
+    ).toBe(2026);
+  });
+
+  it('rejects invalid historical junk seasons', () => {
+    expect(() =>
+      forgeWeeklyPlayerInputSchema.parse({
+        ...forgeWeeklyWrExample,
+        season: 1899,
+      }),
+    ).toThrow();
+  });
+
+  it('preserves canonical external player ids through validation', () => {
+    const parsed = forgeWeeklyPlayerInputSchema.parse({
+      ...forgeWeeklyWrExample,
+      externalPlayerIds: {
+        gsisId: '00-0037834',
+        pfrId: 'FlowZa00',
+        sleeperId: '8117',
+      },
+    });
+
+    expect(parsed.externalPlayerIds).toEqual({
+      gsisId: '00-0037834',
+      pfrId: 'FlowZa00',
+      sleeperId: '8117',
+    });
+  });
+
+  it('rejects legacy externalIds instead of silently dropping it', () => {
+    const { externalPlayerIds: _externalPlayerIds, ...withoutCanonicalIds } = forgeWeeklyWrExample;
+
+    expect(() =>
+      forgeWeeklyPlayerInputSchema.parse({
+        ...withoutCanonicalIds,
+        externalIds: {
+          gsisId: '00-0037834',
+          pfrId: 'FlowZa00',
+          sleeperId: '8117',
+        },
+      }),
+    ).toThrow();
+  });
+
   it('mixed array fixture passes array validation', () => {
     expect(validateForgeWeeklyPlayerInputArray(mixedForgeWeeklyExamples)).toEqual(
       mixedForgeWeeklyExamples,

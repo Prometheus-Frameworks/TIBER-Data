@@ -1,7 +1,7 @@
 [
   {
     "playerId": "00-0033901",
-    "externalIds": {
+    "externalPlayerIds": {
       "gsisId": "00-0033901"
     },
     "playerName": "Jared Goff",
@@ -42,7 +42,7 @@
   },
   {
     "playerId": "00-0037183",
-    "externalIds": {
+    "externalPlayerIds": {
       "gsisId": "00-0037183"
     },
     "playerName": "Kirk Cousins",

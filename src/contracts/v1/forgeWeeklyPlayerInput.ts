@@ -26,7 +26,7 @@ export const forgePlayerExternalIdsSchema = z
 
 export const forgeIdentitySchema = z.object({
   playerId: z.string().min(1),
-  externalIds: forgePlayerExternalIdsSchema.optional(),
+  externalPlayerIds: forgePlayerExternalIdsSchema.optional(),
   playerName: z.string().min(1),
   position: positionSchema,
   team: teamCodeSchema,
@@ -82,7 +82,8 @@ export const forgeWeeklyPlayerInputSchema = forgeIdentitySchema
   .merge(forgeEfficiencySchema)
   .merge(forgeTeamContextSchema)
   .merge(forgeStabilitySchema)
-  .merge(forgeProvenanceSchema);
+  .merge(forgeProvenanceSchema)
+  .strict();
 
 export const forgeWeeklyPlayerInputArraySchema = z.array(forgeWeeklyPlayerInputSchema);
 
