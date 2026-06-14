@@ -31,7 +31,7 @@ export const forgeIdentitySchema = z.object({
   playerName: z.string().min(1),
   position: positionSchema,
   team: teamCodeSchema,
-});
+}).strict();
 
 export const forgeScopeSchema = z.object({
   season: seasonSchema,
