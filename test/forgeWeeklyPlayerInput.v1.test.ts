@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  forgeIdentitySchema,
   forgeWeeklyPlayerInputArraySchema,
   forgeWeeklyPlayerInputSchema,
   forgeWeeklyQbExample,
@@ -96,6 +97,22 @@ describe('forge weekly player input contract v1', () => {
     });
   });
 
+  it('identity fragment accepts canonical external player IDs', () => {
+    const identityFragment = {
+      playerId: forgeWeeklyWrExample.playerId,
+      externalPlayerIds: {
+        gsisId: '00-0037834',
+        pfrId: 'FlowZa00',
+        sleeperId: '7564',
+      },
+      playerName: forgeWeeklyWrExample.playerName,
+      position: forgeWeeklyWrExample.position,
+      team: forgeWeeklyWrExample.team,
+    };
+
+    expect(forgeIdentitySchema.parse(identityFragment)).toEqual(identityFragment);
+  });
+
   it('legacy externalIds key is rejected instead of silently stripped', () => {
     const {
       externalPlayerIds: _externalPlayerIds,
@@ -108,6 +125,20 @@ describe('forge weekly player input contract v1', () => {
         externalIds: {
           gsisId: '00-0037834',
         },
+      }),
+    ).toThrow();
+  });
+
+  it('identity fragment rejects legacy externalIds instead of silently stripping it', () => {
+    expect(() =>
+      forgeIdentitySchema.parse({
+        playerId: forgeWeeklyWrExample.playerId,
+        externalIds: {
+          gsisId: '00-0037834',
+        },
+        playerName: forgeWeeklyWrExample.playerName,
+        position: forgeWeeklyWrExample.position,
+        team: forgeWeeklyWrExample.team,
       }),
     ).toThrow();
   });
