@@ -22,6 +22,7 @@
     {
       "name": "player_weekly_usage_2025_source_backed",
       "path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
+      "version": "1.0.0",
       "provenance": "nflreadpy.load_player_stats",
       "source_path": "nflverse player stats via nflreadpy",
       "usage": "week 1 targets, receptions, and rushing attempts source evidence"
@@ -29,6 +30,7 @@
     {
       "name": "player_weekly_ppr_outcomes_2025_source_backed",
       "path": "data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json",
+      "version": "1.0.0",
       "provenance": "nflreadpy.load_player_stats",
       "source_path": "nflverse player stats via nflreadpy",
       "usage": "week 1 receiving yards and rushing yards source evidence for bounded efficiency derivation"
@@ -36,12 +38,14 @@
     {
       "name": "team_pace_pass_environment_2025_offline_fixture",
       "path": "data/raw/evidence/team_pace_pass_environment_2025.offline_fixture.json",
+      "version": "1.0.0",
       "provenance": "offline_fixture",
       "usage": "bounded team pass-rate and pace context for fixture rehearsal"
     },
     {
       "name": "team_offense_summary_2025_offline_fixture",
       "path": "data/raw/evidence/team_offense_summary_2025.offline_fixture.json",
+      "version": "1.0.0",
       "provenance": "offline_fixture",
       "usage": "bounded team offensive environment context for fixture rehearsal"
     }

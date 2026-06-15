@@ -25,6 +25,22 @@ The contract intentionally allows unavailable optional opportunity fields to be 
 
 `fixture_scope.projection_label` and `projection_context.season/week` are rehearsal labels. `projection_context.source_evidence_season` and `projection_context.source_evidence_week` identify the bounded source-evidence window. The committed golden fixture labels the rehearsal as 2026 week 1 while preserving the source-evidence window as 2025 week 1.
 
+## Source dataset reference versions
+
+Each `source_dataset_refs[]` entry carries a `version`. In the v1 Zod schema `version`
+remains **optional**, so the contract can still describe upstream refs that arrive with
+partial metadata. The committed golden fixture, however, is **fully populated**: every
+ref declares a non-empty `version`.
+
+This split is deliberate. Downstream-consumer strictness is owned by the consumer, not
+forced onto this upstream contract: Point-prediction-model's named adapter
+(`fromProjectionInputFixture`) requires a dataset `version` and **fails closed** when one
+is absent, rather than defaulting or synthesizing it. Keeping the schema optional avoids
+coupling this fixture contract to a single consumer's policy, while the populated golden
+fixture keeps it consumable by that adapter today. The evidence-dataset refs are versioned
+`1.0.0` (their v1 export-contract lineage; the covered season is encoded in each ref name
+and path); the semantics registry ref stays `0.1.0`, matching `projection_input_semantics.v0.1.0`.
+
 ## Missing-field severity vocabulary
 
 TIBER-Data keeps `missing_fields[].severity` as the fixture-level literal value `"warning"` in v1. In this repo, `warning` means an evidence gap that must remain visible during rehearsal. It is not the same as a downstream scoring requirement level.
