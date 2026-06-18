@@ -30,10 +30,10 @@ Taste creates hypotheses. Evidence tests hypotheses. Promotion gates trust. ML c
 
 ## Phase 1 — Historical Rookie Replay v0
 
-**Status:** Done — implemented and exported.
+**Status:** Export shape implemented and exported — offline-fixture-backed scaffold, not yet full source-backed 2025 evidence coverage. The exported artifact declares `"source": "offline_fixture:..."`.
 
 **Artifact:**
-- `exports/promoted/rookie-replay/historical_rookie_replay_v0.json`
+- `exports/promoted/rookie-replay/historical_rookie_replay_v0.json` (offline-fixture-backed)
 
 **Goal:** pretend it is 2025 and replay completed rookie outcomes as a validation cohort before trusting 2026 live tracking.
 
@@ -60,22 +60,22 @@ Taste creates hypotheses. Evidence tests hypotheses. Promotion gates trust. ML c
 
 ## Phase 2 — Weekly PPR Reality Tracker
 
-**Status:** Done — implemented and exported.
+**Status:** Export shape implemented and exported — offline-fixture-backed scaffold, not yet full source-backed 2025 evidence coverage. The exported artifact declares `"source": "offline_fixture:..."`.
 
 **Goal:** build `player_weekly_ppr_outcomes_v1` for 2025 historical validation first, then 2026 live weekly refresh.
 
 **Canonical target:**
-- `exports/promoted/nfl/player_weekly_ppr_outcomes_v1.json`
+- `exports/promoted/nfl/player_weekly_ppr_outcomes_v1.json` (offline-fixture-backed)
 
 ## Phase 3 — Team Environment Evidence
 
-**Status:** Done — implemented and exported.
+**Status:** Export shape implemented and exported — offline-fixture-backed scaffold, not yet full source-backed 2025 evidence coverage. Both exported artifacts declare `"source": "offline_fixture:..."`.
 
 **Goal:** build team pace/pass and offense summaries from artifact-backed data.
 
 **Canonical targets:**
-- `exports/promoted/nfl/team_pace_pass_environment_v1.json`
-- `exports/promoted/nfl/team_offense_summary_v1.json`
+- `exports/promoted/nfl/team_pace_pass_environment_v1.json` (offline-fixture-backed)
+- `exports/promoted/nfl/team_offense_summary_v1.json` (offline-fixture-backed)
 
 **Core checks:**
 - pass volume
@@ -92,10 +92,10 @@ This phase has two parts with different status.
 
 ### Phase 4a — Roster mapping
 
-**Status:** Done — implemented and exported.
+**Status:** Export shape implemented and exported — offline-fixture-backed scaffold, not yet full source-backed 2025 evidence coverage. The exported artifact declares `"source": "offline_fixture:..."`.
 
 **Artifact:**
-- `exports/promoted/nfl/roster_player_team_map_v1.json`
+- `exports/promoted/nfl/roster_player_team_map_v1.json` (offline-fixture-backed)
 
 ### Phase 4b — Coaching staff context
 
@@ -172,16 +172,18 @@ This phase has two parts with different status.
 
 ## Phase status summary
 
+"Export shape complete" below means the artifact's contract/export shape is implemented and exported from an **offline fixture** (`"source": "offline_fixture:..."`). It does **not** mean full source-backed 2025 evidence coverage; that source-derived ingestion remains open and these scaffolds must not be treated as promoted real evidence.
+
 - Phase 0 — Evidence Doctrine: done (PR39 merged).
-- Phase 1 — Historical Rookie Replay v0: done, implemented and exported (`historical_rookie_replay_v0.json`).
-- Phase 2 — Weekly PPR Reality Tracker: done, implemented and exported (`player_weekly_ppr_outcomes_v1.json`).
-- Phase 3 — Team Environment Evidence: done, implemented and exported (`team_pace_pass_environment_v1.json`, `team_offense_summary_v1.json`).
-- Phase 4a — Roster mapping: done, implemented and exported (`roster_player_team_map_v1.json`).
+- Phase 1 — Historical Rookie Replay v0: export shape complete, offline-fixture-backed (`historical_rookie_replay_v0.json`); full source-backed coverage still open.
+- Phase 2 — Weekly PPR Reality Tracker: export shape complete, offline-fixture-backed (`player_weekly_ppr_outcomes_v1.json`); full source-backed coverage still open.
+- Phase 3 — Team Environment Evidence: export shape complete, offline-fixture-backed (`team_pace_pass_environment_v1.json`, `team_offense_summary_v1.json`); full source-backed coverage still open.
+- Phase 4a — Roster mapping: export shape complete, offline-fixture-backed (`roster_player_team_map_v1.json`); full source-backed coverage still open.
 - Phase 4b — Coaching staff context: not started (no code, fixtures, or artifact for `coaching_staff_context_v1.json`).
 - Phases 5–8: not started.
 
 ## Current next action
 
-Phases 1–3 and roster mapping (Phase 4a) are implemented and exported. The next unbuilt step in this roadmap is Phase 4b — Coaching staff context (`coaching_staff_context_v1.json`), which currently has no code, fixtures, or artifact support.
+Phases 1–3 and roster mapping (Phase 4a) have their export shapes implemented and exported as offline-fixture-backed scaffolds; replacing those fixtures with full source-backed 2025 evidence coverage remains open work and is not represented by the fixture exports alone. The next entirely unbuilt step in this roadmap is Phase 4b — Coaching staff context (`coaching_staff_context_v1.json`), which currently has no code, fixtures, or artifact support.
 
 Issue #40 remains the live checklist and PR tracker.
