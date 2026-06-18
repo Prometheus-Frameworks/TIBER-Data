@@ -30,6 +30,11 @@ Taste creates hypotheses. Evidence tests hypotheses. Promotion gates trust. ML c
 
 ## Phase 1 — Historical Rookie Replay v0
 
+**Status:** Done — implemented and exported.
+
+**Artifact:**
+- `exports/promoted/rookie-replay/historical_rookie_replay_v0.json`
+
 **Goal:** pretend it is 2025 and replay completed rookie outcomes as a validation cohort before trusting 2026 live tracking.
 
 **Initial cohort ideas:**
@@ -55,12 +60,16 @@ Taste creates hypotheses. Evidence tests hypotheses. Promotion gates trust. ML c
 
 ## Phase 2 — Weekly PPR Reality Tracker
 
+**Status:** Done — implemented and exported.
+
 **Goal:** build `player_weekly_ppr_outcomes_v1` for 2025 historical validation first, then 2026 live weekly refresh.
 
 **Canonical target:**
 - `exports/promoted/nfl/player_weekly_ppr_outcomes_v1.json`
 
 ## Phase 3 — Team Environment Evidence
+
+**Status:** Done — implemented and exported.
 
 **Goal:** build team pace/pass and offense summaries from artifact-backed data.
 
@@ -79,11 +88,23 @@ Taste creates hypotheses. Evidence tests hypotheses. Promotion gates trust. ML c
 
 ## Phase 4 — Roster / Staff Context
 
-**Goal:** build player-team maps and coaching/play-caller context.
+This phase has two parts with different status.
 
-**Canonical targets:**
+### Phase 4a — Roster mapping
+
+**Status:** Done — implemented and exported.
+
+**Artifact:**
 - `exports/promoted/nfl/roster_player_team_map_v1.json`
-- `exports/promoted/nfl/coaching_staff_context_v1.json`
+
+### Phase 4b — Coaching staff context
+
+**Status:** Not started. `coaching_staff_context_v1.json` is named as a target below but has no code, fixtures, or exported artifact yet.
+
+**Planned target:**
+- `exports/promoted/nfl/coaching_staff_context_v1.json` (not yet produced)
+
+**Goal:** build player-team maps and coaching/play-caller context.
 
 **Used for claims like:**
 - Kellen Moore pass-volume environment
@@ -149,8 +170,18 @@ Taste creates hypotheses. Evidence tests hypotheses. Promotion gates trust. ML c
 **TIBER-Fantasy:**
 - downstream presentation surface once evidence is promoted
 
+## Phase status summary
+
+- Phase 0 — Evidence Doctrine: done (PR39 merged).
+- Phase 1 — Historical Rookie Replay v0: done, implemented and exported (`historical_rookie_replay_v0.json`).
+- Phase 2 — Weekly PPR Reality Tracker: done, implemented and exported (`player_weekly_ppr_outcomes_v1.json`).
+- Phase 3 — Team Environment Evidence: done, implemented and exported (`team_pace_pass_environment_v1.json`, `team_offense_summary_v1.json`).
+- Phase 4a — Roster mapping: done, implemented and exported (`roster_player_team_map_v1.json`).
+- Phase 4b — Coaching staff context: not started (no code, fixtures, or artifact for `coaching_staff_context_v1.json`).
+- Phases 5–8: not started.
+
 ## Current next action
 
-Begin Phase 1 — Historical Rookie Replay v0. Define the 2025 rookie replay cohort and contract shape for comparing pre-draft grades, post-draft context, weekly PPR outcomes, role materialization, and startability/spike/bust outcomes.
+Phases 1–3 and roster mapping (Phase 4a) are implemented and exported. The next unbuilt step in this roadmap is Phase 4b — Coaching staff context (`coaching_staff_context_v1.json`), which currently has no code, fixtures, or artifact support.
 
 Issue #40 remains the live checklist and PR tracker.
