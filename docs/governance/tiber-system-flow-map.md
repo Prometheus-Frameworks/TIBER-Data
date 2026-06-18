@@ -33,10 +33,11 @@ This is intentionally a first-pass governance map. If support truth is missing, 
 - May consume bounded projection/context signals.
 - FORGE outputs are derived artifacts, not upstream truth.
 
-### Role & Opportunity
+### Age-curve-intelligence-model
 
-- Usage and role interpretation layer.
-- Emits role/usage interpretation artifacts for model consumers.
+- Aging-context model layer (sibling repo).
+- Emits age-curve / age-context artifacts for model consumers.
+- Outputs are derived artifacts, not upstream canonical truth.
 
 ### Teamstate
 
@@ -53,6 +54,7 @@ This is intentionally a first-pass governance map. If support truth is missing, 
 - Consumer UI/integration surface.
 - Displays and integrates downstream artifacts.
 - Display/ranking state is **not** canonical source truth.
+- Hosts the **Role & Opportunity** module (`server/modules/externalModels/roleOpportunity/`) — a usage/role interpretation sub-node inside TIBER-Fantasy, **not** a peer repository. It produces role/usage interpretation signals for in-app model consumers.
 
 ## Known or intended artifact flows
 
@@ -60,7 +62,7 @@ The following flows are allowed as first-pass intended channels.
 
 - `TIBER-Data -> Point Prediction`
 - `TIBER-Data -> FORGE`
-- `Role & Opportunity -> Point Prediction`
+- `TIBER-Fantasy (Role & Opportunity module) -> Point Prediction` (role/usage signal emitted by the Role & Opportunity sub-node inside TIBER-Fantasy, not a peer repo)
 - `Teamstate -> Point Prediction`
 - `Point Prediction -> FORGE` (bounded projection signal only; does not replace grading ownership)
 - `FORGE -> TIBER-Fantasy`

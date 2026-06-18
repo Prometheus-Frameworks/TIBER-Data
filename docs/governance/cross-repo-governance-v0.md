@@ -104,7 +104,7 @@ Each principle below corresponds to a stage of that loop. The point of governanc
 | --- | --- | --- | --- |
 | Canonical State | TIBER-Data | TIBER-Data | All repos |
 | Observability | TIBER-Data | All producing repos | All consuming repos, auditors |
-| Outcome Calibration | TIBER-Data | Per-model repos (Point-Prediction, Role-and-Opportunity, Signal-Validation, Age-Curve, FORGE) | TIBER-Data (replay), TIBER-Fantasy, FORGE |
+| Outcome Calibration | TIBER-Data | Per-model repos (Point-Prediction, Role-and-Opportunity, Signal-Validation *(planned, not yet created)*, Age-Curve, FORGE) | TIBER-Data (replay), TIBER-Fantasy, FORGE |
 | World Modeling | TIBER-Data (contract); TIBER-Teamstate (interpretation) | TIBER-Teamstate | Role-and-Opportunity-Model, FORGE, TIBER-Fantasy |
 
 ## Gap summary (follow-up issues recommended)
