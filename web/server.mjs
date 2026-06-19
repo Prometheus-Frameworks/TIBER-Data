@@ -915,9 +915,12 @@ function playerLabPage(query) {
     return layout('Player interpretability lab', '/player-lab', `<h1>Player interpretability lab</h1><div class="error-box">Required artifact unavailable: ${esc(unavailable.path)} (${esc(unavailable.status)})</div>`);
   }
 
-  const nameQ = (query.name || 'Ja').trim();
+  const nameQ = (query.name || '').trim();
   const exactId = query.player_id || '';
-  const usageCandidates = USAGE.records.filter(r => (r.position === 'WR' || !query.wr_only) && (exactId ? r.player_id === exactId : (r.player_name || '').toLowerCase().includes(nameQ.toLowerCase())));
+  const hasSearch = Boolean(nameQ || exactId);
+  const usageCandidates = hasSearch
+    ? USAGE.records.filter(r => r.position === 'WR' && (exactId ? r.player_id === exactId : (r.player_name || '').toLowerCase().includes(nameQ.toLowerCase())))
+    : [];
   const selected = usageCandidates[0] || null;
   const playerId = selected?.player_id || exactId;
   const usageRows = playerId ? USAGE.records.filter(r => r.player_id === playerId).sort((a,b) => Number(a.week)-Number(b.week)) : [];
@@ -940,10 +943,10 @@ function playerLabPage(query) {
 
   return layout('Player interpretability lab', '/player-lab', `
 <h1>Player interpretability lab</h1>
-<p>Thin read-only scaffold for translating source-backed player rows into deterministic football-language tags. This is not a prediction engine, fantasy lineup assistant, ranking surface, or scoring model.</p>
+<p>Thin read-only scaffold for translating source-backed WR/player rows into deterministic football-language tags. This is not a prediction engine, fantasy lineup assistant, ranking surface, or scoring model.</p>
 ${sourceSummary({ recordCount: usageRows.length + pprRows.length + computedRows.length + goblinRows.length })}
-<form method="GET" action="/player-lab"><div class="filters"><div class="fg" style="flex:2;min-width:220px"><label>WR/player search</label><input type="text" name="name" value="${esc(nameQ)}" placeholder="Search a player name..."></div><button type="submit" class="btn">Search</button><a href="/player-lab" class="btn-ghost">Reset</a></div></form>
-${suggestions ? `<div class="artifact-card"><h3>Matched source-backed players</h3><div class="artifact-fields">${suggestions}</div></div>` : '<div class="empty">No source-backed player rows match this search.</div>'}
+<form method="GET" action="/player-lab"><div class="filters"><div class="fg" style="flex:2;min-width:220px"><label>WR/player search</label><input type="text" name="name" value="${esc(nameQ)}" placeholder="Search a WR name..."></div><button type="submit" class="btn">Search</button><a href="/player-lab" class="btn-ghost">Reset</a></div></form>
+${!hasSearch ? '<div class="empty">Search for a source-backed WR to view deterministic tags and raw rows.</div>' : suggestions ? `<div class="artifact-card"><h3>Matched source-backed WR players</h3><div class="artifact-fields">${suggestions}</div></div>` : '<div class="empty">No source-backed player rows match this search.</div>'}
 ${selected ? `<h2>${esc(selected.player_name)} · ${esc(selected.team)} · ${esc(selected.position)} · ${esc(selected.season)}</h2>${statCards}<h2>Interpretation tags</h2><div class="section-grid">${tags.map(tagCard).join('')}</div><h2>Raw/source data preview</h2><p>Rows are copied from committed artifacts and truncated for readability. Missing fields stay null/missing.</p><pre class="detail-block" style="white-space:pre-wrap;overflow:auto;max-height:520px">${esc(rawPreview)}</pre>` : ''}`);
 }
 

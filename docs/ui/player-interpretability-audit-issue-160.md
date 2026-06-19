@@ -44,11 +44,15 @@ The locally available 2025 player data sources are:
 
 A minimal `/player-lab` route was added to the existing evidence viewer. It provides:
 
-- a player-name search biased to WR rows but not hardcoded to invented fixtures;
+- an empty initial state plus a WR-only player-name search that does not hardcode or invent a demo fixture;
 - a season stat card aggregated only from matched source-backed rows;
 - one or more deterministic interpretation tags with visible trigger text;
 - explicit missing-data tags when unsupported fields are absent;
 - a raw/source-data JSON preview for the selected source rows.
+
+## Validation note
+
+`npm run typecheck` validates the TypeScript contracts and helpers, but it does not type-check `web/server.mjs`. The lightweight route smoke check is `npm run check:player-lab`, which starts the Node evidence viewer on a test port and verifies the empty `/player-lab` state plus a searched WR result.
 
 ## Follow-up implementation steps
 
