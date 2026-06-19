@@ -135,6 +135,8 @@ function uniqueSortedValues(values) {
 
 const ROSTER = ARTIFACTS.roster_source_backed;
 const PPR = ARTIFACTS.ppr_source_backed;
+const USAGE = ARTIFACTS.usage_source_backed;
+const PPR_COMPUTED = ARTIFACTS.ppr_computed_source_backed;
 
 const ROSTER_TEAMS = ROSTER.status === 'available' ? uniqueSorted(ROSTER.records, 'team') : [];
 const ROSTER_POSITIONS = ROSTER.status === 'available' ? uniqueSorted(ROSTER.records, 'position') : [];
@@ -149,7 +151,7 @@ const GOBLIN_POSITIONS = GOBLIN.status === 'available' ? uniqueSorted(GOBLIN.rec
 const GOBLIN_WEEKS = GOBLIN.status === 'available' ? uniqueSorted(GOBLIN.records, 'week') : [];
 
 const SYSTEM_FLOW_REGISTRY_PATH = 'contracts/tiber-system-flow-registry.v1.json';
-const LOCAL_VIEWER_ROUTES = ['/health', '/artifacts', '/roster', '/ppr', '/goblin', '/docs', '/system-flow'];
+const LOCAL_VIEWER_ROUTES = ['/health', '/artifacts', '/roster', '/ppr', '/player-lab', '/goblin', '/docs', '/system-flow'];
 
 function loadSystemFlowRegistry() {
   const fullPath = path.join(ROOT, SYSTEM_FLOW_REGISTRY_PATH);
@@ -298,6 +300,7 @@ function layout(title, activeRoute, content) {
     ['/roster', 'Player Teams'],
     ['/ppr', 'Weekly Stats'],
     ['/goblin', 'Research Signals'],
+    ['/player-lab', 'Player Lab'],
     ['/docs', 'Contracts'],
     ['/system-flow', 'System Flow'],
   ].map(([href, label]) =>
@@ -470,6 +473,7 @@ function homePage() {
       <li><a href="/roster">Player team assignments for 2025</a></li>
       <li><a href="/ppr">Weekly player box-score outcomes for 2025</a></li>
       <li><a href="/goblin">Research signal rows for 2025</a></li>
+      <li><a href="/player-lab">Player interpretability lab</a></li>
     </ul>
   </div>
   <div class="section-card">
@@ -478,6 +482,14 @@ function homePage() {
       <li><a href="/goblin">Review research signals &rarr;</a></li>
       <li>Each row is a flagged player-week worth reviewing</li>
       <li>These are research rows, not recommendations</li>
+    </ul>
+  </div>
+  <div class="section-card">
+    <h3>Player lab scaffold</h3>
+    <ul>
+      <li><a href="/player-lab">Search source-backed player rows &rarr;</a></li>
+      <li>Deterministic tags with raw JSON visible</li>
+      <li>No lineup advice or prediction scores</li>
     </ul>
   </div>
   <div class="section-card">
@@ -825,6 +837,119 @@ ${filters}
 ${buildPager('/goblin', currentParams, clampedPage, totalPages)}`);
 }
 
+
+function isMissing(v) {
+  return v === null || v === undefined || v === '';
+}
+
+function sumField(rows, field) {
+  return rows.reduce((sum, row) => sum + (Number(row[field]) || 0), 0);
+}
+
+function avgKnown(rows, field) {
+  const vals = rows.map(row => row[field]).filter(v => !isMissing(v)).map(Number).filter(v => !Number.isNaN(v));
+  if (!vals.length) return null;
+  return vals.reduce((sum, v) => sum + v, 0) / vals.length;
+}
+
+function latestKnown(rows, field) {
+  for (const row of [...rows].sort((a, b) => Number(b.week || 0) - Number(a.week || 0))) {
+    if (!isMissing(row[field])) return row[field];
+  }
+  return null;
+}
+
+function tagCard(tag) {
+  return `<div class="artifact-card">
+    <div class="artifact-card-header"><span class="artifact-name">${esc(tag.label)}</span><span class="badge ${tag.kind === 'missing' ? 'badge-missing' : 'badge-source'}">${esc(tag.confidence)}</span></div>
+    <p style="margin-bottom:8px">${esc(tag.meaning)}</p>
+    <div class="artifact-row">
+      <div class="artifact-kv"><span class="artifact-kv-k">Trigger</span><span class="artifact-kv-v">${esc(tag.trigger)}</span></div>
+      <div class="artifact-kv"><span class="artifact-kv-k">Why it matters</span><span class="artifact-kv-v">${esc(tag.care)}</span></div>
+    </div>
+  </div>`;
+}
+
+function buildInterpretationTags({ usageRows, pprRows }) {
+  const tags = [];
+  const games = Math.max(usageRows.length, pprRows.length);
+  const targets = sumField(usageRows, 'targets');
+  const receptions = sumField(usageRows, 'receptions');
+  const receivingYards = sumField(pprRows, 'receiving_yards');
+  const receivingTds = sumField(pprRows, 'receiving_tds');
+  const avgTargetShare = avgKnown(usageRows, 'target_share');
+  const avgAirYardsShare = avgKnown(usageRows, 'air_yards_share');
+  const latestTargetShare = latestKnown(usageRows, 'target_share');
+  const latestAirYardsShare = latestKnown(usageRows, 'air_yards_share');
+
+  if (games < 3) {
+    tags.push({ label: 'Small Sample', confidence: 'high', kind: 'source', meaning: 'The source-backed sample has fewer than three player-week rows.', trigger: `${games} available player-week row(s).`, care: 'Treat any role read as early context, not a stable profile.' });
+  }
+  if (targets >= 30 || (avgTargetShare !== null && avgTargetShare >= 0.22)) {
+    tags.push({ label: 'Volume Anchor', confidence: 'medium', kind: 'source', meaning: 'Targets or target share point to meaningful passing-game involvement.', trigger: `${targets} targets; average target share ${avgTargetShare === null ? 'missing' : avgTargetShare.toFixed(2)}.`, care: 'Volume is the cleanest source-backed clue that the offense is intentionally using this player.' });
+  }
+  if (targets >= 15 && receivingTds === 0) {
+    tags.push({ label: 'Box Score Mirage', confidence: 'medium', kind: 'source', meaning: 'Usage exists, but touchdown output has not shown up in these rows.', trigger: `${targets} targets and ${receivingTds} receiving TDs.`, care: 'A plain box score can understate role when opportunities do not become touchdowns.' });
+  }
+  if (avgAirYardsShare !== null && avgAirYardsShare >= 0.25) {
+    tags.push({ label: 'Deep Threat Profile', confidence: 'medium', kind: 'source', meaning: 'Air-yards share suggests a downfield component to the player role.', trigger: `Average air-yards share ${avgAirYardsShare.toFixed(2)}; latest ${latestAirYardsShare === null ? 'missing' : Number(latestAirYardsShare).toFixed(2)}.`, care: 'Downfield usage can create spiky weekly outcomes even when catch volume is uneven.' });
+  }
+  if (targets >= 20 && receptions / Math.max(targets, 1) < 0.55) {
+    tags.push({ label: 'Efficiency Concern', confidence: 'medium', kind: 'source', meaning: 'Catch conversion is low relative to target volume in the selected rows.', trigger: `${receptions} receptions on ${targets} targets.`, care: 'Role may be real, but incomplete passes can make weekly output volatile.' });
+  }
+  for (const field of ['routes_run', 'route_participation', 'snap_share', 'red_zone_targets']) {
+    if (usageRows.length && usageRows.every(row => isMissing(row[field]))) {
+      tags.push({ label: 'Missing Data', confidence: 'high', kind: 'missing', meaning: `${humanLabel(field)} is not source-backed in the matched usage rows.`, trigger: `All matched rows have ${field}=null/missing.`, care: 'The UI is intentionally not inferring unsupported role details.' });
+    }
+  }
+  if (!tags.length) {
+    tags.push({ label: 'Missing Data', confidence: 'high', kind: 'missing', meaning: 'No deterministic interpretation tag fired from the available fields.', trigger: 'Known thresholds were not met.', care: 'This is an honest empty state, not a negative player evaluation.' });
+  }
+  return tags.slice(0, 6);
+}
+
+function playerLabPage(query) {
+  const required = [PPR, USAGE];
+  const unavailable = required.find(a => a.status !== 'available');
+  if (unavailable) {
+    return layout('Player interpretability lab', '/player-lab', `<h1>Player interpretability lab</h1><div class="error-box">Required artifact unavailable: ${esc(unavailable.path)} (${esc(unavailable.status)})</div>`);
+  }
+
+  const nameQ = (query.name || '').trim();
+  const exactId = query.player_id || '';
+  const hasSearch = Boolean(nameQ || exactId);
+  const usageCandidates = hasSearch
+    ? USAGE.records.filter(r => r.position === 'WR' && (exactId ? r.player_id === exactId : (r.player_name || '').toLowerCase().includes(nameQ.toLowerCase())))
+    : [];
+  const selected = usageCandidates[0] || null;
+  const playerId = selected?.player_id || exactId;
+  const usageRows = playerId ? USAGE.records.filter(r => r.player_id === playerId).sort((a,b) => Number(a.week)-Number(b.week)) : [];
+  const pprRows = playerId ? PPR.records.filter(r => r.player_id === playerId).sort((a,b) => Number(a.week)-Number(b.week)) : [];
+  const computedRows = PPR_COMPUTED.status === 'available' && playerId ? PPR_COMPUTED.records.filter(r => r.player_id === playerId).sort((a,b) => Number(a.week)-Number(b.week)) : [];
+  const goblinRows = GOBLIN.status === 'available' && playerId ? GOBLIN.records.filter(r => r.player_id === playerId).sort((a,b) => Number(a.week)-Number(b.week)) : [];
+
+  const suggestions = usageCandidates.slice(0, 8).map(r => `<a class="tag" href="/player-lab?player_id=${encodeURIComponent(r.player_id)}&name=${encodeURIComponent(r.player_name)}">${esc(r.player_name)} · ${esc(r.team)} · ${esc(r.position)}</a>`).join(' ');
+  const tags = selected ? buildInterpretationTags({ usageRows, pprRows }) : [];
+  const rawPreview = JSON.stringify({ selected_player: selected, usage_rows: usageRows.slice(0, 5), ppr_rows: pprRows.slice(0, 5), computed_rows: computedRows.slice(0, 3), research_rows: goblinRows.slice(0, 3) }, null, 2);
+
+  const statCards = selected ? `<div class="stats-grid">
+    <div class="stat-card"><div class="stat-val">${sumField(usageRows, 'targets')}</div><div class="stat-lbl">Targets</div></div>
+    <div class="stat-card"><div class="stat-val">${sumField(usageRows, 'receptions')}</div><div class="stat-lbl">Receptions</div></div>
+    <div class="stat-card"><div class="stat-val">${sumField(pprRows, 'receiving_yards')}</div><div class="stat-lbl">Receiving yards</div></div>
+    <div class="stat-card"><div class="stat-val">${sumField(pprRows, 'receiving_tds')}</div><div class="stat-lbl">Receiving TDs</div></div>
+    <div class="stat-card"><div class="stat-val">${avgKnown(usageRows, 'target_share') === null ? '—' : avgKnown(usageRows, 'target_share').toFixed(2)}</div><div class="stat-lbl">Avg target share</div></div>
+    <div class="stat-card"><div class="stat-val">${avgKnown(usageRows, 'air_yards_share') === null ? '—' : avgKnown(usageRows, 'air_yards_share').toFixed(2)}</div><div class="stat-lbl">Avg air yards share</div></div>
+  </div>` : '';
+
+  return layout('Player interpretability lab', '/player-lab', `
+<h1>Player interpretability lab</h1>
+<p>Thin read-only scaffold for translating source-backed WR/player rows into deterministic football-language tags. This is not a prediction engine, fantasy lineup assistant, ranking surface, or scoring model.</p>
+${sourceSummary({ recordCount: usageRows.length + pprRows.length + computedRows.length + goblinRows.length })}
+<form method="GET" action="/player-lab"><div class="filters"><div class="fg" style="flex:2;min-width:220px"><label>WR/player search</label><input type="text" name="name" value="${esc(nameQ)}" placeholder="Search a WR name..."></div><button type="submit" class="btn">Search</button><a href="/player-lab" class="btn-ghost">Reset</a></div></form>
+${!hasSearch ? '<div class="empty">Search for a source-backed WR to view deterministic tags and raw rows.</div>' : suggestions ? `<div class="artifact-card"><h3>Matched source-backed WR players</h3><div class="artifact-fields">${suggestions}</div></div>` : '<div class="empty">No source-backed player rows match this search.</div>'}
+${selected ? `<h2>${esc(selected.player_name)} · ${esc(selected.team)} · ${esc(selected.position)} · ${esc(selected.season)}</h2>${statCards}<h2>Interpretation tags</h2><div class="section-grid">${tags.map(tagCard).join('')}</div><h2>Raw/source data preview</h2><p>Rows are copied from committed artifacts and truncated for readability. Missing fields stay null/missing.</p><pre class="detail-block" style="white-space:pre-wrap;overflow:auto;max-height:520px">${esc(rawPreview)}</pre>` : ''}`);
+}
+
 function buildPager(base, params, page, totalPages) {
   if (totalPages <= 1) return '';
 
@@ -1034,6 +1159,7 @@ const server = http.createServer((req, res) => {
     if (pathname === '/roster') return send(200, 'text/html', rosterPage(query));
     if (pathname === '/ppr') return send(200, 'text/html', pprPage(query));
     if (pathname === '/goblin') return send(200, 'text/html', goblinPage(query));
+    if (pathname === '/player-lab') return send(200, 'text/html', playerLabPage(query));
     if (pathname === '/docs') return send(200, 'text/html', docsPage());
     if (pathname === '/system-flow') return send(200, 'text/html', systemFlowPage(query));
 
