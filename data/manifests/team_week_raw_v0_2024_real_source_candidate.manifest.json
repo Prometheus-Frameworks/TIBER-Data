@@ -1,0 +1,40 @@
+{
+  "artifact": "team_week_raw_v0_2024_real_source_candidate",
+  "season": 2024,
+  "generatedAt": "2026-06-25T18:59:28+00:00",
+  "sources": [
+    {
+      "sourceName": "nflverse play-by-play",
+      "sourceType": "nflverse",
+      "retrievalMethod": "nflreadpy.load_pbp([2024])",
+      "retrievalTimestamp": "2026-06-25T18:59:18+00:00",
+      "packageVersion": "0.1.5",
+      "sourceUrlOrDatasetId": "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet",
+      "transformCodePath": "scripts/build_team_week_raw_v0_2024_candidate.py",
+      "sourceRefs": [
+        "nflverse-data:pbp/play_by_play_2024"
+      ]
+    },
+    {
+      "sourceName": "nflverse schedules",
+      "sourceType": "nflverse",
+      "retrievalMethod": "nflreadpy.load_schedules([2024])",
+      "retrievalTimestamp": "2026-06-25T18:59:27+00:00",
+      "packageVersion": "0.1.5",
+      "sourceUrlOrDatasetId": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.parquet",
+      "transformCodePath": "scripts/build_team_week_raw_v0_2024_candidate.py",
+      "sourceRefs": [
+        "nflverse-data:schedules/games"
+      ]
+    }
+  ],
+  "validationReportPath": "exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.validation.json",
+  "lineageManifestPath": "data/manifests/team_week_raw_v0_2024_real_source_candidate.manifest.json",
+  "governanceStatus": "ungoverned",
+  "governanceSource": "not_set",
+  "notes": [
+    "This manifest documents source retrieval for a partial_real_data candidate artifact only.",
+    "No governed_real_data claim is made or implied by this manifest.",
+    "Promotion to governed status requires a separate, explicitly authorized human review (PR D)."
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "report": "team_week_raw_v0_2024_real_source_candidate_validation",
+  "season": 2024,
+  "generatedAt": "2026-06-25T18:59:28+00:00",
+  "artifactPath": "exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.json",
+  "rowCount": 544,
+  "teamCount": 32,
+  "allPassed": true,
+  "checks": [
+    {
+      "name": "all_32_teams_present",
+      "passed": true,
+      "details": {
+        "missingTeams": [],
+        "unexpectedTeams": []
+      }
+    },
+    {
+      "name": "expected_weeks_present_per_team",
+      "passed": true,
+      "details": {
+        "outOfWindowWeeksByTeam": {},
+        "teamsWithMoreThan18Rows": {}
+      }
+    },
+    {
+      "name": "no_duplicate_team_week_rows",
+      "passed": true,
+      "details": {
+        "duplicateKeys": []
+      }
+    },
+    {
+      "name": "valid_team_and_opponent_codes",
+      "passed": true,
+      "details": {
+        "invalidCodes": []
+      }
+    },
+    {
+      "name": "reciprocal_opponent_consistency",
+      "passed": true,
+      "details": {
+        "badRows": []
+      }
+    },
+    {
+      "name": "rate_fields_bounded_0_1_or_null",
+      "passed": true,
+      "details": {
+        "outOfBoundsRows": []
+      }
+    },
+    {
+      "name": "required_finite_numeric_fields",
+      "passed": true,
+      "details": {
+        "unexplainedNulls": [],
+        "nonFiniteValues": []
+      }
+    },
+    {
+      "name": "pressure_rate_allowed_null_and_deferred",
+      "passed": true,
+      "details": {
+        "nonNullRows": [],
+        "deferredFields": [
+          "pressureRateAllowed"
+        ]
+      }
+    },
+    {
+      "name": "seconds_per_play_block_metadata_if_applicable",
+      "passed": true,
+      "details": {
+        "blockedRowCount": 0,
+        "recordedInMetadataCount": 0
+      }
+    },
+    {
+      "name": "epa_split_block_metadata_if_applicable",
+      "passed": true,
+      "details": {
+        "blockedRowCount": 0,
+        "recordedInMetadataCount": 0
+      }
+    },
+    {
+      "name": "source_refs_present",
+      "passed": true,
+      "details": {
+        "sourceArtifacts": [
+          "nflverse-data:pbp/play_by_play_2024",
+          "nflverse-data:schedules/games"
+        ]
+      }
+    },
+    {
+      "name": "retrieval_metadata_complete",
+      "passed": true,
+      "details": {
+        "incompleteSources": [],
+        "sourceCount": 2
+      }
+    },
+    {
+      "name": "non_governed_status",
+      "passed": true,
+      "details": {
+        "provenanceStatus": "partial_real_data",
+        "governanceStatus": "ungoverned"
+      }
+    }
+  ]
+}
