@@ -648,13 +648,15 @@ def build_validation_report(
 
     expected_team_game_rows = coverage["expectedTeamGameRows"]
     actual_team_game_rows = coverage["actualTeamGameRows"]
+    row_count = len(rows)
     checks.append(
         _check(
-            "team_game_row_count_matches_schedule",
-            actual_team_game_rows == expected_team_game_rows,
+            "expected_team_game_row_count",
+            expected_team_game_rows == actual_team_game_rows == row_count,
             {
                 "expectedTeamGameRows": expected_team_game_rows,
                 "actualTeamGameRows": actual_team_game_rows,
+                "rowCount": row_count,
             },
         )
     )

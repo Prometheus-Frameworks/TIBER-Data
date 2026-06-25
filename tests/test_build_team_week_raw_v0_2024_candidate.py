@@ -470,9 +470,28 @@ def test_validation_report_fails_when_team_game_row_count_short_of_schedule(mod)
         2024, artifact["rows"], scheduled_game_count=17
     )
     report = mod.build_validation_report(artifact, diagnostics, lineage_manifest)
-    assert _check(report, "team_game_row_count_matches_schedule")["passed"] is False
+    # The new check catches the schedule shortfall even though all 32 teams are
+    # still present, weeks are in-window, and there are no duplicates.
+    assert _check(report, "expected_team_game_row_count")["passed"] is False
     assert _check(report, "all_32_teams_present")["passed"] is True
     assert _check(report, "expected_weeks_present_per_team")["passed"] is True
+    assert _check(report, "no_duplicate_team_week_rows")["passed"] is True
+    assert report["allPassed"] is False
+
+
+def test_validation_report_fails_when_a_team_game_row_is_dropped(mod):
+    artifact, diagnostics, lineage_manifest = _good_fixture(mod)
+    # Drop one scheduled team-game row while keeping the recorded schedule count.
+    artifact["rows"] = artifact["rows"][:-1]
+    artifact["metadata"]["coverage"] = mod.build_coverage(
+        2024, artifact["rows"], scheduled_game_count=16
+    )
+    report = mod.build_validation_report(artifact, diagnostics, lineage_manifest)
+    check = _check(report, "expected_team_game_row_count")
+    assert check["passed"] is False
+    assert check["details"]["expectedTeamGameRows"] == 32
+    assert check["details"]["actualTeamGameRows"] == 31
+    assert check["details"]["rowCount"] == 31
     assert report["allPassed"] is False
 
 
