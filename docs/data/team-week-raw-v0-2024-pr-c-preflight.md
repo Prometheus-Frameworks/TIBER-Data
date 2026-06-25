@@ -1,1 +1,351 @@
-IyB0ZWFtX3dlZWtfcmF3X3YwIDIwMjQgUFIgQyBwcmVmbGlnaHQ6IHdpbmRvdyBhbmQgZGVyaXZhdGlvbiBydWxlIGdhdGUKCiMjIFN0YXR1cwoKVGhpcyBpcyB0aGUgUFIgQyBwcmVmbGlnaHQgZm9yIFRJQkVSLURhdGEgaXNzdWUgIzE2MiwgZm9sbG93aW5nIFBSIEEKKGBkb2NzL2RhdGEvdGVhbS13ZWVrLXJhdy12MC0yMDI0LXNvdXJjZS1hcnRpZmFjdC1zcGVjLm1kYCkgYW5kIFBSIEIKKGBkb2NzL2RhdGEvdGVhbS13ZWVrLXJhdy12MC0yMDI0LXNvdXJjZS1wcm9iZS5tZGApLgoKVGhpcyBkb2N1bWVudCBkb2VzIG5vdCBpbmdlc3QgZGF0YSwgZG9lcyBub3QgZ2VuZXJhdGUgYSByZWFsIG9yIGNhbmRpZGF0ZQphcnRpZmFjdCwgZG9lcyBub3QgZW1pdCBhIHZhbGlkYXRpb24gcmVwb3J0LCBkb2VzIG5vdCBlbWl0IGEgbGluZWFnZQptYW5pZmVzdCwgZG9lcyBub3QgcHJvbW90ZSBhbnkgZ292ZXJuYW5jZSBzdGF0dXMsIGRvZXMgbm90IG1vZGlmeQpUSUJFUi1UZWFtc3RhdGUsIGFuZCBkb2VzIG5vdCBjaGFuZ2UgUFBNIGJlaGF2aW9yLgoKSXRzIGpvYiBpcyBuYXJyb3dlciB0aGFuIFBSIEEvQjogUFIgQSBzcGVjaWZpZWQgdGhlIGNvbnRyYWN0IGFuZCBmaWVsZAppbnZlbnRvcnksIFBSIEIgY2xhc3NpZmllZCBmaWVsZCBhdmFpbGFiaWxpdHkgYWdhaW5zdCBjYW5kaWRhdGUgc291cmNlcy4KVGhpcyBQUiBkZWNpZGVzIG9yIGV4cGxpY2l0bHkgZ2F0ZXMgdGhlIGRldGVybWluaXN0aWMgKnJ1bGVzKiAod2luZG93LApwbGF5IGluY2x1c2lvbiwgbmV1dHJhbCBzY3JpcHQsIHRocmVzaG9sZHMsIHNvdXJjZSBhc3N1bXB0aW9ucywgcGFjZSwKZHJpdmVzL3JlZC16b25lLCBwcmVzc3VyZSwgbWV0YWRhdGEsIGVtaXNzaW9uIGNoZWNrcywgZ292ZXJuYW5jZSkgdGhhdCBhCmZ1dHVyZSBQUiBDIG11c3QgYXBwbHkgaWRlbnRpY2FsbHkgdG8gZXZlcnkgdGVhbS93ZWVrIHNvIHRoZSByZXN1bHRpbmcKYXJ0aWZhY3QgaXMgcmVwcm9kdWNpYmxlIGFuZCBob25lc3RseSBsYWJlbGVkLgoKRXZlcnkgcnVsZSBiZWxvdyBpcyBtYXJrZWQgb25lIG9mOgoKLSAqKkxPQ0tFRCoqIOKAlCBhZG9wdGVkIGFzIHRoZSBjYW5kaWRhdGUgcG9saWN5IFBSIEMgbXVzdCBpbXBsZW1lbnQgYXMgd3JpdHRlbgogIHVubGVzcyBhIGxhdGVyIHNwZWMgcmV2aXNpb24gY2hhbmdlcyBpdC4gIkxvY2tlZCIgbWVhbnMgKmRlY2lkZWQgZm9yIHRoaXMKICBzcGVjKiwgbm90ICpnb3Zlcm5lZCo7IGl0IGRvZXMgbm90IGF1dGhvcml6ZSBhcnRpZmFjdCBlbWlzc2lvbiBhbmQgZG9lcyBub3QKICBieSBpdHNlbGYgc2F0aXNmeSBwcm9tb3Rpb24gcmV2aWV3LgotICoqR0FURUQqKiDigJQgZXhwbGljaXRseSBub3QgZGVjaWRlZCBoZXJlLiBQUiBDIG11c3Qgbm90IHNpbGVudGx5IGNob29zZSBhCiAgZGVmYXVsdDsgZWl0aGVyIHRoZSBnYXRlIGlzIHJlc29sdmVkIGJ5IGFuIGV4cGxpY2l0IGZvbGxvdy11cCBkZWNpc2lvbiwgb3IKICB0aGUgYWZmZWN0ZWQgZmllbGQgc3RheXMgbnVsbC9kZWZlcnJlZCB3aXRoIHRoZSBwb2xpY3kgaW4gwqc4L8KnOS4KCiMjIDEuIFdpbmRvdyBkZWNpc2lvbgoKKipMT0NLRUQqKjogdGhlIHNvdXJjZSBhcnRpZmFjdCdzIHByaW1hcnkgYnVpbGQgd2luZG93IGlzIHRoZSAqKmZ1bGwgV2VlawoxLTE4IDIwMjQgcmVndWxhciBzZWFzb24qKiwgYWxsIDMyIHRlYW1zLCBwb3N0c2Vhc29uIGV4Y2x1ZGVkLgoKUmF0aW9uYWxlOgoKLSBUaGUgc291cmNlIGFydGlmYWN0IGlzIHRlYW0tc3RhdGUtb25seSBjb250ZXh0IChwYWNlLCBFUEEsIHN1Y2Nlc3MsCiAgZXhwbG9zaXZlIHJhdGUsIGRyaXZlcywgcmVkIHpvbmUpLCBub3QgYSBmYW50YXN5LXNjb3JpbmcgYXJ0aWZhY3QuIFRoZXJlIGlzCiAgbm8gdGVhbS1zdGF0ZSByZWFzb24gdG8gdHJ1bmNhdGUgYmVmb3JlIFdlZWsgMTg7IGRvaW5nIHNvIHdvdWxkIGRpc2NhcmQKICByZWFsIHRlYW0td2VlayBvYnNlcnZhdGlvbnMgZm9yIG5vIGRlcml2YXRpb24tY29ycmVjdG5lc3MgYmVuZWZpdC4KLSBUSUJFUi1UZWFtc3RhdGUgIzUwIMKnNiBhbmQgVElCRVItRGF0YSAjMTYyIGZyYW1lIDIwMjQgdGVhbSBjb250ZXh0IGFzIGEKICBwcmVkaWN0b3IgZm9yIGEgMjAyNSB0YXJnZXQsIG5vdCBhbiBleHBsYW5hdGlvbiBvZiAyMDI0IG91dGNvbWVzLiBGdWxsCiAgcmVndWxhci1zZWFzb24gY292ZXJhZ2UgbWF4aW1pemVzIHVzYWJsZSBwcmVkaWN0b3IgaGlzdG9yeSB3aXRob3V0CiAgY3Jvc3NpbmcgdGhlIGxlYWthZ2UgYm91bmRhcnksIHNpbmNlIHRoZSBjdXRvZmYgdGhhdCBtYXR0ZXJzIGlzIHJlbGF0aXZlCiAgdG8gdGhlIDIwMjUgdGFyZ2V0IHdpbmRvdywgbm90IHJlbGF0aXZlIHRvIFdlZWsgMTggdnMgV2VlayAxNy4KLSBBIGZhbnRhc3ktYWxpZ25lZCB3aW5kb3cgKGUuZy4gZXhjbHVkaW5nIFdlZWsgMTgsIG9yIGV4Y2x1ZGluZyB3ZWVrcyBwYXN0CiAgYSB0eXBpY2FsIGZhbnRhc3ktcGxheW9mZiBjdXRvZmYpIGlzIGEgKipkb3duc3RyZWFtIGZpbHRlcioqLCBub3QgYQogIHNlcGFyYXRlIGFjcXVpc2l0aW9uLiBJdCBjYW4gYmUgZGVyaXZlZCBmcm9tIHRoZSBmdWxsLXdpbmRvdyBhcnRpZmFjdCBieQogIHNlbGVjdGluZyBhIHdlZWsgc3Vic2V0OyBpdCBtdXN0IG5vdCBiZSBidWlsdCBhcyBhIHNlY29uZCwgaW5kZXBlbmRlbnRseQogIGFjcXVpcmVkIHNvdXJjZSBhcnRpZmFjdC4KCkNvbnNlcXVlbmNlcyBsb2NrZWQgYWxvbmdzaWRlIHRoaXMgZGVjaXNpb246CgotIGBzZWFzb249MjAyNGAsIGV4cGVjdGVkIHdlZWtzID0gYDEuLjE4YCBpbmNsdXNpdmUsIGZvciBhbGwgMzIgdGVhbXMuCi0gRWFjaCB0ZWFtIGlzIGV4cGVjdGVkIHRvIGNvbnRyaWJ1dGUgdXAgdG8gMTggdGVhbS13ZWVrIHJvd3M7IGJ5ZSB3ZWVrcwogIHByb2R1Y2Ugbm8gcm93IGZvciB0aGF0IHRlYW0vd2VlayAobm8gemVyby1maWxsZWQgb3Igc3ludGhldGljIGJ5ZSByb3cpLgotIFBvc3RzZWFzb24sIFBybyBCb3dsLCBhbmQgYW55IG5ldXRyYWwtc2l0ZS9pbnRlcm5hdGlvbmFsIGdhbWUgcGVjdWxpYXJpdGllcwogIGFyZSBpbi13aW5kb3cgaWYgdGhleSBvY2N1cnJlZCB3aXRoaW4gV2Vla3MgMS0xOCBvZiB0aGUgMjAyNCByZWd1bGFyIHNlYXNvbjsKICBubyByZWd1bGFyLXNlYXNvbiBnYW1lIGlzIGV4Y2x1ZGVkIGZvciB2ZW51ZSByZWFzb25zLgotIEEgZmFudGFzeS1hbGlnbmVkICp2aWV3KiAoaWYgZXZlciBuZWVkZWQgZG93bnN0cmVhbSkgaXMgZG9jdW1lbnRlZCBhcwogICJyb3dzIHdoZXJlIGB3ZWVrIDw9IE5gIiBmaWx0ZXJlZCBmcm9tIHRoaXMgYXJ0aWZhY3QsIG5vdCBhIG5ldyBzb3VyY2UuCgoqKkdBVEVEKio6IHRoZSBleGFjdCB2YWx1ZSBvZiBgTmAgZm9yIGFueSBmdXR1cmUgZmFudGFzeS1hbGlnbmVkIHZpZXcsIGFuZAp3aGV0aGVyIHN1Y2ggYSB2aWV3IGlzIGV2ZXIgbWF0ZXJpYWxpemVkIGFzIGl0cyBvd24gYXJ0aWZhY3QsIGlzIG5vdCBkZWNpZGVkCmhlcmUgYW5kIGlzIG91dCBvZiBzY29wZSBmb3IgUFIgQy4KCiMjIDIuIFBsYXkgaW5jbHVzaW9uIHJ1bGVzCgpUaGVzZSBydWxlcyBnb3Zlcm4gd2hpY2ggcmF3IHBsYXlzIGNvdW50IHRvd2FyZCBgb2ZmZW5zaXZlUGxheXNgIGFuZCB0aGUKcmF0ZS9lZmZpY2llbmN5IGZpZWxkcyBkZXJpdmVkIGZyb20gaXQuIFRoZXkgYXBwbHkgdG8gdGhlIHRlYW0gaW4gcG9zc2Vzc2lvbgpvbiBvZmZlbnNlIHVubGVzcyBzdGF0ZWQgb3RoZXJ3aXNlLgoKfCBSdWxlIHwgU3RhdHVzIHwgUG9saWN5IHwKfCAtLS0gfCAtLS0gfCAtLS0gfAp8IE9mZmVuc2l2ZSBwbGF5IGluY2x1c2lvbiB8ICoqTE9DS0VEKiogfCBBIHBsYXkgY291bnRzIHRvd2FyZCBgb2ZmZW5zaXZlUGxheXNgIG9ubHkgaWYgaXQgaXMgYSBkZXNpZ25hdGVkIHNjcmltbWFnZSBwbGF5IHdpdGggYSByZWNvcmRlZCBvZmZlbnNpdmUgcmVzdWx0OiBwYXNzIGF0dGVtcHQsIHNhY2ssIHNjcmFtYmxlLCBvciBydXNoIGF0dGVtcHQgKGluY2x1ZGluZyBRQiBrbmVlbHMvc3Bpa2VzLCBjb3VudGVkIHBlciB0aGVpciBvd24gcm93cyBiZWxvdykuIFNwZWNpYWwtdGVhbXMgcGxheXMgYXJlIG5ldmVyIG9mZmVuc2l2ZSBwbGF5cyAoc2VlIHNwZWNpYWwtdGVhbXMgcm93KS4gfAp8IE5vLXBsYXlzIHwgKipMT0NLRUQqKiB8IFBsYXlzIG51bGxpZmllZCBlbnRpcmVseSAobm8gZG93biBjb25zdW1lZCwgbm8gcmVzdWx0IHJlY29yZGVkIOKAlCBlLmcuIHByZS1zbmFwIGRlYWQtYmFsbCBwbGF5cyB3aXRoIG5vIHBlbmFsdHkgYWNjZXB0ZWQpIGFyZSBleGNsdWRlZCBmcm9tIGBvZmZlbnNpdmVQbGF5c2AgYW5kIGZyb20gZXZlcnkgcmF0ZS9lZmZpY2llbmN5IG51bWVyYXRvciBhbmQgZGVub21pbmF0b3IuIHwKfCBQZW5hbHRpZXMgfCAqKkxPQ0tFRCoqIHwgSWYgYSBwZW5hbHR5IGlzIGFjY2VwdGVkIGFuZCB0aGUgdW5kZXJseWluZyBwbGF5IGhhcyBubyBzdGF0aXN0aWNhbCByZXN1bHQgKGUuZy4gZmFsc2Ugc3RhcnQsIGRlbGF5IG9mIGdhbWUsIGRlYWQtYmFsbCBmb3VsIGJlZm9yZSB0aGUgc25hcCByZXNvbHZlcyBhIHBsYXkpLCB0aGUgcGxheSBpcyBleGNsdWRlZCwgc2FtZSBhcyBhIG5vLXBsYXkuIElmIGEgcGVuYWx0eSBpcyBhY2NlcHRlZCBvbiBhIHBsYXkgdGhhdCBzdGlsbCBoYXMgYSByZWNvcmRlZCBzdGF0aXN0aWNhbCByZXN1bHQgKGUuZy4gZGVmZW5zaXZlIGhvbGRpbmcgd2l0aCB0aGUgcGFzcyByZXN1bHQgYWxzbyByZWNvcmRlZCBieSB0aGUgc291cmNlKSwgdGhlIHVuZGVybHlpbmcgcGxheSdzIG9mZmVuc2l2ZSByZXN1bHQgaXMgaW5jbHVkZWQgYW5kIGNvdW50ZWQgdW5kZXIgaXRzIG5hdHVyYWwgcGxheSB0eXBlOyB0aGUgcGVuYWx0eSBpdHNlbGYgZG9lcyBub3QgY3JlYXRlIG9yIHJlbW92ZSBhIHBsYXkuIHwKfCBLbmVlbHMgfCAqKkxPQ0tFRCoqIHwgUUIga25lZWxzIGFyZSBleGNsdWRlZCBmcm9tIGBwYXNzUmF0ZWAsIGBuZXV0cmFsUGFzc1JhdGVgLCBgcnVzaFJhdGVgLCBgZXBhUGVyUGxheWAsIGBwYXNzRXBhUGVyUGxheWAsIGBydXNoRXBhUGVyUGxheWAsIGBzdWNjZXNzUmF0ZWAsIGFuZCBgZXhwbG9zaXZlUGxheVJhdGVgICh0aGV5IGFyZSBub3QgY29tcGV0aXRpdmUgc25hcHMpLiBUaGV5IGFyZSBleGNsdWRlZCBmcm9tIGBuZXV0cmFsUGxheXNgIGJ5IGNvbnN0cnVjdGlvbiAoa25lZWxzIGRvIG5vdCBvY2N1ciBpbiBuZXV0cmFsIHNjcmlwdCkuICoqR0FURUQqKjogd2hldGhlciBrbmVlbHMgc3RpbGwgY291bnQgdG93YXJkIHRoZSByYXcgYG9mZmVuc2l2ZVBsYXlzYCB0b3RhbCB1c2VkIGFzIHRoZSBwYWNlIGRlbm9taW5hdG9yIChgc2Vjb25kc1Blclo7bGF5YCkg4oCUIHNlZSDCpzYuIHwKfCBTcGlrZXMgfCAqKkxPQ0tFRCoqIHwgU2FtZSB0cmVhdG1lbnQgYXMga25lZWxzOiBleGNsdWRlZCBmcm9tIGFsbCByYXRlL2VmZmljaWVuY3kgZmllbGRzIGFuZCBmcm9tIGBuZXV0cmFsUGxheXNgLiBDb3VudGVkIHRvd2FyZCBgb2ZmZW5zaXZlUGxheXNgL3BhY2UgZGVub21pbmF0b3IgcGVyIHRoZSBzYW1lIGdhdGVkIHBhY2UgcnVsZSBpbiDCpzYuIHwKfCBTYWNrcyB8ICoqTE9DS0VEKiogfCBBIHNhY2sgY291bnRzIGFzIGEgcGFzcyBwbGF5IChwYXJ0IG9mIHRoZSBkcm9wYmFjayB0b3RhbCkgZm9yIGBwYXNzUmF0ZWAsIGBuZXV0cmFsUGFzc1JhdGVgLCBhbmQgYHBhc3NFcGFQZXJQbGF5YC4gQSBzYWNrIGlzIG5ldmVyIGNvdW50ZWQgdG93YXJkIGBleHBsb3NpdmVQbGF5UmF0ZWAgKGEgbG9zcyBjYW5ub3QgYmUgZXhwbG9zaXZlKSBhbmQgaXMgc2VwYXJhdGVseSBjb3VudGVkIGluIGBzYWNrc0FsbG93ZWRgLiB8CnwgU2NyYW1ibGVzIHwgKipMT0NLRUQqKiB8IEEgc2NyYW1ibGUgKGEgY2FsbGVkIHBhc3MgdGhhdCBiZWNvbWVzIGEgZGVzaWduZWQtbG9vayBydW4gYnkgdGhlIFFCKSBjb3VudHMgdG93YXJkIGBwYXNzUmF0ZWAvZHJvcGJhY2sgdG90YWxzIGZvciBwbGF5LWNhbGxpbmcgcHVycG9zZXMsIGNvbnNpc3RlbnQgd2l0aCB0aGUgc3RhbmRhcmQgbmZsdmVyc2UgZHJvcGJhY2sgZGVmaW5pdGlvbiAocGFzcyBhdHRlbXB0cyArIHNhY2tzICsgc2NyYW1ibGVzKS4gKipHQVRFRCoqOiB3aGV0aGVyIHNjcmFtYmxlIHlhcmRhZ2UvRVBBIGlzIGF0dHJpYnV0ZWQgdG8gYHJ1c2hFcGFQZXJQbGF5YCBvciBgcGFzc0VwYVBlclBsYXlgIGRlcGVuZHMgb24gd2hpY2ggcGxheS10eXBlIGZsYWcgdGhlIHNlbGVjdGVkIHNvdXJjZSBjb2x1bW4gc2V0IGNhcnJpZXMgZm9yIHNjcmFtYmxlczsgdGhpcyBtYXBwaW5nIG11c3QgYmUgY29uZmlybWVkIGFnYWluc3QgdGhlIGFjdHVhbCByZXRyaWV2ZWQgc291cmNlIHNjaGVtYSBpbiBQUiBDIGFuZCByZWNvcmRlZCBpbiB0aGUgdHJhbnNmb3JtIGNvZGUgcGF0aCwgbm90IGFzc3VtZWQgaGVyZS4gfAp8IEFib3J0ZWQgcGxheXMgfCAqKkxPQ0tFRCoqIHwgUGxheXMgd2l0aCBubyBjbGVhbiBzbmFwL2V4Y2hhbmdlIGFuZCBubyByZWNvcmRlZCBvZmZlbnNpdmUgcmVzdWx0IChlLmcuIGJvdGNoZWQgc25hcCB3aXRoIG5vIHJlc3VsdCkgYXJlIGV4Y2x1ZGVkIGZyb20gYG9mZmVuc2l2ZVBsYXlzYCBhbmQgYWxsIHJhdGUvZWZmaWNpZW5jeSBmaWVsZHMsIHNhbWUgYXMgbm8tcGxheXMuIFRoZSBleGNsdWRlZC1wbGF5IGNvdW50IG11c3QgYmUgcmVjb3JkZWQgaW4gYnVpbGQgbWV0YWRhdGEgZm9yIHRyYW5zcGFyZW5jeSwgbm90IHNpbGVudGx5IGRyb3BwZWQuIHwKfCBTcGVjaWFsLXRlYW1zIGV4Y2x1c2lvbnMgfCAqKkxPQ0tFRCoqIHwgUHVudHMsIGtpY2tvZmZzLCBmaWVsZCBnb2FsIGF0dGVtcHRzLCBleHRyYS1wb2ludCBhdHRlbXB0cywgYW5kIHR3by1wb2ludCBjb252ZXJzaW9uIGF0dGVtcHRzIGFyZSBlbnRpcmVseSBleGNsdWRlZCBmcm9tIHRoaXMgYXJ0aWZhY3QuIFRoaXMgYXJ0aWZhY3QgaXMgb2ZmZW5zZS1zY3JpbW1hZ2Utb25seTsgbm8gc3BlY2lhbC10ZWFtcyBwbGF5IGNvbnRyaWJ1dGVzIHRvIGFueSByZXF1aXJlZCBmaWVsZC4gfAp8IEVuZC1vZi1oYWxmIC8gZW5kLW9mLWdhbWUgZWRnZSBjYXNlcyB8ICoqTE9DS0VEIChwYXJ0aWFsKSoqIHwgQW55IHBsYXkgdGhhdCBvY2N1cnMgYWZ0ZXIgYSBoYWxmL2dhbWUtZW5kaW5nIHdoaXN0bGUgd2l0aCBubyByZWNvcmRlZCByZXN1bHQgaXMgZXhjbHVkZWQgKHNhbWUgYXMgbm8tcGxheSkuIEtuZWVscy9zcGlrZXMgYXQgdGhlIGVuZCBvZiBhIGhhbGYvZ2FtZSBmb2xsb3cgdGhlIGtuZWVsL3NwaWtlIHJ1bGUgYWJvdmUuICoqR0FURUQqKjogd2hldGhlciBhIGhhbGYtZW5kaW5nIGxpdmUgc25hcCB3aXRoIGEgcmVhbCByZXN1bHQgKGUuZy4gYSBIYWlsIE1hcnkgYXR0ZW1wdCBhcyB0aW1lIGV4cGlyZXMpIHJlcXVpcmVzIGFueSBzcGVjaWFsIGhhbmRsaW5nIGJleW9uZCBpdHMgbmF0dXJhbCBwbGF5LXR5cGUgY2xhc3NpZmljYXRpb24g4oCUIGRlZmF1bHQgaXMgbm8gc3BlY2lhbCBoYW5kbGluZywgYnV0IHRoaXMgbXVzdCBiZSBjb25maXJtZWQgb25jZSByZWFsIHBsYXlzIGFyZSBpbnNwZWN0ZWQgaW4gUFIgQy4gfAoKIyMgMy4gTmV1dHJhbC1zY3JpcHQgcnVsZXMKCioqTE9DS0VEKiogY2FuZGlkYXRlIGRlZmluaXRpb24gKHN0YW5kYXJkIG5mbHZlcnNlLWNvbW11bml0eSBuZXV0cmFsLXNjcmlwdApjb252ZW50aW9uOyBhZG9wdGVkIGFzIHRoZSB3b3JraW5nIGRlZmluaXRpb24gZm9yIHRoaXMgYXJ0aWZhY3QsIG5vdAphc3NlcnRlZCBhcyB0aGUgb25seSB2YWxpZCBvbmUpOgoKLSAqKlNjb3JlIG1hcmdpbiB0aHJlc2hvbGQqKjogb2ZmZW5zZSdzIHNjb3JlIGRpZmZlcmVudGlhbCBpcyB3aXRoaW4gOAogIHBvaW50cyAoaS5lLiBgLTggPD0gc2NvcmVfZGlmZmVyZW50aWFsIDw9IDhgIGZyb20gdGhlIG9mZmVuc2UncwogIHBlcnNwZWN0aXZlKS4gRWlnaHQgcG9pbnRzIHJlZmxlY3RzIG9uZSBwb3NzZXNzaW9uIGluY2x1c2l2ZSBvZiBhCiAgdG91Y2hkb3duLCBleHRyYSBwb2ludCwgYW5kIGEgdHdvLXBvaW50LWNvbnZlcnNpb24gc3dpbmcuCi0gKipHYW1lIGNsb2NrIC8gd2luZG93Kio6IGFsbCBvZiBRMS1RMyBhcmUgZWxpZ2libGUgYnkgZGVmYXVsdCAoc3VialFlY3QgdG8KICB0aGUgc2NvcmUtbWFyZ2luIGZpbHRlcikuIEluIFE0LCBwbGF5cyBhcmUgZWxpZ2libGUgb25seSB3aGlsZSBtb3JlIHRoYW4KICA1OjAwIHJlbWFpbnMgb24gdGhlIGdhbWUgY2xvY2s7IHRoZSBsYXN0IDUgbWludXRlcyBvZiByZWd1bGF0aW9uIGFyZQogIHRyZWF0ZWQgYXMgYSBzY3JpcHQgaW4gd2hpY2ggbGV2ZXJhZ2UvY2xvY2sgc3RyYXRlZ3kgY2FuIGRvbWluYXRlCiAgcGxheS1jYWxsaW5nIHJlZ2FyZGxlc3Mgb2YgbWFyZ2luLCBzbyB0aGV5IGFyZSBleGNsdWRlZCBmcm9tICJuZXV0cmFsIgogIGV2ZW4gaWYgdGhlIG1hcmdpbiBjb25kaXRpb24gaXMgbWV0Lgo=
+# team_week_raw_v0 2024 PR C preflight: window and derivation rule gate
+
+## Status
+
+This is the PR C preflight for TIBER-Data issue #162, following PR A
+(`docs/data/team-week-raw-v0-2024-source-artifact-spec.md`) and PR B
+(`docs/data/team-week-raw-v0-2024-source-probe.md`).
+
+This document does not ingest data, does not generate a real or candidate
+artifact, does not emit a validation report, does not emit a lineage
+manifest, does not promote any governance status, does not modify
+TIBER-Teamstate, and does not change PPM behavior.
+
+Its job is narrower than PR A/B: PR A specified the contract and field
+inventory, PR B classified field availability against candidate sources.
+This PR decides or explicitly gates the deterministic *rules* (window,
+play inclusion, neutral script, thresholds, source assumptions, pace,
+drives/red-zone, pressure, metadata, emission checks, governance) that a
+future PR C must apply identically to every team/week so the resulting
+artifact is reproducible and honestly labeled.
+
+Every rule below is marked one of:
+
+- **LOCKED** — adopted as the candidate policy PR C must implement as written
+  unless a later spec revision changes it. "Locked" means *decided for this
+  spec*, not *governed*; it does not authorize artifact emission and does not
+  by itself satisfy promotion review.
+- **GATED** — explicitly not decided here. PR C must not silently choose a
+  default; either the gate is resolved by an explicit follow-up decision, or
+  the affected field stays null/deferred with the policy in §8/§9.
+
+## 1. Window decision
+
+**LOCKED**: the source artifact's primary build window is the **full Week
+1-18 2024 regular season**, all 32 teams, postseason excluded.
+
+Rationale:
+
+- The source artifact is team-state-only context (pace, EPA, success,
+  explosive rate, drives, red zone), not a fantasy-scoring artifact. There is
+  no team-state reason to truncate before Week 18; doing so would discard
+  real team-week observations for no derivation-correctness benefit.
+- TIBER-Teamstate #50 §6 and TIBER-Data #162 frame 2024 team context as a
+  predictor for a 2025 target, not an explanation of 2024 outcomes. Full
+  regular-season coverage maximizes usable predictor history without
+  crossing the leakage boundary, since the cutoff that matters is relative
+  to the 2025 target window, not relative to Week 18 vs Week 17.
+- A fantasy-aligned window (e.g. excluding Week 18, or excluding weeks past
+  a typical fantasy-playoff cutoff) is a **downstream filter**, not a
+  separate acquisition. It can be derived from the full-window artifact by
+  selecting a week subset; it must not be built as a second, independently
+  acquired source artifact.
+
+Consequences locked alongside this decision:
+
+- `season=2024`, expected weeks = `1..18` inclusive, for all 32 teams.
+- Each team is expected to contribute up to 18 team-week rows; bye weeks
+  produce no row for that team/week (no zero-filled or synthetic bye row).
+- Postseason, Pro Bowl, and any neutral-site/international game peculiarities
+  are in-window if they occurred within Weeks 1-18 of the 2024 regular season;
+  no regular-season game is excluded for venue reasons.
+- A fantasy-aligned *view* (if ever needed downstream) is documented as
+  "rows where `week <= N`" filtered from this artifact, not a new source.
+
+**GATED**: the exact value of `N` for any future fantasy-aligned view, and
+whether such a view is ever materialized as its own artifact, is not decided
+here and is out of scope for PR C.
+
+## 2. Play inclusion rules
+
+These rules govern which raw plays count toward `offensivePlays` and the
+rate/efficiency fields derived from it. They apply to the team in possession
+on offense unless stated otherwise.
+
+| Rule | Status | Policy |
+| --- | --- | --- |
+| Offensive play inclusion | **LOCKED** | A play counts toward `offensivePlays` only if it is a designated scrimmage play with a recorded offensive result: pass attempt, sack, scramble, or rush attempt (including QB kneels/spikes, counted per their own rows below). Special-teams plays are never offensive plays (see special-teams row). |
+| No-plays | **LOCKED** | Plays nullified entirely (no down consumed, no result recorded — e.g. pre-snap dead-ball plays with no penalty accepted) are excluded from `offensivePlays` and from every rate/efficiency numerator and denominator. |
+| Penalties | **LOCKED** | If a penalty is accepted and the underlying play has no statistical result (e.g. false start, delay of game, dead-ball foul before the snap resolves a play), the play is excluded, same as a no-play. If a penalty is accepted on a play that still has a recorded statistical result (e.g. defensive holding with the pass result also recorded by the source), the underlying play's offensive result is included and counted under its natural play type; the penalty itself does not create or remove a play. |
+| Kneels | **LOCKED** | QB kneels are excluded from `passRate`, `neutralPassRate`, `rushRate`, `epaPerPlay`, `passEpaPerPlay`, `rushEpaPerPlay`, `successRate`, and `explosivePlayRate` (they are not competitive snaps). They are excluded from `neutralPlays` by construction (kneels do not occur in neutral script). **GATED**: whether kneels still count toward the raw `offensivePlays` total used as the pace denominator (`secondsPerPlay`) — see §6. |
+| Spikes | **LOCKED** | Same treatment as kneels: excluded from all rate/efficiency fields and from `neutralPlays`. Counted toward `offensivePlays`/pace denominator per the same gated pace rule in §6. |
+| Sacks | **LOCKED** | A sack counts as a pass play (part of the dropback total) for `passRate`, `neutralPassRate`, and `passEpaPerPlay`. A sack is never counted toward `explosivePlayRate` (a loss cannot be explosive) and is separately counted in `sacksAllowed`. |
+| Scrambles | **LOCKED** | A scramble (a called pass that becomes a designed-look run by the QB) counts toward `passRate`/dropback totals for play-calling purposes, consistent with the standard nflverse dropback definition (pass attempts + sacks + scrambles). **GATED**: whether scramble yardage/EPA is attributed to `rushEpaPerPlay` or `passEpaPerPlay` depends on which play-type flag the selected source column set carries for scrambles; this mapping must be confirmed against the actual retrieved source schema in PR C and recorded in the transform code path, not assumed here. |
+| Aborted plays | **LOCKED** | Plays with no clean snap/exchange and no recorded offensive result (e.g. botched snap with no result) are excluded from `offensivePlays` and all rate/efficiency fields, same as no-plays. The excluded-play count must be recorded in build metadata for transparency, not silently dropped. |
+| Special-teams exclusions | **LOCKED** | Punts, kickoffs, field goal attempts, extra-point attempts, and two-point conversion attempts are entirely excluded from this artifact. This artifact is offense-scrimmage-only; no special-teams play contributes to any required field. |
+| End-of-half / end-of-game edge cases | **LOCKED (partial)** | Any play that occurs after a half/game-ending whistle with no recorded result is excluded (same as no-play). Kneels/spikes at the end of a half/game follow the kneel/spike rule above. **GATED**: whether a half-ending live snap with a real result (e.g. a Hail Mary attempt as time expires) requires any special handling beyond its natural play-type classification — default is no special handling, but this must be confirmed once real plays are inspected in PR C. |
+
+## 3. Neutral-script rules
+
+**LOCKED** candidate definition (standard nflverse-community neutral-script
+convention; adopted as the working definition for this artifact, not
+asserted as the only valid one):
+
+- **Score margin threshold**: offense's score differential is within 8
+  points (i.e. `-8 <= score_differential <= 8` from the offense's
+  perspective). Eight points reflects one possession inclusive of a
+  touchdown, extra point, and a two-point-conversion swing.
+- **Game clock / window**: all of Q1-Q3 are eligible by default (subject to
+  the score-margin filter). In Q4, plays are eligible only while more than
+  5:00 remains on the game clock; the last 5 minutes of regulation are
+  treated as a script in which leverage/clock strategy can dominate
+  play-calling regardless of margin, so they are excluded from "neutral"
+  even if the margin condition is met.
+- **Period exclusions**: overtime is excluded entirely from `neutralPlays`
+  (and from `neutralPassRate`). Overtime is rare, sudden-death-flavored, and
+  not comparable in structure to a regulation neutral script.
+- **Garbage-time filter**: included by construction — the margin and
+  late-Q4 exclusions above are the garbage-time filter. No separate garbage
+  time flag is layered on top.
+
+**GATED**: this 8-point / 5-minute convention is a candidate, not a
+contractual constant. If a different neutral-script definition is preferred
+before PR C executes, it must be changed here (in a spec revision) before
+implementation, not adjusted ad hoc inside the build script.
+
+## 4. Explosive-play thresholds
+
+**LOCKED** candidate thresholds (standard public nflverse-community
+convention):
+
+- **Pass explosive threshold**: a completed pass (not a sack, not an
+  incompletion) gaining 15 or more yards.
+- **Rush explosive threshold**: a rush attempt (including scrambles, per
+  the scramble policy in §2) gaining 10 or more yards.
+- **Thresholds differ by play type**: yes — 15 yards for pass, 10 yards for
+  rush, as above. There is no further split by down/distance or by team.
+- **Sacks/no-plays excluded**: yes. Sacks (negative or zero yardage by
+  definition of the play) and no-plays/aborted plays (no recorded gain) can
+  never count toward `explosivePlayRate`, consistent with §2.
+
+`explosivePlayRate` denominator is the same included-offensive-play set used
+for `epaPerPlay` (i.e. excludes kneels, spikes, no-plays, aborted plays, and
+special-teams plays; sacks are in the denominator as pass plays but can never
+satisfy the explosive condition).
+
+**GATED**: whether these thresholds should be neutral-script-only (i.e.
+computed only over `neutralPlays`) or computed over all included offensive
+plays. This spec defaults to **all included offensive plays** (not
+neutral-script-restricted) because `explosivePlayRate` is listed in the
+contract as a standalone field, separate from `neutralPlays`/
+`neutralPassRate`. This default must be confirmed, not silently overridden,
+if a later reviewer expects a neutral-script-scoped explosive rate.
+
+## 5. EPA and success-rate source assumptions
+
+| Requirement | Status | Policy |
+| --- | --- | --- |
+| Selected source family | **LOCKED** | nflverse, retrieved via `nflreadpy` (the path already used by this repo's existing FORGE/upstream scaffold code), specifically `nflreadpy.load_pbp([2024])` for play-level fields. This matches PR A/PR B's documented candidate path; this PR does not introduce a new loader. |
+| EPA source/model/version | **GATED** | The artifact must consume the `epa` column exactly as shipped by the selected nflverse play-by-play release for the retrieved season — this build must not compute or fit its own EP/WP model. The specific nflverse data release tag/version and `nflreadpy` package version are not known until retrieval and must be recorded at retrieval time (see §9); they cannot be locked in a docs-only PR. |
+| Success-rate column vs deterministic derivation | **LOCKED policy, GATED value** | If the retrieved nflverse play-by-play release ships a `success` column, it must be consumed directly and not re-derived. If it does not, the deterministic fallback is `success = 1 if epa > 0 else 0` per play, applied over the same included-play set as `epaPerPlay`. Which of these two paths applies is unknown until PR C inspects the actual retrieved columns, and the chosen path must be recorded in the transform code path and build metadata. |
+| Source retrieval date | **GATED** | Not decided here; must be the actual UTC timestamp recorded at the moment PR C retrieves data, not invented or backfilled. |
+| Source version / dataset identifier | **GATED** | Must be the actual nflverse release tag/identifier and `nflreadpy` package version observed at retrieval time, recorded verbatim. |
+| Transformation code path | **LOCKED (path convention only)** | A future PR C build script must live under `scripts/` (consistent with `scripts/probe_team_week_raw_v0_2024_sources.py` from PR B) and its exact module path must be recorded in artifact metadata and the lineage manifest. The literal path is not created by this PR. |
+
+## 6. Pace / seconds-per-play rules
+
+| Requirement | Status | Policy |
+| --- | --- | --- |
+| Game clock source | **LOCKED** | Derived from the selected nflverse play-by-play release's per-play clock/quarter fields (the same source as EPA/success), not a separate pace feed. |
+| Elapsed time calculation | **LOCKED** | For each offensive drive/possession, elapsed seconds between consecutive included snaps are summed using within-quarter clock deltas; the clock resets at each quarter boundary (no elapsed time is computed across a quarter break, half break, or change of possession). |
+| Play denominator | **GATED** | Whether kneels/spikes count toward the `secondsPerPlay` denominator is not decided here. Two defensible conventions exist (pace including all clock-consuming snaps vs. pace restricted to competitive snaps only); PR C must pick one explicitly in the build script and record the choice in metadata rather than defaulting silently. |
+| Period boundaries | **LOCKED** | No elapsed-time interval spans a quarter or half boundary; the first snap of a new quarter/half starts a fresh elapsed-time accumulation. |
+| No-play exclusions | **LOCKED** | No-plays and aborted plays (per §2) contribute no snap to the pace denominator. Whether the *clock time consumed* by a no-play (e.g. a pre-snap penalty runoff) is included in the elapsed-time numerator is **GATED** and must be confirmed against the actual retrieved clock columns in PR C. |
+| Kneels/spikes | **GATED** | See "Play denominator" above — resolved together with that gate, since kneels/spikes are the dominant clock-killing case. |
+| Missing clock values | **LOCKED** | If a play's clock fields are null/unparseable, that play-to-play interval is excluded from the elapsed-time sum and the play is excluded from the pace denominator for that interval; missing clock values must never be imputed or assumed equal to a league-average interval. |
+
+## 7. Drives and red-zone rules
+
+| Requirement | Status | Policy |
+| --- | --- | --- |
+| Drive counting | **LOCKED** | `drives` counts offensive possessions/drives as identified by the selected source's drive identifier for that team/week, restricted to possessions that contain at least one included offensive play per §2. |
+| Drive start/end handling | **GATED** | The exact drive-boundary semantics (e.g. how the source marks a drive start after a turnover vs. a change of possession via punt) are inherited as-is from the selected source's drive id; this spec does not redefine drive boundaries. Any source-specific drive-id quirks discovered during PR C implementation must be recorded in the lineage manifest, not silently normalized. |
+| Kneel-only drives | **LOCKED** | A drive consisting entirely of kneels (e.g. a closing-the-game victory formation series) still counts toward `drives` (a possession occurred) but contributes no plays to `neutralPlays`, rate fields, or `explosivePlayRate`, consistent with §2/§3. |
+| End-of-half drives | **LOCKED** | A drive that ends because the half/game clock expires (no score, no turnover) still counts toward `drives` if it contained at least one included offensive play. |
+| Points-per-drive numerator/denominator | **LOCKED** | `pointsPerDrive = pointsFor / drives` for that team/week, using the same `drives` count as above. Points are attributed to the week in which the drive occurred, not split across weeks for any reason. |
+| Red-zone trip definition | **LOCKED** | A red-zone trip is a drive in which the offense has at least one included offensive play with the line of scrimmage at or inside the opponent's 20-yard line. `redZoneTrips` counts trips, not plays. |
+| Red-zone touchdown definition | **LOCKED** | `redZoneTdRate = (red-zone drives ending in an offensive touchdown) / redZoneTrips`. A drive counts as a red-zone touchdown drive only if the scoring play is an offensive touchdown (passing or rushing); defensive/special-teams touchdowns during a red-zone-trip drive do not count toward the numerator. |
+| Touchdown attribution | **LOCKED** | Touchdowns are attributed to the offensive team in possession at the time of the scoring play, per the play-level possession-team field, not by game final score inference. |
+| Penalty/no-play effects on drives | **LOCKED** | A no-play/aborted play within an otherwise-valid drive does not remove the drive from `drives`, `redZoneTrips`, or `redZoneTdRate` calculations; it simply contributes no play-level data per §2. A drive is not invalidated by containing excluded plays. |
+
+## 8. Pressure rate allowed
+
+**DEFERRED for the first real candidate artifact.** `pressureRateAllowed`
+remains a required field name in the PR A contract, but PR B's probe found
+no confirmed pressure column in the standard nflverse weekly-stats or
+play-by-play probe path, and this preflight does not identify or approve an
+additional charting/provider source.
+
+Decision: **defer, do not silently fill.**
+
+- For the first real (`partial_real_data`) candidate artifact, every row's
+  `pressureRateAllowed` must be emitted as an explicit `null`, never a
+  zero, league-average, or any other invented numeric placeholder.
+- The artifact's metadata must carry a field-level deferral record (e.g.
+  `metadata.deferredFields: ["pressureRateAllowed"]`) with a human-readable
+  reason ("no confirmed governed pressure-rate source as of PR C preflight")
+  so downstream consumers cannot mistake the null for a zero-pressure
+  observation.
+- `pressureRateAllowed` must be excluded from any "finite numeric required
+  field" validation check (§10) for as long as it is deferred; it must not
+  be silently reclassified as optional in the PR A contract without a
+  contract revision.
+- Promotion to `governed_real_data` (TIBER-Data #162 governance section,
+  TIBER-Teamstate #50 §5) cannot be claimed while a contractually-required
+  field is null-deferred for every row. If the artifact is ever promoted
+  before a pressure source is found, the promotion record must explicitly
+  carry the deferral, not omit it.
+- Un-deferring this field requires a separate, explicitly authorized
+  follow-up: either an accepted additional pressure-charting source with its
+  own source refs/retrieval metadata, or a contract revision that formally
+  makes `pressureRateAllowed` optional for this lane. Neither is decided by
+  this PR.
+
+## 9. Source metadata requirements
+
+**LOCKED** minimum metadata set. A future PR C build (and its companion
+lineage manifest) must record, at minimum, per ingested source and for the
+artifact as a whole:
+
+- `sourceName` — e.g. `nflverse play-by-play`, `nflverse weekly team stats`.
+- `sourceType` — e.g. `nflverse`, matching PR A's existing source-typing
+  vocabulary.
+- `retrievalMethod` — exact function/call used (e.g.
+  `nflreadpy.load_pbp([2024])`), matching the style already used in PR B's
+  probe table.
+- `retrievalTimestamp` — UTC ISO-8601 timestamp of the actual retrieval,
+  recorded at retrieval time, never backfilled or estimated.
+- `packageVersion` — the `nflreadpy` (and any other library) version
+  actually installed/used at retrieval time, where available.
+- `sourceUrlOrDatasetId` — the nflverse release tag, dataset URL, or other
+  stable identifier, where available.
+- `transformCodePath` — the repository-relative path of the build script
+  that produced the artifact from the raw retrieval (e.g. under `scripts/`).
+- `sourceRefs` — the list of raw source artifact ids/paths/URLs consumed,
+  matching the `sourceArtifacts` envelope field from the existing
+  `team_week_raw_v0` contract.
+- `validationReportPath` — the candidate path/id of the validation report a
+  future PR C would emit (per PR A: `exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.validation.json`).
+  Not created by this PR.
+- `lineageManifestPath` — the candidate path/id of the lineage/source
+  manifest a future PR C would emit (per PR A:
+  `data/manifests/team_week_raw_v0_2024_real_source_candidate.manifest.json`).
+  Not created by this PR.
+
+All of the above are metadata *requirements*, not values. No example values
+are populated here; populating them with real data is PR C's job, not this
+preflight's.
+
+## 10. PR C artifact emission gate
+
+**LOCKED** checklist. A future PR C must not emit even a non-promoted
+candidate artifact unless all of the following pass:
+
+- All 32 NFL teams present for the selected (Week 1-18, §1) window.
+- Expected weeks/window present per team (up to 18 team-week rows per team,
+  bye weeks producing no row, per §1).
+- No duplicate `(season, week, teamCode)` rows.
+- All `teamCode`/`opponentCode` values are valid canonical team
+  abbreviations (no unmapped/legacy codes).
+- Reciprocal opponent consistency: for every team-week row, the paired
+  opponent's row for the same game (where it exists in-window) lists this
+  team as its opponent.
+- All rate fields (`passRate`, `neutralPassRate`, `rushRate`, `successRate`,
+  `explosivePlayRate`, `redZoneTdRate`) are bounded in `0..1`.
+- All required finite-numeric fields (per PR A §4, minus `pressureRateAllowed`
+  while deferred per §8 of this document) are finite — not `NaN`, not
+  infinite, not empty-string-coerced.
+- `pressureRateAllowed` is explicitly `null` with the deferral recorded in
+  metadata, per §8 — never silently filled.
+- `sourceRefs` is present and non-empty for the artifact and, where the
+  contract requires it, per row.
+- Retrieval metadata (§9) is present and complete for every source consumed.
+- A validation report (candidate path from PR A, still not created by this
+  PR) is emitted alongside the candidate artifact, not merely promised.
+- A lineage manifest (candidate path from PR A, still not created by this
+  PR) is emitted alongside the candidate artifact.
+- The artifact's `provenanceStatus` is `partial_real_data` (or an equally
+  honest non-governed status) — **no `governed_real_data` claim** is made by
+  PR C under any circumstance; promotion is a separate, later, explicitly
+  authorized PR D per PR A's PR sequence.
+
+## 11. Governance boundary
+
+Restated and preserved from TIBER-Data #162 and TIBER-Teamstate #50, and
+binding on any future PR C/D:
+
+- Public availability of a source (e.g. nflverse being open data) is not
+  governance by itself.
+- A plausible artifact path or file name (e.g. living under `exports/` or
+  `data/manifests/`) is not governance and must never be treated as proof of
+  promotion.
+- Downstream need (Teamstate or PPM wanting the artifact sooner) is not
+  governance and does not relax any criterion in §10.
+- `governed_real_data` / `governanceStatus: governed` requires an explicit
+  governance marker (`governanceSource: explicit_marker`) set by a human
+  promotion review, not inferred from build success or validation passing
+  alone.
+- Missing or unrecognized governance metadata must fail closed — an artifact
+  with absent/unknown governance fields must be treated as ungoverned, never
+  defaulted to governed.
+- If any future PR materializes a candidate artifact, its interim status
+  must be honest: `candidate`, `partial_real_data`, or `ungoverned` as
+  appropriate — never `governed`, regardless of how complete the build looks.
+
+## Hard guardrails
+
+This preflight, and any PR that lands it, must not include:
+
+- A real 2024 artifact emission.
+- A committed candidate artifact.
+- A validation report artifact, other than this docs/spec placeholder
+  reference (no data validation output is produced).
+- A lineage manifest artifact, other than this docs/spec placeholder
+  reference (no lineage output is produced).
+- A `governed_real_data` claim.
+- TIBER-Teamstate code changes.
+- PPM model changes.
+- A PPM run.
+- Product/Management work.
+- Rankings.
+- Fantasy advice.
+- Invented values for any rule, threshold, or metadata field left **GATED**
+  above.
+- Placeholder filling of any deferred field (notably `pressureRateAllowed`).
+- Path-inference governance.
+- Treatment of offline/FORGE proof data (2024 Weeks 1-3, ATL/DET only) as
+  sufficient support for full governed 2024 all-32 coverage; it remains
+  context-only.
+
+## Relationship to other issues/PRs
+
+- Follows TIBER-Data PR #163 (PR A: spec) and PR #165 (PR B: dry-run probe)
+  under TIBER-Data #162.
+- Consumes the field classification from PR B's probe (`docs/data/team-week-raw-v0-2024-source-probe.md`)
+  and the contract from PR A's spec (`docs/data/team-week-raw-v0-2024-source-artifact-spec.md`).
+  Both remain the source of truth for contract/field-classification details
+  not restated here.
+- Feeds TIBER-Teamstate #50's PR-C step ("partial_real_data`/ungoverned real
+  2024 artifact + validation report") — this document is the rule-lock that
+  step depends on, not that step itself.
+- Tracked from TIBER-Ops #5 as the ML/modeling lane's current continuation
+  issue.
+
+## Next step after this PR
+
+Once this preflight is reviewed and any **GATED** items are either resolved
+(via a spec revision) or explicitly accepted as still-deferred-with-null-policy,
+a separate PR C may implement the build script that retrieves real 2024
+nflverse data and emits a `partial_real_data` candidate artifact plus
+validation report and lineage manifest, per §10. That PR is not part of this
+change.
