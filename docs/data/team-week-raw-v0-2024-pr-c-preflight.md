@@ -56,9 +56,10 @@ Consequences locked alongside this decision:
 - `season=2024`, expected weeks = `1..18` inclusive, for all 32 teams.
 - Each team is expected to contribute up to 18 team-week rows; bye weeks
   produce no row for that team/week (no zero-filled or synthetic bye row).
-- Postseason, Pro Bowl, and any neutral-site/international game peculiarities
-  are in-window if they occurred within Weeks 1-18 of the 2024 regular season;
-  no regular-season game is excluded for venue reasons.
+- Regular-season neutral-site/international games are in-window if they
+  occurred within Weeks 1-18 of the 2024 regular season; no regular-season
+  game is excluded for venue reasons. Postseason and the Pro Bowl are always
+  excluded, regardless of week number or venue.
 - A fantasy-aligned *view* (if ever needed downstream) is documented as
   "rows where `week <= N`" filtered from this artifact, not a new source.
 
@@ -211,10 +212,13 @@ Decision: **defer, do not silently fill.**
   be silently reclassified as optional in the PR A contract without a
   contract revision.
 - Promotion to `governed_real_data` (TIBER-Data #162 governance section,
-  TIBER-Teamstate #50 §5) cannot be claimed while a contractually-required
-  field is null-deferred for every row. If the artifact is ever promoted
-  before a pressure source is found, the promotion record must explicitly
-  carry the deferral, not omit it.
+  TIBER-Teamstate #50 §5) is **blocked** while `pressureRateAllowed` remains
+  a contractually-required field that is null-deferred for every row. This
+  block is not lifted by documenting the deferral in a promotion record, by
+  a plausible artifact path, by build success, or by passing validation
+  (per §11) — only un-deferring the field (next bullet) or a formal
+  contract revision can remove this block, and no promotion record may
+  silently omit the deferral's existence.
 - Un-deferring this field requires a separate, explicitly authorized
   follow-up: either an accepted additional pressure-charting source with its
   own source refs/retrieval metadata, or a contract revision that formally
