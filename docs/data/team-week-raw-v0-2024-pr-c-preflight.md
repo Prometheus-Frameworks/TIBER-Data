@@ -290,17 +290,27 @@ candidate artifact unless all of the following pass:
 - All required finite-numeric fields (per PR A §4, minus `pressureRateAllowed`
   while deferred per §8, minus any ratio field that is `null` for a
   given row solely because its own denominator is legitimately zero per
-  the zero-denominator convention in §3/§7, and minus `secondsPerPlay` for
+  the zero-denominator convention in §3/§7, minus `secondsPerPlay` for
   any row where it is null-blocked because the source could not cleanly
   separate kneel/spike/no-play clock intervals from competitive pace per
-  §6's fail-closed rule) are finite — not `NaN`, not infinite, not
-  empty-string-coerced.
+  §6's fail-closed rule, and minus `passEpaPerPlay`/`rushEpaPerPlay` for any
+  row where the scramble/dropback split is blocked because the source's
+  play-type flags could not reliably distinguish scramble-from-designed-run
+  semantics per §2's fail-closed rule) are finite — not `NaN`, not infinite,
+  not empty-string-coerced.
 - `pressureRateAllowed` is explicitly `null` with the deferral recorded in
   metadata, per §8 — never silently filled.
 - If `secondsPerPlay` is null-blocked for any row per §6, that block must be
   recorded in build metadata with a stated reason, in the same style as the
   §8 deferral record — it must never be silently imputed, estimated, or
   backfilled with a league-average value.
+- If the `passEpaPerPlay`/`rushEpaPerPlay` scramble split is blocked for any
+  row per §2's fail-closed rule, that block must likewise be recorded in
+  build metadata with a stated reason — it must never be silently imputed,
+  estimated, or defaulted to one split over the other. A builder that hits
+  this branch may still emit the candidate artifact with the split fields
+  null-blocked and recorded; it is not required to abandon emission entirely,
+  provided every other §10 criterion still passes.
 - `sourceRefs` is present and non-empty for the artifact and, where the
   contract requires it, per row.
 - Retrieval metadata (§9) is present and complete for every source consumed.
