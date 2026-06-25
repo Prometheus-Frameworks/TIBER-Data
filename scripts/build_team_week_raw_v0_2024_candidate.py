@@ -646,6 +646,19 @@ def build_validation_report(
         )
     )
 
+    expected_team_game_rows = coverage["expectedTeamGameRows"]
+    actual_team_game_rows = coverage["actualTeamGameRows"]
+    checks.append(
+        _check(
+            "team_game_row_count_matches_schedule",
+            actual_team_game_rows == expected_team_game_rows,
+            {
+                "expectedTeamGameRows": expected_team_game_rows,
+                "actualTeamGameRows": actual_team_game_rows,
+            },
+        )
+    )
+
     keys = [(row["season"], row["week"], row["teamCode"]) for row in rows]
     duplicate_keys = sorted({key for key in keys if keys.count(key) > 1})
     checks.append(

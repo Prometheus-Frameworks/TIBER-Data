@@ -464,6 +464,18 @@ def test_validation_report_fails_when_team_missing(mod):
     assert report["allPassed"] is False
 
 
+def test_validation_report_fails_when_team_game_row_count_short_of_schedule(mod):
+    artifact, diagnostics, lineage_manifest = _good_fixture(mod)
+    artifact["metadata"]["coverage"] = mod.build_coverage(
+        2024, artifact["rows"], scheduled_game_count=17
+    )
+    report = mod.build_validation_report(artifact, diagnostics, lineage_manifest)
+    assert _check(report, "team_game_row_count_matches_schedule")["passed"] is False
+    assert _check(report, "all_32_teams_present")["passed"] is True
+    assert _check(report, "expected_weeks_present_per_team")["passed"] is True
+    assert report["allPassed"] is False
+
+
 def test_validation_report_fails_on_duplicate_rows(mod):
     artifact, diagnostics, lineage_manifest = _good_fixture(mod)
     artifact["rows"].append(dict(artifact["rows"][0]))

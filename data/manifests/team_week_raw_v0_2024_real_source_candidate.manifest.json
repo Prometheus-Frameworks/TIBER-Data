@@ -1,13 +1,13 @@
 {
   "artifact": "team_week_raw_v0_2024_real_source_candidate",
   "season": 2024,
-  "generatedAt": "2026-06-25T18:59:28+00:00",
+  "generatedAt": "2026-06-25T19:12:23+00:00",
   "sources": [
     {
       "sourceName": "nflverse play-by-play",
       "sourceType": "nflverse",
       "retrievalMethod": "nflreadpy.load_pbp([2024])",
-      "retrievalTimestamp": "2026-06-25T18:59:18+00:00",
+      "retrievalTimestamp": "2026-06-25T19:12:19+00:00",
       "packageVersion": "0.1.5",
       "sourceUrlOrDatasetId": "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet",
       "transformCodePath": "scripts/build_team_week_raw_v0_2024_candidate.py",
@@ -19,7 +19,7 @@
       "sourceName": "nflverse schedules",
       "sourceType": "nflverse",
       "retrievalMethod": "nflreadpy.load_schedules([2024])",
-      "retrievalTimestamp": "2026-06-25T18:59:27+00:00",
+      "retrievalTimestamp": "2026-06-25T19:12:22+00:00",
       "packageVersion": "0.1.5",
       "sourceUrlOrDatasetId": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.parquet",
       "transformCodePath": "scripts/build_team_week_raw_v0_2024_candidate.py",
