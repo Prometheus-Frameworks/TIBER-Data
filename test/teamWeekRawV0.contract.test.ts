@@ -10,6 +10,7 @@ import {
   isTeamWeekRawArtifactGoverned,
   isTeamWeekRawArtifactV0,
   isTeamWeekRawFieldDeferred,
+  parseTeamWeekRawArtifactV0Shape,
   resolveTeamWeekRawGovernance,
   teamWeekRawArtifactV0Schema,
   teamWeekRawGovernanceSchema,
@@ -136,8 +137,10 @@ describe('team_week_raw_v0 contract: committed 2024 candidate', () => {
 });
 
 describe('team_week_raw_v0 contract: governance fail-closed semantics', () => {
-  it('accepts a governed marker only with explicit_marker', () => {
+  it('accepts a governed marker only with explicit_marker and agreeing provenance', () => {
     const artifact = baseArtifact();
+    // A governed marker requires the canonical provenance label to agree.
+    artifact.metadata.provenanceStatus = 'governed_real_data';
     artifact.metadata.governance = {
       governanceStatus: 'governed',
       governanceSource: 'explicit_marker',
@@ -146,6 +149,22 @@ describe('team_week_raw_v0 contract: governance fail-closed semantics', () => {
     const parsed = validateTeamWeekRawArtifactV0(artifact);
     expect(isTeamWeekRawArtifactGoverned(parsed)).toBe(true);
     expect(resolveTeamWeekRawGovernance(parsed.metadata).isGoverned).toBe(true);
+  });
+
+  it('rejects a governed marker that disagrees with provenanceStatus (fail-closed)', () => {
+    const artifact = baseArtifact();
+    // marker says governed, but provenance still says partial_real_data
+    artifact.metadata.provenanceStatus = 'partial_real_data';
+    artifact.metadata.governance = {
+      governanceStatus: 'governed',
+      governanceSource: 'explicit_marker',
+    };
+    // resolver fails closed to ungoverned
+    expect(resolveTeamWeekRawGovernance(artifact.metadata).isGoverned).toBe(false);
+    expect(isTeamWeekRawArtifactGoverned(artifact)).toBe(false);
+    // and the contract gate rejects the inconsistent artifact
+    expect(() => validateTeamWeekRawArtifactV0(artifact)).toThrow(/provenanceStatus/);
+    expect(isTeamWeekRawArtifactV0(artifact)).toBe(false);
   });
 
   it('rejects governed without explicit_marker (no path to governed by default)', () => {
@@ -234,11 +253,14 @@ describe('team_week_raw_v0 contract: field-readiness and pressure posture', () =
     const artifact = baseArtifact();
     artifact.metadata.deferredFields = ['pressureRateAllowed'];
     artifact.rows[0].pressureRateAllowed = 0; // zero-fill of a deferred field
-    const parsed = validateTeamWeekRawArtifactV0(artifact);
-    const violations = findTeamWeekRawDeferredFieldViolations(parsed);
-    expect(violations).toEqual([
+    // shape-only parse succeeds, but the helper surfaces the violation...
+    const shaped = parseTeamWeekRawArtifactV0Shape(artifact);
+    expect(findTeamWeekRawDeferredFieldViolations(shaped)).toEqual([
       { field: 'pressureRateAllowed', rowIndex: 0, value: 0 },
     ]);
+    // ...and the full contract gate rejects it.
+    expect(() => validateTeamWeekRawArtifactV0(artifact)).toThrow(/deferred field/);
+    expect(isTeamWeekRawArtifactV0(artifact)).toBe(false);
   });
 
   it('reports no deferred-field violations for the honest null-deferred candidate', () => {

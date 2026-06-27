@@ -99,8 +99,23 @@ Hard rules (schema- and helper-enforced):
   governed claim.
 - `resolveTeamWeekRawGovernance()` returns `ungoverned` / `not_set` /
   `isGoverned: false` for any absent or non-conforming governance.
+- The governed marker and the canonical provenance label must **agree**: a
+  `governed` + `explicit_marker` marker is only honored when
+  `provenanceStatus` is `governed_real_data`. A governed marker paired with a
+  non-governed provenance resolves fail-closed to ungoverned and is rejected by
+  `validateTeamWeekRawArtifactV0()`.
 - This contract revision does **not** set `governance` on the current
   candidate; the candidate remains `ungoverned` / `not_set`.
+
+### Validation entry points
+
+- `teamWeekRawArtifactV0Schema` / `parseTeamWeekRawArtifactV0Shape()` —
+  **shape-only**: envelope structure and types.
+- `validateTeamWeekRawArtifactV0()` / `isTeamWeekRawArtifactV0()` — **full
+  contract gate**: shape plus the cross-field rules in
+  `findTeamWeekRawContractViolations()` (no zero-filled deferred fields;
+  governance marker must agree with `provenanceStatus`). Producers and any
+  future promotion path should gate on the full validator, not the shape parse.
 
 ## Field-readiness / deferred metadata
 
