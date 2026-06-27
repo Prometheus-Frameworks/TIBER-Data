@@ -113,14 +113,6 @@
       }
     },
     {
-      "name": "non_governed_status",
-      "passed": true,
-      "details": {
-        "provenanceStatus": "partial_real_data",
-        "governanceStatus": "ungoverned"
-      }
-    },
-    {
       "name": "source_checksums_present",
       "passed": true,
       "details": {
@@ -134,6 +126,24 @@
       "details": {
         "pressureRateAllowedReadiness": "deferred"
       }
+    },
+    {
+      "name": "governance_marker_consistent",
+      "passed": true,
+      "details": {
+        "provenanceStatus": "governed_real_data",
+        "governanceStatus": "governed",
+        "governanceSource": "explicit_marker"
+      }
     }
-  ]
+  ],
+  "promotion": {
+    "decision": "governed_real_data",
+    "reviewedAt": "2026-06-27",
+    "reviewRefs": [
+      "docs/reviews/team-week-raw-v0-2024-promotion-review-pr-d.md",
+      "TIBER-Data#179"
+    ],
+    "authorizedBy": "explicit operator authorization (Path A) via the TIBER-Data #179 PR D promotion review"
+  }
 }

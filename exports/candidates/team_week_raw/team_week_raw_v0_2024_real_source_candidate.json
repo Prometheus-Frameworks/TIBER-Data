@@ -7,19 +7,18 @@
     "nflverse-data:schedules/games"
   ],
   "metadata": {
-    "provenanceStatus": "partial_real_data",
+    "provenanceStatus": "governed_real_data",
     "provenanceNotes": [
       "Built from real 2024 nflverse play-by-play and schedules via nflreadpy; not a fixture or sample.",
-      "provenanceStatus is partial_real_data: pressureRateAllowed is deferred-null for every row per docs/data/team-week-raw-v0-2024-pr-c-preflight.md \u00a78; this artifact must not be treated as governed_real_data.",
       "Team code 'LA' from the raw nflverse source is canonicalized to 'LAR' for every team-code-bearing field.",
       "Two-point conversion attempts are excluded from offensive-play, drive, and rate accounting per docs/data/team-week-raw-v0-2024-pr-c-preflight.md \u00a72; they remain included in full-game pointsFor/pointsAgainst.",
       "secondsPerPlay denominator is the full competitive offensive-play count (the same set used for epaPerPlay), not the count of clean pace intervals, per docs/data/team-week-raw-v0-2024-pr-c-preflight.md \u00a76.",
       "8 consecutive-snap pace interval(s) were excluded from the secondsPerPlay elapsed-time numerator because the computed elapsed time was not positive; 0 team-week row(s) were null-blocked for secondsPerPlay because zero clean intervals were found for that row.",
       "10874 possession-team play(s) were excluded from offensive-snap accounting across the artifact (special-teams plays, two-point attempts, no-plays/aborted plays).",
       "0 team-week row(s) had passRate/rushRate/passEpaPerPlay/rushEpaPerPlay null-blocked because the source's qb_dropback indicator could not classify one or more competitive plays as pass or rush for that row.",
-      "No governance marker is set by this build. governanceStatus is 'ungoverned' and governanceSource is 'not_set'; promotion to governed_real_data requires a separate, explicitly authorized human promotion review (PR D), not build success or validation passing.",
       "pressureRateAllowed is null on every row and marked deferred via metadata.fieldReadiness (revised contract #175/#176); its null means unknown/unavailable, never zero. Other fields' readiness records legitimate zero-denominator/block-driven nulls as 'partial_nulls', not deferrals.",
-      "Each source records a sha256 checksum over the exact bytes consumed. sourceUrlOrDatasetId is a mutable nflverse rolling release asset; no immutable release tag/ref is exposed at retrieval, so immutableSourceRef is not set. The sha256 checksum pins the exact source bytes consumed at retrievalTimestamp so a future rebuild can detect upstream drift; the upstream URL itself remains mutable."
+      "Each source records a sha256 checksum over the exact bytes consumed. sourceUrlOrDatasetId is a mutable nflverse rolling release asset; no immutable release tag/ref is exposed at retrieval, so immutableSourceRef is not set. The sha256 checksum pins the exact source bytes consumed at retrievalTimestamp so a future rebuild can detect upstream drift; the upstream URL itself remains mutable.",
+      "Promoted to governed_real_data by explicit human promotion review (PR D, TIBER-Data #179): the candidate satisfied the full #171/#172 promotion gate under the #173/#174 pressureRateAllowed deferral (Option B) and the #175/#176 contract revision. governanceSource is explicit_marker set by that review; governed status holds only because provenanceStatus (governed_real_data) and the explicit marker agree. pressureRateAllowed remains null/deferred (unknown, never zero)."
     ],
     "inputSources": [
       {
@@ -178,9 +177,13 @@
       "byeWeeksHandled": true
     },
     "governance": {
-      "governanceStatus": "ungoverned",
-      "governanceSource": "not_set",
-      "notes": "No human promotion review has been performed. Build success and validation passing do not constitute governance."
+      "governanceStatus": "governed",
+      "governanceSource": "explicit_marker",
+      "notes": "Promoted to governed_real_data by explicit human promotion review (PR D, TIBER-Data #179): the candidate satisfied the full #171/#172 promotion gate under the #173/#174 pressureRateAllowed deferral (Option B) and the #175/#176 contract revision. governanceSource is explicit_marker set by that review; governed status holds only because provenanceStatus (governed_real_data) and the explicit marker agree. pressureRateAllowed remains null/deferred (unknown, never zero).",
+      "reviewRefs": [
+        "docs/reviews/team-week-raw-v0-2024-promotion-review-pr-d.md",
+        "TIBER-Data#179"
+      ]
     },
     "deferredFields": [
       "pressureRateAllowed"
