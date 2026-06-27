@@ -1,7 +1,7 @@
 {
   "report": "team_week_raw_v0_2024_real_source_candidate_validation",
   "season": 2024,
-  "generatedAt": "2026-06-25T19:20:51+00:00",
+  "generatedAt": "2026-06-27T13:42:06+00:00",
   "artifactPath": "exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.json",
   "rowCount": 544,
   "teamCount": 32,
@@ -118,6 +118,21 @@
       "details": {
         "provenanceStatus": "partial_real_data",
         "governanceStatus": "ungoverned"
+      }
+    },
+    {
+      "name": "source_checksums_present",
+      "passed": true,
+      "details": {
+        "sourcesMissingChecksum": [],
+        "sourceCount": 2
+      }
+    },
+    {
+      "name": "pressure_field_readiness_deferred",
+      "passed": true,
+      "details": {
+        "pressureRateAllowedReadiness": "deferred"
       }
     }
   ]

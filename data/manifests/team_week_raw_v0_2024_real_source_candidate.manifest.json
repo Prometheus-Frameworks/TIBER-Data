@@ -1,31 +1,45 @@
 {
   "artifact": "team_week_raw_v0_2024_real_source_candidate",
   "season": 2024,
-  "generatedAt": "2026-06-25T19:20:51+00:00",
+  "generatedAt": "2026-06-27T13:42:06+00:00",
   "sources": [
     {
       "sourceName": "nflverse play-by-play",
       "sourceType": "nflverse",
-      "retrievalMethod": "nflreadpy.load_pbp([2024])",
-      "retrievalTimestamp": "2026-06-25T19:20:36+00:00",
+      "retrievalMethod": "httpx GET https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet (same nflverse release asset as nflreadpy.load_pbp([2024])), parsed via polars.read_parquet",
+      "retrievalTimestamp": "2026-06-27T13:42:00+00:00",
       "packageVersion": "0.1.5",
+      "polarsVersion": "1.42.0",
       "sourceUrlOrDatasetId": "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet",
       "transformCodePath": "scripts/build_team_week_raw_v0_2024_candidate.py",
       "sourceRefs": [
         "nflverse-data:pbp/play_by_play_2024"
-      ]
+      ],
+      "checksum": {
+        "algorithm": "sha256",
+        "value": "6d432dd4308329bfddaef633309ea119f9ca46d52cbb3c09f47172a2e8efcd01"
+      },
+      "immutableSourceRef": null,
+      "mutabilityNote": "sourceUrlOrDatasetId is a mutable nflverse rolling release asset; no immutable release tag/ref is exposed at retrieval, so immutableSourceRef is not set. The sha256 checksum pins the exact source bytes consumed at retrievalTimestamp so a future rebuild can detect upstream drift; the upstream URL itself remains mutable."
     },
     {
       "sourceName": "nflverse schedules",
       "sourceType": "nflverse",
-      "retrievalMethod": "nflreadpy.load_schedules([2024])",
-      "retrievalTimestamp": "2026-06-25T19:20:50+00:00",
+      "retrievalMethod": "httpx GET https://github.com/nflverse/nflverse-data/releases/download/schedules/games.parquet (same nflverse release asset as nflreadpy.load_schedules([2024])), parsed via polars.read_parquet",
+      "retrievalTimestamp": "2026-06-27T13:42:05+00:00",
       "packageVersion": "0.1.5",
+      "polarsVersion": "1.42.0",
       "sourceUrlOrDatasetId": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.parquet",
       "transformCodePath": "scripts/build_team_week_raw_v0_2024_candidate.py",
       "sourceRefs": [
         "nflverse-data:schedules/games"
-      ]
+      ],
+      "checksum": {
+        "algorithm": "sha256",
+        "value": "179ea0a014159b3aa4da59eee756272dd33ec876d704fb46650c08118fe75a05"
+      },
+      "immutableSourceRef": null,
+      "mutabilityNote": "sourceUrlOrDatasetId is a mutable nflverse rolling release asset; no immutable release tag/ref is exposed at retrieval, so immutableSourceRef is not set. The sha256 checksum pins the exact source bytes consumed at retrievalTimestamp so a future rebuild can detect upstream drift; the upstream URL itself remains mutable."
     }
   ],
   "validationReportPath": "exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.validation.json",

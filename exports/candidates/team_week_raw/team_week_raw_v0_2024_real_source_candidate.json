@@ -1,6 +1,6 @@
 {
   "artifact": "team_week_raw_v0",
-  "generatedAt": "2026-06-25T19:20:51+00:00",
+  "generatedAt": "2026-06-27T13:42:06+00:00",
   "season": 2024,
   "sourceArtifacts": [
     "nflverse-data:pbp/play_by_play_2024",
@@ -17,20 +17,46 @@
       "8 consecutive-snap pace interval(s) were excluded from the secondsPerPlay elapsed-time numerator because the computed elapsed time was not positive; 0 team-week row(s) were null-blocked for secondsPerPlay because zero clean intervals were found for that row.",
       "10874 possession-team play(s) were excluded from offensive-snap accounting across the artifact (special-teams plays, two-point attempts, no-plays/aborted plays).",
       "0 team-week row(s) had passRate/rushRate/passEpaPerPlay/rushEpaPerPlay null-blocked because the source's qb_dropback indicator could not classify one or more competitive plays as pass or rush for that row.",
-      "No governance marker is set by this build. governanceStatus is 'ungoverned' and governanceSource is 'not_set'; promotion to governed_real_data requires a separate, explicitly authorized human promotion review (PR D), not build success or validation passing."
+      "No governance marker is set by this build. governanceStatus is 'ungoverned' and governanceSource is 'not_set'; promotion to governed_real_data requires a separate, explicitly authorized human promotion review (PR D), not build success or validation passing.",
+      "pressureRateAllowed is null on every row and marked deferred via metadata.fieldReadiness (revised contract #175/#176); its null means unknown/unavailable, never zero. Other fields' readiness records legitimate zero-denominator/block-driven nulls as 'partial_nulls', not deferrals.",
+      "Each source records a sha256 checksum over the exact bytes consumed. sourceUrlOrDatasetId is a mutable nflverse rolling release asset; no immutable release tag/ref is exposed at retrieval, so immutableSourceRef is not set. The sha256 checksum pins the exact source bytes consumed at retrievalTimestamp so a future rebuild can detect upstream drift; the upstream URL itself remains mutable."
     ],
     "inputSources": [
       {
         "source": "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet",
         "sourceType": "nflverse",
-        "sourceSnapshotAt": "2026-06-25T19:20:36+00:00",
-        "notes": "nflverse play-by-play via nflreadpy.load_pbp([2024]) (nflreadpy 0.1.5)."
+        "sourceSnapshotAt": "2026-06-27T13:42:00+00:00",
+        "notes": "nflverse play-by-play via httpx GET https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet (same nflverse release asset as nflreadpy.load_pbp([2024])), parsed via polars.read_parquet (nflreadpy 0.1.5).",
+        "sourceRefs": [
+          "nflverse-data:pbp/play_by_play_2024"
+        ],
+        "retrievalMethod": "httpx GET https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet (same nflverse release asset as nflreadpy.load_pbp([2024])), parsed via polars.read_parquet",
+        "retrievalTimestamp": "2026-06-27T13:42:00+00:00",
+        "packageVersion": "0.1.5",
+        "sourceUrlOrDatasetId": "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet",
+        "transformCodePath": "scripts/build_team_week_raw_v0_2024_candidate.py",
+        "checksum": {
+          "algorithm": "sha256",
+          "value": "6d432dd4308329bfddaef633309ea119f9ca46d52cbb3c09f47172a2e8efcd01"
+        }
       },
       {
         "source": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.parquet",
         "sourceType": "nflverse",
-        "sourceSnapshotAt": "2026-06-25T19:20:50+00:00",
-        "notes": "nflverse schedules via nflreadpy.load_schedules([2024]) (nflreadpy 0.1.5)."
+        "sourceSnapshotAt": "2026-06-27T13:42:05+00:00",
+        "notes": "nflverse schedules via httpx GET https://github.com/nflverse/nflverse-data/releases/download/schedules/games.parquet (same nflverse release asset as nflreadpy.load_schedules([2024])), parsed via polars.read_parquet (nflreadpy 0.1.5).",
+        "sourceRefs": [
+          "nflverse-data:schedules/games"
+        ],
+        "retrievalMethod": "httpx GET https://github.com/nflverse/nflverse-data/releases/download/schedules/games.parquet (same nflverse release asset as nflreadpy.load_schedules([2024])), parsed via polars.read_parquet",
+        "retrievalTimestamp": "2026-06-27T13:42:05+00:00",
+        "packageVersion": "0.1.5",
+        "sourceUrlOrDatasetId": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.parquet",
+        "transformCodePath": "scripts/build_team_week_raw_v0_2024_candidate.py",
+        "checksum": {
+          "algorithm": "sha256",
+          "value": "179ea0a014159b3aa4da59eee756272dd33ec876d704fb46650c08118fe75a05"
+        }
       }
     ],
     "coverage": {
@@ -161,6 +187,16 @@
     ],
     "deferredFieldReasons": {
       "pressureRateAllowed": "no confirmed governed pressure-rate source as of PR C preflight (docs/data/team-week-raw-v0-2024-pr-c-preflight.md \u00a78)"
+    },
+    "fieldReadiness": {
+      "pressureRateAllowed": "deferred",
+      "neutralPassRate": "available",
+      "redZoneTdRate": "partial_nulls",
+      "secondsPerPlay": "available",
+      "passRate": "available",
+      "rushRate": "available",
+      "passEpaPerPlay": "available",
+      "rushEpaPerPlay": "available"
     },
     "blockedFieldRows": {
       "secondsPerPlay": [],
