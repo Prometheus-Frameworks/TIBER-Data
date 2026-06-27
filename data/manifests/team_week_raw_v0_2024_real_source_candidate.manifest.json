@@ -44,11 +44,20 @@
   ],
   "validationReportPath": "exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.validation.json",
   "lineageManifestPath": "data/manifests/team_week_raw_v0_2024_real_source_candidate.manifest.json",
-  "governanceStatus": "ungoverned",
-  "governanceSource": "not_set",
+  "governanceStatus": "governed",
+  "governanceSource": "explicit_marker",
   "notes": [
-    "This manifest documents source retrieval for a partial_real_data candidate artifact only.",
-    "No governed_real_data claim is made or implied by this manifest.",
-    "Promotion to governed status requires a separate, explicitly authorized human review (PR D)."
-  ]
+    "This manifest documents source retrieval for the 2024 team_week_raw_v0 artifact.",
+    "Promoted to governed_real_data by an explicit human promotion review (PR D, TIBER-Data #179); governanceSource is explicit_marker.",
+    "Source URLs remain mutable nflverse rolling assets; the recorded sha256 checksums pin the exact bytes consumed so drift is detectable."
+  ],
+  "promotion": {
+    "decision": "governed_real_data",
+    "reviewedAt": "2026-06-27",
+    "reviewRefs": [
+      "docs/reviews/team-week-raw-v0-2024-promotion-review-pr-d.md",
+      "TIBER-Data#179"
+    ],
+    "authorizedBy": "explicit operator authorization (Path A) via the TIBER-Data #179 PR D promotion review"
+  }
 }

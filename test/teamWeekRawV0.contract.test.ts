@@ -96,20 +96,21 @@ function baseArtifact(): TeamWeekRawArtifactV0 {
   };
 }
 
-describe('team_week_raw_v0 contract: committed 2024 candidate', () => {
+describe('team_week_raw_v0 contract: committed 2024 promoted artifact', () => {
   it('still validates against the revised schema (backward compatible)', () => {
     const candidate = validateTeamWeekRawArtifactV0(loadCandidate());
     expect(candidate.artifact).toBe('team_week_raw_v0');
     expect(candidate.rows).toHaveLength(544);
   });
 
-  it('preserves governance / deferred / lineage metadata through parse', () => {
+  it('carries the explicit governance marker (PR D #179) through parse', () => {
     const candidate = validateTeamWeekRawArtifactV0(loadCandidate());
-    expect(candidate.metadata.governance).toEqual({
-      governanceStatus: 'ungoverned',
-      governanceSource: 'not_set',
-      notes: expect.any(String),
-    });
+    expect(candidate.metadata.provenanceStatus).toBe('governed_real_data');
+    expect(candidate.metadata.governance?.governanceStatus).toBe('governed');
+    expect(candidate.metadata.governance?.governanceSource).toBe('explicit_marker');
+    expect(candidate.metadata.governance?.reviewRefs).toEqual(
+      expect.arrayContaining(['TIBER-Data#179']),
+    );
     expect(candidate.metadata.deferredFields).toContain('pressureRateAllowed');
     expect(candidate.metadata.deferredFieldReasons?.pressureRateAllowed).toEqual(
       expect.any(String),
@@ -118,17 +119,17 @@ describe('team_week_raw_v0 contract: committed 2024 candidate', () => {
     expect(candidate.metadata.lineageManifestPath).toEqual(expect.any(String));
   });
 
-  it('resolves the candidate fail-closed as ungoverned, not governed', () => {
+  it('resolves as governed only because the explicit marker and provenance agree', () => {
     const candidate = validateTeamWeekRawArtifactV0(loadCandidate());
-    expect(isTeamWeekRawArtifactGoverned(candidate)).toBe(false);
+    expect(isTeamWeekRawArtifactGoverned(candidate)).toBe(true);
     expect(resolveTeamWeekRawGovernance(candidate.metadata)).toEqual({
-      governanceStatus: 'ungoverned',
-      governanceSource: 'not_set',
-      isGoverned: false,
+      governanceStatus: 'governed',
+      governanceSource: 'explicit_marker',
+      isGoverned: true,
     });
   });
 
-  it('treats pressureRateAllowed as deferred (unknown), never zero', () => {
+  it('treats pressureRateAllowed as deferred (unknown), never zero, even when governed', () => {
     const candidate = validateTeamWeekRawArtifactV0(loadCandidate());
     expect(isPressureRateAllowedDeferred(candidate.metadata)).toBe(true);
     const nonNull = candidate.rows.filter((r) => r.pressureRateAllowed !== null);
