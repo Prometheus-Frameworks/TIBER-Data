@@ -354,6 +354,7 @@ GOOD_RETRIEVAL_SOURCE = {
     "sourceUrlOrDatasetId": "https://example.invalid/pbp_2024.parquet",
     "transformCodePath": "scripts/build_team_week_raw_v0_2024_candidate.py",
     "sourceRefs": ["nflverse-data:pbp/play_by_play_2024"],
+    "checksum": {"algorithm": "sha256", "value": "a" * 64},
 }
 
 
@@ -409,6 +410,12 @@ def _good_fixture(mod):
         },
         "deferredFields": ["pressureRateAllowed"],
         "deferredFieldReasons": {"pressureRateAllowed": "test"},
+        "fieldReadiness": {
+            "pressureRateAllowed": "deferred",
+            "neutralPassRate": "available",
+            "redZoneTdRate": "available",
+            "secondsPerPlay": "available",
+        },
         "blockedFieldRows": {
             "secondsPerPlay": [],
             "dropbackSplit(passRate/rushRate/passEpaPerPlay/rushEpaPerPlay)": [],
@@ -572,3 +579,55 @@ def test_validation_report_fails_on_governed_status_claim(mod):
     artifact["metadata"]["provenanceStatus"] = "governed_real_data"
     report = mod.build_validation_report(artifact, diagnostics, lineage_manifest)
     assert _check(report, "non_governed_status")["passed"] is False
+
+
+def test_validation_report_fails_when_source_checksum_missing(mod):
+    artifact, diagnostics, lineage_manifest = _good_fixture(mod)
+    del lineage_manifest["sources"][0]["checksum"]
+    report = mod.build_validation_report(artifact, diagnostics, lineage_manifest)
+    assert _check(report, "source_checksums_present")["passed"] is False
+    assert report["allPassed"] is False
+
+
+def test_validation_report_fails_when_pressure_not_marked_deferred(mod):
+    artifact, diagnostics, lineage_manifest = _good_fixture(mod)
+    artifact["metadata"]["fieldReadiness"]["pressureRateAllowed"] = "available"
+    report = mod.build_validation_report(artifact, diagnostics, lineage_manifest)
+    assert _check(report, "pressure_field_readiness_deferred")["passed"] is False
+    assert report["allPassed"] is False
+
+
+def test_build_field_readiness_marks_pressure_deferred(mod):
+    readiness = mod.build_field_readiness(
+        [
+            {
+                "neutralPlaysDenominatorZero": False,
+                "redZoneTripsDenominatorZero": True,
+                "paceBlocked": False,
+                "dropbackSplitBlocked": False,
+            }
+        ]
+    )
+    assert readiness["pressureRateAllowed"] == "deferred"
+    # zero-denominator red-zone null is partial_nulls, not a deferral
+    assert readiness["redZoneTdRate"] == "partial_nulls"
+    assert readiness["neutralPassRate"] == "available"
+
+
+def test_to_contract_input_source_carries_checksum_and_lineage(mod):
+    source_info = {
+        "sourceUrlOrDatasetId": "https://example.invalid/pbp.parquet",
+        "retrievalTimestamp": "2024-01-01T00:00:00+00:00",
+        "sourceName": "nflverse play-by-play",
+        "retrievalMethod": "httpx GET ... parsed via polars.read_parquet",
+        "packageVersion": "0.1.5",
+        "sourceRefs": ["nflverse-data:pbp/play_by_play_2024"],
+        "transformCodePath": "scripts/build_team_week_raw_v0_2024_candidate.py",
+        "checksum": {"algorithm": "sha256", "value": "b" * 64},
+        "immutableSourceRef": None,
+    }
+    contract_source = mod._to_contract_input_source(source_info)
+    assert contract_source["checksum"] == {"algorithm": "sha256", "value": "b" * 64}
+    assert contract_source["sourceRefs"] == ["nflverse-data:pbp/play_by_play_2024"]
+    # immutableSourceRef is None (mutable upstream) and must be omitted, not null
+    assert "immutableSourceRef" not in contract_source

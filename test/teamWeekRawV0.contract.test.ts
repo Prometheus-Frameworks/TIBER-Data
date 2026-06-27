@@ -134,6 +134,29 @@ describe('team_week_raw_v0 contract: committed 2024 candidate', () => {
     const nonNull = candidate.rows.filter((r) => r.pressureRateAllowed !== null);
     expect(nonNull).toHaveLength(0);
   });
+
+  it('marks pressure unavailable via machine-readable field readiness', () => {
+    const candidate = validateTeamWeekRawArtifactV0(loadCandidate());
+    expect(getTeamWeekRawFieldReadiness(candidate.metadata, 'pressureRateAllowed')).toBe(
+      'deferred',
+    );
+    // red-zone zero-denominator nulls are partial_nulls, NOT a deferral
+    expect(getTeamWeekRawFieldReadiness(candidate.metadata, 'redZoneTdRate')).toBe(
+      'partial_nulls',
+    );
+    expect(isTeamWeekRawFieldDeferred(candidate.metadata, 'redZoneTdRate')).toBe(false);
+  });
+
+  it('preserves source checksum / pin metadata through parse', () => {
+    const candidate = validateTeamWeekRawArtifactV0(loadCandidate());
+    expect(candidate.metadata.inputSources.length).toBeGreaterThan(0);
+    for (const source of candidate.metadata.inputSources) {
+      expect(source.checksum?.algorithm).toBe('sha256');
+      expect(source.checksum?.value).toMatch(/^[0-9a-f]{64}$/);
+      // upstream is mutable: no immutable ref is asserted
+      expect(source.immutableSourceRef).toBeUndefined();
+    }
+  });
 });
 
 describe('team_week_raw_v0 contract: governance fail-closed semantics', () => {

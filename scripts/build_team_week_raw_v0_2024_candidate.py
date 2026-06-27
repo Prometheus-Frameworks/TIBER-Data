@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.metadata
+import io
 import json
 import sys
 from collections import defaultdict
@@ -9,7 +11,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin
 
-import nflreadpy as nfl
+import httpx
 import polars as pl
 
 SEASON = 2024
@@ -48,6 +50,22 @@ RED_ZONE_YARDLINE_100 = 20
 PRESSURE_DEFERRAL_REASON = (
     "no confirmed governed pressure-rate source as of PR C preflight "
     f"({PREFLIGHT_DOC_PATH} §8)"
+)
+
+# pressureRateAllowed is deferred for this lane per the #173/#174 disposition
+# decision; its field-readiness status records it as machine-readable unknown.
+PRESSURE_READINESS_STATUS = "deferred"
+DEFERRED_READINESS_STATUSES = frozenset({"deferred", "insufficient_data", "unavailable"})
+
+# nflverse release assets are mutable rolling files; no immutable release tag/ref
+# is exposed at retrieval time. We pin the exact bytes consumed via a sha256
+# checksum so a future rebuild can detect upstream drift; the upstream URL itself
+# remains mutable. See #171/#172 audit §2.4 and #175/#176 contract.
+SOURCE_MUTABILITY_NOTE = (
+    "sourceUrlOrDatasetId is a mutable nflverse rolling release asset; no immutable "
+    "release tag/ref is exposed at retrieval, so immutableSourceRef is not set. The "
+    "sha256 checksum pins the exact source bytes consumed at retrievalTimestamp so a "
+    "future rebuild can detect upstream drift; the upstream URL itself remains mutable."
 )
 
 REQUIRED_FIELDS_MINUS_PRESSURE: tuple[str, ...] = (
@@ -267,42 +285,83 @@ def _nflverse_data_url(path: str) -> str:
     return urljoin(base_url, path)
 
 
-def retrieve_pbp() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def _fetch_source_bytes(url: str) -> bytes:
+    """Fetch the exact source bytes consumed, so the recorded sha256 pins them.
+
+    Uses the same nflverse release-asset URL that nflreadpy resolves; the bytes
+    returned here are the bytes parsed below, so the checksum is over exactly what
+    the build consumes (not a separate snapshot)."""
+    user_agent = f"nflverse/nflreadpy {_package_version('nflreadpy')}"
+    with httpx.Client(
+        follow_redirects=True, timeout=180, headers={"User-Agent": user_agent}
+    ) as client:
+        response = client.get(url)
+        response.raise_for_status()
+        return response.content
+
+
+def _sha256(content: bytes) -> str:
+    return hashlib.sha256(content).hexdigest()
+
+
+def _retrieve_nflverse_parquet(
+    *,
+    source_name: str,
+    dataset_path: str,
+    source_ref: str,
+    nflreadpy_loader: str,
+) -> tuple[Any, dict[str, Any]]:
+    """Download a nflverse parquet, checksum the consumed bytes, and parse it."""
     retrieval_timestamp = datetime.now(UTC).replace(microsecond=0).isoformat()
-    table = nfl.load_pbp([SEASON])
-    reg = table.filter(pl.col("season_type") == "REG")
+    url = _nflverse_data_url(dataset_path)
+    content = _fetch_source_bytes(url)
+    checksum = _sha256(content)
+    table = pl.read_parquet(io.BytesIO(content))
     source_info = {
-        "sourceName": "nflverse play-by-play",
+        "sourceName": source_name,
         "sourceType": "nflverse",
-        "retrievalMethod": f"nflreadpy.load_pbp([{SEASON}])",
+        "retrievalMethod": (
+            f"httpx GET {url} (same nflverse release asset as {nflreadpy_loader}), "
+            "parsed via polars.read_parquet"
+        ),
         "retrievalTimestamp": retrieval_timestamp,
         "packageVersion": _package_version("nflreadpy"),
-        "sourceUrlOrDatasetId": _nflverse_data_url(f"pbp/play_by_play_{SEASON}"),
+        "polarsVersion": _package_version("polars"),
+        "sourceUrlOrDatasetId": url,
         "transformCodePath": TRANSFORM_CODE_PATH,
-        "sourceRefs": [f"nflverse-data:pbp/play_by_play_{SEASON}"],
+        "sourceRefs": [source_ref],
+        "checksum": {"algorithm": "sha256", "value": checksum},
+        "immutableSourceRef": None,
+        "mutabilityNote": SOURCE_MUTABILITY_NOTE,
     }
+    return table, source_info
+
+
+def retrieve_pbp() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    table, source_info = _retrieve_nflverse_parquet(
+        source_name="nflverse play-by-play",
+        dataset_path=f"pbp/play_by_play_{SEASON}",
+        source_ref=f"nflverse-data:pbp/play_by_play_{SEASON}",
+        nflreadpy_loader=f"nflreadpy.load_pbp([{SEASON}])",
+    )
+    reg = table.filter(pl.col("season_type") == "REG")
     return _records_from_dataframe(reg), source_info
 
 
 def retrieve_schedules() -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    retrieval_timestamp = datetime.now(UTC).replace(microsecond=0).isoformat()
-    table = nfl.load_schedules([SEASON])
-    reg = table.filter(pl.col("game_type") == "REG")
-    source_info = {
-        "sourceName": "nflverse schedules",
-        "sourceType": "nflverse",
-        "retrievalMethod": f"nflreadpy.load_schedules([{SEASON}])",
-        "retrievalTimestamp": retrieval_timestamp,
-        "packageVersion": _package_version("nflreadpy"),
-        "sourceUrlOrDatasetId": _nflverse_data_url("schedules/games"),
-        "transformCodePath": TRANSFORM_CODE_PATH,
-        "sourceRefs": ["nflverse-data:schedules/games"],
-    }
+    table, source_info = _retrieve_nflverse_parquet(
+        source_name="nflverse schedules",
+        dataset_path="schedules/games",
+        source_ref="nflverse-data:schedules/games",
+        nflreadpy_loader=f"nflreadpy.load_schedules([{SEASON}])",
+    )
+    # schedules/games.parquet spans all seasons; restrict to the target season.
+    reg = table.filter((pl.col("season") == SEASON) & (pl.col("game_type") == "REG"))
     return _records_from_dataframe(reg), source_info
 
 
 def _to_contract_input_source(source_info: dict[str, Any]) -> dict[str, Any]:
-    return {
+    contract_source = {
         "source": source_info["sourceUrlOrDatasetId"],
         "sourceType": "nflverse",
         "sourceSnapshotAt": source_info["retrievalTimestamp"],
@@ -311,6 +370,22 @@ def _to_contract_input_source(source_info: dict[str, Any]) -> dict[str, Any]:
             f"(nflreadpy {source_info['packageVersion']})."
         ),
     }
+    # Carry the contract-modeled lineage / source-pin metadata when present
+    # (#175/#176). immutableSourceRef stays unset because the upstream is mutable.
+    for key in (
+        "sourceRefs",
+        "retrievalMethod",
+        "retrievalTimestamp",
+        "packageVersion",
+        "sourceUrlOrDatasetId",
+        "transformCodePath",
+        "checksum",
+        "immutableSourceRef",
+    ):
+        value = source_info.get(key)
+        if value is not None:
+            contract_source[key] = value
+    return contract_source
 
 
 # ---------------------------------------------------------------------------
@@ -487,6 +562,34 @@ def build_coverage(
     }
 
 
+def build_field_readiness(diagnostics: list[dict[str, Any]]) -> dict[str, str]:
+    """Machine-readable per-field readiness (revised contract, #175/#176).
+
+    - pressureRateAllowed is `deferred` (unknown, never zero) per #173/#174.
+    - Fields with legitimate zero-denominator or block-driven nulls on some rows
+      are `partial_nulls` (present, some rows null) — NOT deferrals.
+    - Otherwise `available`.
+    """
+
+    def any_flag(flag: str) -> bool:
+        return any(d.get(flag) for d in diagnostics)
+
+    readiness: dict[str, str] = {"pressureRateAllowed": PRESSURE_READINESS_STATUS}
+    readiness["neutralPassRate"] = (
+        "partial_nulls" if any_flag("neutralPlaysDenominatorZero") else "available"
+    )
+    readiness["redZoneTdRate"] = (
+        "partial_nulls" if any_flag("redZoneTripsDenominatorZero") else "available"
+    )
+    readiness["secondsPerPlay"] = (
+        "partial_nulls" if any_flag("paceBlocked") else "available"
+    )
+    split_status = "partial_nulls" if any_flag("dropbackSplitBlocked") else "available"
+    for field in ("passRate", "rushRate", "passEpaPerPlay", "rushEpaPerPlay"):
+        readiness[field] = split_status
+    return readiness
+
+
 def build_metadata(
     *,
     rows: list[dict[str, Any]],
@@ -530,6 +633,11 @@ def build_metadata(
         "governanceSource is 'not_set'; promotion to governed_real_data requires a "
         "separate, explicitly authorized human promotion review (PR D), not build success "
         "or validation passing.",
+        "pressureRateAllowed is null on every row and marked deferred via "
+        "metadata.fieldReadiness (revised contract #175/#176); its null means "
+        "unknown/unavailable, never zero. Other fields' readiness records legitimate "
+        "zero-denominator/block-driven nulls as 'partial_nulls', not deferrals.",
+        f"Each source records a sha256 checksum over the exact bytes consumed. {SOURCE_MUTABILITY_NOTE}",
     ]
 
     return {
@@ -547,6 +655,7 @@ def build_metadata(
         },
         "deferredFields": ["pressureRateAllowed"],
         "deferredFieldReasons": {"pressureRateAllowed": PRESSURE_DEFERRAL_REASON},
+        "fieldReadiness": build_field_readiness(diagnostics),
         "blockedFieldRows": {
             "secondsPerPlay": [
                 {"season": d["season"], "week": d["week"], "teamCode": d["teamCode"]}
@@ -819,6 +928,36 @@ def build_validation_report(
             "non_governed_status",
             provenance_status != "governed_real_data" and governance_status != "governed",
             {"provenanceStatus": provenance_status, "governanceStatus": governance_status},
+        )
+    )
+
+    sources_missing_checksum = []
+    for source in lineage_sources:
+        checksum = source.get("checksum")
+        if not (
+            isinstance(checksum, dict)
+            and checksum.get("algorithm")
+            and checksum.get("value")
+        ):
+            sources_missing_checksum.append(source.get("sourceName"))
+    checks.append(
+        _check(
+            "source_checksums_present",
+            bool(lineage_sources) and not sources_missing_checksum,
+            {
+                "sourcesMissingChecksum": sources_missing_checksum,
+                "sourceCount": len(lineage_sources),
+            },
+        )
+    )
+
+    field_readiness = artifact["metadata"].get("fieldReadiness", {})
+    pressure_readiness = field_readiness.get("pressureRateAllowed")
+    checks.append(
+        _check(
+            "pressure_field_readiness_deferred",
+            pressure_readiness in DEFERRED_READINESS_STATUSES,
+            {"pressureRateAllowedReadiness": pressure_readiness},
         )
     )
 
