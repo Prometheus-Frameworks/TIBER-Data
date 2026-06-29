@@ -98,3 +98,52 @@ def test_governance_source_validation_lineage_refs_present():
     assert _check("validation_refs_present_and_passing")["passed"] is True
     assert _check("lineage_refs_present")["passed"] is True
     assert _check("promotion_recorded")["passed"] is True
+
+
+# --- guard-logic unit tests (synthetic rows) -----------------------------------
+# These exercise the zero-fill guards against the exact laundering scenarios they
+# must catch, so the audit cannot quietly pass while a deferred/unavailable field
+# has been zero-filled.
+
+
+def test_guarded_set_includes_fieldreadiness_only_deferrals():
+    # Field marked unavailable via fieldReadiness but NOT listed in deferredFields.
+    guarded = AUDIT.guarded_unavailable_fields(
+        deferred_fields=[],
+        field_readiness={"pressureRateAllowed": "deferred", "successRate": "available"},
+    )
+    assert "pressureRateAllowed" in guarded
+    assert "successRate" not in guarded
+    # insufficient_data / unavailable also guarded.
+    guarded2 = AUDIT.guarded_unavailable_fields(
+        deferred_fields=["foo"],
+        field_readiness={"bar": "insufficient_data", "baz": "unavailable"},
+    )
+    assert set(guarded2) == {"foo", "bar", "baz"}
+
+
+def test_zero_fill_guard_catches_fieldreadiness_only_deferral():
+    # pressureRateAllowed = 0 with fieldReadiness deferred but absent from deferredFields.
+    rows = [{"teamCode": "BAL", "week": 1, "pressureRateAllowed": 0}]
+    guarded = AUDIT.guarded_unavailable_fields([], {"pressureRateAllowed": "deferred"})
+    violations = AUDIT.find_zero_filled_unavailable_fields(rows, guarded)
+    assert violations == [["BAL", 1, "pressureRateAllowed"]]
+
+
+def test_redzone_guard_catches_zero_trip_zero_filled_rate():
+    # The converse scenario: redZoneTrips == 0 but redZoneTdRate zero-filled to 0 instead of null.
+    rows = [
+        {"teamCode": "CIN", "week": 2, "redZoneTrips": 0, "redZoneTdRate": 0},
+        {"teamCode": "PHI", "week": 2, "redZoneTrips": 3, "redZoneTdRate": 0.5},
+        {"teamCode": "BAL", "week": 2, "redZoneTrips": 0, "redZoneTdRate": None},
+    ]
+    null_nonzero, zero_trip_not_null = AUDIT.find_redzone_zero_fill_violations(rows)
+    assert null_nonzero == []
+    assert zero_trip_not_null == [["CIN", 2, 0]]
+
+
+def test_redzone_guard_catches_unexplained_null():
+    rows = [{"teamCode": "BAL", "week": 3, "redZoneTrips": 4, "redZoneTdRate": None}]
+    null_nonzero, zero_trip_not_null = AUDIT.find_redzone_zero_fill_violations(rows)
+    assert null_nonzero == [["BAL", 3, 4]]
+    assert zero_trip_not_null == []

@@ -259,7 +259,7 @@
       "name": "deferred_fields_never_zero_filled",
       "passed": true,
       "details": {
-        "deferredFields": [
+        "guardedFields": [
           "pressureRateAllowed"
         ],
         "violations": []
@@ -269,7 +269,8 @@
       "name": "redzone_td_rate_nulls_are_zero_trip_rows",
       "passed": true,
       "details": {
-        "unexplainedNullRows": []
+        "unexplainedNullRows": [],
+        "zeroTripRowsNotNull": []
       }
     },
     {

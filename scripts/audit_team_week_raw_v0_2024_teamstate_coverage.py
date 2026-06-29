@@ -72,6 +72,54 @@ DOWNSTREAM_CONSUMED_FIELDS = (
     "fantasyPointsAllowedWR", "fantasyPointsAllowedTE",
 )
 
+# fieldReadiness statuses that mean "null is unknown, never zero" (contract §field-readiness).
+# A field is unavailable for zero-fill purposes if it is in deferredFields OR carries one of
+# these readiness statuses; the contract allows either expression.
+UNAVAILABLE_READINESS = frozenset({"deferred", "insufficient_data", "unavailable"})
+
+
+def guarded_unavailable_fields(
+    deferred_fields: list[str], field_readiness: dict[str, Any]
+) -> list[str]:
+    """Fields that must never carry a value (incl. 0): deferredFields plus any field whose
+    fieldReadiness status means unknown/unavailable. Either expression triggers the guard."""
+    return sorted(
+        set(deferred_fields)
+        | {f for f, status in field_readiness.items() if status in UNAVAILABLE_READINESS}
+    )
+
+
+def find_zero_filled_unavailable_fields(
+    rows: list[dict[str, Any]], guarded_fields: list[str]
+) -> list[list[Any]]:
+    """Any guarded (deferred/unavailable) field carrying a non-null value on any row is a
+    null-to-zero laundering violation."""
+    return [
+        [r.get("teamCode"), r.get("week"), f]
+        for r in rows
+        for f in guarded_fields
+        if r.get(f) is not None
+    ]
+
+
+def find_redzone_zero_fill_violations(
+    rows: list[dict[str, Any]],
+) -> tuple[list[list[Any]], list[list[Any]]]:
+    """Two-sided check that redZoneTdRate nulls are *exactly* the zero-red-zone-trip rows:
+      - null rate on a row with non-zero trips → unexplained null;
+      - non-null rate on a zero-trip row → zero-filled (the laundering this audit guards against)."""
+    null_nonzero_trips = [
+        [r.get("teamCode"), r.get("week"), r.get("redZoneTrips")]
+        for r in rows
+        if r.get("redZoneTdRate") is None and r.get("redZoneTrips") not in (0, None)
+    ]
+    zero_trip_not_null = [
+        [r.get("teamCode"), r.get("week"), r.get("redZoneTdRate")]
+        for r in rows
+        if r.get("redZoneTrips") == 0 and r.get("redZoneTdRate") is not None
+    ]
+    return null_nonzero_trips, zero_trip_not_null
+
 
 def _load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -191,32 +239,30 @@ def run_audit() -> dict[str, Any]:
             "classification": classification,
         }
 
-    # No deferred field may carry a value on any row (null-to-zero laundering guard).
-    deferred_value_violations = [
-        [r["teamCode"], r["week"], f]
-        for r in rows
-        for f in deferred_fields
-        if r.get(f) is not None
-    ]
+    # No deferred/unavailable field may carry a value on any row (null-to-zero laundering guard).
+    # A field counts as unavailable if it is in deferredFields OR its fieldReadiness status is
+    # deferred/insufficient_data/unavailable, since the contract allows either expression.
+    guarded_fields = guarded_unavailable_fields(deferred_fields, field_readiness)
+    deferred_value_violations = find_zero_filled_unavailable_fields(rows, guarded_fields)
     checks.append(
         _check(
             "deferred_fields_never_zero_filled",
             not deferred_value_violations,
-            {"deferredFields": deferred_fields, "violations": deferred_value_violations[:10]},
+            {"guardedFields": guarded_fields, "violations": deferred_value_violations[:10]},
         )
     )
 
-    # redZoneTdRate nulls must be exactly the zero-redZoneTrips rows (legitimate partial null).
-    rz_null_nonzero_trips = [
-        [r["teamCode"], r["week"], r.get("redZoneTrips")]
-        for r in rows
-        if r.get("redZoneTdRate") is None and r.get("redZoneTrips") not in (0, None)
-    ]
+    # redZoneTdRate nulls must be exactly the zero-redZoneTrips rows: null only when trips==0
+    # (legitimate partial null) and never zero-filled on a zero-trip row.
+    rz_null_nonzero_trips, rz_zero_trip_not_null = find_redzone_zero_fill_violations(rows)
     checks.append(
         _check(
             "redzone_td_rate_nulls_are_zero_trip_rows",
-            not rz_null_nonzero_trips,
-            {"unexplainedNullRows": rz_null_nonzero_trips},
+            not rz_null_nonzero_trips and not rz_zero_trip_not_null,
+            {
+                "unexplainedNullRows": rz_null_nonzero_trips,
+                "zeroTripRowsNotNull": rz_zero_trip_not_null,
+            },
         )
     )
 
