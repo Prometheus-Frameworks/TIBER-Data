@@ -1,0 +1,338 @@
+{
+  "report": "team_week_raw_v0_2024_teamstate_coverage_audit",
+  "season": 2024,
+  "issue": "TIBER-Data#181",
+  "artifactPath": "exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.json",
+  "validationReportPath": "exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.validation.json",
+  "lineageManifestPath": "data/manifests/team_week_raw_v0_2024_real_source_candidate.manifest.json",
+  "rowCount": 544,
+  "teamCount": 32,
+  "expectedTeamGameRows": 544,
+  "weeksPresent": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "coverageMetadata": {
+    "isFullLeague": true,
+    "isFullRegularSeasonCalendar": true,
+    "byeWeeksHandled": true,
+    "missingTeams": []
+  },
+  "deferredFields": [
+    "pressureRateAllowed"
+  ],
+  "fieldNullReport": {
+    "teamCode": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "season": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "week": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "opponentCode": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "epaPerPlay": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "successRate": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "redZoneTdRate": {
+      "nonNull": 533,
+      "null": 11,
+      "classification": "partial_nulls"
+    },
+    "passRate": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "rushRate": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "neutralPassRate": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "passEpaPerPlay": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "rushEpaPerPlay": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "explosivePlayRate": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "secondsPerPlay": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "pointsPerDrive": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "pointsFor": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "pointsAgainst": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "drives": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "redZoneTrips": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "sacksAllowed": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "turnovers": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "offensivePlays": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "neutralPlays": {
+      "nonNull": 544,
+      "null": 0,
+      "classification": "available"
+    },
+    "pressureRateAllowed": {
+      "nonNull": 0,
+      "null": 544,
+      "classification": "deferred"
+    },
+    "fantasyPointsForQB": {
+      "nonNull": 0,
+      "null": 544,
+      "classification": "absent_or_deferred"
+    },
+    "fantasyPointsForRB": {
+      "nonNull": 0,
+      "null": 544,
+      "classification": "absent_or_deferred"
+    },
+    "fantasyPointsForWR": {
+      "nonNull": 0,
+      "null": 544,
+      "classification": "absent_or_deferred"
+    },
+    "fantasyPointsForTE": {
+      "nonNull": 0,
+      "null": 544,
+      "classification": "absent_or_deferred"
+    },
+    "fantasyPointsAllowedQB": {
+      "nonNull": 0,
+      "null": 544,
+      "classification": "absent_or_deferred"
+    },
+    "fantasyPointsAllowedRB": {
+      "nonNull": 0,
+      "null": 544,
+      "classification": "absent_or_deferred"
+    },
+    "fantasyPointsAllowedWR": {
+      "nonNull": 0,
+      "null": 544,
+      "classification": "absent_or_deferred"
+    },
+    "fantasyPointsAllowedTE": {
+      "nonNull": 0,
+      "null": 544,
+      "classification": "absent_or_deferred"
+    }
+  },
+  "checks": [
+    {
+      "name": "all_32_nfl_teams_present",
+      "passed": true,
+      "details": {
+        "teamCount": 32,
+        "missingTeams": [],
+        "unexpectedTeams": []
+      }
+    },
+    {
+      "name": "expected_team_game_row_count",
+      "passed": true,
+      "details": {
+        "expected": 544,
+        "actual": 544
+      }
+    },
+    {
+      "name": "every_team_has_17_played_games",
+      "passed": true,
+      "details": {
+        "expectedGamesPerTeam": 17,
+        "teamsOffExpected": {}
+      }
+    },
+    {
+      "name": "no_duplicate_team_week_rows",
+      "passed": true,
+      "details": {
+        "duplicateKeys": []
+      }
+    },
+    {
+      "name": "all_rows_season_2024",
+      "passed": true,
+      "details": {
+        "season": 2024,
+        "nonSeasonRows": []
+      }
+    },
+    {
+      "name": "team_codes_normalized_to_nfl_set",
+      "passed": true,
+      "details": {
+        "invalidTeamCodes": [],
+        "invalidOpponentCodes": []
+      }
+    },
+    {
+      "name": "deterministic_ordering_week_then_teamcode",
+      "passed": true,
+      "details": {
+        "orderKey": "(week, teamCode)"
+      }
+    },
+    {
+      "name": "deferred_fields_never_zero_filled",
+      "passed": true,
+      "details": {
+        "deferredFields": [
+          "pressureRateAllowed"
+        ],
+        "violations": []
+      }
+    },
+    {
+      "name": "redzone_td_rate_nulls_are_zero_trip_rows",
+      "passed": true,
+      "details": {
+        "unexplainedNullRows": []
+      }
+    },
+    {
+      "name": "explicit_governance_marker_agrees_with_provenance",
+      "passed": true,
+      "details": {
+        "governanceStatus": "governed",
+        "governanceSource": "explicit_marker",
+        "provenanceStatus": "governed_real_data"
+      }
+    },
+    {
+      "name": "source_refs_present",
+      "passed": true,
+      "details": {
+        "sourceRefs": [
+          "nflverse-data:pbp/play_by_play_2024",
+          "nflverse-data:schedules/games"
+        ]
+      }
+    },
+    {
+      "name": "source_checksums_present",
+      "passed": true,
+      "details": {
+        "checksumCount": 2
+      }
+    },
+    {
+      "name": "validation_refs_present_and_passing",
+      "passed": true,
+      "details": {
+        "validationReportPath": "exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.validation.json",
+        "validationAllPassed": true
+      }
+    },
+    {
+      "name": "lineage_refs_present",
+      "passed": true,
+      "details": {
+        "lineageManifestPath": "data/manifests/team_week_raw_v0_2024_real_source_candidate.manifest.json"
+      }
+    },
+    {
+      "name": "promotion_recorded",
+      "passed": true,
+      "details": {
+        "decision": "governed_real_data",
+        "reviewedAt": "2026-06-27",
+        "reviewRefs": [
+          "docs/reviews/team-week-raw-v0-2024-promotion-review-pr-d.md",
+          "TIBER-Data#179"
+        ]
+      }
+    },
+    {
+      "name": "generated_at_present",
+      "passed": true,
+      "details": {
+        "artifactGeneratedAt": "2026-06-27T13:42:06+00:00",
+        "manifestGeneratedAt": "2026-06-27T13:42:06+00:00"
+      }
+    }
+  ],
+  "allPassed": true
+}
