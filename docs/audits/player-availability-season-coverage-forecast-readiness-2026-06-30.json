@@ -1,0 +1,103 @@
+{
+  "audit_id": "player-availability-season-coverage-forecast-readiness-2026-06-30",
+  "date": "2026-06-30",
+  "scope": "TIBER-Data only (read-only inventory)",
+  "tracking_issue": "Prometheus-Frameworks/TIBER-Data#184",
+  "type": "audit_only",
+  "non_goals_observed": [
+    "no Forecast change",
+    "no Teamstate change",
+    "no FORGE work",
+    "no dataset promotion",
+    "no live roster scraping",
+    "no fabricated active status",
+    "offline_fixture not treated as governed real data"
+  ],
+  "executive_verdict": {
+    "real_seasons_present": [2025],
+    "fixture_or_scaffold_seasons": [2024],
+    "seasons_absent": "<=2023",
+    "nine_year_veteran_seasons_today": 1,
+    "current_active_player_detection_possible": false,
+    "current_active_player_detection_reason": "Real 2025 roster source carries active_roster_status=unknown on all rows; only player_ownership_v0 carries active status but is a 27-player provisional, explicitly-stale subset.",
+    "promoted_nfl_exports_are_fixture_sourced": true,
+    "real_2025_data_is_promoted": false
+  },
+  "artifacts": [
+    {"path": "data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json", "kind": "evidence_ppr_outcomes", "grain": "player-week", "seasons": [2025], "weeks": "1-22", "rows": 6394, "provenance": "source_backed", "source": "nflreadpy.load_player_stats", "as_of_metadata": "top-level provenance/source_path; no per-row generated_at", "active_detector_safe": "n/a"},
+    {"path": "data/processed/evidence/player_weekly_ppr_outcomes_2025.computed_source_backed.json", "kind": "evidence_ppr_outcomes_computed", "grain": "player-week", "seasons": [2025], "weeks": "1-22", "rows": 6394, "players": 620, "provenance": "source_backed", "source": "nflreadpy.load_player_stats", "as_of_metadata": "per-row source + generated_at 2026-04-27", "active_detector_safe": "n/a"},
+    {"path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json", "kind": "evidence_usage", "grain": "player-week", "seasons": [2025], "weeks": "1-22", "rows": 6326, "provenance": "source_backed", "source": "nflreadpy.load_player_stats", "as_of_metadata": "top-level provenance; nulls honest", "active_detector_safe": "n/a"},
+    {"path": "data/processed/evidence/roster_player_team_map_2025.source_backed.json", "kind": "evidence_roster_map", "grain": "player-week-membership", "seasons": [2025], "weeks": "1-22", "rows": 14348, "players": 971, "provenance": "source_backed", "source": "nflreadpy.load_rosters_weekly([2025])", "source_status": "source_verified", "active_roster_status": "unknown (all rows)", "active_detector_safe": "membership yes, status no"},
+    {"path": "exports/promoted/nfl/player_weekly_ppr_outcomes_v1.json", "kind": "promoted_export_v1", "grain": "player-week", "seasons": [2025], "provenance": "fixture", "source": "offline_fixture:data/raw/evidence/player_weekly_box_scores_2025.offline_fixture.json", "active_detector_safe": false},
+    {"path": "exports/promoted/nfl/player_weekly_usage_v1.json", "kind": "promoted_export_v1", "grain": "player-week", "seasons": [2025], "provenance": "fixture", "source": "offline_fixture", "active_detector_safe": false},
+    {"path": "exports/promoted/nfl/roster_player_team_map_v1.json", "kind": "promoted_export_v1", "grain": "player-week", "seasons": [2025], "provenance": "fixture", "note": "synthetic fixture_* player_ids; status mixes active/fixture_only", "active_detector_safe": false},
+    {"path": "exports/promoted/player_ownership/player_ownership_latest.json", "kind": "player_ownership_v0", "grain": "player", "seasons": ["2025-wk18 snapshot", "2026 draft"], "players": 27, "status_breakdown": {"active_roster": 20, "unsigned_draft_pick": 7}, "provenance": "source_backed_but_provisional_stale", "source": ["nflreadpy_load_rosters_weekly_2025", "nfl_draft_results_2026", "1 fixture"], "as_of_metadata": "generated_at, last_verified_at, per-source_ref observed_at, explicit staleness note", "active_detector_safe": "closest fit but stale and 27-player subset"},
+    {"path": "exports/promoted/player_ownership/events/player_ownership_events_2026.jsonl", "kind": "player_ownership_change_event_v0", "grain": "player-change-event", "seasons": [2026], "rows": 1, "provenance": "fixture", "source": "fixture_demonstration_only", "active_detector_safe": false},
+    {"path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v1.json", "kind": "identity_crosswalk_v1", "grain": "player-id-map", "records": 25, "providers": ["sleeper"], "provenance": "seeded_operator_verified_not_full_universe", "active_detector_safe": "join key only"},
+    {"path": "exports/promoted/nfl_draft_results/nfl_draft_results_2026.json", "kind": "draft_results", "grain": "player-draft", "seasons": [2026], "rows": 257, "provenance": "source_backed", "source": "NBC Sports ProFootballTalk 2026 tracker", "active_detector_safe": "rookie/draft-year only"},
+    {"path": "data/gold/forge/forge_player_weekly_ppr_2025.cohort.v1.json", "kind": "forge_cohort_v1", "grain": "player-week-cohort", "seasons": [2025], "players": 50, "provenance": "source_backed", "source": "nflverse via nflreadpy", "as_of_metadata": "asOf/sourceUpdatedAt 2026-04-27", "active_detector_safe": "n/a"},
+    {"path": "data/gold/forge/forge_weekly_player_ppr_2025.v1.json", "kind": "forge_weekly_v1", "grain": "player-week", "seasons": [2025], "rows": 792, "players": 50, "provenance": "source_backed", "active_detector_safe": "n/a"},
+    {"path": "data/gold/forge/forge_season_player_input_2025.ppr.v1.json", "kind": "forge_season_input_v1", "grain": "player-season", "seasons": [2025], "players": 50, "provenance": "source_backed", "active_detector_safe": "n/a"},
+    {"path_glob": "data/gold/forge/forge_weekly_player_input_2024_w0[1-6].*_offline_fixture.derived.json", "path_is_glob": true, "example_files": ["data/gold/forge/forge_weekly_player_input_2024_w01.qb_offline_fixture.derived.json", "data/gold/forge/forge_weekly_player_input_2024_w01.skill_offline_fixture.derived.json", "data/gold/forge/forge_weekly_player_input_2024_w06.skill_offline_fixture.derived.json"], "kind": "forge_weekly", "grain": "player-week", "seasons": [2024], "weeks": "w01-w06 (skill_ for w01-w06; qb_ for w01)", "provenance": "fixture", "active_detector_safe": false},
+    {"path_glob": "data/gold/forge/forge_weekly_player_input_2024_w0[1-3].skill_upstream_public_w01_w03_8player_scaffold.proof_reference_snapshot.derived.json", "path_is_glob": true, "example_files": ["data/gold/forge/forge_weekly_player_input_2024_w01.skill_upstream_public_w01_w03_8player_scaffold.proof_reference_snapshot.derived.json", "data/gold/forge/forge_weekly_player_input_2024_w03.skill_upstream_public_w01_w03_8player_scaffold.proof_reference_snapshot.derived.json"], "kind": "forge_weekly_scaffold", "grain": "player-week", "seasons": [2024], "weeks": "w01-w03", "players": 8, "provenance": "scaffold", "active_detector_safe": false},
+    {"path": "data/projection-input-fixtures/weekly_projection_input_fixture_2026_w01.json", "kind": "projection_input_fixture_v1", "grain": "player-week-bundle", "seasons": ["2026_w01 label"], "provenance": "fixture", "note": "bounded_rehearsal_fixture, production_coverage_claim=false", "active_detector_safe": false},
+    {"path": "schemas/roster_snapshot_v0.schema.json", "kind": "contract_only", "grain": "team-roster-snapshot", "data_rows": 0, "provenance": "contract_only", "note": "schema mandates generated_at, source_updated_at, observed_at, confidence, status; no data"},
+    {"path": "src/contracts/v1/roleOpportunity.ts", "kind": "contract_only", "grain": "player-week-role", "data_rows": 0, "provenance": "contract_only", "note": "Zod contract + validator + tests + 2024-window examples; no real data; producer is separate Role-and-Opportunity-Model repo"},
+    {"path": "schemas/player_ownership_v0.schema.json", "kind": "contract", "grain": "player", "provenance": "contract", "note": "ownership_status enum incl active_roster/practice_squad/injured_reserve/free_agent/retired/suspended/unknown"}
+  ],
+  "season_coverage": {
+    "<=2023": {"production": "none", "roster": "none", "status": "none", "age_career": "none"},
+    "2024": {"production": "fixtures_only", "roster": "none_real", "status": "none", "age_career": "none"},
+    "2025": {"production": "source_backed", "roster": "source_backed_membership", "status": "unknown_in_source; 27-player provisional snapshot in ownership_v0", "age_career": "none"},
+    "2026": {"production": "none", "roster": "snapshot_references_2025_wk18", "status": "provisional_snapshot + 1 fixture event", "age_career": "draft_year_only(257 picks) + rookie predraft"},
+    "raw_token_scan": {"2024": 716, "2025": 36037, "2026": 10, "pre_2024": 0}
+  },
+  "verdicts": {
+    "active_status": "NOT possible from governed source-backed artifact; source roster status=unknown; only 27-player provisional/stale ownership snapshot carries active status",
+    "historical_career": "9-year veteran has 1 real season (2025), not 9; no career-season/player-season/games-missed/team-history-by-season",
+    "age_career_year": "Cannot emit age/career-year/age-bucket from real data; no populated players table; no age/birth_date anywhere; Age-Curve is external producer repo",
+    "role_opportunity": "contract_only; rich Zod contract + validator, zero real data; producer is separate repo; usage can only partially back the contract",
+    "depth_chart": "greenfield_contract_needed; only roster_role schema field",
+    "injury_availability": "contract_only enums; no injury/practice source data"
+  },
+  "forecast_readiness_ranking": [
+    {"rank": 1, "lane": "active-player detection", "status": "source_backed_candidate / needs_data_promotion_before_forecast", "why": "Real 2025 weekly roster membership + fail-closed ownership_v0 status contract already in-repo; status needs derivation + current source"},
+    {"rank": 2, "lane": "player weekly PPR outcomes", "status": "source_backed_but_not_governed", "why": "6394 real 2025 rows exist; promoted v1 is fixture; single season"},
+    {"rank": 3, "lane": "player weekly usage", "status": "source_backed_but_not_governed", "why": "6326 real 2025 rows; promoted v1 is fixture; single season"},
+    {"rank": 4, "lane": "historical player-season coverage", "status": "needs_data_promotion_before_forecast", "why": "Only 2025 exists; requires multi-season ingestion that does not exist"},
+    {"rank": 5, "lane": "Role & Opportunity", "status": "contract_only", "why": "Rich contract + validator, zero real data; separate producer repo"},
+    {"rank": 6, "lane": "age/career-year context", "status": "greenfield_contract_needed", "why": "No age/birth/career data; Age-Curve external"},
+    {"rank": 7, "lane": "depth chart", "status": "greenfield_contract_needed", "why": "Only roster_role schema field; no source/contract doc"},
+    {"rank": 8, "lane": "injury/availability", "status": "contract_only", "why": "Status enums exist; no injury/practice source"},
+    {"rank": 9, "lane": "FORGE as Forecast input", "status": "promoted_but_fixture_sourced (2024) / source_backed_candidate (2025 cohort, ungoverned)", "why": "2025 FORGE gold real but 50-player ungoverned cohort; 2024 FORGE fixture; not gate-ready"},
+    {"rank": 10, "lane": "FORGE as observer-only", "status": "source_backed_candidate", "why": "2025 FORGE cohort fine to observe/calibrate without binding into Forecast"}
+  ],
+  "recommended_next_lane": "active-player detection (derived, source-bounded 2025 snapshot, fail-closed unknown)",
+  "recommended_next_issue": {
+    "title": "spec: active_player_detection_v0 contract and source boundary (no implementation)",
+    "type": "spec_contract_only",
+    "active_player_detection_v0_required_fields": [
+      "as_of", "source_name", "source_path", "source_updated_at_or_observed_at",
+      "player_id", "player_name", "team", "position", "roster_status",
+      "active_status_enum[active|inactive|ir|practice_squad|released|traded|unknown]",
+      "status_basis[source_truth|derived_classification]", "confidence_provenance",
+      "season", "week", "date", "fail_closed_unknown_when_missing"
+    ],
+    "active_status_enum_boundary": {
+      "note": "The active_status_enum above is a detection/gameday-availability axis and is NOT the governed ownership_status enum. It must not be assumed to round-trip with player_ownership_v0. A future active_player_detection_v0 must either (a) reuse player_ownership_v0.ownership_status for the roster-membership axis, or (b) define this distinct enum AND document the mapping below as an explicit new enum boundary.",
+      "governed_ownership_status_enum": ["active_roster", "practice_squad", "unsigned_draft_pick", "college", "devy", "free_agent", "retired", "injured_reserve", "suspended", "unknown"],
+      "mapping_detection_to_governed_ownership_status": {
+        "active": "active_roster",
+        "inactive": "active_roster (NO governed value for gameday-inactive; this is a new boundary requiring either a roster-status sub-field or an ownership_v0 extension)",
+        "ir": "injured_reserve",
+        "practice_squad": "practice_squad",
+        "released": "free_agent",
+        "traded": "NO governed ownership_status value; team movement is modeled by player_ownership_change_event_v0.event_type=team_change/trade, not by ownership_status",
+        "unknown": "unknown"
+      },
+      "gaps_revealed": ["gameday-inactive has no ownership_status value", "traded/released are transaction-event concepts, not ownership_status values"]
+    },
+    "existing_artifacts_partial_support": "roster_player_team_map_2025.source_backed.json (identity/team/membership, status unknown) + player_ownership_v0 (enum + 27-player provisional snapshot)",
+    "missing": "current full-universe roster/inactives source + derivation step (membership -> active/inactive with status_basis=derived_classification); explicit enum reconciliation with player_ownership_v0.ownership_status"
+  }
+}
