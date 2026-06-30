@@ -1,0 +1,148 @@
+{
+  "spec_id": "player-season-coverage-v0-source-boundary",
+  "status": "spec_only_not_implementation_ready",
+  "is_json_schema": false,
+  "is_validator": false,
+  "is_dataset": false,
+  "claims_multi_season_coverage": false,
+  "disclaimer": "Non-normative companion to docs/specs/player-season-coverage-v0-source-boundary.md. Illustrative field/grain/source shape only. This file does NOT validate data, does NOT authorize implementation, is NOT a dataset, and asserts NO player-season coverage. TIBER-Data has one real player-data season today (2025); no multi-season coverage exists.",
+  "date": "2026-06-30",
+  "tracking_issue": "Prometheus-Frameworks/TIBER-Data#188",
+  "predecessors": ["#184 / PR #185 (audit)", "#186 / PR #187 (active_player_detection_v0 boundary)"],
+  "row_grain": {
+    "key": ["player_id", "season"],
+    "uniqueness": "one row per (player_id, season); duplicate pairs invalid",
+    "is_not": ["player-week row", "roster-membership row", "availability/active-status row", "player-ownership row", "Forecast feature row", "fantasy advice/ranking output"],
+    "multi_team_season": "still ONE row keyed by (player_id, season); multiple teams represented inside the row, never as multiple rows"
+  },
+  "truth_status_vocabulary": ["source_truth", "derived_summary", "unavailable", "out_of_scope"],
+  "coverage_status_vocabulary": ["full_season", "partial_season", "single_week", "none", "unknown"],
+  "field_families": {
+    "identity": {
+      "player_id": {"req": "required", "truth": "source_truth", "note": "do not invent ids"},
+      "player_name": {"req": "required", "truth": "source_truth"},
+      "position": {"req": "required", "truth": "source_truth", "note": "season-primary"},
+      "provider_ids": {"req": "optional_if_source_backed", "truth": "source_truth"},
+      "identity_confidence": {"req": "required", "truth": "derived_summary"}
+    },
+    "season_scope": {
+      "season": {"req": "required", "truth": "source_truth"},
+      "season_type": {"req": "optional", "truth": "source_truth", "values": ["REG", "POST", "REG+POST"]},
+      "generated_at": {"req": "required"},
+      "source_updated_at_or_observed_at": {"req": "required"},
+      "source_refs": {"req": "required", "min_items": 1, "item_fields": ["source_name", "source_url?", "observed_at", "source_updated_at?", "confidence", "notes?"]}
+    },
+    "team_roster_context": {
+      "teams": {"req": "required", "truth": "source_truth", "note": "all teams chronologically"},
+      "primary_team": {"req": "required", "truth": "derived_summary", "note": "explicit rule (e.g., most weeks observed) recorded in coverage_notes"},
+      "team_weeks": {"req": "optional", "truth": "derived_summary"},
+      "team_unknown": {"req": "required", "truth": "derived_summary", "note": "unresolved-team weeks excluded, not guessed"}
+    },
+    "coverage_status": {
+      "weeks_observed": {"req": "required", "truth": "derived_summary"},
+      "games_observed": {"req": "required", "truth": "derived_summary"},
+      "games_played": {"req": "optional", "truth": "source_truth_or_derived"},
+      "games_missed": {"req": "unavailable_unless_source_backed", "truth": "source_truth", "note": "absence of a week is NOT a missed game"},
+      "coverage_status": {"req": "required", "truth": "derived_summary"},
+      "coverage_notes": {"req": "required"},
+      "missing_fields": {"req": "required", "note": "explicit array of unavailable families"}
+    },
+    "production_summaries": {
+      "season_ppr": {"req": "optional", "truth": "derived_summary", "note": "sum of source-backed weekly PPR"},
+      "games_for_ppg": {"req": "optional", "truth": "derived_summary"},
+      "passing_summary": {"req": "optional", "truth": "derived_summary"},
+      "rushing_summary": {"req": "optional", "truth": "derived_summary"},
+      "receiving_summary": {"req": "optional", "truth": "derived_summary"},
+      "null_vs_zero": "source-backed zero = 0; unreported family = null/unavailable"
+    },
+    "usage_summaries": {
+      "targets": {"req": "optional", "truth": "derived_summary"},
+      "receptions": {"req": "optional", "truth": "derived_summary"},
+      "rushing_attempts": {"req": "optional", "truth": "derived_summary"},
+      "air_yards": {"req": "optional", "truth": "derived_summary_or_unavailable"},
+      "target_share": {"req": "optional", "truth": "derived_summary_or_unavailable"},
+      "snap_share_routes_red_zone": {"req": "unavailable_unless_source_backed", "truth": "unavailable", "note": "null, never 0"}
+    },
+    "age_career_context": {
+      "current_gap": "NO populated age/birth_date anywhere; draft data is 2026-only",
+      "birth_date": {"req": "unavailable_until_source_backed", "truth": "source_truth"},
+      "season_age": {"req": "unavailable_until_derivable", "truth": "derived_summary", "note": "null if birth_date unavailable"},
+      "draft_year": {"req": "unavailable_until_source_backed", "truth": "source_truth"},
+      "rookie_year": {"req": "unavailable_until_source_backed", "truth": "source_truth"},
+      "career_year": {"req": "unavailable_until_derivable", "truth": "derived_summary", "formula": "season - rookie_year + 1; null if rookie_year unavailable"},
+      "age_bucket_career_stage": {"req": "unavailable_until_derivable", "truth": "derived_summary", "note": "never fabricated; age-curve interpretation is out_of_scope (external Age-Curve repo)"}
+    },
+    "availability_boundary": {
+      "carries_active_status": false,
+      "note": "coverage/history artifact only; gameday active/inactive/IR belongs to active_player_detection_v0 and player_ownership_v0; roster presence is NOT availability"
+    }
+  },
+  "source_boundary": {
+    "candidate_sources_evaluate_not_call": [
+      {"source": "nflreadpy.load_player_stats(seasons)", "provides": ["weekly box-score -> season production/usage"], "cannot_provide": ["gameday active/inactive", "age/draft"]},
+      {"source": "nflreadpy.load_rosters_weekly(seasons)", "provides": ["per-week team membership", "position"], "cannot_provide": ["active/inactive (carries unknown)", "age"]},
+      {"source": "nflreadpy.load_rosters(seasons)", "provides": ["season team(s)", "position"], "cannot_provide": ["gameday availability"]},
+      {"source": "nflreadpy.load_players()", "provides": ["birth_date", "draft_year", "rookie_year (if exposed)"], "cannot_provide": ["completeness guarantee", "availability"]}
+    ],
+    "in_repo_real_2025_references": [
+      {"path": "data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json", "rows": 6394, "players": 620, "weeks": "1-22"},
+      {"path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json", "rows": 6326},
+      {"path": "data/processed/evidence/roster_player_team_map_2025.source_backed.json", "rows": 14348, "players": 971, "active_roster_status": "unknown"}
+    ],
+    "non_governing_shape_references_only": ["*.offline_fixture.* surfaces", "*_scaffold* surfaces", "data/gold/forge/forge_season_player_input_2025.ppr.v1.json (50-player ungoverned cohort)"],
+    "hard_rule": "fixtures/scaffolds are shape references, never truth; no coverage row may derive from a fixture/scaffold and be presented as historical truth"
+  },
+  "recommended_first_window": {
+    "choice": "2022-2025",
+    "season_type_default": "REG (POST optional, flagged via season_type)",
+    "justification": [
+      "includes 2024+2025: making 2024 real is the prerequisite for Forecast's 2024->2025 target experiment",
+      "four seasons give bounded career_year/tenure trend without claiming full career history",
+      "recent nflverse seasons have the most consistent weekly usage fields",
+      "bounded before full ingestion; broader history is a later separate window"
+    ],
+    "reduced_fallback": "2023-2025",
+    "minimum_to_unblock_forecast_target": "2024-2025 real player-level coverage; 2024 MUST become real source-backed before Forecast treats 2025 as target",
+    "later_expansion": "full historical toward each player's rookie_year is separate and must not be implied as already available"
+  },
+  "fail_closed_rules": [
+    "missing player-season row is not proof of inactivity/out-of-league",
+    "missing weeks are not proof of games missed unless source supports it",
+    "zero production != missing production",
+    "unavailable usage fields stay null/unavailable, never 0",
+    "fixture/scaffold rows cannot be promoted as historical truth",
+    "age/career-year cannot be fabricated from missing birth/draft data",
+    "multi-team seasons must not be collapsed without explicit primary_team rule",
+    "one row per (player_id, season); duplicates invalid",
+    "no availability/active-status assertion",
+    "Forecast must not consume until a real artifact passes a separate coverage/provenance gate"
+  ],
+  "forecast_consumer_guidance": [
+    "a spec is not a dataset",
+    "a player-season row is not automatically a Forecast feature",
+    "Forecast must not consume player_season_coverage_v0 until a real artifact passes a separate coverage/provenance gate",
+    "null/unknown must not be coerced to zero",
+    "historical coverage does not imply availability/role/depth-chart/current active status",
+    "future Forecast experiments must preserve target-season cutoff rules"
+  ],
+  "relationship_to_lanes": {
+    "active_player_detection_v0": "disjoint axis (availability vs coverage); presence here is not availability there",
+    "player_ownership_v0": "reuse provenance/staleness shape, not the status enum",
+    "player_weekly_ppr_outcomes_v1": "upstream input; production summaries are deterministic roll-ups",
+    "player_weekly_usage_v1": "upstream input; unpopulated weekly fields stay unavailable at season level",
+    "RoleOpportunity": "downstream/disjoint; no role interpretation produced here",
+    "age_curve": "may carry source-backed season_age/career_year inputs; curve interpretation owned by external Age-Curve repo",
+    "FORGE": "observer/shape reference only; no FORGE work",
+    "forecast_runs": "history foundation consumed only after a separate gate; not a Run input today"
+  },
+  "recommended_next_issue": {
+    "title": "feat: build player_season_coverage_v0 for 2022-2025 (bounded, source-bounded, gated)",
+    "status": "separate, NOT started here, blocked until gates approved",
+    "gates": [
+      "approved season window (default 2022-2025) and approved source list",
+      "schema + validator: required identity/season/source enforced; missing source_refs fails; unknown/unavailable explicit; zero vs null distinct; multi-team validates only under explicit primary_team rule; invalid grain / duplicate (player_id, season) fails",
+      "honest coverage reporting; no age/career fabrication when source lacks birth/draft",
+      "no Forecast binding until a later separate coverage/provenance gate passes"
+    ]
+  }
+}
