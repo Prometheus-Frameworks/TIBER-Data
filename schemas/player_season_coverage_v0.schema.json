@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber-data.local/schemas/player_season_coverage_v0.schema.json",
+  "title": "player_season_coverage_v0 (candidate)",
+  "description": "Candidate/evidence schema for a bounded player-season coverage artifact (player_id + season + season_type grain). This is NOT a promoted contract and does NOT authorize Forecast consumption. It must never assert active/inactive/IR/practice-squad gameday status. See docs/specs/player-season-coverage-v0-source-boundary.md.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "artifact_id",
+    "status",
+    "generated_at",
+    "seasons",
+    "season_type_scope",
+    "row_grain",
+    "records"
+  ],
+  "properties": {
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "const": "candidate_evidence_artifact_not_promoted",
+      "description": "Must explicitly state this is a candidate/evidence artifact, never promoted/governed."
+    },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "seasons": {
+      "type": "array",
+      "items": { "type": "integer", "minimum": 1900 },
+      "minItems": 1
+    },
+    "season_type_scope": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["REG", "POST", "REG+POST"] },
+      "minItems": 1
+    },
+    "row_grain": {
+      "type": "string",
+      "const": "player_id + season + season_type",
+      "description": "Per TIBER-Data #190's implementation directive, season_type is part of the uniqueness grain (the conceptual spec in #188/#189 frames the grain as player_id + season alone). REG and POST may coexist as separate, individually unambiguous rows for the same (player_id, season). A REG+POST row may never coexist with a REG or POST row for the same (player_id, season), since REG+POST already encompasses both and the pair would double-count."
+    },
+    "records": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/player_season_record" }
+    }
+  },
+  "$defs": {
+    "player_season_record": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "player_id",
+        "player_name",
+        "position",
+        "identity_confidence",
+        "season",
+        "season_type",
+        "generated_at",
+        "source_refs",
+        "teams",
+        "primary_team",
+        "weeks_observed",
+        "coverage_status",
+        "coverage_notes",
+        "missing_fields"
+      ],
+      "not": {
+        "anyOf": [
+          { "required": ["active_status"] },
+          { "required": ["ownership_status"] },
+          { "required": ["roster_status"] },
+          { "required": ["active_roster_status"] }
+        ]
+      },
+      "properties": {
+        "player_id": { "type": "string", "minLength": 1 },
+        "player_name": { "type": "string", "minLength": 1 },
+        "position": { "type": "string", "minLength": 1 },
+        "provider_ids": {
+          "type": ["object", "null"],
+          "additionalProperties": true
+        },
+        "identity_confidence": {
+          "type": "string",
+          "enum": ["source_verified", "provisional", "low"]
+        },
+        "season": { "type": "integer", "minimum": 1900 },
+        "season_type": {
+          "type": "string",
+          "enum": ["REG", "POST", "REG+POST"],
+          "description": "Required on every row. Never implicit. See spec #189 fail-closed rule 10."
+        },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "observed_at": { "type": ["string", "null"], "format": "date-time" },
+        "source_updated_at": { "type": ["string", "null"] },
+        "source_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["source_name", "observed_at", "confidence"],
+            "properties": {
+              "source_name": { "type": "string", "minLength": 1 },
+              "source_url": { "type": ["string", "null"] },
+              "observed_at": { "type": "string" },
+              "source_updated_at": { "type": ["string", "null"] },
+              "confidence": { "type": "string", "minLength": 1 },
+              "notes": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "teams": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "primary_team": { "type": ["string", "null"] },
+        "primary_team_rule": {
+          "type": ["string", "null"],
+          "description": "Required (non-null) whenever teams has more than one entry."
+        },
+        "team_weeks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["team", "weeks_observed"],
+            "properties": {
+              "team": { "type": "string" },
+              "weeks_observed": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "team_unknown": { "type": "boolean" },
+        "weeks_observed": { "type": "integer", "minimum": 0 },
+        "games_observed": { "type": ["integer", "null"], "minimum": 0 },
+        "games_played": { "type": ["integer", "null"], "minimum": 0 },
+        "games_missed": { "type": ["integer", "null"], "minimum": 0 },
+        "coverage_status": {
+          "type": "string",
+          "enum": ["full_season", "partial_season", "single_week", "none", "unknown"]
+        },
+        "coverage_notes": { "type": "string" },
+        "missing_fields": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "production_summary": { "type": ["object", "null"] },
+        "usage_summary": { "type": ["object", "null"] },
+        "birth_date": { "type": ["string", "null"] },
+        "season_age": { "type": ["number", "null"] },
+        "draft_year": { "type": ["integer", "null"] },
+        "rookie_year": { "type": ["integer", "null"] },
+        "career_year": { "type": ["integer", "null"] }
+      }
+    }
+  }
+}
