@@ -1,0 +1,100 @@
+{
+  "spec_id": "active-player-detection-v0-source-boundary",
+  "status": "spec_only_not_implementation_ready",
+  "is_json_schema": false,
+  "is_dataset": false,
+  "is_validator": false,
+  "disclaimer": "Non-normative companion to docs/specs/active-player-detection-v0-source-boundary.md. Illustrative field/enum shape only. This file does NOT validate data, does NOT authorize implementation, and asserts NO real player's current active status.",
+  "date": "2026-06-30",
+  "tracking_issue": "Prometheus-Frameworks/TIBER-Data#186",
+  "predecessor": "Prometheus-Frameworks/TIBER-Data#184 / PR #185",
+  "enum_decision": {
+    "choice": "Option B (distinct active_status detection enum) with disciplined reuse of player_ownership_v0.ownership_status as a separate field",
+    "rationale": "ownership_status cannot express gameday-inactive, and traded/released are transaction-event concepts, not ownership states; a distinct axis avoids overloading governed values while a verbatim-reused ownership_status field avoids enum drift.",
+    "two_axes": {
+      "ownership_status_axis": "reused verbatim from player_ownership_v0 (roster-membership category)",
+      "active_status_axis": "new, scoped only to availability/detection semantics"
+    },
+    "hard_rule": "active_status and ownership_status are validated independently; a value valid in one enum is invalid in the other; no silent cross-emission."
+  },
+  "enums": {
+    "active_status": ["active", "inactive", "ir", "practice_squad", "released", "traded", "unknown"],
+    "status_basis": ["source_truth", "derived_classification", "unavailable_unknown"],
+    "staleness_status": ["current", "stale", "unknown"],
+    "reused_ownership_status": ["active_roster", "practice_squad", "unsigned_draft_pick", "college", "devy", "free_agent", "retired", "injured_reserve", "suspended", "unknown"]
+  },
+  "active_status_to_ownership_status_mapping": [
+    {"active_status": "active", "ownership_status": "active_roster", "note": "direct"},
+    {"active_status": "inactive", "ownership_status": null, "note": "no governed value for gameday-inactive; carried only in active_status; needs separate roster-status field or ownership-contract extension before it can round-trip"},
+    {"active_status": "ir", "ownership_status": "injured_reserve", "note": "direct"},
+    {"active_status": "practice_squad", "ownership_status": "practice_squad", "note": "direct (same label, distinct field)"},
+    {"active_status": "released", "ownership_status": "free_agent", "note": "approximate; release is a transaction, free_agent is resulting ownership state; do not collapse without source_ref"},
+    {"active_status": "traded", "ownership_status": null, "note": "not an ownership status; model as player_ownership_change_event_v0.event_type=team_change/trade"},
+    {"active_status": "unknown", "ownership_status": "unknown", "note": "direct"}
+  ],
+  "proposed_envelope_fields": {
+    "contract_version": {"type": "const", "value": "active_player_detection_v0", "required": true},
+    "generated_at": {"type": "datetime", "required": true},
+    "as_of": {"type": "datetime", "required": true, "note": "instant the active-status claim is asserted valid for"},
+    "season": {"type": "integer", "required": true},
+    "week": {"type": "integer|null", "required": true},
+    "date_scope": {"type": "string|null", "required_when": "week is null"},
+    "source_name": {"type": "string", "required": true},
+    "source_path": {"type": "string", "required": true},
+    "source_updated_at": {"type": "datetime|null", "required": true},
+    "observed_at": {"type": "datetime", "required": true},
+    "staleness_status": {"type": "enum:staleness_status", "required": true},
+    "staleness_reason": {"type": "string|null", "required_when": "staleness_status != current"},
+    "coverage": {"type": "string", "required": true},
+    "records": {"type": "array<player_record>", "required": true}
+  },
+  "proposed_player_record_fields": {
+    "player_id": {"type": "string|null", "required": true, "note": "do not invent ids"},
+    "player_name": {"type": "string|null", "required": true},
+    "team": {"type": "string|null", "required": true},
+    "position": {"type": "string|null", "required": true},
+    "ownership_status": {"type": "enum:reused_ownership_status|null", "required": true},
+    "active_status": {"type": "enum:active_status", "required_when": "Option B detection in scope", "default": "unknown"},
+    "status_basis": {"type": "enum:status_basis", "required": true},
+    "confidence": {"type": "string", "required": true},
+    "source_refs": {"type": "array", "min_items": 1, "required": true, "item_fields": ["source_name", "source_url?", "observed_at", "source_updated_at?", "confidence", "notes?"]},
+    "staleness_flag": {"type": "enum:staleness_status", "required": true},
+    "fail_closed_reason": {"type": "string|null", "required_when": "active_status=unknown OR status_basis=unavailable_unknown"},
+    "notes": {"type": "string|null", "required": false}
+  },
+  "source_boundary": {
+    "in_boundary": [
+      {"path": "data/processed/evidence/roster_player_team_map_2025.source_backed.json", "provides": ["player_id", "player_name", "team", "position", "season/week roster membership"], "cannot_provide": ["active vs inactive", "ir vs active_roster", "practice_squad", "released/traded current state", "current 2026 active state", "gameday inactive"], "note": "all rows active_roster_status=unknown; membership is not availability"},
+      {"contract": "player_ownership_v0", "artifact_today": "exports/promoted/player_ownership/player_ownership_latest.json", "provides": ["ownership_status vocabulary", "provenance shape", "explicit staleness posture", "fail-closed unknown"], "cannot_provide": ["full-universe current active truth", "current roster truth for all players", "gameday inactive", "transaction truth beyond fixture/candidate"], "note": "27-player provisional/stale subset; usable only as a stale snapshot for the ownership axis"}
+    ],
+    "out_of_boundary_requires_separate_approval": ["live roster scraping", "gameday inactives feed", "injury reports", "transaction feeds", "any 2026 current roster source", "any new ingestion"]
+  },
+  "fail_closed_rules": [
+    "missing status becomes unknown, never active",
+    "missing rows are not proof of inactivity",
+    "stale snapshots cannot be treated as current truth",
+    "source-backed membership is not active status",
+    "traded/released must not collapse into current availability without source_refs",
+    "fixtures and smoke-test subsets cannot authorize current active status",
+    "current active status requires an explicit as-of source boundary that passed provenance review",
+    "fail_closed_reason required when active_status=unknown or status_basis=unavailable_unknown",
+    "active_status and ownership_status validated independently; cross-enum values invalid"
+  ],
+  "forecast_consumer_guidance": [
+    "Forecast must not consume active_player_detection_v0 until a real artifact exists and passes a separate coverage/provenance gate",
+    "a spec is not a dataset",
+    "a roster-membership row is not an availability feature",
+    "unknown must remain unknown, not zero or inactive",
+    "gameday-inactive/IR/traded/released/free-agent semantics stay separate unless explicitly mapped"
+  ],
+  "recommended_next_issue": {
+    "title": "feat: implement active_player_detection_v0 (gated, source-bounded)",
+    "status": "separate, NOT started here, blocked until gates approved",
+    "gates": [
+      "approved source with source_updated_at/observed_at >= target as_of, passing provenance review",
+      "schema + validator proving valid pass / missing-metadata fail / missing-status=unknown / invalid-enum fail / no cross-enum emission / explicit staleness",
+      "fail-closed unknown end-to-end",
+      "no Forecast binding until a separate coverage/provenance gate passes"
+    ]
+  }
+}
