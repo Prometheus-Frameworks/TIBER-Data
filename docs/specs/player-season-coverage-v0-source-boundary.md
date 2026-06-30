@@ -78,7 +78,7 @@ Each field carries a **truth status**: `source_truth` (passthrough from a named 
 | field | req | truth status | notes |
 |---|---|---|---|
 | `season` | R | source_truth | NFL season (integer) |
-| `season_type` | O | source_truth | `REG` / `POST` / `REG+POST`; the window covered by this row's summaries |
+| `season_type` | **R** | source_truth | `REG` / `POST` / `REG+POST`; the window covered by **this row's** summaries. **Required** — never optional: the cited 2025 source inputs span weeks 1–22 (REG **and** POST), so an unset `season_type` would let REG-only, POST-only, and REG+POST totals be silently compared or fed past a target-season cutoff. Because it is not part of the grain (§3), it must be explicit on every row. May additionally be pinned as required artifact-level metadata when the whole artifact shares one window, but the per-row value still governs that row's summaries. |
 | `generated_at` | R | — | artifact generation time |
 | `source_updated_at` \| `observed_at` | R | — | source's own update time / when TIBER observed it; null only when genuinely unavailable |
 | `source_refs` | R (min 1) | — | each: `source_name`, `source_url?`, `observed_at`, `source_updated_at?`, `confidence`, `notes?` |
@@ -177,7 +177,7 @@ Fixtures and scaffolds are shape references, never truth. No row of `player_seas
 
 ## 6. Recommended first implementation window
 
-**Recommended first bounded slice: `2022–2025` (4 seasons, REG by default; POST optional and flagged via `season_type`).** Do **not** build it here.
+**Recommended first bounded slice: `2022–2025` (4 seasons).** Each row's `season_type` is **required** (§4.2) — a first build should default to producing `REG`-scoped rows, but the scope must be stated explicitly per row (`REG` / `POST` / `REG+POST`), never left implicit. Do **not** build it here.
 
 ### Justification
 
@@ -205,7 +205,8 @@ Fixtures and scaffolds are shape references, never truth. No row of `player_seas
 7. **Multi-team seasons must not be collapsed** without the explicit `primary_team` rule; the full `teams` array is preserved.
 8. **One row per `(player_id, season)`**; duplicate pairs are invalid.
 9. **No availability/active-status assertion** (see §4.8).
-10. Forecast must not consume this until a real artifact passes a **separate coverage/provenance gate** (§8).
+10. **`season_type` is required on every row.** Summaries with an unset or implicit season scope are invalid; REG-only, POST-only, and REG+POST totals must never be mixed, compared, or fed past a target-season cutoff without an explicit `season_type` (the source spans weeks 1–22, i.e., REG **and** POST).
+11. Forecast must not consume this until a real artifact passes a **separate coverage/provenance gate** (§8).
 
 ---
 

@@ -27,7 +27,7 @@
     },
     "season_scope": {
       "season": {"req": "required", "truth": "source_truth"},
-      "season_type": {"req": "optional", "truth": "source_truth", "values": ["REG", "POST", "REG+POST"]},
+      "season_type": {"req": "required", "truth": "source_truth", "values": ["REG", "POST", "REG+POST"], "note": "required on every row (not optional); source spans weeks 1-22 (REG and POST), so unset season_type would let REG/POST/REG+POST totals be silently mixed past a cutoff; not part of the grain, so must be explicit per row; may also be pinned as required artifact-level metadata"},
       "generated_at": {"req": "required"},
       "source_updated_at_or_observed_at": {"req": "required"},
       "source_refs": {"req": "required", "min_items": 1, "item_fields": ["source_name", "source_url?", "observed_at", "source_updated_at?", "confidence", "notes?"]}
@@ -94,7 +94,7 @@
   },
   "recommended_first_window": {
     "choice": "2022-2025",
-    "season_type_default": "REG (POST optional, flagged via season_type)",
+    "season_type_default": "first build defaults to producing REG-scoped rows, but season_type is REQUIRED and explicit per row (REG/POST/REG+POST), never implicit",
     "justification": [
       "includes 2024+2025: making 2024 real is the prerequisite for Forecast's 2024->2025 target experiment",
       "four seasons give bounded career_year/tenure trend without claiming full career history",
@@ -115,6 +115,7 @@
     "multi-team seasons must not be collapsed without explicit primary_team rule",
     "one row per (player_id, season); duplicates invalid",
     "no availability/active-status assertion",
+    "season_type required on every row; REG/POST/REG+POST totals must never be mixed, compared, or fed past a target-season cutoff without explicit season_type (source spans weeks 1-22)",
     "Forecast must not consume until a real artifact passes a separate coverage/provenance gate"
   ],
   "forecast_consumer_guidance": [
@@ -140,7 +141,7 @@
     "status": "separate, NOT started here, blocked until gates approved",
     "gates": [
       "approved season window (default 2022-2025) and approved source list",
-      "schema + validator: required identity/season/source enforced; missing source_refs fails; unknown/unavailable explicit; zero vs null distinct; multi-team validates only under explicit primary_team rule; invalid grain / duplicate (player_id, season) fails",
+      "schema + validator: required identity/season/source enforced; season_type required on every row; missing source_refs fails; unknown/unavailable explicit; zero vs null distinct; multi-team validates only under explicit primary_team rule; invalid grain / duplicate (player_id, season) fails",
       "honest coverage reporting; no age/career fabrication when source lacks birth/draft",
       "no Forecast binding until a later separate coverage/provenance gate passes"
     ]
