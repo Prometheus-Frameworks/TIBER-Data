@@ -1,0 +1,171 @@
+{
+  "report_id": "player-season-coverage-v0-2022-2025",
+  "generated_at": "2026-06-30T19:27:04.259593+00:00",
+  "artifact_path": "data/processed/evidence/player_season_coverage_2022_2025.source_backed.json",
+  "artifact_status": "candidate_evidence_artifact_not_promoted",
+  "is_candidate_not_promoted": true,
+  "seasons_covered": [
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "season_type_values_emitted": [
+    "REG"
+  ],
+  "included_positions": [
+    "QB",
+    "RB",
+    "TE",
+    "WR"
+  ],
+  "total_records": 2383,
+  "row_counts_by_season_and_position": {
+    "2022": {
+      "QB": 83,
+      "TE": 129,
+      "WR": 238,
+      "RB": 159
+    },
+    "2023": {
+      "QB": 81,
+      "TE": 124,
+      "WR": 223,
+      "RB": 148
+    },
+    "2024": {
+      "QB": 78,
+      "TE": 128,
+      "WR": 234,
+      "RB": 148
+    },
+    "2025": {
+      "QB": 81,
+      "TE": 138,
+      "WR": 240,
+      "RB": 151
+    }
+  },
+  "unique_player_counts_by_season": {
+    "2022": 609,
+    "2023": 576,
+    "2024": 588,
+    "2025": 610
+  },
+  "multi_team_season_counts_by_season": {
+    "2022": 28,
+    "2023": 12,
+    "2024": 19,
+    "2025": 25
+  },
+  "coverage_status_distribution": {
+    "full_season": 693,
+    "partial_season": 1504,
+    "single_week": 186
+  },
+  "identity_confidence_distribution": {
+    "source_verified": 2383
+  },
+  "null_unavailable_rates_by_field": {
+    "birth_date": {
+      "null_count": 0,
+      "total": 2383,
+      "null_rate_pct": 0.0
+    },
+    "season_age": {
+      "null_count": 0,
+      "total": 2383,
+      "null_rate_pct": 0.0
+    },
+    "draft_year": {
+      "null_count": 653,
+      "total": 2383,
+      "null_rate_pct": 27.4
+    },
+    "rookie_year": {
+      "null_count": 0,
+      "total": 2383,
+      "null_rate_pct": 0.0
+    },
+    "career_year": {
+      "null_count": 0,
+      "total": 2383,
+      "null_rate_pct": 0.0
+    },
+    "games_played": {
+      "null_count": 0,
+      "total": 2383,
+      "null_rate_pct": 0.0
+    },
+    "games_missed": {
+      "null_count": 2383,
+      "total": 2383,
+      "null_rate_pct": 100.0
+    },
+    "usage_summary.target_share": {
+      "null_count": 0,
+      "total": 2383,
+      "null_rate_pct": 0.0
+    },
+    "usage_summary.air_yards_share": {
+      "null_count": 0,
+      "total": 2383,
+      "null_rate_pct": 0.0
+    },
+    "usage_summary.racr": {
+      "null_count": 472,
+      "total": 2383,
+      "null_rate_pct": 19.8
+    },
+    "usage_summary.snap_share": {
+      "null_count": 2383,
+      "total": 2383,
+      "null_rate_pct": 100.0
+    },
+    "usage_summary.routes_run": {
+      "null_count": 2383,
+      "total": 2383,
+      "null_rate_pct": 100.0
+    },
+    "usage_summary.route_participation": {
+      "null_count": 2383,
+      "total": 2383,
+      "null_rate_pct": 100.0
+    },
+    "usage_summary.red_zone_targets": {
+      "null_count": 2383,
+      "total": 2383,
+      "null_rate_pct": 100.0
+    },
+    "usage_summary.red_zone_carries": {
+      "null_count": 2383,
+      "total": 2383,
+      "null_rate_pct": 100.0
+    }
+  },
+  "source_names_used": [
+    "nflreadpy.load_player_stats(summary_level='reg')",
+    "nflreadpy.load_player_stats(summary_level='week')",
+    "nflreadpy.load_players()"
+  ],
+  "source_failures_or_gaps": [],
+  "fixture_or_scaffold_marker_hits": 0,
+  "fixture_scaffold_exclusion_check_passed": true,
+  "duplicate_row_validation": {
+    "grain": "player_id + season + season_type",
+    "unique_keys": 2383,
+    "total_rows": 2383,
+    "passed": true
+  },
+  "season_2024_readiness": {
+    "records_present": 588,
+    "is_now_source_backed": true,
+    "statement": "2024 is now source-backed via nflreadpy.load_player_stats/load_players in this candidate artifact (no fixture/scaffold markers detected in source_refs for any 2024 row). This is still a candidate/evidence artifact, not promoted, and is not a Forecast input today."
+  },
+  "validator_result": {
+    "validator_script": "scripts/validate_player_season_coverage_v0.py",
+    "errors": [],
+    "passed": true
+  },
+  "forecast_consumption_statement": "This is a candidate/evidence artifact under data/processed/evidence/, not a promoted dataset under exports/promoted/. Forecast must not consume this artifact until a separate coverage/provenance gate exists and passes. No Forecast run is authorized by this report."
+}
