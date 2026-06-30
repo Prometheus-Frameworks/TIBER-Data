@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 import jsonschema
@@ -45,6 +46,15 @@ def validate_schema(payload: dict) -> list[str]:
 
 
 def check_duplicate_grain(records: list[dict]) -> list[str]:
+    """Grain is player_id + season + season_type, per TIBER-Data #190's explicit implementation
+    directive (the conceptual spec in #188/#189 frames the grain as player_id + season alone,
+    but #190 requires season_type be included in uniqueness -- or proven exactly-one-per-pair --
+    specifically to prevent REG/POST/REG+POST mixing). This means REG and POST may legitimately
+    coexist as separate, clearly-marked rows for the same (player_id, season): that is not a
+    duplicate, it is the explicitly authorized shape for a future POST/REG+POST expansion.
+    See check_no_overlapping_season_type_combination for the genuine-ambiguity guard this implies
+    (a REG+POST row may not coexist with a REG or POST row for the same player-season, since
+    REG+POST already encompasses both and the pair would double-count)."""
     errors: list[str] = []
     seen: set[tuple] = set()
     for idx, row in enumerate(records):
@@ -55,6 +65,28 @@ def check_duplicate_grain(records: list[dict]) -> list[str]:
         if key in seen:
             errors.append(f"record[{idx}]: duplicate grain {key}")
         seen.add(key)
+    return errors
+
+
+def check_no_overlapping_season_type_combination(records: list[dict]) -> list[str]:
+    """A REG+POST row already encompasses both REG and POST production for that player-season,
+    so it may not coexist with a separate REG or POST row for the same (player_id, season) --
+    that combination would be genuinely ambiguous (overlapping/double-countable totals), unlike
+    REG and POST coexisting as two distinct, individually unambiguous rows."""
+    errors: list[str] = []
+    season_types_by_pair: dict[tuple, set[str]] = defaultdict(set)
+    for row in records:
+        pair = (row.get("player_id"), row.get("season"))
+        season_type = row.get("season_type")
+        if pair[0] is not None and pair[1] is not None and season_type:
+            season_types_by_pair[pair].add(season_type)
+
+    for pair, types_present in season_types_by_pair.items():
+        if "REG+POST" in types_present and len(types_present) > 1:
+            errors.append(
+                f"player_id={pair[0]} season={pair[1]}: REG+POST row coexists with "
+                f"{sorted(types_present - {'REG+POST'})}, which double-counts production"
+            )
     return errors
 
 
@@ -140,6 +172,7 @@ def validate_payload(payload: dict) -> list[str]:
         errors.append("no records present")
 
     errors.extend(check_duplicate_grain(records))
+    errors.extend(check_no_overlapping_season_type_combination(records))
     errors.extend(check_season_type_explicit(records))
     errors.extend(check_multi_team_rule(records))
     errors.extend(check_no_availability_assertion(records))

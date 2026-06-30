@@ -1,6 +1,6 @@
 # Coverage Report: player_season_coverage_v0 — 2022-2025 Candidate
 
-- **Generated at:** 2026-06-30T19:27:04.259593+00:00
+- **Generated at:** 2026-06-30T19:38:19.797324+00:00
 - **Artifact:** `data/processed/evidence/player_season_coverage_2022_2025.source_backed.json`
 - **Artifact status:** `candidate_evidence_artifact_not_promoted`
 - **Candidate vs promoted:** This is a **candidate/evidence artifact**, **not** a promoted dataset. It does not authorize Forecast consumption.

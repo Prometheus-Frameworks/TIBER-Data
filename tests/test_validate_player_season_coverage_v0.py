@@ -103,6 +103,28 @@ def test_duplicate_grain_fails() -> None:
     assert any("duplicate grain" in e for e in errors)
 
 
+def test_reg_and_post_coexisting_for_same_player_season_passes() -> None:
+    """REG and POST are explicitly authorized to coexist as separate, individually
+    unambiguous rows for the same (player_id, season) per #190's grain directive."""
+    module = _load_module()
+    reg_row = _base_record(season_type="REG")
+    post_row = _base_record(season_type="POST")
+    payload = _base_payload([reg_row, post_row])
+    errors = module.validate_payload(payload)
+    assert errors == []
+
+
+def test_reg_plus_post_overlapping_with_reg_fails() -> None:
+    """A REG+POST row already encompasses REG production, so it may not coexist
+    with a separate REG row for the same player-season (double-counting risk)."""
+    module = _load_module()
+    reg_row = _base_record(season_type="REG")
+    combined_row = _base_record(season_type="REG+POST")
+    payload = _base_payload([reg_row, combined_row])
+    errors = module.validate_payload(payload)
+    assert any("double-counts" in e for e in errors)
+
+
 def test_missing_source_refs_fails() -> None:
     module = _load_module()
     record = _base_record(source_refs=[])

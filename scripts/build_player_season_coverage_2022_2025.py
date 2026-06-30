@@ -55,7 +55,9 @@ TEAM_CONTEXT_SOURCE_NOTE = (
 )
 COVERAGE_STATUS_RULE = (
     "full_season: weeks_observed >= 15; partial_season: 1 < weeks_observed < 15; "
-    "single_week: weeks_observed == 1, relative to a 17-game REG season (2021+ format)."
+    "single_week: weeks_observed == 1. weeks_observed counts distinct REG week NUMBERS "
+    "(1-18, the full week span of a 2021+ season) with a recorded stat line, not games-against-the-"
+    "17-per-team-game-cap; a traded player whose two teams' bye weeks differ can validly reach 18."
 )
 AGE_REFERENCE_NOTE = "season_age computed against a fixed reference date of September 1 of `season`."
 
@@ -442,7 +444,7 @@ def build_source_backed_payload() -> dict:
                 "games_missed": None,
                 "coverage_status": _coverage_status(weeks_observed),
                 "coverage_notes": (
-                    f"{weeks_observed} of 17 REG weeks observed"
+                    f"{weeks_observed} of up to 18 REG week numbers observed"
                     + (f"; multi-team ({len(teams_list)}), see primary_team_rule" if len(teams_list) > 1 else "")
                     + " (see artifact methodology for thresholds and team-context source)."
                 ),

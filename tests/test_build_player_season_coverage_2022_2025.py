@@ -186,6 +186,34 @@ def _reg_row(season, player_id, name, team, position, games, **overrides):
     return base
 
 
+def test_coverage_notes_denominator_handles_18_week_traded_player(monkeypatch) -> None:
+    """Regression test: a traded player whose two teams' bye weeks differ can validly
+    record a stat line in all 18 REG week numbers. coverage_notes must not claim a
+    fixed 17-week denominator (it previously printed the nonsensical "18 of 17")."""
+    module = _load_module()
+    module.SEASONS = [2025]
+
+    week_rows = [_week_row(2025, w, "p1", "NO") for w in range(1, 10)] + [
+        _week_row(2025, w, "p1", "SEA") for w in range(10, 19)
+    ]
+    reg_rows = [_reg_row(2025, "p1", "Traded Player", "SEA", "WR", games=18)]
+
+    monkeypatch.setattr(
+        module.nfl,
+        "load_player_stats",
+        lambda seasons, summary_level="week": _FakeFrame(week_rows if summary_level == "week" else reg_rows),
+    )
+    monkeypatch.setattr(module.nfl, "load_players", lambda: _FakeFrame([{"gsis_id": "unrelated-player"}]))
+
+    payload = module.build_source_backed_payload()
+    record = payload["records"][0]
+
+    assert record["weeks_observed"] == 18
+    assert record["coverage_status"] == "full_season"
+    assert "of 17" not in record["coverage_notes"]
+    assert "18" in record["coverage_notes"]
+
+
 def test_build_source_backed_payload_end_to_end(monkeypatch) -> None:
     module = _load_module()
     module.SEASONS = [2023]
@@ -276,9 +304,9 @@ def test_build_source_backed_payload_rejects_non_skill_positions(monkeypatch) ->
         "load_player_stats",
         lambda seasons, summary_level="week": _FakeFrame(week_rows if summary_level == "week" else reg_rows),
     )
-    monkeypatch.setattr(module.nfl, "load_players", lambda: _FakeFrame([]))
+    monkeypatch.setattr(module.nfl, "load_players", lambda: _FakeFrame([{"gsis_id": "unrelated-player"}]))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="No valid source-backed"):
         module.build_source_backed_payload()
 
 
