@@ -45,8 +45,8 @@ Provenance legend: **source_backed** = real upstream (nflverse/nflreadpy or name
 | `data/gold/forge/forge_player_weekly_ppr_2025.cohort.v1.json` | FORGE cohort v1 | player-week cohort | 2025 (18 wk) | 50 players | **source_backed** (nflverse via nflreadpy; `asOf`/`sourceUpdatedAt` 2026-04-27) | `asOf`, `sourceUpdatedAt`, `buildId` | n/a (production) |
 | `data/gold/forge/forge_weekly_player_ppr_2025.v1.json` | FORGE weekly v1 | player-week | 2025 (18 wk) | 792 records / 50 players | **source_backed** | `metadata.asOf`/`sourceUpdatedAt` | n/a |
 | `data/gold/forge/forge_season_player_input_2025.ppr.v1.json` | FORGE season input v1 | player-season | 2025 | 50 players | **source_backed** | `metadata.asOf`/`sourceUpdatedAt` | n/a |
-| `data/gold/forge/forge_weekly_player_input_2024_w0X.*offline_fixture*.json` | FORGE weekly | player-week | 2024 (w01–w06) | fixtures | **fixture** (`offline_fixture`) | derived | No |
-| `data/gold/forge/forge_weekly_player_input_2024_w0X.*proof_reference_snapshot*.json` | FORGE weekly | player-week | 2024 (w01–w03) | 8-player scaffold | **scaffold** (`upstream_public_..._8player_scaffold`) | snapshot | No |
+| `data/gold/forge/forge_weekly_player_input_2024_w0[1-6].{skill,qb}_offline_fixture.derived.json` (glob; `skill_` for w01–w06, `qb_` for w01) | FORGE weekly | player-week | 2024 (w01–w06) | fixtures | **fixture** (`offline_fixture`) | derived | No |
+| `data/gold/forge/forge_weekly_player_input_2024_w0[1-3].skill_upstream_public_w01_w03_8player_scaffold.proof_reference_snapshot.derived.json` (glob) | FORGE weekly | player-week | 2024 (w01–w03) | 8-player scaffold | **scaffold** (`upstream_public_..._8player_scaffold`) | snapshot | No |
 | `data/raw/evidence/*.offline_fixture.json` (box scores, usage, roster map, team offense/pace, rookie replay) | raw fixtures | mixed | 2025 | small | **fixture** (`offline_fixture`) | — | No |
 | `data/raw/forge/weekly_player_stats.offline_fixture.json` | raw forge fixture | player-week | (forge) | 25 KB | **fixture** | — | No |
 | `data/raw/player_ownership/player_ownership_source_roster_smoke_test_2026_05_24.json` | raw ownership smoke test | player | 2025/2026 | 20 KB | source smoke test | observed | input to ownership_v0 |
@@ -169,13 +169,27 @@ Define `active_player_detection_v0` as a **derived classification artifact** (no
 - `source_name` + `source_path` (e.g., `nflreadpy.load_rosters_weekly`, `data/processed/evidence/roster_player_team_map_2025.source_backed.json`);
 - `source_updated_at` / `observed_at`;
 - `player_id`, `player_name`, `team`, `position`;
-- `roster_status` and an enum `active_status ∈ {active, inactive, ir, practice_squad, released, traded, unknown}`;
+- `roster_status` and a detection enum `active_status ∈ {active, inactive, ir, practice_squad, released, traded, unknown}` — **see the enum-boundary note below; this is a gameday-availability axis and is NOT the governed `ownership_status` enum**;
 - `status_basis ∈ {source_truth, derived_classification}` (so consumers know status is *derived*, not asserted by the source);
 - `confidence` / provenance posture;
 - `season` / `week` / `date` scope;
 - **fail-closed rule:** when status is missing → `unknown`, never inferred from absent rows; when the snapshot is stale → carry the staleness note (as `player_ownership_latest.json` already does).
 
-**Can existing artifacts satisfy this today?** Partially: `roster_player_team_map_2025.source_backed.json` supplies identity + team + membership for 971 players (status `unknown`), and `player_ownership_v0` supplies the enum + a 27-player provisional snapshot. **What is missing:** a current, full-universe roster/inactives source and a derivation step that maps membership → active/inactive with `status_basis = derived_classification`. Until that exists, the artifact must remain a 2025-scoped, fail-closed snapshot, not a claim of *current* active state.
+**Enum boundary vs. the governed `player_ownership_v0.ownership_status`.** The detection enum above must **not** be assumed to round-trip with the governed `ownership_status` enum (`active_roster`, `practice_squad`, `unsigned_draft_pick`, `college`, `devy`, `free_agent`, `retired`, `injured_reserve`, `suspended`, `unknown`). A future `active_player_detection_v0` must either (a) reuse `ownership_status` for the roster-membership axis, or (b) keep this distinct detection enum **and** document the mapping below as an explicit new enum boundary:
+
+| detection `active_status` | governed `ownership_status` | boundary note |
+|---|---|---|
+| `active` | `active_roster` | direct |
+| `inactive` | *(none)* | no governed value for gameday-inactive — needs a roster-status sub-field or an `ownership_v0` extension |
+| `ir` | `injured_reserve` | direct |
+| `practice_squad` | `practice_squad` | direct |
+| `released` | `free_agent` | approximate; release is a transaction, free-agent is the resulting ownership state |
+| `traded` | *(none)* | not an `ownership_status`; modeled by `player_ownership_change_event_v0.event_type` = `team_change`/`trade` |
+| `unknown` | `unknown` | direct |
+
+So the next issue must pick (a) or (b) explicitly; it cannot silently emit `active`/`ir`/`released`/`traded` as if they were governed `ownership_status` values.
+
+**Can existing artifacts satisfy this today?** Partially: `roster_player_team_map_2025.source_backed.json` supplies identity + team + membership for 971 players (status `unknown`), and `player_ownership_v0` supplies the ownership enum + a 27-player provisional snapshot. **What is missing:** a current, full-universe roster/inactives source; a derivation step that maps membership → active/inactive with `status_basis = derived_classification`; and the explicit enum reconciliation above. Until that exists, the artifact must remain a 2025-scoped, fail-closed snapshot, not a claim of *current* active state.
 
 ---
 

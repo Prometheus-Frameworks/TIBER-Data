@@ -38,8 +38,8 @@
     {"path": "data/gold/forge/forge_player_weekly_ppr_2025.cohort.v1.json", "kind": "forge_cohort_v1", "grain": "player-week-cohort", "seasons": [2025], "players": 50, "provenance": "source_backed", "source": "nflverse via nflreadpy", "as_of_metadata": "asOf/sourceUpdatedAt 2026-04-27", "active_detector_safe": "n/a"},
     {"path": "data/gold/forge/forge_weekly_player_ppr_2025.v1.json", "kind": "forge_weekly_v1", "grain": "player-week", "seasons": [2025], "rows": 792, "players": 50, "provenance": "source_backed", "active_detector_safe": "n/a"},
     {"path": "data/gold/forge/forge_season_player_input_2025.ppr.v1.json", "kind": "forge_season_input_v1", "grain": "player-season", "seasons": [2025], "players": 50, "provenance": "source_backed", "active_detector_safe": "n/a"},
-    {"path": "data/gold/forge/forge_weekly_player_input_2024_w0X.offline_fixture.derived.json", "kind": "forge_weekly", "grain": "player-week", "seasons": [2024], "weeks": "w01-w06", "provenance": "fixture", "active_detector_safe": false},
-    {"path": "data/gold/forge/forge_weekly_player_input_2024_w0X.upstream_public_8player_scaffold.json", "kind": "forge_weekly_scaffold", "grain": "player-week", "seasons": [2024], "weeks": "w01-w03", "players": 8, "provenance": "scaffold", "active_detector_safe": false},
+    {"path_glob": "data/gold/forge/forge_weekly_player_input_2024_w0[1-6].*_offline_fixture.derived.json", "path_is_glob": true, "example_files": ["data/gold/forge/forge_weekly_player_input_2024_w01.qb_offline_fixture.derived.json", "data/gold/forge/forge_weekly_player_input_2024_w01.skill_offline_fixture.derived.json", "data/gold/forge/forge_weekly_player_input_2024_w06.skill_offline_fixture.derived.json"], "kind": "forge_weekly", "grain": "player-week", "seasons": [2024], "weeks": "w01-w06 (skill_ for w01-w06; qb_ for w01)", "provenance": "fixture", "active_detector_safe": false},
+    {"path_glob": "data/gold/forge/forge_weekly_player_input_2024_w0[1-3].skill_upstream_public_w01_w03_8player_scaffold.proof_reference_snapshot.derived.json", "path_is_glob": true, "example_files": ["data/gold/forge/forge_weekly_player_input_2024_w01.skill_upstream_public_w01_w03_8player_scaffold.proof_reference_snapshot.derived.json", "data/gold/forge/forge_weekly_player_input_2024_w03.skill_upstream_public_w01_w03_8player_scaffold.proof_reference_snapshot.derived.json"], "kind": "forge_weekly_scaffold", "grain": "player-week", "seasons": [2024], "weeks": "w01-w03", "players": 8, "provenance": "scaffold", "active_detector_safe": false},
     {"path": "data/projection-input-fixtures/weekly_projection_input_fixture_2026_w01.json", "kind": "projection_input_fixture_v1", "grain": "player-week-bundle", "seasons": ["2026_w01 label"], "provenance": "fixture", "note": "bounded_rehearsal_fixture, production_coverage_claim=false", "active_detector_safe": false},
     {"path": "schemas/roster_snapshot_v0.schema.json", "kind": "contract_only", "grain": "team-roster-snapshot", "data_rows": 0, "provenance": "contract_only", "note": "schema mandates generated_at, source_updated_at, observed_at, confidence, status; no data"},
     {"path": "src/contracts/v1/roleOpportunity.ts", "kind": "contract_only", "grain": "player-week-role", "data_rows": 0, "provenance": "contract_only", "note": "Zod contract + validator + tests + 2024-window examples; no real data; producer is separate Role-and-Opportunity-Model repo"},
@@ -83,7 +83,21 @@
       "status_basis[source_truth|derived_classification]", "confidence_provenance",
       "season", "week", "date", "fail_closed_unknown_when_missing"
     ],
+    "active_status_enum_boundary": {
+      "note": "The active_status_enum above is a detection/gameday-availability axis and is NOT the governed ownership_status enum. It must not be assumed to round-trip with player_ownership_v0. A future active_player_detection_v0 must either (a) reuse player_ownership_v0.ownership_status for the roster-membership axis, or (b) define this distinct enum AND document the mapping below as an explicit new enum boundary.",
+      "governed_ownership_status_enum": ["active_roster", "practice_squad", "unsigned_draft_pick", "college", "devy", "free_agent", "retired", "injured_reserve", "suspended", "unknown"],
+      "mapping_detection_to_governed_ownership_status": {
+        "active": "active_roster",
+        "inactive": "active_roster (NO governed value for gameday-inactive; this is a new boundary requiring either a roster-status sub-field or an ownership_v0 extension)",
+        "ir": "injured_reserve",
+        "practice_squad": "practice_squad",
+        "released": "free_agent",
+        "traded": "NO governed ownership_status value; team movement is modeled by player_ownership_change_event_v0.event_type=team_change/trade, not by ownership_status",
+        "unknown": "unknown"
+      },
+      "gaps_revealed": ["gameday-inactive has no ownership_status value", "traded/released are transaction-event concepts, not ownership_status values"]
+    },
     "existing_artifacts_partial_support": "roster_player_team_map_2025.source_backed.json (identity/team/membership, status unknown) + player_ownership_v0 (enum + 27-player provisional snapshot)",
-    "missing": "current full-universe roster/inactives source + derivation step (membership -> active/inactive with status_basis=derived_classification)"
+    "missing": "current full-universe roster/inactives source + derivation step (membership -> active/inactive with status_basis=derived_classification); explicit enum reconciliation with player_ownership_v0.ownership_status"
   }
 }
