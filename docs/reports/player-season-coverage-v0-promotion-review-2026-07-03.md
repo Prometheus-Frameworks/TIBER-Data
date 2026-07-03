@@ -34,13 +34,13 @@ The existing validator passes the artifact with zero errors (2,383 records).
 
 ## 3. Source provenance allow-list — **gap found and fixed in this PR; artifact passes the strict standard**
 
-The validator previously rejected fixture markers and missing refs but never required sources to be **approved** — the same gap Forecast closed downstream in #110 (gate) and #112 (run boundary). Fixed here: `APPROVED_SOURCE_NAME_SUBSTRINGS` (`nflreadpy.load_player_stats`, `nflreadpy.load_players`) with the **all-source standard** — every `source_ref` on every record must be approved; a record carrying an approved source plus an unapproved extra (e.g. `manual_override_or_unknown_source`) fails closed. Regression tests cover mixed-source, unapproved-only, fixture-marked, and missing provenance. The real artifact passes: 0 unapproved refs across 2,383 records × 3 refs each.
+The validator previously rejected fixture markers and missing refs but never required sources to be **approved** — the same gap Forecast closed downstream in #110 (gate) and #112 (run boundary). Fixed here: `APPROVED_SOURCE_NAME_PREFIXES` (`nflreadpy.load_player_stats(`, `nflreadpy.load_players(`) with the **all-source standard**, matched as prefixes — every `source_ref` on every record must START with an approved call-shape, so a record carrying an approved source plus an unapproved extra (e.g. `manual_override_or_unknown_source`) fails closed, and so does free text that merely embeds an approved token (e.g. `manual_override:nflreadpy.load_players()`). Regression tests cover mixed-source, unapproved-only, embedded-token, fixture-marked, and missing provenance. The real artifact passes: 0 unapproved refs across 2,383 records × 3 refs each.
 
 ## 4. Reproducibility — **promotion is deterministic; fresh source rebuild documented honestly**
 
 Two distinct reproducibility claims, kept separate:
 
-- **Promotion (this PR)**: `python scripts/promote_player_season_coverage_v0.py` is deterministic and network-free — a pure transformation of the sha256-pinned candidate (fail-closed on sha mismatch, validator errors, or scope violations), with a fixed `promoted_at`. Verified byte-identical across repeated runs; the manifest pins the promoted file's own sha256 (`dff2c89068ff8b066fe6132dee7197bf884615c6a09339e873c7bbc48310250b`).
+- **Promotion (this PR)**: `python scripts/promote_player_season_coverage_v0.py` is deterministic and network-free — a pure transformation of the sha256-pinned candidate (fail-closed on sha mismatch, validator errors, or scope violations), with a fixed `promoted_at`. Verified byte-identical across repeated runs; the manifest pins the promoted file's own sha256 (`29f8e378127fa5426e5897ac4522b6187941312edabab357d8a427fb20511035`).
 - **Candidate rebuild**: `python scripts/build_player_season_coverage_2022_2025.py` (network: nflreadpy; Python ≥ the repo's pyproject environment). Content-reproducible against unchanged upstream data, but **not byte-identical across runs** — the artifact embeds `observed_at`/`generated_at` timestamps, and upstream nflreadpy data is mutable (stat corrections land upstream). **Policy recorded**: a rebuilt candidate gets a NEW sha, fails the promotion pin closed, and requires a NEW governance review before re-promotion. If upstream `nflreadpy` behavior changes (schema or semantics), the build script and spec must be re-reviewed before any rebuild is trusted.
 
 This satisfies the gate: the promoted artifact is deterministically regenerable and sha-verifiable from the recorded, pinned input; the path from live sources is documented with its real limitations rather than overclaimed.
@@ -71,7 +71,7 @@ If/when Forecast consumes the promoted artifact, it must do so via a **separate 
 
 **`promote_player_season_coverage_v0`** — all seven gates pass, with the provenance allow-list strengthened as part of this review. Promoted outputs created:
 
-- `exports/promoted/nfl/player_season_coverage_v0.json` (2,383 records, envelope per section 2; sha256 `dff2c890…250b`)
+- `exports/promoted/nfl/player_season_coverage_v0.json` (2,383 records, envelope per section 2; sha256 `29f8e378…1035`)
 - `exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json` (envelope + promoted-file sha, no records)
 - `schemas/player_season_coverage_v0_promoted.schema.json`
 

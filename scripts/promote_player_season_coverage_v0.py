@@ -123,7 +123,7 @@ def build_promoted_payload(candidate: dict, candidate_sha256: str, validator_mod
             "sha256": candidate_sha256,
             "status_at_promotion": candidate["status"],
         },
-        "approved_source_allowlist": list(validator_module.APPROVED_SOURCE_NAME_SUBSTRINGS),
+        "approved_source_allowlist": list(validator_module.APPROVED_SOURCE_NAME_PREFIXES),
         "seasons": candidate["seasons"],
         "season_type_scope": candidate["season_type_scope"],
         "included_positions": sorted(POSITION_SCOPE),

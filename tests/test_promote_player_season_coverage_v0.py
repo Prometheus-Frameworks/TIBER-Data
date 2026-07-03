@@ -100,6 +100,16 @@ class TestValidatorGovernance:
         errors = validator.validate_payload(_candidate([record]))
         assert any("unapproved source ref" in e for e in errors)
 
+    def test_embedded_approved_token_fails(self):
+        # A free-text name that merely EMBEDS an approved token must not pass the prefix allow-list.
+        record = _record(
+            source_refs=[
+                {"source_name": "manual_override:nflreadpy.load_players()", "observed_at": "2026-06-30T00:00:00Z", "confidence": "source_verified"}
+            ]
+        )
+        errors = validator.validate_payload(_candidate([record]))
+        assert any("unapproved source ref" in e for e in errors)
+
     def test_fixture_source_marker_fails(self):
         record = _record(source_refs=[{"source_name": "offline_fixture:data/raw/foo.json", "observed_at": "2026-06-30T00:00:00Z", "confidence": "source_verified"}])
         errors = validator.validate_payload(_candidate([record]))

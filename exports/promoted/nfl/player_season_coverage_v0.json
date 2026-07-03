@@ -12,8 +12,8 @@
   "status_at_promotion": "candidate_evidence_artifact_not_promoted"
  },
  "approved_source_allowlist": [
-  "nflreadpy.load_player_stats",
-  "nflreadpy.load_players"
+  "nflreadpy.load_player_stats(",
+  "nflreadpy.load_players("
  ],
  "seasons": [
   2022,

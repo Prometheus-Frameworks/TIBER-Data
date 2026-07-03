@@ -32,9 +32,11 @@ FIXTURE_MARKERS = ("offline_fixture", "fixture_", "scaffold", "fixture_demonstra
 # All-source allow-list (TIBER-Data #192, matching the standard Forecast enforces downstream in
 # #110/#112): EVERY source_ref on EVERY record must match an approved source. "At least one approved
 # source" is not enough -- a record carrying an approved source plus an unapproved extra fails closed.
-APPROVED_SOURCE_NAME_SUBSTRINGS = (
-    "nflreadpy.load_player_stats",
-    "nflreadpy.load_players",
+# Matched as PREFIXES (the approved call-shape must START the source_name): free-text names that merely
+# embed an approved token, e.g. "manual_override:nflreadpy.load_players", fail closed.
+APPROVED_SOURCE_NAME_PREFIXES = (
+    "nflreadpy.load_player_stats(",
+    "nflreadpy.load_players(",
 )
 ACTIVE_STATUS_FORBIDDEN_KEYS = {"active_status", "ownership_status", "roster_status", "active_roster_status"}
 
@@ -137,10 +139,10 @@ def check_source_refs(records: list[dict]) -> list[str]:
             name = str(ref.get("source_name", ""))
             if any(marker in name for marker in FIXTURE_MARKERS):
                 errors.append(f"record[{idx}]: fixture/scaffold source presented as source-backed: {name}")
-            if not any(approved in name for approved in APPROVED_SOURCE_NAME_SUBSTRINGS):
+            if not name.startswith(APPROVED_SOURCE_NAME_PREFIXES):
                 errors.append(
-                    f"record[{idx}]: unapproved source ref {name!r}; every source_ref must be on the "
-                    "approved allow-list (mixed approved+unapproved provenance fails closed)"
+                    f"record[{idx}]: unapproved source ref {name!r}; every source_ref must start with an "
+                    "approved source prefix (mixed approved+unapproved and embedded-token provenance fail closed)"
                 )
             if not ref.get("observed_at"):
                 errors.append(f"record[{idx}]: source_ref missing observed_at")

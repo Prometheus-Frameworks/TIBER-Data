@@ -39,12 +39,12 @@
   },
   "provenance_allowlist": {
     "gap_found": "validator rejected fixture markers but never required approved sources (same gap Forecast closed in #110/#112)",
-    "fix": "APPROVED_SOURCE_NAME_SUBSTRINGS added to scripts/validate_player_season_coverage_v0.py with the all-source standard: every source_ref on every record must be approved; mixed approved+unapproved fails closed",
-    "regression_tests": ["mixed_source", "unapproved_only", "fixture_marker", "missing_refs"],
+    "fix": "APPROVED_SOURCE_NAME_PREFIXES added to scripts/validate_player_season_coverage_v0.py with the all-source standard, matched as prefixes: every source_ref must start with an approved call-shape; mixed approved+unapproved and embedded-token provenance (manual_override:nflreadpy.load_players()) fail closed",
+    "regression_tests": ["mixed_source", "unapproved_only", "embedded_approved_token", "fixture_marker", "missing_refs"],
     "real_artifact_unapproved_refs": 0
   },
   "reproducibility": {
-    "promotion": "deterministic, network-free transformation of the sha-pinned candidate (scripts/promote_player_season_coverage_v0.py); byte-identical across runs; manifest pins promoted sha256 dff2c89068ff8b066fe6132dee7197bf884615c6a09339e873c7bbc48310250b",
+    "promotion": "deterministic, network-free transformation of the sha-pinned candidate (scripts/promote_player_season_coverage_v0.py); byte-identical across runs; manifest pins promoted sha256 29f8e378127fa5426e5897ac4522b6187941312edabab357d8a427fb20511035",
     "candidate_rebuild": "python scripts/build_player_season_coverage_2022_2025.py (network: nflreadpy); content-reproducible against unchanged upstream, NOT byte-identical (embedded timestamps; mutable upstream)",
     "policy_on_upstream_change": "a rebuilt candidate gets a new sha, fails the promotion pin closed, and requires a new governance review before re-promotion; nflreadpy behavior changes require build-script/spec re-review"
   },
@@ -60,7 +60,7 @@
   "forecast_compatibility_note_embedded": true,
   "promoted_outputs": {
     "artifact": "exports/promoted/nfl/player_season_coverage_v0.json",
-    "artifact_sha256": "dff2c89068ff8b066fe6132dee7197bf884615c6a09339e873c7bbc48310250b",
+    "artifact_sha256": "29f8e378127fa5426e5897ac4522b6187941312edabab357d8a427fb20511035",
     "manifest": "exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json",
     "schema": "schemas/player_season_coverage_v0_promoted.schema.json",
     "candidate_left_in_place_unchanged": true

@@ -12,8 +12,8 @@
     "status_at_promotion": "candidate_evidence_artifact_not_promoted"
   },
   "approved_source_allowlist": [
-    "nflreadpy.load_player_stats",
-    "nflreadpy.load_players"
+    "nflreadpy.load_player_stats(",
+    "nflreadpy.load_players("
   ],
   "seasons": [
     2022,
@@ -74,5 +74,5 @@
     "candidate_rebuild": "python scripts/build_player_season_coverage_2022_2025.py (network: nflreadpy). Content-reproducible against unchanged upstream data, but NOT byte-identical across runs (embedded observed_at/generated_at timestamps) and upstream nflreadpy data is mutable; a rebuilt candidate gets a NEW sha and requires a NEW governance review before re-promotion"
   },
   "promoted_artifact_path": "exports/promoted/nfl/player_season_coverage_v0.json",
-  "promoted_artifact_sha256": "dff2c89068ff8b066fe6132dee7197bf884615c6a09339e873c7bbc48310250b"
+  "promoted_artifact_sha256": "29f8e378127fa5426e5897ac4522b6187941312edabab357d8a427fb20511035"
 }
