@@ -1,0 +1,78 @@
+{
+  "review_id": "player-season-coverage-v0-promotion-review-2026-07-03",
+  "issue": "TIBER-Data#192",
+  "date": "2026-07-03",
+  "decision": "promote_player_season_coverage_v0",
+  "decision_enum": [
+    "promote_player_season_coverage_v0",
+    "do_not_promote_requires_fixes",
+    "do_not_promote_requires_new_source_artifact",
+    "promotion_review_invalid_must_not_use"
+  ],
+  "no_decision_authorizes_forecast_binding": true,
+  "motivating_chain": ["TIBER-Forecast#99-#116 (candidate signal survived initial robustness checks; production family carries most of the lift)"],
+  "artifact_identity_verified": {
+    "path": "data/processed/evidence/player_season_coverage_2022_2025.source_backed.json",
+    "sha256": "39b6e71e36d667509221137f2b712143fe5fdccf5423f50e81b5c7a138c0072b",
+    "sha_matches_forecast_pin": true,
+    "status_before_review": "candidate_evidence_artifact_not_promoted",
+    "records": 2383,
+    "rows_by_season": { "2022": 609, "2023": 576, "2024": 588, "2025": 610 },
+    "rows_by_position": { "QB": 323, "RB": 606, "TE": 519, "WR": 935 },
+    "season_type": "REG only",
+    "row_grain": "player_id + season + season_type",
+    "duplicate_grains": 0,
+    "deterministic_ordering": "sorted by (season, player_id)",
+    "source_names": [
+      "nflreadpy.load_player_stats(summary_level='reg')",
+      "nflreadpy.load_player_stats(summary_level='week')",
+      "nflreadpy.load_players()"
+    ],
+    "fixture_or_scaffold_markers": 0,
+    "identity_confidence_source_verified": 2383
+  },
+  "schema_contract_readiness": {
+    "candidate_schema": "schemas/player_season_coverage_v0.schema.json (untouched; status const keeps it candidate-only)",
+    "promoted_schema_added": "schemas/player_season_coverage_v0_promoted.schema.json",
+    "per_record_contract_identical": true,
+    "promotion_does_not_weaken_candidate_contract": true
+  },
+  "provenance_allowlist": {
+    "gap_found": "validator rejected fixture markers but never required approved sources (same gap Forecast closed in #110/#112)",
+    "fix": "APPROVED_SOURCE_NAME_SUBSTRINGS added to scripts/validate_player_season_coverage_v0.py with the all-source standard: every source_ref on every record must be approved; mixed approved+unapproved fails closed",
+    "regression_tests": ["mixed_source", "unapproved_only", "fixture_marker", "missing_refs"],
+    "real_artifact_unapproved_refs": 0
+  },
+  "reproducibility": {
+    "promotion": "deterministic, network-free transformation of the sha-pinned candidate (scripts/promote_player_season_coverage_v0.py); byte-identical across runs; manifest pins promoted sha256 dff2c89068ff8b066fe6132dee7197bf884615c6a09339e873c7bbc48310250b",
+    "candidate_rebuild": "python scripts/build_player_season_coverage_2022_2025.py (network: nflreadpy); content-reproducible against unchanged upstream, NOT byte-identical (embedded timestamps; mutable upstream)",
+    "policy_on_upstream_change": "a rebuilt candidate gets a new sha, fails the promotion pin closed, and requires a new governance review before re-promotion; nflreadpy behavior changes require build-script/spec re-review"
+  },
+  "null_semantics_verified": {
+    "unavailable_usage_fields_coerced_to_zero": 0,
+    "real_season_ppr_zeros_preserved": 174,
+    "fabricated_season_age": 0,
+    "fabricated_career_year": 0,
+    "forbidden_availability_fields": 0
+  },
+  "consumer_safety_embedded_in_promoted_envelope": true,
+  "legacy_promoted_exports_note": "pre-existing exports/promoted/nfl files are offline-fixture scaffolds (some with active_roster_status); this promotion establishes a stricter pattern and does not inherit theirs; reviewing/retiring them is follow-up outside #192 scope",
+  "forecast_compatibility_note_embedded": true,
+  "promoted_outputs": {
+    "artifact": "exports/promoted/nfl/player_season_coverage_v0.json",
+    "artifact_sha256": "dff2c89068ff8b066fe6132dee7197bf884615c6a09339e873c7bbc48310250b",
+    "manifest": "exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json",
+    "schema": "schemas/player_season_coverage_v0_promoted.schema.json",
+    "candidate_left_in_place_unchanged": true
+  },
+  "non_goals_confirmed": [
+    "no TIBER-Forecast modification",
+    "no player-history feature binding",
+    "no Forecast mirrors created",
+    "no fantasy advice/rankings/start-sit/trade/draft/product output",
+    "no availability/ownership inference",
+    "no fabricated missing/unavailable fields",
+    "Forecast #116 treated as motivation, not production proof",
+    "no Forecast production-binding authorization"
+  ]
+}

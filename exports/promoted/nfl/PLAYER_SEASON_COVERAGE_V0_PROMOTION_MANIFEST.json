@@ -1,0 +1,78 @@
+{
+  "artifact_id": "player_season_coverage_v0",
+  "spec_version": "player_season_coverage_v0_promoted_v1",
+  "status": "promoted_governed_artifact",
+  "generated_at": "2026-06-30T19:36:52.260432+00:00",
+  "promoted_at": "2026-07-03T00:00:00Z",
+  "promotion_review": "TIBER-Data#192",
+  "promotion_decision": "promote_player_season_coverage_v0",
+  "source_candidate": {
+    "path": "data/processed/evidence/player_season_coverage_2022_2025.source_backed.json",
+    "sha256": "39b6e71e36d667509221137f2b712143fe5fdccf5423f50e81b5c7a138c0072b",
+    "status_at_promotion": "candidate_evidence_artifact_not_promoted"
+  },
+  "approved_source_allowlist": [
+    "nflreadpy.load_player_stats",
+    "nflreadpy.load_players"
+  ],
+  "seasons": [
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "season_type_scope": [
+    "REG"
+  ],
+  "included_positions": [
+    "QB",
+    "RB",
+    "TE",
+    "WR"
+  ],
+  "row_grain": "player_id + season + season_type",
+  "counts": {
+    "records": 2383,
+    "by_season": {
+      "2022": 609,
+      "2023": 576,
+      "2024": 588,
+      "2025": 610
+    },
+    "by_position": {
+      "QB": 323,
+      "RB": 606,
+      "TE": 519,
+      "WR": 935
+    }
+  },
+  "no_fixture_or_scaffold_markers_confirmed": true,
+  "validation": {
+    "candidate_schema": "schemas/player_season_coverage_v0.schema.json",
+    "candidate_validator": "scripts/validate_player_season_coverage_v0.py (incl. #192 all-source allow-list)",
+    "promoted_schema": "schemas/player_season_coverage_v0_promoted.schema.json",
+    "status": "passed"
+  },
+  "consumer_safety": {
+    "allowed": [
+      "source-backed player-season production/history evidence (REG, QB/RB/WR/TE, approved seasons)",
+      "row-level source_refs / identity_confidence / provenance",
+      "team-of-record context (teams[], primary_team, primary_team_rule) as production-row context only"
+    ],
+    "not_allowed": [
+      "current active roster status",
+      "player availability or injury status",
+      "depth chart role",
+      "ownership/team membership",
+      "product advice or fantasy rankings/start-sit/trade/draft output",
+      "Forecast production binding without a separate Forecast issue and gate"
+    ]
+  },
+  "forecast_compatibility_note": "Forecast may consume this promoted artifact only through a separate Forecast-side gate that re-verifies sha/provenance, enforces target-season leakage splits structurally, and considers a production-only feature contract given the Forecast #116 attribution finding (the production family carries essentially all of the candidate signal). No product-facing claim is authorized until a Forecast production-binding review passes. This promotion changes nothing in Forecast.",
+  "reproducibility": {
+    "promotion": "deterministic and network-free: this file is a pure transformation of the sha256-pinned candidate; re-running scripts/promote_player_season_coverage_v0.py yields byte-identical output",
+    "candidate_rebuild": "python scripts/build_player_season_coverage_2022_2025.py (network: nflreadpy). Content-reproducible against unchanged upstream data, but NOT byte-identical across runs (embedded observed_at/generated_at timestamps) and upstream nflreadpy data is mutable; a rebuilt candidate gets a NEW sha and requires a NEW governance review before re-promotion"
+  },
+  "promoted_artifact_path": "exports/promoted/nfl/player_season_coverage_v0.json",
+  "promoted_artifact_sha256": "dff2c89068ff8b066fe6132dee7197bf884615c6a09339e873c7bbc48310250b"
+}
