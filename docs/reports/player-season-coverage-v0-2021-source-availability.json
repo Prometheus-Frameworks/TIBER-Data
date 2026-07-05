@@ -1,0 +1,53 @@
+{
+  "report_id": "player_season_coverage_v0_2021_source_availability",
+  "status": "blocked_pending_source_access",
+  "tracking_issue": "TIBER-Data#198",
+  "forecast_context": [
+    "Prometheus-Frameworks/TIBER-Forecast#133",
+    "Prometheus-Frameworks/TIBER-Forecast#134 (merged 2517270)"
+  ],
+  "generated_at": "2026-07-05T00:00:00Z",
+  "season_inspected": 2021,
+  "season_type_inspected": "REG",
+  "positions_inspected": ["QB", "RB", "WR", "TE"],
+  "sources_to_inspect": [
+    "nflreadpy.load_player_stats(seasons=[2021], summary_level='week')",
+    "nflreadpy.load_player_stats(seasons=[2021], summary_level='reg')",
+    "nflreadpy.load_players()"
+  ],
+  "approved_source_allowlist_reference": "exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json",
+  "inspection_tooling": {
+    "script": "scripts/inspect_player_season_coverage_2021_source_availability.py",
+    "tests": "tests/test_inspect_player_season_coverage_2021_source_availability.py",
+    "tooling_status": "written, unit-tested offline (8/8 passing) against fake source frames, has NOT been run against real nflreadpy sources",
+    "note": "The offline tests validate the assessment/decision logic in isolation. They do not and cannot substitute for running the script against real 2021 nflreadpy data, and this report does not treat them as such."
+  },
+  "external_source_access_requirement": {
+    "required_repo": "nflverse/nflverse-data",
+    "purpose": "public release parquet assets (e.g. stats_player_week_2021.parquet) that nflreadpy.load_player_stats/load_players download from GitHub release assets at github.com/nflverse/nflverse-data",
+    "reason": "needed only for this 2021 source-availability inspection; this is the same source family already approved and used by the promoted 2022-2025 player_season_coverage_v0 artifact, just for an additional season",
+    "current_blocker": "This session's GitHub access is scoped to Prometheus-Frameworks/TIBER-Data and Prometheus-Frameworks/TIBER-Forecast only. Outbound calls to github.com/nflverse/nflverse-data (both release-asset downloads and the GitHub API) return HTTP 403 with 'GitHub access to this repository is not enabled for this session. Use add_repo to request access.' Repeated add_repo(owner='nflverse', repo='nflverse-data') calls from within this session fail with 'MCP tool call requires approval' / 'Tool permission request failed: Tool permission stream closed before response received' and never complete.",
+    "attempted_workarounds_explicitly_rejected": [
+      "vendoring or hand-copying nflverse-data parquet/CSV files into this repo",
+      "substituting a different, non-approved source for 2021 data",
+      "changing the player_season_coverage_v0 source boundary to route around the block",
+      "fabricating or estimating 2021 counts without a real source pull",
+      "treating the offline unit tests (which use synthetic fake frames) as a completed source check"
+    ],
+    "resolution_path": "A human with access to this Claude Code session's live UI (session URL is recorded in the branch's commit trailer) must approve the pending add_repo tool-permission prompt for nflverse/nflverse-data, or add that repository to the session's sources before the inspection script is re-run. See PR description for exact steps."
+  },
+  "decision": "player_season_coverage_2021_source_feasibility_inconclusive_requires_followup",
+  "decision_basis": "The 2021 REG source-availability inspection could not be run because the approved source family (nflreadpy, which fetches from github.com/nflverse/nflverse-data release assets) is blocked at the environment/session level, not because of anything found in TIBER-Data. No source-level or governance-level conclusion about 2021 feasibility can be drawn yet.",
+  "decisions_not_emitted_and_not_authorized": [
+    "may_open_player_season_coverage_2021_candidate_build_issue",
+    "player_season_coverage_2021_source_unavailable_blocks_additional_validation",
+    "player_season_coverage_2021_requires_source_boundary_redesign",
+    "promotion of any artifact",
+    "Forecast mirror refresh",
+    "Forecast controlled rerun",
+    "player-history threshold acceptance",
+    "leakage audit",
+    "model wiring / seasonalPprModel.ts changes"
+  ],
+  "next_step": "Once nflverse/nflverse-data access is granted to this session (or a follow-up session with that access), run: python3 scripts/inspect_player_season_coverage_2021_source_availability.py — this will overwrite this report with real 2021 REG counts, schema-compatibility findings, and one of the three substantive decisions (candidate-build / source-unavailable / requires-redesign) in place of this inconclusive placeholder."
+}
