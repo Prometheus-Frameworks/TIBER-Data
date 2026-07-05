@@ -49,8 +49,6 @@ Any capable model may serve any function. What matters is that the function's du
 - records, at each material handoff: what is now true, what is still missing, what must not be assumed (see `HANDOFF.md`)
 - owns promotion decisions; no agent self-promotes its own output to governed truth
 
-Historical note, for orientation only: earlier versions of this file assigned these functions to named models ("Lamar" as architect, "Codex" as builder, "Claude" as auditor). Those names are examples of the functions, not the durable contract.
-
 ## Task classification gate
 
 Classify every task **before** implementation. Each class has an allowed surface and standing assumptions it must not make.
@@ -122,14 +120,17 @@ This file points at doctrine; it does not duplicate or compete with it. When thi
 - `docs/governance/architecture/tiber-architecture-document-v1.0.md` and `docs/governance/architecture/tiber-architecture-quick-reference-v1.0.md` — architecture doctrine
 - `README.md` — repo surface map and current artifact/coverage claims
 
-## Operating style
+## Operating posture
 
-Think like a foreman-managed job site:
-- know what this repo is for
-- know what task is active
-- know what tool you are allowed to use
-- know what to do if the material is missing
-- if materials are missing, do not build fake walls
+Before changing files, identify:
+
+- what this repo is responsible for;
+- what task class is active;
+- what files/surfaces are allowed;
+- what source truth exists;
+- what support boundary must not be crossed.
+
+If source support is missing, stop, reduce scope, or move the task to an audit/handoff path. Do not compensate with plausible placeholders, inferred continuity, or undocumented assumptions.
 
 ## Success condition
 
