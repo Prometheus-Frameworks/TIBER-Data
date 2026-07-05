@@ -1,0 +1,236 @@
+{
+  "audit_id": "huggingface-nfl-dataset-eligibility-2026-07-05",
+  "date": "2026-07-05",
+  "scope": "Hugging Face NFL / American-football dataset candidates, metadata-only review",
+  "tracking_issue": "Prometheus-Frameworks/TIBER-Data#194",
+  "type": "audit_only",
+  "method": "Hugging Face dataset cards, Hub API metadata, and publicly published previews/README content only. No dataset files were downloaded, opened, or committed.",
+  "non_goals_observed": [
+    "no dataset downloads",
+    "no governed mirrors created",
+    "no data added to production artifacts",
+    "no model training or reruns",
+    "no acceptance metrics computed",
+    "no Fantasy/Forecast/Teamstate/Rookies/FORGE/consumer behavior change",
+    "Hugging Face metadata not treated as sufficient provenance",
+    "no paid/gated dataset treated as usable without explicit license/access review"
+  ],
+  "approval_statement": "No dataset reviewed in this audit is approved for production use or governed experimental use. Zero datasets classified external_candidate. Any follow-up must be a separate, narrowly scoped issue.",
+  "classification_vocabulary": [
+    "external_candidate",
+    "schema_reference_only",
+    "benchmark_reference_only",
+    "future_research_only",
+    "rejected"
+  ],
+  "cross_cutting_findings": [
+    "Four of the six tabular/QA candidate lanes (4th-downs, WR 2025, both Karmane datasets) are downstream repackagings of nflverse data. TIBER-Data already integrates nflverse first-hand via nflreadpy (see data/processed/evidence/*.source_backed.json). Mirroring a third-party repackaging would insert an unverifiable middleman between TIBER and a source it already holds under known terms.",
+    "Two candidates carry license-metadata conflicts: both Karmane datasets declare an MIT tag while enforcing a paid Gumroad purchase gate with manual approval; keremberke/nfl-object-detection has no Hub license tag while its card body claims Public Domain over what appears to be copyrighted NFL broadcast imagery.",
+    "The correct acquisition pattern for every tabular capability represented here (4th-down decisions, WR player-game features, rest/travel schedule context, usage/TD trends) is in-house derivation from the already-integrated nflreadpy/nflverse upstream, not external mirroring."
+  ],
+  "datasets": [
+    {
+      "name": "afzalmengal/nfl-4th-downs-dataset",
+      "url": "https://huggingface.co/datasets/afzalmengal/nfl-4th-downs-dataset",
+      "license": "none_declared",
+      "license_detail": "No Hub license tag; no license statement in README. No redistribution or mirroring right exists; fail closed.",
+      "access_mode": "public_ungated",
+      "redistribution_allowed": false,
+      "shape": {
+        "rows": 113156,
+        "columns": 79,
+        "format": "parquet",
+        "splits": ["train"],
+        "download_size": "10.6 MB",
+        "in_memory_size": "76.2 MB",
+        "seasons": "1999-2025"
+      },
+      "source_lineage": "Unstated by author. README says 'filtered from full NFL play-by-play data (1999-2025)'. Column vocabulary (game_id, posteam/defteam, yardline_100, epa, wp, def_wp, spread_line, total_line) is the exact nflfastR/nflverse play-by-play vocabulary, so this is almost certainly an unattributed nflverse derivative. Unverified.",
+      "provenance_class": "transformed_from_public_source_unattributed",
+      "hub_metadata": {"created_at": "2026-07-03", "last_modified": "2026-07-03", "downloads": 269, "likes": 1},
+      "schema_summary": "Play-level 4th-down situations: game context (game_id, season, qtr, game_seconds_remaining), field position (yardline_100, ydstogo, goal_to_go), teams (posteam, defteam, home/away), score state, win probability (wp, def_wp), EPA, betting lines (spread_line, total_line), coaching names, team weekly/yearly performance features, and a decision label (go/punt/fg).",
+      "tiber_overlap": "High at the source level: TIBER already integrates nflverse via nflreadpy. No committed TIBER artifact currently covers play-level 4th-down decisions, but the underlying rows are derivable in-house from the same upstream.",
+      "leakage_risk": "epa/wp/def_wp are model-derived values and the label column is the realized decision; the card does not separate pregame from post-snap information. Team performance features have unverified as-of semantics (possible future-week contamination within a season). Unsafe near Forecast/validation without a full as-of audit.",
+      "identity_risk": "Team-code and game_id keyed (no player grain). game_id convention presumed nflverse-style but unverified; coaching names are free text; season/week join semantics unverified.",
+      "classification": "rejected",
+      "classification_rationale": "No license means no legal basis to mirror or redistribute; lineage is unattributed and unverifiable; the dataset was created two days before this audit by an unknown uploader; and every column is derivable in-house from TIBER's already-integrated nflverse upstream under known terms.",
+      "recommended_next_action": "None for this dataset. If 4th-down decision analytics are ever wanted, open a separate issue to derive an in-house artifact from nflreadpy play-by-play with explicit as-of semantics."
+    },
+    {
+      "name": "SebastianAndreu/24679_NFL_WR_Dataset_2025",
+      "url": "https://huggingface.co/datasets/SebastianAndreu/24679_NFL_WR_Dataset_2025",
+      "license": "mit",
+      "license_detail": "MIT Hub tag and card statement; redistribution technically permitted. Card states not for real-money gambling or player contract decisions.",
+      "access_mode": "public_ungated",
+      "redistribution_allowed": true,
+      "shape": {
+        "rows": 1918,
+        "columns": "100+",
+        "format": "parquet",
+        "splits": ["full"],
+        "seasons": "2025 (partial; created 2025-10-03, last modified 2025-10-30, i.e. an in-season snapshot)"
+      },
+      "source_lineage": "Card cites nflverse/nflverse-data play-by-play; built by two processing pipelines (defense-adjusted metrics; quarter/WP-bucketed breakdowns). CMU course project (24-679: Designing and Deploying AI/ML Systems).",
+      "provenance_class": "transformed_from_public_source_attributed_course_project",
+      "hub_metadata": {"created_at": "2025-10-03", "last_modified": "2025-10-30", "downloads": 6, "likes": 1},
+      "schema_summary": "WR player-game rows: targets, receptions, yards, air yards, YAC, TDs, EPA/WPA, target share, air-yards share, WOPR, aDOT, catch rate, explosive-play rates, red-zone/end-zone/third-down splits, quarter and WP-bucket breakdowns, defense-adjusted deltas vs league average, QB context (CPOE etc.), weather/venue/surface, betting lines.",
+      "tiber_overlap": "Direct: TIBER's source-backed 2025 evidence (player_weekly_usage_2025 6,326 rows; player_weekly_ppr_outcomes_2025 6,394 rows, weeks 1-22, all positions) already covers this grain from the same upstream, with broader position and week coverage than this 1,918-row WR-only in-season snapshot.",
+      "leakage_risk": "High for any 2025 Forecast/validation use: rows are postgame outcomes; defense-adjusted and league-average features are computed over an unspecified window and may fold later-week information into earlier-week rows. Unverified as-of discipline throughout.",
+      "identity_risk": "Player identification scheme unverified (names vs GSIS IDs); no demonstrated join path to tiber_identity_crosswalk_v1 (25 sleeper-only records); season/week key semantics unverified; WR-only filter creates silent-population duplicate-semantics risk vs TIBER's all-position artifacts.",
+      "classification": "schema_reference_only",
+      "classification_rationale": "License is clean but the data is redundant with TIBER's own governed source path, single-season, mid-season snapshot, course-project provenance with undocumented derivation choices, and 6 total downloads. Its value is the feature vocabulary (WOPR, aDOT, WP-bucketed splits, defense-adjusted deltas), not the rows.",
+      "recommended_next_action": "May be cited as a public schema/feature-vocabulary reference when designing future WR/role-usage contract fields. No mirror, no ingestion."
+    },
+    {
+      "name": "Karmane/nfl-rest-advantage-travel-spot-research",
+      "url": "https://huggingface.co/datasets/Karmane/nfl-rest-advantage-travel-spot-research",
+      "license": "mit_tag_conflicts_with_paid_gate",
+      "license_detail": "Hub tag says MIT but access is manually gated behind a paid Gumroad purchase with username/email verification. Effective terms are the unpublished purchase terms, not MIT. Contradiction unresolved; fail closed per issue guardrail on paid/gated datasets.",
+      "access_mode": "paid_manual_gated (727-row public preview visible)",
+      "redistribution_allowed": "unknown_fail_closed",
+      "shape": {
+        "rows": 14552,
+        "preview_rows": 727,
+        "columns": 87,
+        "format": "parquet",
+        "splits": ["data"],
+        "size": "1.11 MB",
+        "seasons": "27 seasons of completed games, latest source game 2026-02-08"
+      },
+      "source_lineage": "Card cites nflverse game schedules and completed game records; team-side observations (one row per team per game).",
+      "provenance_class": "transformed_from_public_source_paid_gated",
+      "hub_metadata": {"created_at": "2026-06-11", "last_modified": "2026-06-11", "downloads_last_month": 1167, "likes": 1},
+      "schema_summary": "87 columns: schedule context (rest days, short-week flags, travel distance), market data (spread, moneyline, totals), environment, rolling team trend metrics, and postgame outcomes (scores, ATS results, over/under) with claimed pregame/postgame column separation. 618 playoff games, 2,418 rest-advantage games, 581 short-week scenarios.",
+      "tiber_overlap": "Partial conceptual overlap with team-week lanes (team_week_raw_v0 contract, team pace/pass environment). No committed TIBER artifact covers rest/travel/schedule-spot context; underlying schedule data is derivable in-house from nflverse.",
+      "leakage_risk": "Rows mix pregame features and postgame outcomes; the pregame/postgame separation is claimed but unverifiable without the paid data. Rolling trend windows have unverified as-of semantics.",
+      "identity_risk": "Team-game grain; team code vocabulary and game key convention unverified against TIBER team identity; no player identity surface.",
+      "classification": "schema_reference_only",
+      "classification_rationale": "Paid/gated access with contradictory license metadata fails the issue's guardrail outright. The public card and preview are legitimately useful as vocabulary for a future Teamstate schedule-context contract (rest days, travel, short-week spots), but the data itself must not be purchased, mirrored, or ingested under this audit.",
+      "recommended_next_action": "May be cited (card/preview only) when scoping a future schedule/rest/travel context contract. Any data need should be met by in-house derivation from nflverse schedules."
+    },
+    {
+      "name": "Karmane/nfl-anytime-touchdown-parlay-usage-trends",
+      "url": "https://huggingface.co/datasets/Karmane/nfl-anytime-touchdown-parlay-usage-trends",
+      "license": "mit_tag_conflicts_with_paid_gate",
+      "license_detail": "Same publisher and same pattern as the rest-advantage dataset: MIT Hub tag behind a paid Gumroad manual gate. Effective terms unpublished; fail closed.",
+      "access_mode": "paid_manual_gated (3,932-row public preview visible)",
+      "redistribution_allowed": "unknown_fail_closed",
+      "shape": {
+        "rows": 78641,
+        "preview_rows": 3932,
+        "columns": 126,
+        "format": "parquet",
+        "splits": ["data"],
+        "size": "9.01 MB",
+        "seasons": "2013-2024 regular season + playoffs"
+      },
+      "source_lineage": "Card cites public nflverse sources: snap counts, player identifiers, weekly player stats, schedules; states no proprietary touchdown-prop feeds used. One row per offensive skill player per completed game with logged snaps.",
+      "provenance_class": "transformed_from_public_source_paid_gated",
+      "hub_metadata": {"created_at": "2026-06-11", "last_modified": "2026-06-11", "downloads_last_month": 160, "likes": null},
+      "schema_summary": "126 columns: ~50 pregame (snaps, snap pct, rest context, moneyline/spread, implied team totals, rolling last-3/last-5 usage, opponent allowance rates), ~40 postgame outcomes (TDs, yardage, shares, threshold flags like cleared_anytime_td), ~36 metadata (player IDs/names, position, team, game IDs, weather, venue, timestamps).",
+      "tiber_overlap": "Direct grain overlap with TIBER's player-weekly usage lane (player_weekly_usage_2025.source_backed.json) and FORGE weekly inputs, though those currently cover 2025 only vs this dataset's 2013-2024. All inputs cited are nflverse surfaces TIBER can pull first-hand.",
+      "leakage_risk": "Rows mix pregame and postgame columns; separation is claimed but unverifiable without paid access. Rolling windows and opponent-allowance features have unverified as-of discipline. Betting/parlay framing invites target definitions (threshold flags) that TIBER does not govern.",
+      "identity_risk": "Player IDs and names present but scheme unverified (likely nflverse GSIS if the lineage claim holds); join to tiber_identity_crosswalk_v1 unproven; multi-season player-team movement semantics unverified.",
+      "classification": "schema_reference_only",
+      "classification_rationale": "Same paid-gate/license contradiction as its sibling; guardrail fails it for any data use. The pregame/postgame column discipline and rolling-usage feature shapes on the public card are legitimate design reference for future usage/TD feature work; the rows themselves are not usable and are in any case derivable in-house.",
+      "recommended_next_action": "May be cited (card/preview only) as feature-shape reference. Multi-season usage/TD needs should be met by in-house nflreadpy ingestion under the existing multi-season coverage lane."
+    },
+    {
+      "name": "keremberke/nfl-object-detection",
+      "url": "https://huggingface.co/datasets/keremberke/nfl-object-detection",
+      "license": "none_declared_with_conflicting_card_claim",
+      "license_detail": "No Hub license tag in API metadata. Card body (Roboflow export boilerplate) claims Public Domain. Underlying content is 9,947 frames of NFL game footage with helmet annotations; NFL broadcast/endzone imagery is copyrighted, so an unqualified Public Domain claim by a re-exporter is not credible without verification. Fail closed.",
+      "access_mode": "public_ungated",
+      "redistribution_allowed": "claimed_but_not_credible_fail_closed",
+      "shape": {
+        "images": 9947,
+        "splits": {"train": 6963, "valid": 1989, "test": 995},
+        "format": "COCO annotations, zipped images",
+        "size": "1.23 GB",
+        "resolution": "1280x720 (stretched)"
+      },
+      "source_lineage": "Exported from Roboflow 2022-12-29 via roboflow2huggingface. Original imagery source unstated; helmet-label taxonomy (helmet, helmet-blurred, helmet-difficult, helmet-partial, helmet-sideline) matches the NFL Health & Safety Kaggle helmet-detection competition family, whose data carries its own competition terms. Chain of custody unverifiable.",
+      "provenance_class": "scraped_or_reexported_unclear",
+      "hub_metadata": {"created_at": "2022-12-30", "last_modified": "2023-01-29", "downloads_last_month": 104, "likes": 4},
+      "schema_summary": "Object-detection images with five helmet-related bounding-box labels; no tabular schema, no player/team/game identity fields.",
+      "tiber_overlap": "None. TIBER-Data has no image/vision surface and no consumer for tracking or visual football-state data.",
+      "leakage_risk": "Not applicable to Forecast/player-history lanes (no tabular outcomes).",
+      "identity_risk": "None at the schema level (no identity fields); residual risk is depicting identifiable players in copyrighted footage, which is a rights question rather than a join-key question.",
+      "classification": "rejected",
+      "classification_rationale": "Provenance chain is unverifiable, the Public Domain claim conflicts with the probable copyright status of the underlying footage and with the absence of a Hub license tag, the dataset is stale (2022), and it has zero overlap with any current TIBER pipeline. The topic (visual football-state / player-safety research) could someday be a research lane, but this artifact must not be the vehicle; any future effort should re-source imagery under verified terms.",
+      "recommended_next_action": "None."
+    },
+    {
+      "name": "leomaurodesenv/QASports2",
+      "url": "https://huggingface.co/datasets/leomaurodesenv/QASports2",
+      "license": "mit_tag_with_upstream_wiki_license_caveat",
+      "license_detail": "MIT Hub tag, public. However, contexts are scraped from sports Fandom wikis, whose text is typically CC-BY-SA; an MIT relabel by the dataset author cannot strip the source text's attribution/share-alike obligations. Redistribution of the text is therefore encumbered regardless of the tag.",
+      "access_mode": "public_ungated",
+      "redistribution_allowed": "tag_says_yes_upstream_terms_encumber",
+      "shape": {
+        "rows": 2183926,
+        "splits": {"train": "873k", "validation": "109k", "test": "109k (per primary config)"},
+        "format": "parquet",
+        "size": "310 MB",
+        "subsets": "21 sports including American Football"
+      },
+      "source_lineage": "Extractive QA built over sports wiki pages (Fandom); processing scripts published at github.com/leomaurodesenv/qasports-dataset-scripts.",
+      "provenance_class": "scraped_and_transformed_from_wikis",
+      "hub_metadata": {"downloads_last_month": 1421},
+      "schema_summary": "qa_id, context_id, context_title, context_url, context_categories, context (passage), question, answer{text, offset}. Extractive QA grain.",
+      "tiber_overlap": "None. TIBER-Data has no QA/eval artifact surface. No identity/production/roster overlap.",
+      "leakage_risk": "Not applicable to Forecast/player-history lanes. For a future eval: wiki text embeds outcomes of historical events, so any benchmark built from it must treat contexts as containing realized results.",
+      "identity_risk": "Player/team references are free text from wikis with no controlled IDs; unusable as an identity source; low risk because no join is proposed.",
+      "classification": "benchmark_reference_only",
+      "classification_rationale": "Legitimate published QA resource relevant only to future TIBER-Bench / football-domain QA eval design (schema, split design, per-sport subsets). Not source material for Forecast/Data. Text mirroring is discouraged by the upstream wiki-license caveat; citation and design reference suffice.",
+      "recommended_next_action": "May be cited in future TIBER-Bench eval design. No mirror."
+    },
+    {
+      "name": "PedroCJardim/QASports",
+      "url": "https://huggingface.co/datasets/PedroCJardim/QASports",
+      "license": "mit_tag_with_upstream_wiki_license_caveat",
+      "license_detail": "Same lineage family and same caveat as QASports2: MIT tag over wiki-scraped contexts.",
+      "access_mode": "public_ungated",
+      "redistribution_allowed": "tag_says_yes_upstream_terms_encumber",
+      "shape": {
+        "rows": 1550000,
+        "splits": {"train": "1.24M", "validation": "155k", "test": "155k"},
+        "format": "CSV + parquet",
+        "size": "2.23 GB",
+        "subsets": "basketball (232k), american football (704k), soccer (614k)"
+      },
+      "source_lineage": "Wiki pages of 3 sports (~54k documents); published at Brazilian Symposium on Databases 2023; full data also on OSF (osf.io/n7r23).",
+      "provenance_class": "scraped_and_transformed_from_wikis",
+      "hub_metadata": {},
+      "schema_summary": "id_qa, context_id, context, question, answer{text, offset}, context_title, url. Extractive QA grain.",
+      "tiber_overlap": "None.",
+      "leakage_risk": "Same posture as QASports2.",
+      "identity_risk": "Same posture as QASports2.",
+      "classification": "benchmark_reference_only",
+      "classification_rationale": "Predecessor of QASports2 with a documented paper trail; if either is ever used as eval-design reference, prefer QASports2 as the current version and cite the paper. Not source material for Forecast/Data.",
+      "recommended_next_action": "Citation-only alongside QASports2."
+    }
+  ],
+  "classification_summary": {
+    "external_candidate": [],
+    "schema_reference_only": [
+      "SebastianAndreu/24679_NFL_WR_Dataset_2025",
+      "Karmane/nfl-rest-advantage-travel-spot-research",
+      "Karmane/nfl-anytime-touchdown-parlay-usage-trends"
+    ],
+    "benchmark_reference_only": [
+      "leomaurodesenv/QASports2",
+      "PedroCJardim/QASports"
+    ],
+    "future_research_only": [],
+    "rejected": [
+      "afzalmengal/nfl-4th-downs-dataset",
+      "keremberke/nfl-object-detection"
+    ]
+  },
+  "allowed_followups": [
+    {"scope": "narrow", "description": "If 4th-down decision analytics are wanted, open a separate issue to derive an in-house play-level artifact from nflreadpy play-by-play with explicit as-of semantics (not a mirror of any dataset above)."},
+    {"scope": "narrow", "description": "If schedule/rest/travel context is wanted for Teamstate, open a separate spec issue for a schedule-context contract, using the Karmane rest-advantage public card as vocabulary reference only, sourced in-house from nflverse schedules."},
+    {"scope": "narrow", "description": "If a football-domain QA eval is wanted for TIBER-Bench, open a separate design issue citing QASports2 as reference; do not mirror wiki text."}
+  ]
+}
