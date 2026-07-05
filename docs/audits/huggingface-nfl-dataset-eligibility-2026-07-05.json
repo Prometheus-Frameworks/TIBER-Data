@@ -168,11 +168,12 @@
       "access_mode": "public_ungated",
       "redistribution_allowed": "tag_says_yes_upstream_terms_encumber",
       "shape": {
-        "rows": 2183926,
-        "splits": {"train": "873k", "validation": "109k", "test": "109k (per primary config)"},
+        "rows": "~1.09M unique rows in the primary 'all' configuration",
+        "row_count_note": "The Hub-aggregate figure of 2,183,926 rows sums the 'all' configuration together with the overlapping per-sport configurations and therefore double-counts by roughly 2x. Use the 'all' configuration (~873k train / ~109k validation / ~109k test) to size any future benchmark-reference work.",
+        "splits": {"train": "~873k", "validation": "~109k", "test": "~109k"},
         "format": "parquet",
         "size": "310 MB",
-        "subsets": "21 sports including American Football"
+        "subsets": "21 per-sport subsets (including American Football) that overlap the 'all' configuration"
       },
       "source_lineage": "Extractive QA built over sports wiki pages (Fandom); processing scripts published at github.com/leomaurodesenv/qasports-dataset-scripts.",
       "provenance_class": "scraped_and_transformed_from_wikis",
