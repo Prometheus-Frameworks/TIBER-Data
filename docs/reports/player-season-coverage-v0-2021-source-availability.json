@@ -1,53 +1,479 @@
 {
   "report_id": "player_season_coverage_v0_2021_source_availability",
-  "status": "blocked_pending_source_access",
+  "status": "source_availability_evidence_report_not_an_artifact",
   "tracking_issue": "TIBER-Data#198",
   "forecast_context": [
     "Prometheus-Frameworks/TIBER-Forecast#133",
     "Prometheus-Frameworks/TIBER-Forecast#134 (merged 2517270)"
   ],
-  "generated_at": "2026-07-05T00:00:00Z",
+  "generated_at": "2026-07-05T22:47:32.675896+00:00",
   "season_inspected": 2021,
   "season_type_inspected": "REG",
-  "positions_inspected": ["QB", "RB", "WR", "TE"],
-  "sources_to_inspect": [
+  "positions_inspected": [
+    "QB",
+    "RB",
+    "WR",
+    "TE"
+  ],
+  "sources_inspected": [
     "nflreadpy.load_player_stats(seasons=[2021], summary_level='week')",
     "nflreadpy.load_player_stats(seasons=[2021], summary_level='reg')",
     "nflreadpy.load_players()"
   ],
   "approved_source_allowlist_reference": "exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json",
-  "inspection_tooling": {
-    "script": "scripts/inspect_player_season_coverage_2021_source_availability.py",
-    "tests": "tests/test_inspect_player_season_coverage_2021_source_availability.py",
-    "tooling_status": "written, unit-tested offline (8/8 passing) against fake source frames, has NOT been run against real nflreadpy sources",
-    "note": "The offline tests validate the assessment/decision logic in isolation. They do not and cannot substitute for running the script against real 2021 nflreadpy data, and this report does not treat them as such."
-  },
-  "external_source_access_requirement": {
-    "required_repo": "nflverse/nflverse-data",
-    "purpose": "public release parquet assets (e.g. stats_player_week_2021.parquet) that nflreadpy.load_player_stats/load_players download from GitHub release assets at github.com/nflverse/nflverse-data",
-    "reason": "needed only for this 2021 source-availability inspection; this is the same source family already approved and used by the promoted 2022-2025 player_season_coverage_v0 artifact, just for an additional season",
-    "current_blocker": "This session's GitHub access is scoped to Prometheus-Frameworks/TIBER-Data and Prometheus-Frameworks/TIBER-Forecast only. Outbound calls to github.com/nflverse/nflverse-data (both release-asset downloads and the GitHub API) return HTTP 403 with 'GitHub access to this repository is not enabled for this session. Use add_repo to request access.' Repeated add_repo(owner='nflverse', repo='nflverse-data') calls from within this session fail with 'MCP tool call requires approval' / 'Tool permission request failed: Tool permission stream closed before response received' and never complete.",
-    "attempted_workarounds_explicitly_rejected": [
-      "vendoring or hand-copying nflverse-data parquet/CSV files into this repo",
-      "substituting a different, non-approved source for 2021 data",
-      "changing the player_season_coverage_v0 source boundary to route around the block",
-      "fabricating or estimating 2021 counts without a real source pull",
-      "treating the offline unit tests (which use synthetic fake frames) as a completed source check"
+  "non_goals": [
+    "no candidate artifact is built or emitted",
+    "no promoted artifact is modified",
+    "no Forecast mirror/rerun/validation is performed or authorized",
+    "no promotion, threshold acceptance, production binding, or product behavior is authorized"
+  ],
+  "availability": {
+    "week_level_rows_total": 18969,
+    "week_level_rows_reg": 18128,
+    "reg_level_rows_total": 2082,
+    "reg_level_rows_reg_qb_rb_wr_te": 633,
+    "season_type_values_week_level": [
+      "POST",
+      "REG"
     ],
-    "resolution_path": "A human with access to this Claude Code session's live UI (session URL is recorded in the branch's commit trailer) must approve the pending add_repo tool-permission prompt for nflverse/nflverse-data, or add that repository to the session's sources before the inspection script is re-run. See PR description for exact steps."
+    "season_type_values_reg_level": [
+      "REG"
+    ],
+    "row_counts_by_position_reg_level": {
+      "QB": 81,
+      "RB": 165,
+      "WR": 256,
+      "TE": 131
+    },
+    "player_counts_by_position": {
+      "QB": 81,
+      "RB": 165,
+      "WR": 256,
+      "TE": 131
+    },
+    "unique_players_all_positions": 633,
+    "week_level_reg_row_counts_by_position": {
+      "QB": 655,
+      "RB": 1511,
+      "WR": 2483,
+      "TE": 1207
+    },
+    "reg_week_numbers_observed": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "max_weeks_observed_any_player": 17,
+    "max_games_reg_level": 17,
+    "games_null_count": 0,
+    "duplicate_grain_pairs": 0
   },
-  "decision": "player_season_coverage_2021_source_feasibility_inconclusive_requires_followup",
-  "decision_basis": "The 2021 REG source-availability inspection could not be run because the approved source family (nflreadpy, which fetches from github.com/nflverse/nflverse-data release assets) is blocked at the environment/session level, not because of anything found in TIBER-Data. No source-level or governance-level conclusion about 2021 feasibility can be drawn yet.",
+  "schema_compatibility": {
+    "week_level_columns": {
+      "season": {
+        "candidates": [
+          "season"
+        ],
+        "required": true,
+        "resolved_column": "season",
+        "present": true
+      },
+      "week": {
+        "candidates": [
+          "week"
+        ],
+        "required": true,
+        "resolved_column": "week",
+        "present": true
+      },
+      "player_id": {
+        "candidates": [
+          "player_id",
+          "gsis_id"
+        ],
+        "required": true,
+        "resolved_column": "player_id",
+        "present": true
+      },
+      "team": {
+        "candidates": [
+          "team",
+          "recent_team"
+        ],
+        "required": true,
+        "resolved_column": "team",
+        "present": true
+      },
+      "season_type": {
+        "candidates": [
+          "season_type"
+        ],
+        "required": true,
+        "resolved_column": "season_type",
+        "present": true
+      }
+    },
+    "reg_level_columns": {
+      "player_id": {
+        "candidates": [
+          "player_id",
+          "gsis_id"
+        ],
+        "required": true,
+        "resolved_column": "player_id",
+        "present": true
+      },
+      "player_name": {
+        "candidates": [
+          "player_display_name",
+          "player_name"
+        ],
+        "required": true,
+        "resolved_column": "player_display_name",
+        "present": true
+      },
+      "position": {
+        "candidates": [
+          "position"
+        ],
+        "required": true,
+        "resolved_column": "position",
+        "present": true
+      },
+      "games": {
+        "candidates": [
+          "games"
+        ],
+        "required": true,
+        "resolved_column": "games",
+        "present": true
+      },
+      "season_type": {
+        "candidates": [
+          "season_type"
+        ],
+        "required": false,
+        "resolved_column": "season_type",
+        "present": true
+      },
+      "completions": {
+        "candidates": [
+          "completions"
+        ],
+        "required": false,
+        "resolved_column": "completions",
+        "present": true
+      },
+      "attempts": {
+        "candidates": [
+          "attempts"
+        ],
+        "required": false,
+        "resolved_column": "attempts",
+        "present": true
+      },
+      "passing_yards": {
+        "candidates": [
+          "passing_yards"
+        ],
+        "required": false,
+        "resolved_column": "passing_yards",
+        "present": true
+      },
+      "passing_tds": {
+        "candidates": [
+          "passing_tds"
+        ],
+        "required": false,
+        "resolved_column": "passing_tds",
+        "present": true
+      },
+      "passing_interceptions": {
+        "candidates": [
+          "passing_interceptions"
+        ],
+        "required": false,
+        "resolved_column": "passing_interceptions",
+        "present": true
+      },
+      "carries": {
+        "candidates": [
+          "carries"
+        ],
+        "required": false,
+        "resolved_column": "carries",
+        "present": true
+      },
+      "rushing_yards": {
+        "candidates": [
+          "rushing_yards"
+        ],
+        "required": false,
+        "resolved_column": "rushing_yards",
+        "present": true
+      },
+      "rushing_tds": {
+        "candidates": [
+          "rushing_tds"
+        ],
+        "required": false,
+        "resolved_column": "rushing_tds",
+        "present": true
+      },
+      "receptions": {
+        "candidates": [
+          "receptions"
+        ],
+        "required": false,
+        "resolved_column": "receptions",
+        "present": true
+      },
+      "targets": {
+        "candidates": [
+          "targets"
+        ],
+        "required": false,
+        "resolved_column": "targets",
+        "present": true
+      },
+      "receiving_yards": {
+        "candidates": [
+          "receiving_yards"
+        ],
+        "required": false,
+        "resolved_column": "receiving_yards",
+        "present": true
+      },
+      "receiving_tds": {
+        "candidates": [
+          "receiving_tds"
+        ],
+        "required": false,
+        "resolved_column": "receiving_tds",
+        "present": true
+      },
+      "receiving_air_yards": {
+        "candidates": [
+          "receiving_air_yards"
+        ],
+        "required": false,
+        "resolved_column": "receiving_air_yards",
+        "present": true
+      },
+      "target_share": {
+        "candidates": [
+          "target_share"
+        ],
+        "required": false,
+        "resolved_column": "target_share",
+        "present": true
+      },
+      "air_yards_share": {
+        "candidates": [
+          "air_yards_share"
+        ],
+        "required": false,
+        "resolved_column": "air_yards_share",
+        "present": true
+      },
+      "wopr": {
+        "candidates": [
+          "wopr"
+        ],
+        "required": false,
+        "resolved_column": "wopr",
+        "present": true
+      },
+      "racr": {
+        "candidates": [
+          "racr"
+        ],
+        "required": false,
+        "resolved_column": "racr",
+        "present": true
+      },
+      "fantasy_points_ppr": {
+        "candidates": [
+          "fantasy_points_ppr"
+        ],
+        "required": false,
+        "resolved_column": "fantasy_points_ppr",
+        "present": true
+      }
+    },
+    "missing_required_week_level": [],
+    "missing_required_reg_level": [],
+    "missing_optional_reg_level": [],
+    "load_players_identity_columns_present": {
+      "gsis_id": true,
+      "birth_date": true,
+      "draft_year": true,
+      "draft_round": true,
+      "draft_pick": true,
+      "draft_team": true,
+      "rookie_season": true,
+      "espn_id": true
+    }
+  },
+  "identity_age_draft": {
+    "identity_join_rate_gsis_id": 1.0,
+    "identity_join_rate_floor": 0.95,
+    "players_joined": 633,
+    "players_total": 633,
+    "field_availability_for_joined_players": {
+      "birth_date": {
+        "available": 633,
+        "total": 633,
+        "rate": 1.0
+      },
+      "rookie_season": {
+        "available": 633,
+        "total": 633,
+        "rate": 1.0
+      },
+      "draft_year": {
+        "available": 424,
+        "total": 633,
+        "rate": 0.6698
+      },
+      "draft_round": {
+        "available": 424,
+        "total": 633,
+        "rate": 0.6698
+      },
+      "draft_pick": {
+        "available": 424,
+        "total": 633,
+        "rate": 0.6698
+      },
+      "draft_team": {
+        "available": 424,
+        "total": 633,
+        "rate": 0.6698
+      }
+    }
+  },
+  "null_observations_reg_level": {
+    "games": {
+      "nulls": 0,
+      "total": 633,
+      "rate": 0.0
+    },
+    "fantasy_points_ppr": {
+      "nulls": 0,
+      "total": 633,
+      "rate": 0.0
+    },
+    "targets": {
+      "nulls": 0,
+      "total": 633,
+      "rate": 0.0
+    },
+    "receptions": {
+      "nulls": 0,
+      "total": 633,
+      "rate": 0.0
+    },
+    "carries": {
+      "nulls": 0,
+      "total": 633,
+      "rate": 0.0
+    },
+    "receiving_air_yards": {
+      "nulls": 0,
+      "total": 633,
+      "rate": 0.0
+    },
+    "target_share": {
+      "nulls": 0,
+      "total": 633,
+      "rate": 0.0
+    },
+    "air_yards_share": {
+      "nulls": 0,
+      "total": 633,
+      "rate": 0.0
+    },
+    "wopr": {
+      "nulls": 0,
+      "total": 633,
+      "rate": 0.0
+    },
+    "racr": {
+      "nulls": 127,
+      "total": 633,
+      "rate": 0.2006
+    }
+  },
+  "methodology_compatibility": {
+    "expected_max_reg_week": 18,
+    "full_season_weeks_threshold": 15,
+    "hypothesis_from_forecast_pr_134": "2021 is likely methodology-compatible because it is a 17-game / 18-week season, unlike pre-2021 seasons.",
+    "hypothesis_verified": true
+  },
+  "checks": {
+    "week_level_2021_rows_exist": true,
+    "reg_level_2021_rows_exist": true,
+    "week_level_reg_season_type_rows_exist": true,
+    "required_week_level_columns_present": true,
+    "required_reg_level_columns_present": true,
+    "season_type_reg_emitted_by_source": true,
+    "all_four_positions_present": true,
+    "reg_week_span_1_to_18": true,
+    "games_within_17_game_season_cap_plus_trade_allowance": true,
+    "grain_unique_player_season_season_type": true,
+    "load_players_gsis_join_available": true,
+    "identity_join_rate_at_or_above_floor": true
+  },
+  "blocking_failures": [],
+  "redesign_failures": [],
+  "comparison_to_promoted_2022_2025": {
+    "promoted_artifact": "exports\\promoted\\nfl\\player_season_coverage_v0.json",
+    "promoted_counts": {
+      "records": 2383,
+      "by_season": {
+        "2022": 609,
+        "2023": 576,
+        "2024": 588,
+        "2025": 610
+      },
+      "by_position": {
+        "QB": 323,
+        "RB": 606,
+        "TE": 519,
+        "WR": 935
+      }
+    },
+    "promoted_seasons": [
+      2022,
+      2023,
+      2024,
+      2025
+    ]
+  },
+  "decision": "may_open_player_season_coverage_2021_candidate_build_issue",
+  "decision_basis": "all source-availability and builder-compatibility checks passed",
   "decisions_not_emitted_and_not_authorized": [
-    "may_open_player_season_coverage_2021_candidate_build_issue",
-    "player_season_coverage_2021_source_unavailable_blocks_additional_validation",
-    "player_season_coverage_2021_requires_source_boundary_redesign",
     "promotion of any artifact",
     "Forecast mirror refresh",
     "Forecast controlled rerun",
     "player-history threshold acceptance",
     "leakage audit",
     "model wiring / seasonalPprModel.ts changes"
-  ],
-  "next_step": "Once nflverse/nflverse-data access is granted to this session (or a follow-up session with that access), run: python3 scripts/inspect_player_season_coverage_2021_source_availability.py — this will overwrite this report with real 2021 REG counts, schema-compatibility findings, and one of the three substantive decisions (candidate-build / source-unavailable / requires-redesign) in place of this inconclusive placeholder."
+  ]
 }
