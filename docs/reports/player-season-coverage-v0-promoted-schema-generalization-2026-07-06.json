@@ -1,0 +1,52 @@
+{
+  "report_id": "player_season_coverage_v0_promoted_schema_generalization",
+  "status": "contract_task_report",
+  "tracking_issue": "TIBER-Data#204",
+  "prior_context": ["TIBER-Data#202", "TIBER-Data PR#203"],
+  "generated_at": "2026-07-06T00:00:00Z",
+  "schema_changed": "schemas/player_season_coverage_v0_promoted.schema.json",
+  "field_changed": "promotion_review",
+  "before": {"type": "string", "const": "TIBER-Data#192"},
+  "after": {"type": "string", "pattern": "^TIBER-Data#[0-9]+$"},
+  "other_const_fields_checked": {
+    "status": {"value": "promoted_governed_artifact", "first_promotion_specific": false, "action": "unchanged"},
+    "row_grain": {"value": "player_id + season + season_type", "first_promotion_specific": false, "action": "unchanged"}
+  },
+  "unrelated_fields_broadened": false,
+  "tests_added": "tests/test_player_season_coverage_v0_promoted_schema.py",
+  "test_count": 21,
+  "test_summary": {
+    "valid_tiber_data_references_pass": ["TIBER-Data#192", "TIBER-Data#202", "TIBER-Data#204", "TIBER-Data#1"],
+    "malformed_references_fail": [
+      "192", "TIBER-Data192", "tiber-data#192", "TIBER-DATA#192", "TIBER-Data#",
+      "TIBER-Data#19a", "TIBER-Data# 192", "TIBER-Data#192 ", " TIBER-Data#192", "", "TIBER-Forecast#134"
+    ],
+    "status_invariant_protected": true,
+    "row_grain_invariant_protected": true,
+    "committed_192_promoted_artifact_still_validates": true,
+    "pr203_promotion_helper_payload_now_passes_schema": true,
+    "no_promoted_files_written_by_tests": true
+  },
+  "full_suite_result": "345 passed (up from 324 before this change)",
+  "typecheck_result": "passed",
+  "exports_promoted_modified": false,
+  "audit_required": true,
+  "audit_reason": "AGENTS.md audit trigger: adds or changes a contract under schemas/**",
+  "audit_path_md": "docs/audits/player-season-coverage-v0-promoted-schema-generalization-2026-07-06.md",
+  "audit_path_json": "docs/audits/player-season-coverage-v0-promoted-schema-generalization-2026-07-06.json",
+  "decision": "may_resume_player_season_coverage_2021_2025_promotion_attempt",
+  "decision_basis": "Narrow schema change, exports/promoted untouched, both true invariants preserved and tested, old and new review references tested, PR#203 promotion payload confirmed to pass schema validation via the pure build_promoted_payload function without writing any files.",
+  "decisions_not_emitted_and_not_authorized": [
+    "player_season_coverage_promoted_schema_generalization_blocked",
+    "player_season_coverage_promoted_schema_generalization_requires_followup",
+    "promotion of any artifact",
+    "modification of exports/promoted/nfl/player_season_coverage_v0.json or its manifest",
+    "candidate rebuilds",
+    "Forecast mirror refresh",
+    "Forecast controlled rerun",
+    "threshold decisions",
+    "model wiring",
+    "production claims",
+    "ranking/advice/UI/export/product behavior"
+  ]
+}

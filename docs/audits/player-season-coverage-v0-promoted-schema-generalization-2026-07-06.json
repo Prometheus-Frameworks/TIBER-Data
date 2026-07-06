@@ -1,0 +1,73 @@
+{
+  "audit_id": "player-season-coverage-v0-promoted-schema-generalization-2026-07-06",
+  "date": "2026-07-06",
+  "scope": "TIBER-Data only. Read-only audit of the TIBER-Data#204 contract change.",
+  "tracking_issues": ["TIBER-Data#202", "TIBER-Data PR#203", "TIBER-Data#204"],
+  "type": "audit_only",
+  "audit_trigger": "AGENTS.md audit-triggers: adds or changes a contract under schemas/**",
+  "executive_verdict": "Change is exactly as narrow as #204 authorized: one schema field generalized, both true invariants confirmed untouched and enforced, exports/promoted untouched, independently confirmed to unblock the #203 promotion payload without regressing the #192 artifact.",
+  "checks": {
+    "scope_drift": {
+      "promoted_artifact_modified": false,
+      "promoted_manifest_modified": false,
+      "candidate_artifact_built_or_rebuilt": false,
+      "unrelated_schema_field_broadened": false,
+      "tiber_forecast_touched": false,
+      "ranking_advice_ui_export_product_behavior_introduced": false,
+      "promotion_attempted": false,
+      "result": "pass"
+    },
+    "invariant_protection": {
+      "status_const_present": true,
+      "status_const_value": "promoted_governed_artifact",
+      "row_grain_const_present": true,
+      "row_grain_const_value": "player_id + season + season_type",
+      "deviation_tests_confirm_rejection": true,
+      "result": "pass"
+    },
+    "correctness_boundedness": {
+      "new_pattern": "^TIBER-Data#[0-9]+$",
+      "valid_references_tested": ["TIBER-Data#192", "TIBER-Data#202", "TIBER-Data#204", "TIBER-Data#1"],
+      "malformed_references_tested": 11,
+      "all_malformed_rejected": true,
+      "field_still_required_non_empty_bounded": true,
+      "result": "pass"
+    },
+    "regression": {
+      "committed_192_promoted_artifact_still_validates": true,
+      "errors_found": 0,
+      "result": "pass"
+    },
+    "unblock_confirmation": {
+      "pr203_build_promoted_payload_called_directly": true,
+      "main_or_disk_write_invoked": false,
+      "resulting_payload_validates": true,
+      "resulting_promotion_review_value": "TIBER-Data#202",
+      "result": "pass"
+    }
+  },
+  "files_inspected": [
+    "schemas/player_season_coverage_v0_promoted.schema.json",
+    "tests/test_player_season_coverage_v0_promoted_schema.py",
+    "exports/promoted/nfl/player_season_coverage_v0.json",
+    "exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json",
+    "data/processed/evidence/player_season_coverage_2021_2025.source_backed.json",
+    "scripts/promote_player_season_coverage_v0_2021_2025.py",
+    "schemas/player_season_coverage_v0.schema.json",
+    "AGENTS.md"
+  ],
+  "audit_conclusion": "no_contradiction_found",
+  "decision_deferred_to": "docs/reports/player-season-coverage-v0-promoted-schema-generalization-2026-07-06.json",
+  "decision_recorded_there": "may_resume_player_season_coverage_2021_2025_promotion_attempt",
+  "decisions_not_authorized_by_this_audit": [
+    "promotion of any artifact",
+    "modification of exports/promoted/nfl/player_season_coverage_v0.json or its manifest",
+    "candidate rebuilds",
+    "Forecast mirror refresh",
+    "Forecast controlled rerun",
+    "threshold decisions",
+    "model wiring",
+    "production claims",
+    "ranking/advice/UI/export/product behavior"
+  ]
+}
