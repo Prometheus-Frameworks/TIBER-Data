@@ -1,0 +1,69 @@
+{
+  "report_id": "player_season_coverage_v0_2021_candidate_build",
+  "status": "candidate_build_evidence_report_not_an_artifact",
+  "tracking_issue": "TIBER-Data#200",
+  "generated_at": "2026-07-06T03:13:21.402017+00:00",
+  "candidate_path": "data/processed/evidence/player_season_coverage_2021_candidate.source_backed.json",
+  "candidate_exists": true,
+  "candidate_sha256": "55618590d4a1f6affa8228d32d61b9baa0d66552448811c06136ca6139a7eef4",
+  "candidate_artifact_id": "player_season_coverage_2021_candidate.source_backed",
+  "candidate_status_field": "candidate_evidence_artifact_not_promoted",
+  "seasons": [
+    2021
+  ],
+  "season_type_scope": [
+    "REG"
+  ],
+  "included_positions": [
+    "QB",
+    "RB",
+    "TE",
+    "WR"
+  ],
+  "total_records": 633,
+  "row_counts_by_position": {
+    "QB": 81,
+    "RB": 165,
+    "WR": 256,
+    "TE": 131
+  },
+  "coverage_status_distribution": {
+    "full_season": 162,
+    "single_week": 68,
+    "partial_season": 403
+  },
+  "identity_confidence_distribution": {
+    "source_verified": 633
+  },
+  "identity_join_rate": 1.0,
+  "validation_errors": [],
+  "reconciliation": {
+    "source_availability_row_counts": {
+      "QB": 81,
+      "RB": 165,
+      "WR": 256,
+      "TE": 131
+    },
+    "candidate_row_counts": {
+      "QB": 81,
+      "RB": 165,
+      "WR": 256,
+      "TE": 131
+    },
+    "counts_match": true
+  },
+  "no_promoted_path_written": true,
+  "decision": "may_open_player_season_coverage_2021_promotion_review_issue",
+  "decision_basis": "Candidate passed schema/business-rule validation and row counts reconcile exactly with the #198 source-availability finding for all four positions.",
+  "decisions_not_emitted_and_not_authorized": [
+    "player_season_coverage_2021_candidate_build_failed_source_or_schema_check",
+    "player_season_coverage_2021_candidate_build_requires_source_boundary_redesign",
+    "player_season_coverage_2021_candidate_build_inconclusive_requires_followup",
+    "promotion of any artifact",
+    "Forecast mirror refresh",
+    "Forecast controlled rerun",
+    "player-history threshold acceptance",
+    "leakage audit",
+    "model wiring / seasonalPprModel.ts changes"
+  ]
+}
