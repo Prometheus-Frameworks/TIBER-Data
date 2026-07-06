@@ -296,8 +296,7 @@ def assess_2021_source_availability(week_df, reg_df, players_df, promoted_meta: 
     positions_all_present = all(row_counts_by_position[p] > 0 for p in INCLUDED_POSITIONS)
     week_span_compatible = (
         bool(reg_week_numbers)
-        and reg_week_numbers[0] >= 1
-        and reg_week_numbers[-1] == EXPECTED_MAX_REG_WEEK
+        and set(reg_week_numbers) == set(range(1, EXPECTED_MAX_REG_WEEK + 1))
         and max_weeks_observed_any_player <= EXPECTED_MAX_REG_WEEK
     )
     games_cap_compatible = max_games is not None and max_games <= EXPECTED_MAX_REG_WEEK

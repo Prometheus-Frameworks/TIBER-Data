@@ -173,6 +173,22 @@ def test_week_span_beyond_18_emits_redesign_decision() -> None:
     assert "reg_week_span_1_to_18" in payload["redesign_failures"]
 
 
+def test_week_gap_with_endpoints_intact_emits_redesign_decision() -> None:
+    """First/last observed weeks are 1 and 18, but week 5 never appears league-wide.
+
+    Regression test for a real gap: endpoint-only checks (first >= 1, last == 18)
+    would pass here even though the source is missing a whole week, silently
+    overclaiming full 1-18 coverage. The check must compare the full observed set
+    against range(1, 19).
+    """
+    module = _load_module()
+    week_rows = [row for row in _week_rows() if row["week"] != 5]
+    payload = _assess(module, week_rows=week_rows)
+    assert payload["decision"] == "player_season_coverage_2021_requires_source_boundary_redesign"
+    assert "reg_week_span_1_to_18" in payload["redesign_failures"]
+    assert 5 not in payload["availability"]["reg_week_numbers_observed"]
+
+
 def test_missing_required_reg_column_emits_redesign_decision() -> None:
     module = _load_module()
     reg_rows = [{k: v for k, v in r.items() if k != "games"} for r in _reg_rows()]
