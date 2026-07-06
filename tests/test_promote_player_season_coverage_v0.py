@@ -191,15 +191,28 @@ class TestPromotedArtifact:
         assert errors == []
 
     def test_promoted_records_match_pinned_candidate_verbatim(self):
-        candidate = json.loads(CANDIDATE_PATH.read_text(encoding="utf-8"))
-        assert self.promoted["records"] == candidate["records"]
-        assert self.promoted["counts"]["records"] == 2383
-        assert self.promoted["counts"]["by_season"] == {"2022": 609, "2023": 576, "2024": 588, "2025": 610}
-
-    def test_promotion_is_deterministic(self):
+        """Tests the #192 candidate->promoted mapping directly, independent of whatever
+        currently lives at PROMOTED_PATH. TIBER-Data#202/#206 intentionally superseded
+        that live file's content with a second promotion event (2021-2025), so the live
+        file can no longer serve as the comparison target for a #192-only rebuild -- the
+        historical mapping is still verified by rebuilding from the pinned 2022-2025
+        candidate and checking the mapping is lossless/verbatim on its own terms."""
         candidate = json.loads(CANDIDATE_PATH.read_text(encoding="utf-8"))
         rebuilt = promoter.build_promoted_payload(candidate, promoter.PINNED_CANDIDATE_SHA256, validator)
-        assert (json.dumps(rebuilt, indent=1) + "\n") == PROMOTED_PATH.read_text(encoding="utf-8")
+        assert rebuilt["records"] == candidate["records"]
+        assert rebuilt["counts"]["records"] == 2383
+        # rebuilt is an in-memory payload (int season keys), unlike a JSON-round-tripped
+        # dict (string keys) -- compare with int keys accordingly.
+        assert rebuilt["counts"]["by_season"] == {2022: 609, 2023: 576, 2024: 588, 2025: 610}
+
+    def test_promotion_is_deterministic(self):
+        """Determinism of the pure build_promoted_payload function, verified by comparing
+        two independent rebuilds against each other -- not against PROMOTED_PATH, which
+        TIBER-Data#202/#206 intentionally superseded with a later 2021-2025 promotion."""
+        candidate = json.loads(CANDIDATE_PATH.read_text(encoding="utf-8"))
+        rebuilt_a = promoter.build_promoted_payload(candidate, promoter.PINNED_CANDIDATE_SHA256, validator)
+        rebuilt_b = promoter.build_promoted_payload(candidate, promoter.PINNED_CANDIDATE_SHA256, validator)
+        assert (json.dumps(rebuilt_a, indent=1) + "\n") == (json.dumps(rebuilt_b, indent=1) + "\n")
 
     def test_manifest_pins_the_promoted_bytes(self):
         import hashlib

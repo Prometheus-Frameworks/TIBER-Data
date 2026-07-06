@@ -2,20 +2,54 @@
   "artifact_id": "player_season_coverage_v0",
   "spec_version": "player_season_coverage_v0_promoted_v1",
   "status": "promoted_governed_artifact",
-  "generated_at": "2026-06-30T19:36:52.260432+00:00",
-  "promoted_at": "2026-07-03T00:00:00Z",
-  "promotion_review": "TIBER-Data#192",
-  "promotion_decision": "promote_player_season_coverage_v0",
+  "generated_at": "2026-07-06T00:00:00Z",
+  "promoted_at": "2026-07-06T00:00:00Z",
+  "promotion_review": "TIBER-Data#202",
+  "promotion_decision": "promote_player_season_coverage_v0_2021_2025",
   "source_candidate": {
-    "path": "data/processed/evidence/player_season_coverage_2022_2025.source_backed.json",
-    "sha256": "39b6e71e36d667509221137f2b712143fe5fdccf5423f50e81b5c7a138c0072b",
+    "path": "data/processed/evidence/player_season_coverage_2021_2025.source_backed.json",
+    "sha256": "c92404a1b519a62ee9f4b75f74662157fc8dd02b883648d4cdae694d0e021424",
     "status_at_promotion": "candidate_evidence_artifact_not_promoted"
+  },
+  "source_candidate_lineage": [
+    {
+      "path": "data/processed/evidence/player_season_coverage_2021_candidate.source_backed.json",
+      "sha256": "55618590d4a1f6affa8228d32d61b9baa0d66552448811c06136ca6139a7eef4",
+      "seasons_contributed": [
+        2021
+      ],
+      "record_count": 633
+    },
+    {
+      "path": "data/processed/evidence/player_season_coverage_2022_2025.source_backed.json",
+      "sha256": "39b6e71e36d667509221137f2b712143fe5fdccf5423f50e81b5c7a138c0072b",
+      "seasons_contributed": [
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "record_count": 2383
+    }
+  ],
+  "prior_promoted_artifact": {
+    "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+    "sha256": "29f8e378127fa5426e5897ac4522b6187941312edabab357d8a427fb20511035",
+    "promotion_review": "TIBER-Data#192",
+    "seasons": [
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "note": "This promotion event supersedes the OUTPUT of TIBER-Data#192 (same artifact_id/path), extending season coverage from 2022-2025 to 2021-2025. It does not retroactively invalidate #192's review; the prior promoted bytes remain reconstructible by running scripts/promote_player_season_coverage_v0.py against the unchanged, still-pinned 2022-2025 candidate."
   },
   "approved_source_allowlist": [
     "nflreadpy.load_player_stats(",
     "nflreadpy.load_players("
   ],
   "seasons": [
+    2021,
     2022,
     2023,
     2024,
@@ -32,18 +66,19 @@
   ],
   "row_grain": "player_id + season + season_type",
   "counts": {
-    "records": 2383,
+    "records": 3016,
     "by_season": {
+      "2021": 633,
       "2022": 609,
       "2023": 576,
       "2024": 588,
       "2025": 610
     },
     "by_position": {
-      "QB": 323,
-      "RB": 606,
-      "TE": 519,
-      "WR": 935
+      "QB": 404,
+      "RB": 771,
+      "TE": 650,
+      "WR": 1191
     }
   },
   "no_fixture_or_scaffold_markers_confirmed": true,
@@ -68,11 +103,13 @@
       "Forecast production binding without a separate Forecast issue and gate"
     ]
   },
-  "forecast_compatibility_note": "Forecast may consume this promoted artifact only through a separate Forecast-side gate that re-verifies sha/provenance, enforces target-season leakage splits structurally, and considers a production-only feature contract given the Forecast #116 attribution finding (the production family carries essentially all of the candidate signal). No product-facing claim is authorized until a Forecast production-binding review passes. This promotion changes nothing in Forecast.",
+  "forecast_compatibility_note": "Forecast may consume this promoted artifact only through a separate Forecast-side gate that re-verifies sha/provenance, enforces target-season leakage splits structurally, and considers a production-only feature contract given the Forecast #116 attribution finding (the production family carries essentially all of the candidate signal). No product-facing claim is authorized until a Forecast production-binding review passes. This promotion changes nothing in Forecast. TIBER-Data#202 authorizes TIBER-Data promotion review ONLY: it does not authorize a Forecast mirror refresh, additional validation, or threshold acceptance. The only next authorized step is a separate TIBER-Forecast issue considering whether to refresh non-production mirrors.",
   "reproducibility": {
-    "promotion": "deterministic and network-free: this file is a pure transformation of the sha256-pinned candidate; re-running scripts/promote_player_season_coverage_v0.py yields byte-identical output",
-    "candidate_rebuild": "python scripts/build_player_season_coverage_2022_2025.py (network: nflreadpy). Content-reproducible against unchanged upstream data, but NOT byte-identical across runs (embedded observed_at/generated_at timestamps) and upstream nflreadpy data is mutable; a rebuilt candidate gets a NEW sha and requires a NEW governance review before re-promotion"
+    "promotion": "deterministic and network-free: this file is a pure transformation of the sha256-pinned merged candidate; re-running scripts/promote_player_season_coverage_v0_2021_2025.py yields byte-identical output",
+    "merged_candidate_rebuild": "python scripts/build_player_season_coverage_2021_2025_merged_candidate.py (network-free: reads the two already-committed, sha256-pinned upstream candidates). Content-reproducible against unchanged upstream candidate files.",
+    "original_2022_2025_candidate_rebuild": "python scripts/build_player_season_coverage_2022_2025.py (network: nflreadpy). NOT byte-identical across runs (embedded observed_at/generated_at timestamps); a rebuilt candidate gets a NEW sha and requires a NEW governance review before re-promotion.",
+    "2021_candidate_rebuild": "python scripts/build_player_season_coverage_2021_candidate.py (network: nflreadpy). Same non-determinism caveat as above."
   },
   "promoted_artifact_path": "exports/promoted/nfl/player_season_coverage_v0.json",
-  "promoted_artifact_sha256": "29f8e378127fa5426e5897ac4522b6187941312edabab357d8a427fb20511035"
+  "promoted_artifact_sha256": "b8e378e62a8c43bce1284a82b049eb46417d6a3b5a4104fbbbfcb432c4e35c04"
 }
