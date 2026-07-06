@@ -17,7 +17,7 @@ The change is exactly as narrow as #204 authorized: one schema field (`promotion
 | file | role |
 |---|---|
 | `schemas/player_season_coverage_v0_promoted.schema.json` | changed (this issue) — `promotion_review` field + top-level `description` |
-| `tests/test_player_season_coverage_v0_promoted_schema.py` | new (this issue) — 21 tests |
+| `tests/test_player_season_coverage_v0_promoted_schema.py` | new (this issue) — 26 tests |
 | `exports/promoted/nfl/player_season_coverage_v0.json` | confirmed **unmodified**; re-validated against the new schema as a regression check |
 | `exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json` | confirmed **unmodified** |
 | `data/processed/evidence/player_season_coverage_2021_2025.source_backed.json` | read-only input to the unblock-confirmation test (from #202/#203); confirmed **unmodified** |
@@ -44,8 +44,9 @@ The change is exactly as narrow as #204 authorized: one schema field (`promotion
 
 ## 5. Correctness / bounded-ness check
 
-- New `promotion_review` pattern: `^TIBER-Data#[0-9]+$`. Tested against 4 valid references (`TIBER-Data#192`, `#202`, `#204`, `#1`) — all pass — and 11 malformed/adjacent references (bare numbers, wrong casing, missing/extra characters, whitespace, empty string, and a same-shape reference from a different repo, `TIBER-Forecast#134`) — all correctly fail.
+- New `promotion_review` pattern: `^TIBER-Data#[0-9]+\Z`. Tested against 4 valid references (`TIBER-Data#192`, `#202`, `#204`, `#1`) — all pass — and 15 malformed/adjacent references (bare numbers, wrong casing, missing/extra characters, whitespace, empty string, a same-shape reference from a different repo `TIBER-Forecast#134`, and trailing/leading newline variants) — all correctly fail.
 - The pattern is still a required, non-empty, bounded string constraint — not an unconstrained free-form field. It does not accept arbitrary text; only well-formed TIBER-Data issue references.
+- **Post-review fix:** the pattern initially committed used a bare `$` anchor (`^TIBER-Data#[0-9]+$`). A Codex review on PR#205 correctly identified that Python's `re` treats `$` as matching before a single trailing newline rather than strict end-of-string, so `"TIBER-Data#192\n"` validated even though it should not have — a real gap in this field's role as the promoted artifact's provenance gate. Fixed in commit `eff0a75` by switching to `\Z`, with 4 new regression tests (trailing `\n`, `\n\n`, `\r\n`, leading `\n`) and a schema-inspection test confirming the pattern ends with `\Z`.
 
 ## 6. Regression check
 

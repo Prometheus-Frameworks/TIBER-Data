@@ -26,9 +26,11 @@
       "result": "pass"
     },
     "correctness_boundedness": {
-      "new_pattern": "^TIBER-Data#[0-9]+$",
+      "new_pattern": "^TIBER-Data#[0-9]+\\Z",
+      "post_review_fix": "initial pattern used a bare $ anchor, which Python's re treats as matching before a single trailing newline; a Codex review (PR#205) caught that 'TIBER-Data#192\\n' validated under it. Fixed to \\Z in commit eff0a75.",
       "valid_references_tested": ["TIBER-Data#192", "TIBER-Data#202", "TIBER-Data#204", "TIBER-Data#1"],
-      "malformed_references_tested": 11,
+      "malformed_references_tested": 15,
+      "malformed_references_include_newline_variants": true,
       "all_malformed_rejected": true,
       "field_still_required_non_empty_bounded": true,
       "result": "pass"

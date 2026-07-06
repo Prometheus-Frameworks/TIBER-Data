@@ -11,7 +11,7 @@
 
 ```diff
 -"promotion_review": { "type": "string", "const": "TIBER-Data#192" }
-+"promotion_review": { "type": "string", "pattern": "^TIBER-Data#[0-9]+$" }
++"promotion_review": { "type": "string", "pattern": "^TIBER-Data#[0-9]+\Z" }
 ```
 
 Also updated the schema's top-level `description` to stop describing the contract as scoped to a single promotion event (it referenced "TIBER-Data #192" as if the whole contract were that one-time-only; now it credits both #192 as the originating event and #204 as the generalization).
@@ -30,15 +30,15 @@ No other field (`seasons`, `season_type_scope`, `source_candidate`, `approved_so
 
 ## Tests added
 
-`tests/test_player_season_coverage_v0_promoted_schema.py` (21 tests):
+`tests/test_player_season_coverage_v0_promoted_schema.py` (26 tests):
 
 - Both `TIBER-Data#192` and `TIBER-Data#202` (plus `#204`, `#1`) validate as `promotion_review`.
-- Malformed/non-TIBER-Data references fail closed: bare numbers, missing `#`, lowercase, wrong casing, trailing/leading whitespace, non-numeric suffix, empty string, and a same-shape-but-wrong-repo reference (`TIBER-Forecast#134`) all correctly fail.
+- Malformed/non-TIBER-Data references fail closed: bare numbers, missing `#`, lowercase, wrong casing, trailing/leading whitespace, non-numeric suffix, empty string, a same-shape-but-wrong-repo reference (`TIBER-Forecast#134`), and (added after a Codex review finding) trailing/leading newline variants (`"TIBER-Data#192\n"`, `"\n\n"`, `"\r\n"`, leading `"\n"`) all correctly fail. A dedicated schema-inspection test also asserts the pattern ends with `\Z` rather than a bare `$`, since Python's `re` treats `$` as matching before a single trailing newline rather than strict end-of-string -- the original pattern would have let a newline-tainted review reference through.
 - `status` and `row_grain` remain `const` in the schema and still reject any deviation (invariant protection verified both by schema inspection and by validating a deviating payload).
 - **Regression:** the currently-committed, live promoted artifact (`exports/promoted/nfl/player_season_coverage_v0.json`, from TIBER-Data#192) still validates cleanly against the generalized schema — zero errors.
 - **Unblock confirmation:** calling PR#203's `build_promoted_payload` directly (pure function, no disk writes, no `main()` call, nothing under `exports/promoted/**` touched) against the real, committed 2021-2025 merged candidate now produces a payload that validates cleanly against the generalized schema — zero errors, `promotion_review: "TIBER-Data#202"`.
 
-Full repo suite: 345 passed (up from 324 before this change). Typecheck: passed.
+Full repo suite: 350 passed (up from 324 before this change; 345 immediately after the initial generalization, 350 after the newline-anchor fix added 5 more tests). Typecheck: passed.
 
 ## Audit
 
