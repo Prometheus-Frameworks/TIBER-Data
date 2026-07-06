@@ -1,6 +1,6 @@
 # Candidate-Build Report: `player_season_coverage_v0` — 2021 Extension
 
-- **Generated at:** 2026-07-06T03:11:10.386183+00:00
+- **Generated at:** 2026-07-06T03:13:21.402017+00:00
 - **Tracking issue:** TIBER-Data#200
 - **Status:** `candidate_build_evidence_report_not_an_artifact`
 - **Candidate path:** `data/processed/evidence/player_season_coverage_2021_candidate.source_backed.json`
@@ -8,7 +8,7 @@
 
 ## Candidate summary
 
-- sha256: `4dba2e61df1f45252dd28f8a445aeec555485241a20b479460d1e0d09a21697b`
+- sha256: `55618590d4a1f6affa8228d32d61b9baa0d66552448811c06136ca6139a7eef4`
 - artifact_id: `player_season_coverage_2021_candidate.source_backed`
 - status field: `candidate_evidence_artifact_not_promoted`
 - seasons: [2021]
