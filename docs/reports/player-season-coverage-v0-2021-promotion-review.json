@@ -1,0 +1,91 @@
+{
+  "report_id": "player_season_coverage_v0_2021_2025_promotion_review",
+  "status": "promotion_review_evidence_report_not_a_promotion",
+  "tracking_issue": "TIBER-Data#202",
+  "input_issues": ["TIBER-Data#198", "TIBER-Data#200", "TIBER-Data PR#201"],
+  "generated_at": "2026-07-06T00:00:00Z",
+  "summary": "2021 candidate extension is source-sound, schema-valid, and reconciles exactly. Merged 2021-2025 candidate built and validated cleanly. Promotion itself is blocked by a pre-existing contract defect: the promoted schema hardcodes promotion_review to a const matching only the first promotion event.",
+  "review_questions": {
+    "q1_append_vs_successor": {
+      "answer": "append",
+      "basis": "Identical builder methodology/schema/grain to the existing 2022-2025 candidate, confirmed by #198/#200 audits and exact count reconciliation. No basis for a separate artifact family or schema version."
+    },
+    "q2_schema_boundary_grain_provenance_preserved": {
+      "candidate_level": "preserved; merged candidate validates cleanly against the unchanged candidate schema/validator, 0 errors, 3016 records, 0 duplicate grain",
+      "promoted_level": "NOT preserved; see q7 finding",
+      "result": "partial"
+    },
+    "q3_counts_reconcile": {
+      "by_position_2021": {"QB": 81, "RB": 165, "WR": 256, "TE": 131, "total": 633},
+      "by_position_merged_2021_2025": {"QB": 404, "RB": 771, "TE": 650, "WR": 1191, "total": 3016},
+      "by_season_merged": {"2021": 633, "2022": 609, "2023": 576, "2024": 588, "2025": 610},
+      "matches_198_and_201_exactly": true
+    },
+    "q4_deterministic_ordering_provenance": {
+      "sort_order": "(season, player_id), matching existing builder convention",
+      "source_refs_preserved_unmodified": true,
+      "rerun_byte_identical": true
+    },
+    "q5_no_false_support_claim": {
+      "candidate_status_field": "candidate_evidence_artifact_not_promoted",
+      "non_goals_disclaim_promotion_and_forecast": true,
+      "availability_status_fields_present": false,
+      "intended_promoted_consumer_safety_unchanged": true
+    },
+    "q6_hashes_reproducible_from_committed_bytes": {
+      "merged_candidate_sha256": "c92404a1b519a62ee9f4b75f74662157fc8dd02b883648d4cdae694d0e021424",
+      "upstream_2021_candidate_sha256_verified": "55618590d4a1f6affa8228d32d61b9baa0d66552448811c06136ca6139a7eef4",
+      "upstream_2022_2025_candidate_sha256_verified": "39b6e71e36d667509221137f2b712143fe5fdccf5423f50e81b5c7a138c0072b",
+      "upstream_shas_match_known_good_pins": true,
+      "merge_rerun_produced_byte_identical_output": true,
+      "promotion_build_promoted_payload_unit_tested": true
+    },
+    "q7_source_boundary_amendment_required": {
+      "required": true,
+      "amendment_type": "contract (schemas/player_season_coverage_v0_promoted.schema.json), not the nflreadpy source boundary",
+      "finding": "promotion_review field is defined as {type: string, const: 'TIBER-Data#192'}, which can never validate a second promotion event under an honest new review reference, independent of the 2021 data's quality.",
+      "other_consts_checked": {
+        "status": "correctly invariant, not implicated",
+        "row_grain": "correctly invariant, not implicated"
+      },
+      "task_classification": "Contract task per AGENTS.md (touches schemas/**); out of scope for this promotion-review issue's hard boundary",
+      "promoted_artifact_mutated_while_investigating": false,
+      "verified_promoted_artifact_and_manifest_byte_identical_to_pre_review_state": true
+    },
+    "q8_audit_required_and_committed": {
+      "required": true,
+      "reason": "adds a new candidate/generated artifact (merged 2021-2025 candidate, 3016 records)",
+      "audit_path_md": "docs/audits/player-season-coverage-v0-2021-2025-promotion-review-2026-07-06.md",
+      "audit_path_json": "docs/audits/player-season-coverage-v0-2021-2025-promotion-review-2026-07-06.json",
+      "committed": true
+    }
+  },
+  "artifacts_built": [
+    "scripts/build_player_season_coverage_2021_2025_merged_candidate.py",
+    "data/processed/evidence/player_season_coverage_2021_2025.source_backed.json",
+    "scripts/promote_player_season_coverage_v0_2021_2025.py",
+    "tests/test_build_player_season_coverage_2021_2025_merged_candidate.py",
+    "tests/test_promote_player_season_coverage_v0_2021_2025.py"
+  ],
+  "exports_promoted_modified": false,
+  "decision": "player_season_coverage_2021_promotion_blocked_requires_source_boundary_redesign",
+  "decision_basis": "2021 data and its merge are fully sound and reconciled; promotion is blocked solely by a pre-existing, narrowly-scoped promoted-schema contract defect (const-pinned promotion_review) that this issue's hard boundary does not authorize fixing.",
+  "decisions_not_emitted_and_not_authorized": [
+    "may_open_forecast_player_history_2021_2023_mirror_refresh_issue",
+    "player_season_coverage_2021_promotion_blocked_requires_candidate_rebuild",
+    "player_season_coverage_2021_promotion_review_inconclusive_requires_followup",
+    "promotion of any artifact",
+    "modification of exports/promoted/nfl/player_season_coverage_v0.json or its manifest",
+    "Forecast mirror refresh",
+    "Forecast controlled rerun",
+    "player-history threshold acceptance",
+    "leakage audit",
+    "production-readiness claim",
+    "ranking/advice/UI/export/product behavior"
+  ],
+  "recommended_next_issue": {
+    "class": "Contract task",
+    "shape": "relax schemas/player_season_coverage_v0_promoted.schema.json's promotion_review field from const:'TIBER-Data#192' to a pattern (e.g. ^TIBER-Data#\\d+$) or plain type:string, reviewing whether any other promoted-schema field needs similar generalization for a second promotion event",
+    "mechanical_next_step_after_fix": "re-run scripts/promote_player_season_coverage_v0_2021_2025.py (already written and unit-tested); not a re-review of the 2021 data itself"
+  }
+}
