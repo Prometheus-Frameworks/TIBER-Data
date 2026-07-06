@@ -425,7 +425,7 @@ def assess_2021_source_availability(week_df, reg_df, players_df, promoted_meta: 
         "blocking_failures": blocking_failures,
         "redesign_failures": redesign_failures,
         "comparison_to_promoted_2022_2025": {
-            "promoted_artifact": str(PROMOTED_ARTIFACT_PATH.relative_to(REPO_ROOT)),
+            "promoted_artifact": PROMOTED_ARTIFACT_PATH.relative_to(REPO_ROOT).as_posix(),
             "promoted_counts": promoted_counts,
             "promoted_seasons": promoted_meta.get("seasons"),
         },

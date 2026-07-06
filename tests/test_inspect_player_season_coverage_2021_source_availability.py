@@ -126,6 +126,10 @@ def test_fully_compatible_source_emits_candidate_build_decision() -> None:
     assert payload["identity_age_draft"]["identity_join_rate_gsis_id"] == 1.0
     # This report must never carry per-player artifact records.
     assert "records" not in payload
+    # Path must be POSIX-style regardless of host OS (repo convention), never backslashes.
+    promoted_artifact_path = payload["comparison_to_promoted_2022_2025"]["promoted_artifact"]
+    assert promoted_artifact_path == "exports/promoted/nfl/player_season_coverage_v0.json"
+    assert "\\" not in promoted_artifact_path
 
 
 def test_no_2021_rows_emits_source_unavailable_decision() -> None:
