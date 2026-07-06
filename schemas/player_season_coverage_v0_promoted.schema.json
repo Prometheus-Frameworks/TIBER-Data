@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tiber-data.local/schemas/player_season_coverage_v0_promoted.schema.json",
   "title": "player_season_coverage_v0 (promoted governed artifact)",
-  "description": "Promoted export contract for player_season_coverage_v0 (TIBER-Data #192). The per-record contract is IDENTICAL to the candidate schema ($defs unchanged); promotion changes only the envelope: status becomes promoted_governed_artifact and promotion/provenance metadata becomes required. Promotion never weakens the candidate contract.",
+  "description": "Promoted export contract for player_season_coverage_v0, first established by TIBER-Data #192 and generalized for repeat promotion events by TIBER-Data #204. The per-record contract is IDENTICAL to the candidate schema ($defs unchanged); promotion changes only the envelope: status becomes promoted_governed_artifact and promotion/provenance metadata becomes required. Promotion never weakens the candidate contract.",
   "type": "object",
   "additionalProperties": true,
   "required": [
@@ -69,7 +69,8 @@
     },
     "promotion_review": {
       "type": "string",
-      "const": "TIBER-Data#192"
+      "pattern": "^TIBER-Data#[0-9]+\\Z",
+      "description": "References the TIBER-Data issue that authorized this promotion event. Not pinned to a single historical event (TIBER-Data#204 generalized this from a first-promotion-only const of 'TIBER-Data#192'): any well-formed 'TIBER-Data#<issue number>' reference validates, e.g. TIBER-Data#192 or TIBER-Data#202. Required and bounded -- still rejects malformed, empty, or non-TIBER-Data references. Uses \\Z rather than a trailing $ so a single trailing newline cannot sneak past the anchor (Python's re treats $ as matching before a final \\n, not strict end-of-string)."
     },
     "source_candidate": {
       "type": "object",
