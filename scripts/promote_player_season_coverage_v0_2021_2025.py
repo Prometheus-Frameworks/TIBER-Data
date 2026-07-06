@@ -158,9 +158,13 @@ def build_promoted_payload(
             "note": (
                 "This promotion event supersedes the OUTPUT of TIBER-Data#192 (same artifact_id/path), "
                 "extending season coverage from 2022-2025 to 2021-2025. It does not retroactively "
-                "invalidate #192's review; the prior promoted bytes remain reconstructible by running "
-                "scripts/promote_player_season_coverage_v0.py against the unchanged, still-pinned "
-                "2022-2025 candidate."
+                "invalidate #192's review. WARNING: do NOT run scripts/promote_player_season_coverage_v0.py "
+                "against this live checkout to reconstruct the prior bytes -- it writes to this same "
+                "exports/promoted/nfl/player_season_coverage_v0.json path and would silently overwrite the "
+                "current 2021-2025 governed artifact with the stale 2022-2025-only content. The prior bytes "
+                "are safely reconstructible either via this repo's git history (the commit immediately before "
+                "TIBER-Data#206 landed), or by running scripts/promote_player_season_coverage_v0.py with its "
+                "PROMOTED_PATH/MANIFEST_PATH constants redirected to a scratch output location."
             ),
         },
         "approved_source_allowlist": list(validator_module.APPROVED_SOURCE_NAME_PREFIXES),

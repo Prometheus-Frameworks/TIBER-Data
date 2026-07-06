@@ -42,7 +42,7 @@
       2024,
       2025
     ],
-    "note": "This promotion event supersedes the OUTPUT of TIBER-Data#192 (same artifact_id/path), extending season coverage from 2022-2025 to 2021-2025. It does not retroactively invalidate #192's review; the prior promoted bytes remain reconstructible by running scripts/promote_player_season_coverage_v0.py against the unchanged, still-pinned 2022-2025 candidate."
+    "note": "This promotion event supersedes the OUTPUT of TIBER-Data#192 (same artifact_id/path), extending season coverage from 2022-2025 to 2021-2025. It does not retroactively invalidate #192's review. WARNING: do NOT run scripts/promote_player_season_coverage_v0.py against this live checkout to reconstruct the prior bytes -- it writes to this same exports/promoted/nfl/player_season_coverage_v0.json path and would silently overwrite the current 2021-2025 governed artifact with the stale 2022-2025-only content. The prior bytes are safely reconstructible either via this repo's git history (the commit immediately before TIBER-Data#206 landed), or by running scripts/promote_player_season_coverage_v0.py with its PROMOTED_PATH/MANIFEST_PATH constants redirected to a scratch output location."
   },
   "approved_source_allowlist": [
     "nflreadpy.load_player_stats(",
@@ -111,5 +111,5 @@
     "2021_candidate_rebuild": "python scripts/build_player_season_coverage_2021_candidate.py (network: nflreadpy). Same non-determinism caveat as above."
   },
   "promoted_artifact_path": "exports/promoted/nfl/player_season_coverage_v0.json",
-  "promoted_artifact_sha256": "b8e378e62a8c43bce1284a82b049eb46417d6a3b5a4104fbbbfcb432c4e35c04"
+  "promoted_artifact_sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac"
 }

@@ -27,14 +27,15 @@
       {"path": "data/processed/evidence/player_season_coverage_2022_2025.source_backed.json", "sha256": "39b6e71e36d667509221137f2b712143fe5fdccf5423f50e81b5c7a138c0072b", "seasons_contributed": [2022, 2023, 2024, 2025], "record_count": 2383}
     ],
     "prior_promoted_artifact_sha256": "29f8e378127fa5426e5897ac4522b6187941312edabab357d8a427fb20511035",
-    "prior_promoted_review": "TIBER-Data#192"
+    "prior_promoted_review": "TIBER-Data#192",
+    "promoted_artifact_sha256_final": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac"
   },
   "verification": {
     "manifest_hash_matches_committed_bytes": true,
     "promoted_schema_validation_errors": 0,
     "second_run_correctly_refused_due_to_lineage_drift": true,
     "files_confirmed_unchanged_after_refused_second_run": true,
-    "full_suite_result": "349 passed, 1 skipped",
+    "full_suite_result": "353 passed, 1 skipped",
     "typecheck_result": "passed",
     "skip_reason": "pre-existing self-designed guard (test_current_pin_matches_committed_promoted_artifact, from #203) that self-skips once the promoted artifact moves past the #192 lineage point -- expected by design",
     "tests_updated": [
@@ -43,6 +44,21 @@
       "tests/test_player_season_coverage_v0_promoted_schema.py::test_pr203_promotion_helper_payload_now_passes_schema_without_writing_promoted_files"
     ],
     "tests_updated_reason": "these asserted the live promoted file still equaled the #192-only rebuild, an assumption #202-#206 intentionally broke by extending the same artifact in place. Decoupled to test build_promoted_payload directly instead of the live, now-superseded file. No governance property weakened."
+  },
+  "post_review_fixes": {
+    "source": "Codex review on PR#207",
+    "finding_1": {
+      "summary": "Missing live-artifact rebuild check for the new 2021-2025 lineage after decoupling the old tests",
+      "risk": "a coherent drift (hand-edited promoted JSON + recomputed matching manifest hash) could pass every other check undetected",
+      "fix": "added test_committed_2021_2025_promoted_artifact_matches_rebuild to tests/test_promote_player_season_coverage_v0_2021_2025.py, proving committed bytes equal a fresh build_promoted_payload rebuild from the pinned candidate and pinned prior sha"
+    },
+    "finding_2": {
+      "summary": "prior_promoted_artifact.note recommended running scripts/promote_player_season_coverage_v0.py to reconstruct #192-era bytes, but that script writes to the same live PROMOTED_PATH/MANIFEST_PATH and would silently overwrite the current 2021-2025 governed artifact",
+      "fix": "corrected the note text in scripts/promote_player_season_coverage_v0_2021_2025.py to warn explicitly and point to safe alternatives (git history or a redirected scratch output); applied the corrected note to the already-committed live artifact via scripts/fix_2021_2025_promoted_lineage_note.py, a narrowly-scoped remediation that fails closed unless the note text is the only difference",
+      "verified_only_field_changed": "prior_promoted_artifact.note (and the manifest sha it feeds into) -- confirmed via diff",
+      "promoted_artifact_sha256_before_fix": "b8e378e62a8c43bce1284a82b049eb46417d6a3b5a4104fbbbfcb432c4e35c04",
+      "promoted_artifact_sha256_after_fix": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac"
+    }
   },
   "decision": "may_open_forecast_player_history_2021_2023_mirror_refresh_issue",
   "decision_basis": "All four promotion gates passed; promoted artifact and manifest updated only by the promotion script; hashes self-consistent and match committed bytes; counts/season scope reconcile exactly with #203; full lineage back to #192 and #203 preserved and documented in the manifest.",

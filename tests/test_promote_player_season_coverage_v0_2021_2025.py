@@ -135,6 +135,41 @@ def test_current_pin_matches_committed_promoted_artifact() -> None:
     assert actual_sha == module.PRIOR_PROMOTED_SHA256
 
 
+def test_committed_2021_2025_promoted_artifact_matches_rebuild() -> None:
+    """The real live-artifact check for the TIBER-Data#206 promotion: once the artifact has
+    advanced to TIBER-Data#202 lineage (i.e. #206 has actually run), this proves the
+    COMMITTED governed bytes are byte-identical to a fresh rebuild via build_promoted_payload
+    from the pinned merged candidate and the pinned prior sha.
+
+    This is the replacement live-artifact check for test_current_pin_matches_committed_promoted_artifact
+    above, which necessarily and permanently skips once promotion_review != 'TIBER-Data#192' --
+    without this test, a coherent drift (someone hand-edits the promoted JSON and recomputes a
+    matching manifest hash) could pass every other check in this repo undetected."""
+    import hashlib
+
+    module = _load_module()
+    validator_module = _load_validator_module()
+    if not module.PROMOTED_PATH.exists() or not module.CANDIDATE_PATH.exists():
+        pytest.skip("promoted artifact or merged candidate not present in this environment")
+    payload = json.loads(module.PROMOTED_PATH.read_text(encoding="utf-8"))
+    if payload.get("promotion_review") != "TIBER-Data#202":
+        pytest.skip("promoted artifact has not (yet) advanced to the #202/#206 lineage point this test checks")
+
+    candidate_raw = module.CANDIDATE_PATH.read_bytes()
+    candidate_sha256 = hashlib.sha256(candidate_raw).hexdigest()
+    candidate = json.loads(candidate_raw.decode("utf-8"))
+
+    rebuilt = module.build_promoted_payload(
+        candidate,
+        candidate_sha256,
+        module.PINNED_CANDIDATE_SHA256,
+        validator_module,
+        module.PRIOR_PROMOTED_SHA256,
+    )
+    rebuilt_bytes = (json.dumps(rebuilt, indent=1) + "\n").encode("utf-8")
+    assert rebuilt_bytes == module.PROMOTED_PATH.read_bytes()
+
+
 def test_pinned_candidate_sha_matches_committed_merged_candidate() -> None:
     import hashlib
 

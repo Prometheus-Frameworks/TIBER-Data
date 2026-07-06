@@ -34,9 +34,25 @@
       "tests_broken_reason": "asserted live promoted file still equaled the #192-only rebuild, an assumption #202-#206 intentionally broke",
       "tests_fixed_by_decoupling_from_live_file": true,
       "governance_property_weakened": false,
-      "full_suite_result": "349 passed, 1 skipped",
+      "full_suite_result": "353 passed, 1 skipped",
       "skip_is_expected_by_design": true,
       "result": "pass"
+    },
+    "post_review_remediation": {
+      "source": "Codex review on PR#207",
+      "finding_1_missing_live_rebuild_check": {
+        "risk": "coherent drift (hand-edited promoted JSON + recomputed matching manifest hash) could pass every other check undetected",
+        "fix": "added test_committed_2021_2025_promoted_artifact_matches_rebuild",
+        "result": "fixed"
+      },
+      "finding_2_dangerous_reconstruction_note": {
+        "risk": "following the original note against a live post-#206 checkout would silently overwrite the current governed artifact",
+        "fix": "corrected note text in the promotion script; applied to the already-committed artifact via scripts/fix_2021_2025_promoted_lineage_note.py, which fails closed unless the note is the only diff",
+        "verified_only_field_changed": true,
+        "promoted_artifact_sha256_before_fix": "b8e378e62a8c43bce1284a82b049eb46417d6a3b5a4104fbbbfcb432c4e35c04",
+        "promoted_artifact_sha256_after_fix": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+        "result": "fixed"
+      }
     },
     "cross_validation_against_202_203": {
       "total_records": {"expected": 3016, "actual": 3016, "match": true},

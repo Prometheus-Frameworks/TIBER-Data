@@ -39,6 +39,14 @@ Two pre-existing tests and one #205-added test broke as a direct, anticipated co
 | Was TIBER-Forecast touched? | **No.** |
 | Was any threshold-acceptance, leakage-audit, production-readiness, or product claim made? | **No.** |
 | Was any ranking/advice/UI/export/Fantasy behavior introduced? | **No.** |
+| Was the note-text remediation (below) anything more than a textual fix? | **No** — a dedicated fail-closed script verified the only difference from the previously-committed bytes was the note string (and the manifest hash it feeds into) before writing anything. |
+
+## 3a. Post-review remediation (PR #207 Codex findings)
+
+A Codex review on PR #207 found two real defects, both fixed before merge:
+
+1. **Missing live-artifact rebuild check.** Decoupling two pre-existing tests (to stop them asserting against the now-superseded live file) removed the only check that the *committed* promoted bytes matched a fresh rebuild, without replacing it for the new 2021-2025 lineage -- and the old guard now permanently skips once `promotion_review != "TIBER-Data#192"`. Fixed by adding `test_committed_2021_2025_promoted_artifact_matches_rebuild`, which proves the committed bytes equal a rebuild via `build_promoted_payload` from the pinned candidate and pinned prior sha.
+2. **Dangerous reconstruction note.** `prior_promoted_artifact.note` recommended running `scripts/promote_player_season_coverage_v0.py` to reconstruct the #192-era bytes, but that script writes to the same live `PROMOTED_PATH`/`MANIFEST_PATH` this promotion now occupies -- following the note against a live, post-#206 checkout would have silently overwritten the current governed artifact. Fixed the note-generation text in `scripts/promote_player_season_coverage_v0_2021_2025.py`, then applied the corrected note to the already-committed artifact via a new, narrowly-scoped remediation script (`scripts/fix_2021_2025_promoted_lineage_note.py`) that fails closed unless the note text is the only difference from the current committed bytes. Verified via `diff`: exactly one line changed in each file (the note, and the manifest hash it feeds into).
 
 ## 4. Gate verification
 
