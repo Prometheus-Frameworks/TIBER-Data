@@ -105,13 +105,30 @@ def test_valid_tiber_data_references_pass(review_ref: str) -> None:
         " TIBER-Data#192",
         "",
         "TIBER-Forecast#134",
+        "TIBER-Data#192\n",
+        "TIBER-Data#192\n\n",
+        "TIBER-Data#192\r\n",
+        "\nTIBER-Data#192",
     ],
 )
 def test_malformed_review_references_fail(bad_ref: str) -> None:
+    """Includes trailing-newline variants: Python's `re` treats a bare `$` as matching
+    before a single trailing newline rather than strict end-of-string, so a naive
+    `^TIBER-Data#[0-9]+$` pattern would let 'TIBER-Data#192\\n' validate. The schema
+    uses `\\Z` instead, which must reject every one of these."""
     payload = _minimal_promoted_payload(promotion_review=bad_ref)
     errors = _validate(payload)
     assert errors, f"expected {bad_ref!r} to fail schema validation"
     assert any("promotion_review" in e for e in errors)
+
+
+def test_pattern_uses_end_of_string_anchor_not_dollar() -> None:
+    schema = _load_schema()
+    pattern = schema["properties"]["promotion_review"]["pattern"]
+    assert pattern.endswith("\\Z"), (
+        f"pattern {pattern!r} must end with \\Z, not a bare $, to reject a trailing newline "
+        "(Python's re treats $ as matching before a final \\n)"
+    )
 
 
 def test_status_invariant_still_rejects_deviation() -> None:
@@ -137,7 +154,7 @@ def test_status_and_row_grain_remain_const_in_schema() -> None:
 def test_promotion_review_no_longer_const() -> None:
     schema = _load_schema()
     assert "const" not in schema["properties"]["promotion_review"]
-    assert schema["properties"]["promotion_review"].get("pattern") == "^TIBER-Data#[0-9]+$"
+    assert schema["properties"]["promotion_review"].get("pattern") == "^TIBER-Data#[0-9]+\\Z"
 
 
 def test_committed_192_promoted_artifact_still_validates() -> None:

@@ -69,8 +69,8 @@
     },
     "promotion_review": {
       "type": "string",
-      "pattern": "^TIBER-Data#[0-9]+$",
-      "description": "References the TIBER-Data issue that authorized this promotion event. Not pinned to a single historical event (TIBER-Data#204 generalized this from a first-promotion-only const of 'TIBER-Data#192'): any well-formed 'TIBER-Data#<issue number>' reference validates, e.g. TIBER-Data#192 or TIBER-Data#202. Required and bounded -- still rejects malformed, empty, or non-TIBER-Data references."
+      "pattern": "^TIBER-Data#[0-9]+\\Z",
+      "description": "References the TIBER-Data issue that authorized this promotion event. Not pinned to a single historical event (TIBER-Data#204 generalized this from a first-promotion-only const of 'TIBER-Data#192'): any well-formed 'TIBER-Data#<issue number>' reference validates, e.g. TIBER-Data#192 or TIBER-Data#202. Required and bounded -- still rejects malformed, empty, or non-TIBER-Data references. Uses \\Z rather than a trailing $ so a single trailing newline cannot sneak past the anchor (Python's re treats $ as matching before a final \\n, not strict end-of-string)."
     },
     "source_candidate": {
       "type": "object",
