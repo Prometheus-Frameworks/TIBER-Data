@@ -1,0 +1,77 @@
+{
+  "report_id": "player_season_coverage_v0_2021_2025_promotion_resume",
+  "status": "promotion_resume_report",
+  "tracking_issue": "TIBER-Data#206",
+  "prior_chain": ["TIBER-Data#198", "PR#199", "TIBER-Data#200", "PR#201", "TIBER-Data#202", "PR#203", "TIBER-Data#204", "PR#205"],
+  "generated_at": "2026-07-06T00:00:00Z",
+  "command_run": "python3 scripts/promote_player_season_coverage_v0_2021_2025.py",
+  "gates": {
+    "merged_candidate_sha_matches_pin": {"expected": "c92404a1b519a62ee9f4b75f74662157fc8dd02b883648d4cdae694d0e021424", "result": "pass"},
+    "candidate_validator": {"errors": 0, "result": "pass"},
+    "promoted_schema_validates_with_promotion_review_202": {"value": "TIBER-Data#202", "result": "pass"},
+    "prior_promoted_lineage_check": {"expected_prior_sha256": "29f8e378127fa5426e5897ac4522b6187941312edabab357d8a427fb20511035", "result": "pass"}
+  },
+  "result": {
+    "promoted_artifact_and_manifest_updated_only_by_script": true,
+    "seasons_before": [2022, 2023, 2024, 2025],
+    "seasons_after": [2021, 2022, 2023, 2024, 2025],
+    "records_before": 2383,
+    "records_after": 3016,
+    "counts_by_season": {"2021": 633, "2022": 609, "2023": 576, "2024": 588, "2025": 610},
+    "counts_by_position": {"QB": 404, "RB": 771, "TE": 650, "WR": 1191},
+    "promotion_review": "TIBER-Data#202",
+    "promotion_decision": "promote_player_season_coverage_v0_2021_2025",
+    "source_candidate_sha256": "c92404a1b519a62ee9f4b75f74662157fc8dd02b883648d4cdae694d0e021424",
+    "source_candidate_lineage": [
+      {"path": "data/processed/evidence/player_season_coverage_2021_candidate.source_backed.json", "sha256": "55618590d4a1f6affa8228d32d61b9baa0d66552448811c06136ca6139a7eef4", "seasons_contributed": [2021], "record_count": 633},
+      {"path": "data/processed/evidence/player_season_coverage_2022_2025.source_backed.json", "sha256": "39b6e71e36d667509221137f2b712143fe5fdccf5423f50e81b5c7a138c0072b", "seasons_contributed": [2022, 2023, 2024, 2025], "record_count": 2383}
+    ],
+    "prior_promoted_artifact_sha256": "29f8e378127fa5426e5897ac4522b6187941312edabab357d8a427fb20511035",
+    "prior_promoted_review": "TIBER-Data#192",
+    "promoted_artifact_sha256_final": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac"
+  },
+  "verification": {
+    "manifest_hash_matches_committed_bytes": true,
+    "promoted_schema_validation_errors": 0,
+    "second_run_correctly_refused_due_to_lineage_drift": true,
+    "files_confirmed_unchanged_after_refused_second_run": true,
+    "full_suite_result": "353 passed, 1 skipped",
+    "typecheck_result": "passed",
+    "skip_reason": "pre-existing self-designed guard (test_current_pin_matches_committed_promoted_artifact, from #203) that self-skips once the promoted artifact moves past the #192 lineage point -- expected by design",
+    "tests_updated": [
+      "tests/test_promote_player_season_coverage_v0.py::TestPromotedArtifact::test_promoted_records_match_pinned_candidate_verbatim",
+      "tests/test_promote_player_season_coverage_v0.py::TestPromotedArtifact::test_promotion_is_deterministic",
+      "tests/test_player_season_coverage_v0_promoted_schema.py::test_pr203_promotion_helper_payload_now_passes_schema_without_writing_promoted_files"
+    ],
+    "tests_updated_reason": "these asserted the live promoted file still equaled the #192-only rebuild, an assumption #202-#206 intentionally broke by extending the same artifact in place. Decoupled to test build_promoted_payload directly instead of the live, now-superseded file. No governance property weakened."
+  },
+  "post_review_fixes": {
+    "source": "Codex review on PR#207",
+    "finding_1": {
+      "summary": "Missing live-artifact rebuild check for the new 2021-2025 lineage after decoupling the old tests",
+      "risk": "a coherent drift (hand-edited promoted JSON + recomputed matching manifest hash) could pass every other check undetected",
+      "fix": "added test_committed_2021_2025_promoted_artifact_matches_rebuild to tests/test_promote_player_season_coverage_v0_2021_2025.py, proving committed bytes equal a fresh build_promoted_payload rebuild from the pinned candidate and pinned prior sha"
+    },
+    "finding_2": {
+      "summary": "prior_promoted_artifact.note recommended running scripts/promote_player_season_coverage_v0.py to reconstruct #192-era bytes, but that script writes to the same live PROMOTED_PATH/MANIFEST_PATH and would silently overwrite the current 2021-2025 governed artifact",
+      "fix": "corrected the note text in scripts/promote_player_season_coverage_v0_2021_2025.py to warn explicitly and point to safe alternatives (git history or a redirected scratch output); applied the corrected note to the already-committed live artifact via scripts/fix_2021_2025_promoted_lineage_note.py, a narrowly-scoped remediation that fails closed unless the note text is the only difference",
+      "verified_only_field_changed": "prior_promoted_artifact.note (and the manifest sha it feeds into) -- confirmed via diff",
+      "promoted_artifact_sha256_before_fix": "b8e378e62a8c43bce1284a82b049eb46417d6a3b5a4104fbbbfcb432c4e35c04",
+      "promoted_artifact_sha256_after_fix": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac"
+    }
+  },
+  "decision": "may_open_forecast_player_history_2021_2023_mirror_refresh_issue",
+  "decision_basis": "All four promotion gates passed; promoted artifact and manifest updated only by the promotion script; hashes self-consistent and match committed bytes; counts/season scope reconcile exactly with #203; full lineage back to #192 and #203 preserved and documented in the manifest.",
+  "decisions_not_emitted_and_not_authorized": [
+    "player_season_coverage_2021_2025_promotion_resume_blocked",
+    "player_season_coverage_2021_2025_promotion_resume_requires_followup",
+    "Forecast mirror refresh",
+    "Forecast controlled rerun",
+    "player-history threshold acceptance",
+    "leakage audit",
+    "production-readiness claim",
+    "ranking/advice/UI/export/product behavior",
+    "candidate rebuilds",
+    "re-opening 2021 feasibility or promotion-review questions already resolved by #202/#203"
+  ]
+}

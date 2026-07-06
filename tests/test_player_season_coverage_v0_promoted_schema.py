@@ -183,16 +183,17 @@ def test_pr203_promotion_helper_payload_now_passes_schema_without_writing_promot
     candidate_sha256 = hashlib.sha256(candidate_raw).hexdigest()
     candidate = json.loads(candidate_raw.decode("utf-8"))
 
-    prior_promoted_sha256 = None
-    if promote_module.PRIOR_PROMOTED_PATH.exists():
-        prior_promoted_sha256 = hashlib.sha256(promote_module.PRIOR_PROMOTED_PATH.read_bytes()).hexdigest()
-
+    # Use the module's own pinned prior-sha constant rather than reading the live file:
+    # TIBER-Data#206 has since run this promotion for real, so PRIOR_PROMOTED_PATH now
+    # holds the NEW 2021-2025 artifact, not the #192-era one this test is reconstructing.
+    # Passing the pinned constant reproduces exactly what a pre-#206 attempt would have
+    # seen, independent of whatever the live file currently contains.
     promoted_payload = promote_module.build_promoted_payload(
         candidate,
         candidate_sha256,
         promote_module.PINNED_CANDIDATE_SHA256,
         validator_module,
-        prior_promoted_sha256,
+        promote_module.PRIOR_PROMOTED_SHA256,
     )
 
     errors = _validate(promoted_payload)

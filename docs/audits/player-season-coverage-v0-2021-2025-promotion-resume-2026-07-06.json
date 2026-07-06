@@ -1,0 +1,90 @@
+{
+  "audit_id": "player-season-coverage-v0-2021-2025-promotion-resume-2026-07-06",
+  "date": "2026-07-06",
+  "scope": "TIBER-Data only. Read-only audit of the TIBER-Data#206 live promotion.",
+  "tracking_issues": ["TIBER-Data#202", "TIBER-Data PR#203", "TIBER-Data#204", "TIBER-Data PR#205", "TIBER-Data#206"],
+  "type": "audit_only",
+  "audit_trigger": "AGENTS.md audit-triggers: touches exports/promoted/**",
+  "executive_verdict": "Promotion ran exactly as designed and reviewed. All four gates passed; promoted artifact/manifest updated only by the script; counts/lineage reconcile exactly with #202/#203. Anticipated test breakage (live-file assumptions) fixed without weakening governance properties.",
+  "checks": {
+    "scope_drift": {
+      "promoted_artifact_updated_only_by_script": true,
+      "candidate_rebuilt": false,
+      "feasibility_or_promotion_review_reopened": false,
+      "tiber_forecast_touched": false,
+      "threshold_leakage_production_claim_made": false,
+      "ranking_advice_ui_export_product_behavior_introduced": false,
+      "result": "pass"
+    },
+    "gate_verification": {
+      "merged_candidate_sha_matches_pin": true,
+      "candidate_validator_errors": 0,
+      "promoted_schema_validates_with_202_review": true,
+      "prior_promoted_lineage_check_passed": true,
+      "result": "pass"
+    },
+    "reproducibility_drift_protection": {
+      "manifest_hash_matches_committed_bytes": true,
+      "second_run_correctly_refused": true,
+      "files_unchanged_after_refused_second_run": true,
+      "result": "pass"
+    },
+    "test_suite_impact": {
+      "tests_broken_by_promotion": 3,
+      "tests_broken_reason": "asserted live promoted file still equaled the #192-only rebuild, an assumption #202-#206 intentionally broke",
+      "tests_fixed_by_decoupling_from_live_file": true,
+      "governance_property_weakened": false,
+      "full_suite_result": "353 passed, 1 skipped",
+      "skip_is_expected_by_design": true,
+      "result": "pass"
+    },
+    "post_review_remediation": {
+      "source": "Codex review on PR#207",
+      "finding_1_missing_live_rebuild_check": {
+        "risk": "coherent drift (hand-edited promoted JSON + recomputed matching manifest hash) could pass every other check undetected",
+        "fix": "added test_committed_2021_2025_promoted_artifact_matches_rebuild",
+        "result": "fixed"
+      },
+      "finding_2_dangerous_reconstruction_note": {
+        "risk": "following the original note against a live post-#206 checkout would silently overwrite the current governed artifact",
+        "fix": "corrected note text in the promotion script; applied to the already-committed artifact via scripts/fix_2021_2025_promoted_lineage_note.py, which fails closed unless the note is the only diff",
+        "verified_only_field_changed": true,
+        "promoted_artifact_sha256_before_fix": "b8e378e62a8c43bce1284a82b049eb46417d6a3b5a4104fbbbfcb432c4e35c04",
+        "promoted_artifact_sha256_after_fix": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+        "result": "fixed"
+      }
+    },
+    "cross_validation_against_202_203": {
+      "total_records": {"expected": 3016, "actual": 3016, "match": true},
+      "by_season": {"2021": {"expected": 633, "actual": 633}, "2022": {"expected": 609, "actual": 609}, "2023": {"expected": 576, "actual": 576}, "2024": {"expected": 588, "actual": 588}, "2025": {"expected": 610, "actual": 610}},
+      "by_position": {"QB": {"expected": 404, "actual": 404}, "RB": {"expected": 771, "actual": 771}, "TE": {"expected": 650, "actual": 650}, "WR": {"expected": 1191, "actual": 1191}},
+      "result": "pass"
+    }
+  },
+  "files_inspected": [
+    "exports/promoted/nfl/player_season_coverage_v0.json",
+    "exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json",
+    "docs/reports/player-season-coverage-v0-2021-2025-promotion-resume.md",
+    "docs/reports/player-season-coverage-v0-2021-2025-promotion-resume.json",
+    "tests/test_promote_player_season_coverage_v0.py",
+    "tests/test_player_season_coverage_v0_promoted_schema.py",
+    "scripts/promote_player_season_coverage_v0_2021_2025.py",
+    "data/processed/evidence/player_season_coverage_2021_2025.source_backed.json",
+    "scripts/promote_player_season_coverage_v0.py",
+    "schemas/player_season_coverage_v0_promoted.schema.json",
+    "AGENTS.md"
+  ],
+  "audit_conclusion": "no_contradiction_found",
+  "decision_deferred_to": "docs/reports/player-season-coverage-v0-2021-2025-promotion-resume.json",
+  "decision_recorded_there": "may_open_forecast_player_history_2021_2023_mirror_refresh_issue",
+  "decisions_not_authorized_by_this_audit": [
+    "Forecast mirror refresh",
+    "Forecast controlled rerun",
+    "player-history threshold acceptance",
+    "leakage audit",
+    "production-readiness claim",
+    "ranking/advice/UI/export/product behavior",
+    "candidate rebuilds",
+    "re-opening 2021 feasibility or promotion-review questions already resolved by #202/#203"
+  ]
+}
