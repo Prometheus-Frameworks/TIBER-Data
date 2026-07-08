@@ -1,0 +1,137 @@
+{
+  "spec_id": "formation-summary-v0-source-boundary",
+  "status": "spec_only_not_implementation_ready",
+  "is_json_schema": false,
+  "is_validator": false,
+  "is_dataset": false,
+  "authorizes_governed_artifact": false,
+  "authorizes_teamstate_fantasy_forecast_wiring": false,
+  "disclaimer": "Non-normative companion to docs/specs/formation-summary-v0-source-boundary.md. Illustrative field/grain/source shape only. This file does NOT validate data, does NOT authorize implementation, and is NOT a dataset.",
+  "date": "2026-07-08",
+  "tracking_issue": "Prometheus-Frameworks/TIBER-Data#208",
+  "upstream_context": "Prometheus-Frameworks/TIBER-Teamstate#75 / PR #76 (formation_lens_v0, documentation-only)",
+  "live_fetch_attempted_this_session": {
+    "call": "nflreadpy.load_pbp(seasons=[2024])",
+    "result": "blocked",
+    "reason": "403 Forbidden from session egress policy on nflverse-data release asset host",
+    "interpretation": "session-level sandbox restriction, not proof the source is generally unreachable; src/team_state/loader.py already depends on this same call succeeding in the repo's real execution environment",
+    "consequence": "field claims below are tagged verified_in_repo or documented_schema_unverified_live; a future implementation issue must re-verify unverified fields against a live pull"
+  },
+  "truth_status_vocabulary": ["source_truth", "derived_summary", "unavailable", "out_of_scope", "unsafe_for_v0"],
+  "verification_status_vocabulary": ["verified_in_repo", "documented_schema_unverified_live"],
+  "field_audit": {
+    "ready_today_verified_in_repo": [
+      "season", "week", "game_id", "posteam", "play_type", "pass", "rush",
+      "down", "ydstogo", "yardline_100", "score_differential", "game_seconds_remaining"
+    ],
+    "must_be_live_verified_before_use": [
+      {"field": "shotgun", "note": "zero in-repo precedent; absent from fixture, REQUIRED_PBP_COLUMNS, and every script; this is the field the whole spec turns on"},
+      {"field": "defteam", "note": "not referenced anywhere in this repo today"},
+      {"field": "no_play_indicator", "note": "existing team_state filter (pass==1 | rush==1 | play_type in [pass,run]) may not reliably exclude no-play rows if those rows still carry pass/rush=1"},
+      {"field": "qb_kneel", "note": "must exclude from denominator regardless of pass/rush values"},
+      {"field": "qb_spike", "note": "same exclusion requirement as qb_kneel"},
+      {"field": "penalty", "note": "only penalty-only (no-snap) rows are excluded; penalty on a live classifiable play is not excluded"},
+      {"field": "two_point_attempt", "note": "recommend excluded from primary denominator, optionally tracked separately"},
+      {"field": "sack", "note": "standard schema keeps sacks as pass plays; no special exclusion needed but formation attribution should follow shotgun value"},
+      {"field": "qb_scramble", "note": "typically coded as rush plays already correctly bucketed by existing filter shape; not a v0 blocker"},
+      {"field": "aborted_play", "note": "presence unconfirmed; if present exclude from denominator, if absent flag as unavailable"},
+      {"field": "epa", "note": "provider-modeled field, not raw NFL data; safe as optional passthrough if disclosed as such"}
+    ],
+    "unsafe_or_out_of_scope_for_v0": [
+      {"field": "designed_qb_run_indicator", "note": "no dedicated field; requires rusher identity/role join, forbidden by this issue's own non-goals"}
+    ],
+    "special_teams_exclusion": {"status": "verified_in_repo", "note": "already handled correctly by existing play_type in [pass,run] filter shape in compute.py"}
+  },
+  "under_center_derivation_decision": {
+    "decision": "not_unconditionally_derivable_at_v0",
+    "reason": "shotgun==0 cannot be safely relabeled under_center because pistol-formation handling in the source is unverified in this session, and there is no dedicated pistol field in the documented schema",
+    "required_vocabulary": ["shotgun_plays", "non_shotgun_plays", "unknown_or_unclassified_alignment_plays"],
+    "forbidden_label_at_v0": "under_center_plays",
+    "rule": "missing/null shotgun values must fall into unknown_or_unclassified_alignment_plays, never default to non_shotgun or under_center",
+    "under_center_label_unlocked_only_after": "a live nflreadpy.load_pbp() pull confirms pistol-snap treatment"
+  },
+  "denominator_rules": {
+    "base_filter": "posteam not null AND (pass==1 OR rush==1 OR play_type in [pass, run])",
+    "additional_required_exclusions_not_in_existing_team_state_filter": [
+      "no-play rows (independent of pass/rush flag values, not relying on them)",
+      "qb_kneel == 1",
+      "qb_spike == 1",
+      "two_point_attempt == 1 (from primary denominator; tracked separately)",
+      "aborted_play == 1 (if field is confirmed present)"
+    ],
+    "already_correctly_excluded_by_existing_filter_shape": ["special_teams_play_types (punt, field_goal, kickoff, extra_point)"],
+    "not_requiring_special_handling_at_v0": ["qb_scramble (already correctly bucketed as rush via play_type/rush indicator)"]
+  },
+  "success_rate_conflict_finding": {
+    "finding": "src/team_state/definitions.py and compute.py already define a TIBER-specific success rule (>=40% ydstogo on 1st down, >=60% on 2nd, 100% on 3rd/4th), independent of any native nflverse success column",
+    "risk": "silently adopting nflverse's own success field under the same field name would create two divergent 'success' definitions across sibling TIBER-Data artifacts",
+    "recommendation": "reuse the existing TIBER team_state success rule verbatim for formation_summary_v0; if nflverse's native field is used instead, name it distinctly (e.g. epa_success_rate vs distance_success_rate)"
+  },
+  "recommended_grain": {
+    "choice": "team_season",
+    "justification": [
+      "matches tiber_team_state_v0_1's existing season/through-week scope",
+      "formation_lens_v0 (Teamstate) is a season-level explanation surface, does not need weekly granularity",
+      "team_week multiplies sample-size risk 18x before alignment ambiguity (shotgun/pistol) is resolved"
+    ],
+    "team_week_deferred_until": "team_season coverage and alignment ambiguity are resolved and sample-size/warning behavior is proven reliable"
+  },
+  "envelope": {
+    "fields": ["artifact", "artifactVersion", "generatedAt", "season", "sourceArtifacts", "metadata", "coverage", "governanceStatus_or_provenanceStatus", "rows"],
+    "metadata_required": ["seasonType", "denominatorRule", "alignmentVocabulary"],
+    "coverage_required": ["teamsCovered", "missingFields"],
+    "hard_rule": "governance/provenance status is never inferred from file path, file name, branch name, or consumer intent"
+  },
+  "row_shape": {
+    "fields": [
+      "season", "week (optional, absent for team_season)", "grain", "team",
+      "offensive_plays", "shotgun_plays", "non_shotgun_plays",
+      "unknown_or_unclassified_alignment_plays (required, not optional)",
+      "shotgun_rate", "non_shotgun_rate", "unknown_alignment_rate",
+      "shotgun_pass_rate", "shotgun_run_rate", "non_shotgun_pass_rate", "non_shotgun_run_rate",
+      "two_point_plays (tracked separately, excluded from rates)",
+      "shotgun_epa_per_play (optional, gated)", "non_shotgun_epa_per_play (optional, gated)",
+      "shotgun_success_rate (optional, gated, must use TIBER team_state success definition)",
+      "non_shotgun_success_rate (optional, gated)",
+      "sample_notes", "sourceRefs", "provenanceStatus"
+    ],
+    "null_vs_zero": "optional efficiency fields remain absent/null/insufficient_data until EPA/success definitions are source-backed and sample thresholds are met"
+  },
+  "sample_size_thresholds": {
+    "minimum_offensive_plays_per_team_season_row": 250,
+    "minimum_shotgun_plays_for_efficiency_prose": 100,
+    "minimum_non_shotgun_plays_for_efficiency_prose": 100,
+    "small_sample_behavior": "suppress the efficiency/prose field entirely, do not merely attach a warning; rate/count fields may still be emitted with a sample_notes flag",
+    "league_relative_labels_in_v0": "not allowed; no league-baseline artifact exists yet in this repo; deferred"
+  },
+  "fail_closed_rules": [
+    "required source fields unavailable at build time -> fail closed",
+    "unknown_or_unclassified_alignment_plays exceeding 10% of offensive_plays for a row requires an explicit high-uncertainty flag",
+    "denominator rule must be applied consistently and stated in artifact metadata",
+    "emitting non_shotgun under the label under_center is a hard validation failure",
+    "kneel/spike/no-play/penalty-only/two-point/special-teams handling must be explicit",
+    "missing source snapshot/version, sourceRefs, or governance/provenance markers fails validation",
+    "sample-size thresholds must be declared and enforced",
+    "shotgun_plays + non_shotgun_plays + unknown_or_unclassified_alignment_plays must equal offensive_plays exactly",
+    "success field must disclose which definition (TIBER team_state rule vs nflverse native) was used"
+  ],
+  "relationship_to_lanes": {
+    "tiber_team_state_v0_1": "closest sibling; shares offensive-play-filter pattern but that pattern must be tightened for this artifact (no-play/kneel/spike); must not fork the success-rate definition silently",
+    "formation_lens_v0_teamstate": "downstream consumer, not started here; remains blocked from real-data interpretation until this artifact exists and passes a separate consumption approval",
+    "player_season_coverage_v0": "shape/vocabulary precedent only (truth_status vocabulary, envelope shape); no code/data dependency",
+    "fantasy_forecast": "out of scope entirely; not referenced by any field/grain/envelope choice here"
+  },
+  "recommended_next_issue": {
+    "title": "audit: verify nflreadpy.load_pbp() column availability for formation_summary_v0 (read-only, no artifact)",
+    "status": "separate, NOT started here, narrower than a full implementation issue",
+    "scope": [
+      "single bounded already-complete recent regular season",
+      "confirm presence/null-rates of shotgun, defteam, no-play indicator, qb_kneel, qb_spike, two_point_attempt, sack, qb_scramble, aborted_play, epa, native success",
+      "resolve pistol-formation handling question",
+      "confirm whether no-play rows can carry pass/rush=1 in actual data",
+      "produce no artifact, no schema, no promoted data -- only a docs/audits report"
+    ],
+    "implementation_issue_authorized": false,
+    "implementation_issue_gated_on": "resolution or explicit narrowing of the open questions in this document's derivation section"
+  }
+}
