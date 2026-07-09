@@ -8,7 +8,7 @@
   "authorizes_teamstate_fantasy_forecast_wiring": false,
   "disclaimer": "Non-normative companion to docs/specs/formation-summary-v0-source-boundary.md. Illustrative field/grain/source shape only. This file does NOT validate data, does NOT authorize implementation, and is NOT a dataset.",
   "date": "2026-07-08",
-  "revision_note": "Revised after PR review (Codex): an earlier draft undercredited existing in-repo precedent. scripts/build_team_week_raw_v0_2024_candidate.py already has a real, validated 2024 candidate (not a fixture) proving qb_kneel/qb_spike/two_point_attempt/sack/penalty/aborted-play handling against actual nflverse pbp data; and the unknown_or_unclassified_alignment bucket must not be defined as a possible pistol superset, since a known shotgun==0 value cannot also be unknown without breaking the count-reconciliation rule.",
+  "revision_note": "Revised after two rounds of PR review (Codex). Round 1: an earlier draft undercredited existing in-repo precedent (scripts/build_team_week_raw_v0_2024_candidate.py already has a real, validated 2024 candidate, not a fixture, proving qb_kneel/qb_spike/two_point_attempt/sack/penalty/aborted-play handling against actual nflverse pbp data); and the unknown_or_unclassified_alignment bucket must not be defined as a possible pistol superset, since a known shotgun==0 value cannot also be unknown without breaking the count-reconciliation rule. Round 2 (post f67c825): offensive_plays was ambiguous between team_week_raw_v0's two distinct denominators (kneel/spike-inclusive offensivePlays vs pass/run-only competitivePlays) which made the reconciliation identity mathematically impossible whenever a team-season had a kneel/spike; and the qb_scramble field-audit note conflated denominator inclusion (fine via play_type) with the pass/run split for *_pass_rate/*_run_rate (must use qb_dropback per team_week_raw_v0 precedent, not play_type, or scrambles get silently reclassified as rush).",
   "tracking_issue": "Prometheus-Frameworks/TIBER-Data#208",
   "upstream_context": "Prometheus-Frameworks/TIBER-Teamstate#75 / PR #76 (formation_lens_v0, documentation-only)",
   "live_fetch_attempted_this_session": {
@@ -76,7 +76,17 @@
       "aborted_play (policy locked; exact field-level detection mechanism unconfirmed)",
       "special_teams_play_types (punt, field_goal, kickoff, extra_point)"
     ],
-    "not_requiring_special_handling_at_v0": ["qb_scramble (already correctly bucketed as rush via categorical play_type filter, regardless of the exact scramble-flag column name, which remains GATED upstream)"]
+    "not_requiring_special_handling_at_v0": ["qb_scramble for denominator INCLUSION only (correctly counted via categorical play_type filter regardless of the exact scramble-flag column name, which remains GATED upstream) -- see pass_run_split_correction below for why this does NOT extend to the pass/run split"]
+  },
+  "two_tier_denominator_correction": {
+    "finding": "team_week_raw_v0 keeps TWO separate denominators: is_offensive_play (kneel/spike included, two_point excluded) and is_competitive_play (pass/run only, two_point excluded, used for passRate/rushRate/epaPerPlay). An earlier draft left formation_summary_v0's offensive_plays ambiguous between the two, which makes shotgun_plays + non_shotgun_plays + unknown_or_unclassified_alignment_plays == offensive_plays mathematically impossible for any team-season with a kneel or spike, since those plays have no alignment-tendency bucket to belong to.",
+    "resolution": "offensive_plays in formation_summary_v0 means ONLY the competitive-play/formation-eligible count (team_week_raw_v0's competitivePlays-equivalent): pass/run only, with kneels, spikes, two-point attempts, no-plays, penalty-only rows, aborted plays, and special teams excluded entirely, not just from rates. This is the sole denominator for the reconciliation identity.",
+    "optional_field": "raw_offensive_plays may be carried separately (kneel/spike-inclusive, team_week_raw_v0's offensivePlays-equivalent) for cross-artifact comparison, but is never used as an alignment-rate denominator and never appears in the reconciliation identity."
+  },
+  "pass_run_split_correction": {
+    "finding": "team_week_raw_v0's aggregate_game classifies pass vs rush using the qb_dropback indicator, not play_type -- a scramble has play_type=='run' but qb_dropback==1, so team_week_raw_v0 counts it as a PASS play for passRate/passEpaPerPlay. An earlier draft's qb_scramble note ('falls correctly under the rush bucket via play_type') was true only for denominator inclusion, not for the pass/run split, and would have silently forked formation_summary_v0's shotgun_pass_rate/shotgun_run_rate/non_shotgun_pass_rate/non_shotgun_run_rate from the exact precedent this spec tells implementers to reuse.",
+    "resolution": "the pass/run split within each alignment bucket must use the same verified dropback indicator (qb_dropback) team_week_raw_v0 uses, not play_type. play_type remains correct for denominator inclusion (two_tier_denominator_correction) and for the shotgun/non_shotgun/unknown alignment split itself (alignment is orthogonal to dropback-vs-scramble) -- only the pass-vs-run split changes.",
+    "fail_closed_rule": "if qb_dropback is null/unavailable for one or more formation-eligible plays in a team-season, null-block the affected *_pass_rate/*_run_rate fields for that row, mirroring team_week_raw_v0's dropbackSplitBlocked/dropbackNullRows pattern exactly, rather than guessing an attribution from play_type."
   },
   "success_rate_conflict_finding": {
     "finding": "src/team_state/definitions.py and compute.py already define a TIBER-specific success rule (>=40% ydstogo on 1st down, >=60% on 2nd, 100% on 3rd/4th), independent of any native nflverse success column (which the real 2024 team_week_raw_v0 candidate build also references via row.get('success'))",
@@ -101,11 +111,14 @@
   "row_shape": {
     "fields": [
       "season", "week (optional, absent for team_season)", "grain", "team",
-      "offensive_plays", "shotgun_plays", "non_shotgun_plays",
+      "offensive_plays (formation-eligible/competitive-play count ONLY -- see two_tier_denominator_correction)",
+      "shotgun_plays", "non_shotgun_plays",
       "unknown_or_unclassified_alignment_plays (required, not optional)",
       "shotgun_rate", "non_shotgun_rate", "unknown_alignment_rate",
-      "shotgun_pass_rate", "shotgun_run_rate", "non_shotgun_pass_rate", "non_shotgun_run_rate",
-      "two_point_plays (tracked separately, excluded from rates)",
+      "shotgun_pass_rate (pass/run split MUST use qb_dropback, not play_type -- see pass_run_split_correction)",
+      "shotgun_run_rate", "non_shotgun_pass_rate", "non_shotgun_run_rate",
+      "raw_offensive_plays (optional; kneel/spike-inclusive; never used as a rate denominator or in the reconciliation identity)",
+      "two_point_plays (excluded from offensive_plays entirely, not just from rates)",
       "shotgun_epa_per_play (optional, gated)", "non_shotgun_epa_per_play (optional, gated)",
       "shotgun_success_rate (optional, gated, must use TIBER team_state success definition)",
       "non_shotgun_success_rate (optional, gated)",
@@ -124,11 +137,14 @@
     "required source fields unavailable at build time -> fail closed",
     "unknown_or_unclassified_alignment_plays exceeding 10% of offensive_plays for a row requires an explicit high-uncertainty flag",
     "denominator rule must be applied consistently and stated in artifact metadata",
+    "offensive_plays populated from the kneel/spike-inclusive raw count instead of the formation-eligible count is a hard validation failure (two_tier_denominator_correction)",
     "emitting non_shotgun under the label under_center is a hard validation failure",
     "kneel/spike/no-play/penalty-only/two-point/special-teams handling must be explicit",
+    "*_pass_rate/*_run_rate derived from play_type instead of the verified dropback indicator is a hard validation failure (pass_run_split_correction)",
+    "a team-season with a null/unavailable dropback indicator on any formation-eligible play must null-block *_pass_rate/*_run_rate for that row, not guess",
     "missing source snapshot/version, sourceRefs, or governance/provenance markers fails validation",
     "sample-size thresholds must be declared and enforced",
-    "shotgun_plays + non_shotgun_plays + unknown_or_unclassified_alignment_plays must equal offensive_plays exactly",
+    "shotgun_plays + non_shotgun_plays + unknown_or_unclassified_alignment_plays must equal offensive_plays exactly, using the formation-eligible count, never the kneel/spike-inclusive raw count",
     "success field must disclose which definition (TIBER team_state rule vs nflverse native) was used"
   ],
   "relationship_to_lanes": {
