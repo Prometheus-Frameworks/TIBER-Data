@@ -1,0 +1,170 @@
+{
+  "spec_id": "formation-summary-v0-source-boundary",
+  "status": "spec_only_not_implementation_ready",
+  "is_json_schema": false,
+  "is_validator": false,
+  "is_dataset": false,
+  "authorizes_governed_artifact": false,
+  "authorizes_teamstate_fantasy_forecast_wiring": false,
+  "disclaimer": "Non-normative companion to docs/specs/formation-summary-v0-source-boundary.md. Illustrative field/grain/source shape only. This file does NOT validate data, does NOT authorize implementation, and is NOT a dataset.",
+  "date": "2026-07-08",
+  "revision_note": "Revised after two rounds of PR review (Codex). Round 1: an earlier draft undercredited existing in-repo precedent (scripts/build_team_week_raw_v0_2024_candidate.py already has a real, validated 2024 candidate, not a fixture, proving qb_kneel/qb_spike/two_point_attempt/sack/penalty/aborted-play handling against actual nflverse pbp data); and the unknown_or_unclassified_alignment bucket must not be defined as a possible pistol superset, since a known shotgun==0 value cannot also be unknown without breaking the count-reconciliation rule. Round 2 (post f67c825): offensive_plays was ambiguous between team_week_raw_v0's two distinct denominators (kneel/spike-inclusive offensivePlays vs pass/run-only competitivePlays) which made the reconciliation identity mathematically impossible whenever a team-season had a kneel/spike; and the qb_scramble field-audit note conflated denominator inclusion (fine via play_type) with the pass/run split for *_pass_rate/*_run_rate (must use qb_dropback per team_week_raw_v0 precedent, not play_type, or scrambles get silently reclassified as rush).",
+  "tracking_issue": "Prometheus-Frameworks/TIBER-Data#208",
+  "upstream_context": "Prometheus-Frameworks/TIBER-Teamstate#75 / PR #76 (formation_lens_v0, documentation-only)",
+  "live_fetch_attempted_this_session": {
+    "call": "nflreadpy.load_pbp(seasons=[2024])",
+    "result": "blocked",
+    "reason": "403 Forbidden from session egress policy on nflverse-data release asset host",
+    "interpretation": "session-level sandbox restriction, not proof the source is generally unreachable; src/team_state/loader.py depends on this same call succeeding in the repo's real execution environment, and scripts/build_team_week_raw_v0_2024_candidate.py has already succeeded at this exact call in a prior session (real 544-row 2024 candidate)",
+    "consequence": "field claims below are tagged verified_in_repo (including via the prior real 2024 candidate build) or documented_schema_unverified_live; a future implementation issue must re-verify only the still-unverified fields (shotgun, defteam, qb_scramble column name) against a live pull"
+  },
+  "truth_status_vocabulary": ["source_truth", "derived_summary", "unavailable", "out_of_scope", "unsafe_for_v0"],
+  "verification_status_vocabulary": ["verified_in_repo", "documented_schema_unverified_live"],
+  "field_audit": {
+    "ready_today_verified_in_repo": [
+      "season", "week", "game_id", "posteam",
+      "play_type (including categorical no_play/qb_kneel/qb_spike values)",
+      "pass", "rush", "down", "ydstogo", "yardline_100", "score_differential", "game_seconds_remaining",
+      "qb_kneel (real 2024 candidate build + tests)",
+      "qb_spike (real 2024 candidate build + tests)",
+      "penalty handling policy (locked in team-week-raw-v0-2024-pr-c-preflight.md sec 2)",
+      "two_point_attempt (real 2024 candidate build + tests)",
+      "sack (real 2024 candidate build)",
+      "aborted_play handling policy (locked in preflight doc; exact field-level mechanism still to confirm)",
+      "epa (used and computed on in the real 2024 candidate build)"
+    ],
+    "must_be_live_verified_before_use": [
+      {"field": "shotgun", "note": "zero in-repo precedent of any kind; absent from fixture, REQUIRED_PBP_COLUMNS, and every script including the real 2024 candidate build; this is the field the whole spec turns on"},
+      {"field": "defteam", "note": "not referenced anywhere in this repo today, including the real 2024 candidate build"},
+      {"field": "qb_scramble", "note": "real evidence confirms scrambles are a real distinct category, but the exact source column name is explicitly left GATED in team-week-raw-v0-2024-pr-c-preflight.md sec 2 pending live retrieval; not a v0 blocker for the offensive-play denominator itself"}
+    ],
+    "unsafe_or_out_of_scope_for_v0": [
+      {"field": "designed_qb_run_indicator", "note": "no dedicated field; requires rusher identity/role join, forbidden by this issue's own non-goals"}
+    ],
+    "special_teams_exclusion": {"status": "verified_in_repo", "note": "handled correctly by both the team_state pattern and the team_week_raw_v0 categorical play_type pattern; also locked in preflight doc sec 2"},
+    "real_data_precedent": {
+      "artifact": "exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.json",
+      "build_script": "scripts/build_team_week_raw_v0_2024_candidate.py",
+      "policy_doc": "docs/data/team-week-raw-v0-2024-pr-c-preflight.md",
+      "status": "partial_real_data, allPassed true, 544 rows, 32 teams, built from real nflreadpy.load_pbp([2024])/load_schedules([2024]) output, not a fixture",
+      "significance": "proves play_type, qb_kneel, qb_spike, two_point_attempt, qb_dropback, sack, interception, fumble_lost, epa, success, fixed_drive, pass_touchdown, rush_touchdown, quarter_seconds_remaining, and game_half all exist and behave as expected in the real ingested schema; does not touch shotgun or defteam"
+    }
+  },
+  "under_center_derivation_decision": {
+    "decision": "not_unconditionally_derivable_at_v0",
+    "reason": "shotgun==0 cannot be safely relabeled under_center because pistol-formation handling in the source is unverified in this session, and there is no dedicated pistol field in the documented schema",
+    "required_vocabulary": ["shotgun_plays", "non_shotgun_plays", "unknown_or_unclassified_alignment_plays"],
+    "forbidden_label_at_v0": "under_center_plays",
+    "bucket_definitions_corrected": {
+      "shotgun_plays": "shotgun == 1 on a qualifying offensive play",
+      "non_shotgun_plays": "shotgun == 0 on a qualifying offensive play, full stop -- NOT a possible-pistol-superset; if the source encodes pistol as shotgun==0, those snaps have a known non-null value and belong here by construction, not in the unknown bucket. The caveat is about what the label honestly means to a downstream reader (non_shotgun may silently include pistol formations), not about bucket membership.",
+      "unknown_or_unclassified_alignment_plays": "qualifying offensive plays where shotgun itself is null/missing in the source. Nothing else belongs here -- this is not a home for pistol ambiguity about a value the source did provide."
+    },
+    "rule": "missing/null shotgun values fall into unknown_or_unclassified_alignment_plays; a known shotgun==0 value always falls into non_shotgun_plays regardless of whether it might be a pistol snap",
+    "reconciliation_identity": "shotgun_plays + non_shotgun_plays + unknown_or_unclassified_alignment_plays == offensive_plays, exactly, using only the observed shotgun field value",
+    "under_center_label_unlocked_only_after": "a live nflreadpy.load_pbp() pull confirms pistol-snap treatment (e.g. negligible volume, or a way to separate it out)"
+  },
+  "denominator_rules": {
+    "base_filter_recommended": "categorical play_type membership (team_week_raw_v0 pattern: play_type in {pass, run} for competitive plays; play_type in {pass, run, qb_kneel, qb_spike} for raw offensive-play counting), not the pass/rush-flag-only team_state pattern",
+    "base_filter_older_weaker_pattern": "posteam not null AND (pass==1 OR rush==1 OR play_type in [pass, run]) -- tiber_team_state_v0_1's pattern; not proven against real data for no-play exclusion the way the team_week_raw_v0 pattern is",
+    "exclusions_already_proven_via_real_2024_candidate_and_locked_preflight_policy": [
+      "no-play rows (categorical play_type exclusion, not reliance on pass/rush flags)",
+      "penalty-only (no-snap) rows; penalty on an otherwise-recorded play does not remove that play",
+      "qb_kneel (play_type == qb_kneel, excluded from rate/efficiency fields)",
+      "qb_spike (play_type == qb_spike, same treatment as qb_kneel)",
+      "two_point_attempt == true (excluded from the offensive-play denominator entirely, not just 'primary' denominator)",
+      "aborted_play (policy locked; exact field-level detection mechanism unconfirmed)",
+      "special_teams_play_types (punt, field_goal, kickoff, extra_point)"
+    ],
+    "not_requiring_special_handling_at_v0": ["qb_scramble for denominator INCLUSION only (correctly counted via categorical play_type filter regardless of the exact scramble-flag column name, which remains GATED upstream) -- see pass_run_split_correction below for why this does NOT extend to the pass/run split"]
+  },
+  "two_tier_denominator_correction": {
+    "finding": "team_week_raw_v0 keeps TWO separate denominators: is_offensive_play (kneel/spike included, two_point excluded) and is_competitive_play (pass/run only, two_point excluded, used for passRate/rushRate/epaPerPlay). An earlier draft left formation_summary_v0's offensive_plays ambiguous between the two, which makes shotgun_plays + non_shotgun_plays + unknown_or_unclassified_alignment_plays == offensive_plays mathematically impossible for any team-season with a kneel or spike, since those plays have no alignment-tendency bucket to belong to.",
+    "resolution": "offensive_plays in formation_summary_v0 means ONLY the competitive-play/formation-eligible count (team_week_raw_v0's competitivePlays-equivalent): pass/run only, with kneels, spikes, two-point attempts, no-plays, penalty-only rows, aborted plays, and special teams excluded entirely, not just from rates. This is the sole denominator for the reconciliation identity.",
+    "optional_field": "raw_offensive_plays may be carried separately (kneel/spike-inclusive, team_week_raw_v0's offensivePlays-equivalent) for cross-artifact comparison, but is never used as an alignment-rate denominator and never appears in the reconciliation identity."
+  },
+  "pass_run_split_correction": {
+    "finding": "team_week_raw_v0's aggregate_game classifies pass vs rush using the qb_dropback indicator, not play_type -- a scramble has play_type=='run' but qb_dropback==1, so team_week_raw_v0 counts it as a PASS play for passRate/passEpaPerPlay. An earlier draft's qb_scramble note ('falls correctly under the rush bucket via play_type') was true only for denominator inclusion, not for the pass/run split, and would have silently forked formation_summary_v0's shotgun_pass_rate/shotgun_run_rate/non_shotgun_pass_rate/non_shotgun_run_rate from the exact precedent this spec tells implementers to reuse.",
+    "resolution": "the pass/run split within each alignment bucket must use the same verified dropback indicator (qb_dropback) team_week_raw_v0 uses, not play_type. play_type remains correct for denominator inclusion (two_tier_denominator_correction) and for the shotgun/non_shotgun/unknown alignment split itself (alignment is orthogonal to dropback-vs-scramble) -- only the pass-vs-run split changes.",
+    "fail_closed_rule": "if qb_dropback is null/unavailable for one or more formation-eligible plays in a team-season, null-block the affected *_pass_rate/*_run_rate fields for that row, mirroring team_week_raw_v0's dropbackSplitBlocked/dropbackNullRows pattern exactly, rather than guessing an attribution from play_type."
+  },
+  "success_rate_conflict_finding": {
+    "finding": "src/team_state/definitions.py and compute.py already define a TIBER-specific success rule (>=40% ydstogo on 1st down, >=60% on 2nd, 100% on 3rd/4th), independent of any native nflverse success column (which the real 2024 team_week_raw_v0 candidate build also references via row.get('success'))",
+    "risk": "silently adopting nflverse's own success field under the same field name would create two divergent 'success' definitions across sibling TIBER-Data artifacts",
+    "recommendation": "reuse the existing TIBER team_state success rule verbatim for formation_summary_v0; if nflverse's native field is used instead, name it distinctly (e.g. epa_success_rate vs distance_success_rate)"
+  },
+  "recommended_grain": {
+    "choice": "team_season",
+    "justification": [
+      "matches tiber_team_state_v0_1's existing season/through-week scope",
+      "formation_lens_v0 (Teamstate) is a season-level explanation surface, does not need weekly granularity",
+      "team_week multiplies sample-size risk 18x before alignment ambiguity (shotgun/pistol) is resolved"
+    ],
+    "team_week_deferred_until": "team_season coverage and alignment ambiguity are resolved and sample-size/warning behavior is proven reliable"
+  },
+  "envelope": {
+    "fields": ["artifact", "artifactVersion", "generatedAt", "season", "sourceArtifacts", "metadata", "coverage", "governanceStatus_or_provenanceStatus", "rows"],
+    "metadata_required": ["seasonType", "denominatorRule", "alignmentVocabulary"],
+    "coverage_required": ["teamsCovered", "missingFields"],
+    "hard_rule": "governance/provenance status is never inferred from file path, file name, branch name, or consumer intent"
+  },
+  "row_shape": {
+    "fields": [
+      "season", "week (optional, absent for team_season)", "grain", "team",
+      "offensive_plays (formation-eligible/competitive-play count ONLY -- see two_tier_denominator_correction)",
+      "shotgun_plays", "non_shotgun_plays",
+      "unknown_or_unclassified_alignment_plays (required, not optional)",
+      "shotgun_rate", "non_shotgun_rate", "unknown_alignment_rate",
+      "shotgun_pass_rate (pass/run split MUST use qb_dropback, not play_type -- see pass_run_split_correction)",
+      "shotgun_run_rate", "non_shotgun_pass_rate", "non_shotgun_run_rate",
+      "raw_offensive_plays (optional; kneel/spike-inclusive; never used as a rate denominator or in the reconciliation identity)",
+      "two_point_plays (excluded from offensive_plays entirely, not just from rates)",
+      "shotgun_epa_per_play (optional, gated)", "non_shotgun_epa_per_play (optional, gated)",
+      "shotgun_success_rate (optional, gated, must use TIBER team_state success definition)",
+      "non_shotgun_success_rate (optional, gated)",
+      "sample_notes", "sourceRefs", "provenanceStatus"
+    ],
+    "null_vs_zero": "optional efficiency fields remain absent/null/insufficient_data until EPA/success definitions are source-backed and sample thresholds are met"
+  },
+  "sample_size_thresholds": {
+    "minimum_offensive_plays_per_team_season_row": 250,
+    "minimum_shotgun_plays_for_efficiency_prose": 100,
+    "minimum_non_shotgun_plays_for_efficiency_prose": 100,
+    "small_sample_behavior": "suppress the efficiency/prose field entirely, do not merely attach a warning; rate/count fields may still be emitted with a sample_notes flag",
+    "league_relative_labels_in_v0": "not allowed; no league-baseline artifact exists yet in this repo; deferred"
+  },
+  "fail_closed_rules": [
+    "required source fields unavailable at build time -> fail closed",
+    "unknown_or_unclassified_alignment_plays exceeding 10% of offensive_plays for a row requires an explicit high-uncertainty flag",
+    "denominator rule must be applied consistently and stated in artifact metadata",
+    "offensive_plays populated from the kneel/spike-inclusive raw count instead of the formation-eligible count is a hard validation failure (two_tier_denominator_correction)",
+    "emitting non_shotgun under the label under_center is a hard validation failure",
+    "kneel/spike/no-play/penalty-only/two-point/special-teams handling must be explicit",
+    "*_pass_rate/*_run_rate derived from play_type instead of the verified dropback indicator is a hard validation failure (pass_run_split_correction)",
+    "a team-season with a null/unavailable dropback indicator on any formation-eligible play must null-block *_pass_rate/*_run_rate for that row, not guess",
+    "missing source snapshot/version, sourceRefs, or governance/provenance markers fails validation",
+    "sample-size thresholds must be declared and enforced",
+    "shotgun_plays + non_shotgun_plays + unknown_or_unclassified_alignment_plays must equal offensive_plays exactly, using the formation-eligible count, never the kneel/spike-inclusive raw count",
+    "success field must disclose which definition (TIBER team_state rule vs nflverse native) was used"
+  ],
+  "relationship_to_lanes": {
+    "team_week_raw_v0": "closest real-data precedent; already has a validated 2024 candidate solving no-play/kneel/spike/penalty/sack/scramble/aborted-play/two-point/special-teams exclusion via categorical play_type membership; formation_summary_v0 should reuse this pattern and cite this precedent rather than re-deriving denominator policy",
+    "tiber_team_state_v0_1": "sibling, not a dependency; its pass/rush-flag-only pattern is the weaker of the two in-repo patterns for no-play exclusion; must not fork the success-rate definition silently",
+    "formation_lens_v0_teamstate": "downstream consumer, not started here; remains blocked from real-data interpretation until this artifact exists and passes a separate consumption approval",
+    "player_season_coverage_v0": "shape/vocabulary precedent only (truth_status vocabulary, envelope shape); no code/data dependency",
+    "fantasy_forecast": "out of scope entirely; not referenced by any field/grain/envelope choice here"
+  },
+  "recommended_next_issue": {
+    "title": "audit: verify nflreadpy.load_pbp() shotgun/formation column availability for formation_summary_v0 (read-only, no artifact)",
+    "status": "separate, NOT started here, narrower than a full implementation issue -- and narrower than an earlier draft of this spec assumed, now that team_week_raw_v0's real 2024 candidate is credited correctly",
+    "scope": [
+      "single bounded already-complete recent regular season (2024 already has a validated team_week_raw_v0 candidate to cross-reference against)",
+      "confirm presence/null-rates of shotgun and defteam specifically -- the two fields with zero in-repo precedent of any kind",
+      "resolve pistol-formation handling question (does shotgun==0 include pistol snaps)",
+      "confirm the exact scramble-indicator column name, left GATED in team-week-raw-v0-2024-pr-c-preflight.md sec 2",
+      "produce no artifact, no schema, no promoted data -- only a docs/audits report"
+    ],
+    "implementation_issue_authorized": false,
+    "implementation_issue_gated_on": "resolution or explicit narrowing of the open questions in this document's derivation section"
+  }
+}
