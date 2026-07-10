@@ -1,0 +1,76 @@
+{
+  "audit_id": "formation-summary-v0-live-pbp-field-verification-2026-07-09",
+  "is_schema": false,
+  "is_validator": false,
+  "is_dataset": false,
+  "is_contract": false,
+  "disclaimer": "Non-normative companion to docs/audits/formation-summary-v0-live-pbp-field-verification-2026-07-09.md. This is an audit RESULT, not a schema, validator, dataset, or contract. It authorizes nothing.",
+  "date": "2026-07-10",
+  "tracking_issue": "Prometheus-Frameworks/TIBER-Data#210",
+  "predecessor": "Prometheus-Frameworks/TIBER-Data#208 / PR#209 (docs/specs/formation-summary-v0-source-boundary.md)",
+  "type": "verification_audit_only",
+  "non_goals_observed": [
+    "no formation_summary_v0 artifact emitted",
+    "no promoted export created or modified",
+    "no governed artifact created",
+    "no production contract defined",
+    "no Teamstate wiring",
+    "no Fantasy wiring",
+    "no Forecast wiring",
+    "no player/team model changes",
+    "no rankings or fantasy advice",
+    "no under_center inferred from non_shotgun without live evidence",
+    "no scheme labels (Shanahan/McVay/RPO/spread) created",
+    "no motion/shift/route/personnel claims made"
+  ],
+  "live_load_attempt": {
+    "command": "nflreadpy.load_pbp(seasons=[2024])",
+    "season_requested": 2024,
+    "season_substituted": false,
+    "result": "failed",
+    "error": "403 Client Error: Forbidden for https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet",
+    "attempts_this_effort": 2,
+    "attempts_note": "one attempt in the prior #208/#209 session, one fresh attempt in this session; both failed identically; no retry loop performed"
+  },
+  "reachability_diagnostics": {
+    "github.com_release_path": {"status": 403, "verdict": "blocked"},
+    "api.github.com": {"status": 403, "verdict": "blocked"},
+    "objects.githubusercontent.com": {"status": 404, "verdict": "reachable (404 is expected for an invalid root-path probe, not a policy block)"},
+    "raw.githubusercontent.com": {"status": 200, "verdict": "reachable, real file fetched successfully"},
+    "interpretation": "the sandbox egress policy blocks github.com/api.github.com specifically, not GitHub's content CDNs generally; nflreadpy v0.1.5 hardcodes all data sources to github.com URLs with no alternate-mirror option, so this does not open a workaround inside nflreadpy as installed"
+  },
+  "provenance_correction": {
+    "flagged_by": "PR review (Codex), applies to this document and to the predecessor spec docs/specs/formation-summary-v0-source-boundary.md",
+    "prior_overstated_claim": "scripts/build_team_week_raw_v0_2024_candidate.py's real 2024 candidate proves nflreadpy.load_pbp() succeeded",
+    "actual_mechanism": "retrieve_pbp() -> _retrieve_nflverse_parquet() -> _fetch_source_bytes() uses a direct httpx.Client().get(url) call against the same release-asset URL nflreadpy's downloader would resolve; the nflreadpy_loader='nflreadpy.load_pbp([2024])' argument is only a descriptive label recorded in retrievalMethod metadata, not evidence the function was invoked",
+    "corrected_claim": "the real 2024 candidate is genuine evidence the nflverse-data release asset URL was reachable via httpx in some prior session/environment; it is NOT evidence that nflreadpy.load_pbp()'s own requests-based downloader (NflverseDownloader._download_file) has ever successfully executed in this repo"
+  },
+  "questions_answered": {
+    "shotgun_exists_and_shape": {"status": "not_verified", "reason": "live load failed; no new evidence positive or negative versus #209"},
+    "pistol_or_formation_disambiguation_field": {"status": "not_verified", "reason": "column-name search could not be run against real data"},
+    "under_center_upgrade_from_non_shotgun": {
+      "decision": "no",
+      "reason": "default answer from issue text preserved; no live evidence obtained to justify upgrade",
+      "vocabulary_preserved": ["shotgun_plays", "non_shotgun_plays", "unknown_or_unclassified_alignment_plays"],
+      "under_center_plays_recommended": false
+    },
+    "defteam_availability": {"status": "not_verified", "reason": "live load failed; unchanged from #209; not currently needed for v0 scope"},
+    "scramble_indicator_column_name": {"status": "not_verified_still_gated", "reason": "matches team-week-raw-v0-2024-pr-c-preflight.md sec 2, which already deferred this as unknown until retrieval"},
+    "denominator_field_compatibility_with_team_week_raw_v0_2024": {
+      "status": "partially_answered_via_prior_committed_evidence_not_new_live_pull",
+      "already_proven_by_prior_real_2024_candidate": ["play_type", "qb_kneel", "qb_spike", "two_point_attempt", "sack", "epa", "success"],
+      "policy_proven_field_mechanism_unconfirmed": ["penalty", "aborted_play"],
+      "still_unavailable_or_ambiguous": ["shotgun", "defteam", "qb_scramble (exact column name)"]
+    }
+  },
+  "decisions": {
+    "live_load_attempted_and_documented_or_failure_documented": "failure_documented",
+    "under_center_remains_blocked": true,
+    "non_shotgun_remains_v0_vocabulary": true,
+    "implementation_dry_run_issue_authorized": false
+  },
+  "recommended_next_step": {
+    "action": "retry the live verification pull in an environment where github.com is reachable (e.g. this repo's real CI/dev environment); treat nflreadpy.load_pbp() reachability as still unconfirmed there too, per provenance_correction above, not as already-proven",
+    "not_authorized_here": "no further live-pull retries were attempted in this session beyond the one fresh attempt plus reachability diagnostics, per guidance against retrying organization policy denials in a loop"
+  }
+}

@@ -15,7 +15,7 @@
     "call": "nflreadpy.load_pbp(seasons=[2024])",
     "result": "blocked",
     "reason": "403 Forbidden from session egress policy on nflverse-data release asset host",
-    "interpretation": "session-level sandbox restriction, not proof the source is generally unreachable; src/team_state/loader.py depends on this same call succeeding in the repo's real execution environment, and scripts/build_team_week_raw_v0_2024_candidate.py has already succeeded at this exact call in a prior session (real 544-row 2024 candidate)",
+    "interpretation": "session-level sandbox restriction, not proof the source is generally unreachable; src/team_state/loader.py depends on this same call succeeding in the repo's real execution environment. CORRECTED (post-merge, PR#211 review): scripts/build_team_week_raw_v0_2024_candidate.py's real 544-row 2024 candidate proves the release asset URL was reachable via a direct httpx call in a prior session, NOT that nflreadpy.load_pbp() itself (a different, requests-based code path) has ever succeeded here -- see docs/audits/formation-summary-v0-live-pbp-field-verification-2026-07-09.md sec 3.1",
     "consequence": "field claims below are tagged verified_in_repo (including via the prior real 2024 candidate build) or documented_schema_unverified_live; a future implementation issue must re-verify only the still-unverified fields (shotgun, defteam, qb_scramble column name) against a live pull"
   },
   "truth_status_vocabulary": ["source_truth", "derived_summary", "unavailable", "out_of_scope", "unsafe_for_v0"],
@@ -46,7 +46,7 @@
       "artifact": "exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.json",
       "build_script": "scripts/build_team_week_raw_v0_2024_candidate.py",
       "policy_doc": "docs/data/team-week-raw-v0-2024-pr-c-preflight.md",
-      "status": "partial_real_data, allPassed true, 544 rows, 32 teams, built from real nflreadpy.load_pbp([2024])/load_schedules([2024]) output, not a fixture",
+      "status": "partial_real_data, allPassed true, 544 rows, 32 teams, built from a real nflverse release-asset fetch (direct httpx call, NOT via nflreadpy.load_pbp()/load_schedules() themselves -- see interpretation correction above), not a fixture",
       "significance": "proves play_type, qb_kneel, qb_spike, two_point_attempt, qb_dropback, sack, interception, fumble_lost, epa, success, fixed_drive, pass_touchdown, rush_touchdown, quarter_seconds_remaining, and game_half all exist and behave as expected in the real ingested schema; does not touch shotgun or defteam"
     }
   },
