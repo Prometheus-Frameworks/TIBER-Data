@@ -39,6 +39,12 @@
     "raw.githubusercontent.com": {"status": 200, "verdict": "reachable, real file fetched successfully"},
     "interpretation": "the sandbox egress policy blocks github.com/api.github.com specifically, not GitHub's content CDNs generally; nflreadpy v0.1.5 hardcodes all data sources to github.com URLs with no alternate-mirror option, so this does not open a workaround inside nflreadpy as installed"
   },
+  "provenance_correction": {
+    "flagged_by": "PR review (Codex), applies to this document and to the predecessor spec docs/specs/formation-summary-v0-source-boundary.md",
+    "prior_overstated_claim": "scripts/build_team_week_raw_v0_2024_candidate.py's real 2024 candidate proves nflreadpy.load_pbp() succeeded",
+    "actual_mechanism": "retrieve_pbp() -> _retrieve_nflverse_parquet() -> _fetch_source_bytes() uses a direct httpx.Client().get(url) call against the same release-asset URL nflreadpy's downloader would resolve; the nflreadpy_loader='nflreadpy.load_pbp([2024])' argument is only a descriptive label recorded in retrievalMethod metadata, not evidence the function was invoked",
+    "corrected_claim": "the real 2024 candidate is genuine evidence the nflverse-data release asset URL was reachable via httpx in some prior session/environment; it is NOT evidence that nflreadpy.load_pbp()'s own requests-based downloader (NflverseDownloader._download_file) has ever successfully executed in this repo"
+  },
   "questions_answered": {
     "shotgun_exists_and_shape": {"status": "not_verified", "reason": "live load failed; no new evidence positive or negative versus #209"},
     "pistol_or_formation_disambiguation_field": {"status": "not_verified", "reason": "column-name search could not be run against real data"},
@@ -64,7 +70,7 @@
     "implementation_dry_run_issue_authorized": false
   },
   "recommended_next_step": {
-    "action": "retry the live verification pull in an environment where github.com is reachable (e.g. this repo's real CI/dev environment, where scripts/build_team_week_raw_v0_2024_candidate.py already has a proven successful run)",
+    "action": "retry the live verification pull in an environment where github.com is reachable (e.g. this repo's real CI/dev environment); treat nflreadpy.load_pbp() reachability as still unconfirmed there too, per provenance_correction above, not as already-proven",
     "not_authorized_here": "no further live-pull retries were attempted in this session beyond the one fresh attempt plus reachability diagnostics, per guidance against retrying organization policy denials in a loop"
   }
 }
