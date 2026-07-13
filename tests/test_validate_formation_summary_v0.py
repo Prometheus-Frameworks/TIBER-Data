@@ -147,6 +147,23 @@ def test_rejects_governed_provenance_claim(validator, artifact):
     assert any("ungoverned" in error for error in errors)
 
 
+def test_rejects_missing_team_coverage(validator, artifact):
+    # Incomplete team coverage is a hard failure even when the remaining rows
+    # reconcile (Codex review finding on PR #215).
+    removed = artifact["rows"].pop(0)
+    errors = validator.validate_artifact(artifact)
+    assert any("missing canonical team" in error for error in errors)
+    assert any(removed["team"] in error for error in errors)
+
+
+def test_rejects_stale_coverage_metadata(validator, artifact):
+    artifact["metadata"]["coverage"]["missingTeams"] = ["KC"]
+    artifact["metadata"]["coverage"]["isFullLeague"] = False
+    errors = validator.validate_artifact(artifact)
+    assert any("missingTeams" in error for error in errors)
+    assert any("isFullLeague" in error for error in errors)
+
+
 def test_rejects_wrong_alignment_vocabulary(validator, artifact):
     artifact["metadata"]["alignmentVocabulary"] = ["shotgun", "non_shotgun"]
     errors = validator.validate_artifact(artifact)

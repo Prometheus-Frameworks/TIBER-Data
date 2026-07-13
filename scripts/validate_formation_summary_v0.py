@@ -15,6 +15,9 @@ sections 3.1-3.3, 6.1, and 7:
 - efficiency fields below the declared bucket sample threshold are null with a
   typed sample note (never a manufactured zero),
 - every emitted row satisfies the declared minimum offensive-play threshold,
+- full-league coverage: all 32 canonical teams present, no unexpected teams, and
+  metadata.coverage consistent with the actual row set (incomplete coverage is a
+  hard failure, not a warning),
 - the unknown-share high-uncertainty flag matches the declared threshold,
 - retrieval metadata and sha256 checksums exist for every input source,
 - governance/provenance markers are explicit and never governed/promoted.
@@ -35,6 +38,14 @@ import jsonschema
 SCHEMA_PATH = Path("schemas/formation_summary_v0.schema.json")
 
 ALIGNMENT_VOCABULARY = ["shotgun", "non_shotgun", "unknown_or_unclassified_alignment"]
+CANONICAL_TEAMS = frozenset(
+    {
+        "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN",
+        "DET", "GB", "HOU", "IND", "JAX", "KC", "LAC", "LAR", "LV", "MIA",
+        "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB",
+        "TEN", "WAS",
+    }
+)
 FORBIDDEN_ALIGNMENT_LABEL = "under_" + "center"  # never emitted; see spec section 3.3
 SPLIT_RATE_FIELDS = (
     "shotgun_pass_rate", "shotgun_run_rate", "non_shotgun_pass_rate", "non_shotgun_run_rate",
@@ -186,6 +197,35 @@ def validate_business_rules(artifact: dict[str, Any]) -> list[str]:
 
         if not row.get("sourceRefs"):
             errors.append(f"{prefix}: sourceRefs missing/empty")
+
+    # Full-league coverage is a hard validation failure when incomplete (spec
+    # section 7; #214 acceptance criteria), and the coverage metadata must
+    # describe the actual row set, not a stale build state.
+    missing_teams = sorted(CANONICAL_TEAMS - teams_seen)
+    unexpected_teams = sorted(teams_seen - CANONICAL_TEAMS)
+    if missing_teams:
+        errors.append(f"coverage: missing canonical team row(s) {missing_teams}")
+    if unexpected_teams:
+        errors.append(f"coverage: unexpected non-canonical team row(s) {unexpected_teams}")
+    coverage = metadata.get("coverage", {})
+    if sorted(coverage.get("presentTeams", [])) != sorted(teams_seen):
+        errors.append(
+            "coverage: metadata.coverage.presentTeams does not match the actual row team set"
+        )
+    if coverage.get("missingTeams"):
+        errors.append(
+            f"coverage: metadata.coverage.missingTeams is non-empty "
+            f"({coverage.get('missingTeams')})"
+        )
+    if coverage.get("unexpectedTeams"):
+        errors.append(
+            f"coverage: metadata.coverage.unexpectedTeams is non-empty "
+            f"({coverage.get('unexpectedTeams')})"
+        )
+    if coverage.get("isFullLeague") is not True:
+        errors.append(
+            f"coverage: isFullLeague must be true, got {coverage.get('isFullLeague')!r}"
+        )
 
     for source in metadata.get("inputSources", []):
         name = source.get("sourceName", "<unnamed>")

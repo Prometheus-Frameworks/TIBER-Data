@@ -177,6 +177,13 @@ def test_scramble_counts_as_pass_via_qb_dropback(mod):
     assert bucket.run_plays == 0
 
 
+def test_unexpected_dropback_value_fails_closed(mod):
+    # A drifted non-binary qb_dropback must abort the build, never be silently
+    # classified as a run (Codex review finding on PR #215).
+    with pytest.raises(ValueError):
+        mod.aggregate_season([play(qb_dropback=2.0)])
+
+
 def test_dropback_zero_counts_as_run(mod):
     handoff = play(play_type="run", qb_dropback=0.0)
     bucket = mod.aggregate_season([handoff])["KC"].buckets["shotgun"]

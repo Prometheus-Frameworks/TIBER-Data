@@ -330,10 +330,17 @@ def aggregate_season(pbp_rows: list[dict[str, Any]]) -> dict[str, TeamSeasonStat
         dropback = row.get("qb_dropback")
         if dropback is None:
             bucket.dropback_null_rows += 1
-        elif flag_is_set(dropback):
+        elif dropback == 1:
             bucket.pass_plays += 1
-        else:
+        elif dropback == 0:
             bucket.run_plays += 1
+        else:
+            # A drifted non-binary value must not silently corrupt the pass/run
+            # split; the mutable source contract only defines 1, 0, and null.
+            raise ValueError(
+                f"Unexpected qb_dropback value {dropback!r} on a qualifying play; "
+                "the pass/run split only defines 1, 0, and null. Build fails closed."
+            )
 
         epa = row.get("epa")
         if epa is None:
