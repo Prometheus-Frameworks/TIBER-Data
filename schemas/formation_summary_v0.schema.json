@@ -1,0 +1,272 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber-data.local/schemas/formation_summary_v0.schema.json",
+  "title": "formation_summary_v0 (candidate)",
+  "description": "Candidate schema for the source-backed team-season formation summary artifact (TIBER-Data #214; spec docs/specs/formation-summary-v0-source-boundary.md). This is NOT a promoted contract and does NOT authorize Teamstate, Fantasy, or Forecast consumption. The alignment vocabulary is exactly shotgun / non_shotgun / unknown_or_unclassified_alignment; an under_center field or label is a hard contract violation (rows forbid additional properties, and the alignmentVocabulary enum is closed).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact",
+    "artifactVersion",
+    "generatedAt",
+    "season",
+    "sourceArtifacts",
+    "metadata",
+    "rows"
+  ],
+  "properties": {
+    "artifact": { "const": "formation_summary_v0" },
+    "artifactVersion": { "type": "string", "minLength": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "season": { "type": "integer", "minimum": 1999 },
+    "sourceArtifacts": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "seasonType",
+        "grain",
+        "denominatorRule",
+        "alignmentVocabulary",
+        "alignmentRule",
+        "passRunSplitRule",
+        "successDefinition",
+        "epaDisclosure",
+        "sampleThresholds",
+        "provenanceStatus",
+        "provenanceNotes",
+        "inputSources",
+        "coverage",
+        "governance",
+        "suppressedRows",
+        "buildDiagnostics"
+      ],
+      "properties": {
+        "seasonType": { "const": "REG" },
+        "grain": { "const": "team_season" },
+        "denominatorRule": { "type": "string", "minLength": 1 },
+        "alignmentVocabulary": {
+          "type": "array",
+          "prefixItems": [
+            { "const": "shotgun" },
+            { "const": "non_shotgun" },
+            { "const": "unknown_or_unclassified_alignment" }
+          ],
+          "items": false,
+          "minItems": 3
+        },
+        "alignmentRule": { "type": "string", "minLength": 1 },
+        "passRunSplitRule": { "type": "string", "minLength": 1 },
+        "successDefinition": {
+          "type": "object",
+          "required": ["name", "rule", "disclosure"],
+          "properties": {
+            "name": { "const": "tiber_team_state_distance_success" },
+            "rule": { "type": "string", "minLength": 1 },
+            "disclosure": { "type": "string", "minLength": 1 }
+          }
+        },
+        "epaDisclosure": { "type": "string", "minLength": 1 },
+        "sampleThresholds": {
+          "type": "object",
+          "required": [
+            "minOffensivePlaysPerRow",
+            "minBucketPlaysForEfficiency",
+            "unknownShareUncertaintyThreshold"
+          ],
+          "properties": {
+            "minOffensivePlaysPerRow": { "type": "integer", "minimum": 1 },
+            "minBucketPlaysForEfficiency": { "type": "integer", "minimum": 1 },
+            "unknownShareUncertaintyThreshold": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "provenanceStatus": {
+          "type": "string",
+          "enum": ["candidate_real_data", "candidate_fixture_data"],
+          "description": "Never governed_real_data or promoted; promotion is a separate operator-approved step outside this schema."
+        },
+        "provenanceNotes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "inputSources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "sourceName",
+              "sourceType",
+              "retrievalMethod",
+              "retrievalTimestamp",
+              "packageVersion",
+              "sourceUrlOrDatasetId",
+              "transformCodePath",
+              "sourceRefs",
+              "checksum"
+            ],
+            "properties": {
+              "checksum": {
+                "type": "object",
+                "required": ["algorithm", "value"],
+                "properties": {
+                  "algorithm": { "type": "string", "minLength": 1 },
+                  "value": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "required": [
+            "season",
+            "expectedTeams",
+            "presentTeams",
+            "missingTeams",
+            "unexpectedTeams",
+            "teamsCovered",
+            "isFullLeague",
+            "suppressedTeams",
+            "missingFields"
+          ]
+        },
+        "governance": {
+          "type": "object",
+          "required": ["governanceStatus", "governanceSource"],
+          "properties": {
+            "governanceStatus": { "const": "ungoverned" },
+            "governanceSource": { "const": "not_set" }
+          }
+        },
+        "suppressedRows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["team", "offensivePlays", "requiredPlays", "reason"]
+          }
+        },
+        "buildDiagnostics": {
+          "type": "object",
+          "required": [
+            "qualifyingPlaysTotal",
+            "abortedPlaysExcludedTotal",
+            "twoPointPlaysExcludedTotal",
+            "unknownAlignmentPlaysTotal",
+            "dropbackSplitBlockedRowCount",
+            "suppressedRowCount"
+          ]
+        }
+      }
+    },
+    "rows": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/team_season_row" }
+    }
+  },
+  "$defs": {
+    "count": { "type": "integer", "minimum": 0 },
+    "rate_or_null": {
+      "oneOf": [
+        { "type": "number", "minimum": 0, "maximum": 1 },
+        { "type": "null" }
+      ]
+    },
+    "number_or_null": {
+      "oneOf": [{ "type": "number" }, { "type": "null" }]
+    },
+    "sample_note": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["code", "detail"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "sample_threshold_not_met",
+            "dropback_split_blocked",
+            "empty_alignment_bucket",
+            "no_epa_values",
+            "epa_null_rows_ignored",
+            "high_unknown_alignment_share"
+          ]
+        },
+        "detail": { "type": "string", "minLength": 1 }
+      }
+    },
+    "team_season_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "season",
+        "grain",
+        "team",
+        "offensive_plays",
+        "shotgun_plays",
+        "non_shotgun_plays",
+        "unknown_or_unclassified_alignment_plays",
+        "shotgun_rate",
+        "non_shotgun_rate",
+        "unknown_alignment_rate",
+        "shotgun_pass_rate",
+        "shotgun_run_rate",
+        "non_shotgun_pass_rate",
+        "non_shotgun_run_rate",
+        "two_point_plays",
+        "aborted_plays_excluded",
+        "shotgun_epa_per_play",
+        "non_shotgun_epa_per_play",
+        "shotgun_success_rate",
+        "non_shotgun_success_rate",
+        "unknown_alignment_uncertainty_flag",
+        "sample_notes",
+        "sourceRefs",
+        "provenanceStatus"
+      ],
+      "properties": {
+        "season": { "type": "integer", "minimum": 1999 },
+        "grain": { "const": "team_season" },
+        "team": { "type": "string", "pattern": "^[A-Z]{2,3}$" },
+        "offensive_plays": { "$ref": "#/$defs/count" },
+        "shotgun_plays": { "$ref": "#/$defs/count" },
+        "non_shotgun_plays": { "$ref": "#/$defs/count" },
+        "unknown_or_unclassified_alignment_plays": { "$ref": "#/$defs/count" },
+        "shotgun_rate": { "$ref": "#/$defs/rate_or_null" },
+        "non_shotgun_rate": { "$ref": "#/$defs/rate_or_null" },
+        "unknown_alignment_rate": { "$ref": "#/$defs/rate_or_null" },
+        "shotgun_pass_rate": { "$ref": "#/$defs/rate_or_null" },
+        "shotgun_run_rate": { "$ref": "#/$defs/rate_or_null" },
+        "non_shotgun_pass_rate": { "$ref": "#/$defs/rate_or_null" },
+        "non_shotgun_run_rate": { "$ref": "#/$defs/rate_or_null" },
+        "two_point_plays": { "$ref": "#/$defs/count" },
+        "aborted_plays_excluded": { "$ref": "#/$defs/count" },
+        "shotgun_epa_per_play": { "$ref": "#/$defs/number_or_null" },
+        "non_shotgun_epa_per_play": { "$ref": "#/$defs/number_or_null" },
+        "shotgun_success_rate": { "$ref": "#/$defs/rate_or_null" },
+        "non_shotgun_success_rate": { "$ref": "#/$defs/rate_or_null" },
+        "unknown_alignment_uncertainty_flag": { "type": "boolean" },
+        "sample_notes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sample_note" }
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "provenanceStatus": {
+          "const": "candidate_source_backed_not_promoted"
+        }
+      }
+    }
+  }
+}
