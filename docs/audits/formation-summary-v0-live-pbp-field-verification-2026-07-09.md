@@ -6,6 +6,16 @@
 - **Predecessors:** [TIBER-Data #208](https://github.com/Prometheus-Frameworks/TIBER-Data/issues/208) / [PR #209](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/209) — `formation_summary_v0` source-boundary spec (`docs/specs/formation-summary-v0-source-boundary.md`), which named this exact verification issue as its required next step and explicitly did not authorize it in advance.
 - **Upstream context:** TIBER-Teamstate #75 / PR #76 — `formation_lens_v0`, still blocked from real-data interpretation pending this Data-side chain.
 
+> **Addendum (2026-07-13, TIBER-Data #214):** the verification gate this audit reported as
+> not passed has since been **satisfied** — a fresh `nflreadpy.load_pbp(seasons=[2024])`
+> pull succeeded (`nflreadpy 0.1.5`) in a separate read-only verification environment, and
+> the operator recorded the results in issue #214, which authorizes a bounded
+> implementation and candidate dry run. `under_center` remains blocked (the successful
+> audit found no pistol-disambiguation field) and `non_shotgun` remains the v0 vocabulary.
+> See `docs/audits/formation-summary-v0-implementation-gate-and-dry-run-status-2026-07-13.md`.
+> The body of this document is preserved unchanged as the record of the earlier failed
+> attempts.
+
 ---
 
 ## 1. Executive verdict

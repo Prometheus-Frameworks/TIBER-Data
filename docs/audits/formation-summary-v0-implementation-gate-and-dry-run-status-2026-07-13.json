@@ -1,0 +1,108 @@
+{
+  "audit_id": "formation-summary-v0-implementation-gate-and-dry-run-status-2026-07-13",
+  "is_schema": false,
+  "is_validator": false,
+  "is_dataset": false,
+  "is_contract": false,
+  "disclaimer": "Non-normative companion to docs/audits/formation-summary-v0-implementation-gate-and-dry-run-status-2026-07-13.md. This is an audit RESULT, not a schema, validator, dataset, or contract. It authorizes nothing beyond what issue #214 already authorizes.",
+  "date": "2026-07-13",
+  "tracking_issue": "Prometheus-Frameworks/TIBER-Data#214",
+  "predecessors": [
+    "Prometheus-Frameworks/TIBER-Data#208 / PR#209 (docs/specs/formation-summary-v0-source-boundary.md)",
+    "Prometheus-Frameworks/TIBER-Data#210 / PR#211 (docs/audits/formation-summary-v0-live-pbp-field-verification-2026-07-09.md)"
+  ],
+  "type": "gate_status_and_dry_run_attempt_audit",
+  "verification_gate": {
+    "gate": "#210 live nflreadpy.load_pbp(seasons=[2024]) shotgun/formation verification",
+    "status": "satisfied",
+    "satisfied_by": "successful live pull recorded by the operator in issue #214, executed in a separate read-only verification environment",
+    "reverified_in_this_session": false
+  },
+  "live_evidence_recorded_in_214": {
+    "command": "nflreadpy.load_pbp(seasons=[2024])",
+    "package_version": "nflreadpy 0.1.5",
+    "source_rows": 47274,
+    "source_columns": 372,
+    "shotgun": {"dtype": "Float64", "values": [0.0, 1.0], "nulls": 0},
+    "pistol_disambiguation_field": "none found (no column contains pistol/formation/under/center/align/personnel/motion/shift)",
+    "defteam": {"exists": true, "nulls_on_possession_rows": 0, "possession_rows": 44686, "status": "deferred, not needed by this artifact"},
+    "qb_scramble": {
+      "dtype": "Float64", "values": [0.0, 1.0], "nulls": 0, "flagged_rows": 1135,
+      "play_type_run_with_dropback_1": 1062, "play_type_no_play_with_dropback_0": 73
+    },
+    "aborted_plays_inside_pass_run_play_type": 111,
+    "qualifying_denominator_plays": 33225,
+    "teams_covered": 32,
+    "per_team_qualifying_play_range": [981, 1110],
+    "note": "observations for the 2024 run recorded in #214, not timeless schema guarantees; the release asset is mutable"
+  },
+  "vocabulary_decision": {
+    "under_center": "remains prohibited (no pistol-disambiguation field found by the successful live audit)",
+    "non_shotgun": "remains the correct v0 label (shotgun-negative only; may silently include pistol)",
+    "unknown_or_unclassified_alignment": "required explicit bucket, null/missing shotgun only; expected zero for 2024"
+  },
+  "dry_run_attempt_this_session": {
+    "command": "python scripts/build_formation_summary_v0_2024_candidate.py",
+    "result": "failed_closed_no_artifact_emitted",
+    "error": "403 Forbidden for https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet",
+    "block_mechanism": "session-level GitHub repository scoping (proxy: 'GitHub access to this repository is not enabled for this session. Use add_repo to request access.')",
+    "season_substituted": false,
+    "alternate_source_substituted": false,
+    "operator_decision": "asked in-session; operator chose to open the implementation PR without the dry run rather than expand session access to nflverse/nflverse-data"
+  },
+  "remaining_step": {
+    "what": "source-backed 2024 candidate dry run in an environment where the nflverse release asset is reachable",
+    "commands": [
+      "python scripts/build_formation_summary_v0_2024_candidate.py",
+      "python scripts/validate_formation_summary_v0.py exports/candidates/formation_summary/formation_summary_v0_2024_real_source_candidate.json"
+    ],
+    "expected_cross_checks": {
+      "team_rows": 32,
+      "qualifyingPlaysTotal": 33225,
+      "abortedPlaysExcludedTotal": 111,
+      "per_team_offensive_plays_range": [981, 1110],
+      "unknownAlignmentPlaysTotal": 0
+    },
+    "drift_rule": "material deviation from these #214-recorded values means upstream drift in the mutable release asset and must be investigated, not absorbed silently"
+  },
+  "addendum_2026_07_14": {
+    "status": "dry_run_completed_and_committed",
+    "detail": "The remaining step is complete: the operator ran the builder and standalone validator in an independent source-enabled environment and pushed the three generated files (candidate artifact, validation report, lineage manifest) to the PR branch as commit fa84f1afa398618fa46e75e0739b6f93d77ed939. The dry_run_attempt_this_session record above is preserved unchanged as the earlier fail-closed attempt.",
+    "commands": [
+      "python scripts/build_formation_summary_v0_2024_candidate.py",
+      "python scripts/validate_formation_summary_v0.py exports/candidates/formation_summary/formation_summary_v0_2024_real_source_candidate.json"
+    ],
+    "package_versions": {"nflreadpy": "0.1.5", "polars": "1.42.1"},
+    "retrieval_timestamp": "2026-07-14T01:44:19+00:00",
+    "source_url": "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet",
+    "source_checksum_sha256": "6d432dd4308329bfddaef633309ea119f9ca46d52cbb3c09f47172a2e8efcd01",
+    "artifact_generated_at": "2026-07-14T01:44:28+00:00",
+    "build_validation": "all 19 checks passed (allPassed: true), including JSON Schema validation",
+    "standalone_validator": "PASS: 32 row(s) validated against schema and business rules",
+    "cross_check_against_214": {
+      "reverified_in_session_against_committed_files": true,
+      "team_rows": {"expected": 32, "observed": 32, "match": true},
+      "qualifyingPlaysTotal": {"expected": 33225, "observed": 33225, "match": true},
+      "abortedPlaysExcludedTotal": {"expected": 111, "observed": 111, "match": true},
+      "per_team_offensive_plays_range": {"expected": [981, 1110], "observed": [981, 1110], "match": true},
+      "unknownAlignmentPlaysTotal": {"expected": 0, "observed": 0, "match": true},
+      "three_bucket_reconciliation_exact_all_rows": true,
+      "dropbackSplitBlockedRowCount": 0,
+      "under_center_absent": true,
+      "provenanceStatus": "candidate_real_data",
+      "governanceStatus": "ungoverned"
+    },
+    "drift_observed": false,
+    "authorizes": "nothing beyond #214; no promotion, no downstream consumer"
+  },
+  "non_goals_observed": [
+    "no promotion to exports/promoted or governed_real_data",
+    "no governance marker set",
+    "no Teamstate formation_lens_v0 consumer wired",
+    "no Fantasy, Forecast, ranking, recommendation, or advice integration",
+    "no player-level formation fantasy splits",
+    "no scheme/playbook/motion/shift/personnel/pistol labels",
+    "no league-relative high/low labels",
+    "no under_center field, label, or prose"
+  ]
+}

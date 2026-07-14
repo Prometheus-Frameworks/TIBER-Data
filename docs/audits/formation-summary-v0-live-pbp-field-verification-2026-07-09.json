@@ -72,5 +72,12 @@
   "recommended_next_step": {
     "action": "retry the live verification pull in an environment where github.com is reachable (e.g. this repo's real CI/dev environment); treat nflreadpy.load_pbp() reachability as still unconfirmed there too, per provenance_correction above, not as already-proven",
     "not_authorized_here": "no further live-pull retries were attempted in this session beyond the one fresh attempt plus reachability diagnostics, per guidance against retrying organization policy denials in a loop"
+  },
+  "addendum_2026_07_13": {
+    "tracking_issue": "Prometheus-Frameworks/TIBER-Data#214",
+    "gate_status": "satisfied",
+    "detail": "The verification gate this audit reported as not passed has since been satisfied: a fresh nflreadpy.load_pbp(seasons=[2024]) pull succeeded (nflreadpy 0.1.5) in a separate read-only verification environment, recorded by the operator in issue #214, which authorizes a bounded implementation and candidate dry run. under_center remains blocked (the successful audit found no pistol-disambiguation field); non_shotgun remains the v0 vocabulary.",
+    "see": "docs/audits/formation-summary-v0-implementation-gate-and-dry-run-status-2026-07-13.json",
+    "body_of_this_document": "preserved unchanged as the record of the earlier failed attempts"
   }
 }

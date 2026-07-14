@@ -1,0 +1,40 @@
+{
+  "artifact": "formation_summary_v0_2024_real_source_candidate",
+  "season": 2024,
+  "generatedAt": "2026-07-14T01:44:28+00:00",
+  "buildCommand": "python scripts/build_formation_summary_v0_2024_candidate.py",
+  "sources": [
+    {
+      "sourceName": "nflverse play-by-play",
+      "sourceType": "nflverse",
+      "retrievalMethod": "httpx GET https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet (same nflverse release asset as nflreadpy.load_pbp([2024])), parsed via polars.read_parquet, filtered to season_type == 'REG' and season == 2024",
+      "retrievalTimestamp": "2026-07-14T01:44:19+00:00",
+      "packageVersion": "0.1.5",
+      "polarsVersion": "1.42.1",
+      "sourceUrlOrDatasetId": "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet",
+      "transformCodePath": "scripts/build_formation_summary_v0_2024_candidate.py",
+      "sourceRefs": [
+        "nflverse-data:pbp/play_by_play_2024"
+      ],
+      "checksum": {
+        "algorithm": "sha256",
+        "value": "6d432dd4308329bfddaef633309ea119f9ca46d52cbb3c09f47172a2e8efcd01"
+      },
+      "immutableSourceRef": null,
+      "mutabilityNote": "sourceUrlOrDatasetId is a mutable nflverse rolling release asset; no immutable release tag/ref is exposed at retrieval, so immutableSourceRef is not set. The sha256 checksum pins the exact source bytes consumed at retrievalTimestamp so a future rebuild can detect upstream drift; the upstream URL itself remains mutable.",
+      "buildCommand": "python scripts/build_formation_summary_v0_2024_candidate.py",
+      "sourceRowCount": 49492,
+      "regularSeasonRowCount": 47274,
+      "sourceColumnCount": 372
+    }
+  ],
+  "validationReportPath": "exports\\candidates\\formation_summary\\formation_summary_v0_2024_real_source_candidate.validation.json",
+  "lineageManifestPath": "data\\manifests\\formation_summary_v0_2024_real_source_candidate.manifest.json",
+  "governanceStatus": "ungoverned",
+  "governanceSource": "not_set",
+  "notes": [
+    "This manifest documents source retrieval for a candidate artifact only.",
+    "No governed_real_data claim is made or implied by this manifest.",
+    "Promotion to governed status requires a separate, explicitly authorized human review."
+  ]
+}
