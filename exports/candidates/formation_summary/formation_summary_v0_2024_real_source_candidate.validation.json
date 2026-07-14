@@ -1,0 +1,158 @@
+{
+  "report": "formation_summary_v0_2024_real_source_candidate_validation",
+  "season": 2024,
+  "generatedAt": "2026-07-14T01:44:28+00:00",
+  "artifactPath": "exports\\candidates\\formation_summary\\formation_summary_v0_2024_real_source_candidate.json",
+  "rowCount": 32,
+  "teamCount": 32,
+  "qualifyingPlaysTotal": 33225,
+  "abortedPlaysExcludedTotal": 111,
+  "allPassed": true,
+  "checks": [
+    {
+      "name": "all_32_teams_present",
+      "passed": true,
+      "details": {
+        "missingTeams": [],
+        "unexpectedTeams": [],
+        "teamsCovered": 32
+      }
+    },
+    {
+      "name": "one_row_per_team",
+      "passed": true,
+      "details": {
+        "duplicateTeams": []
+      }
+    },
+    {
+      "name": "grain_is_team_season",
+      "passed": true,
+      "details": {
+        "rowsWithWrongGrain": [],
+        "metadataGrain": "team_season"
+      }
+    },
+    {
+      "name": "season_type_is_reg",
+      "passed": true,
+      "details": {
+        "seasonType": "REG"
+      }
+    },
+    {
+      "name": "three_bucket_reconciliation_exact",
+      "passed": true,
+      "details": {
+        "failures": []
+      }
+    },
+    {
+      "name": "alignment_vocabulary_exact_no_forbidden_label",
+      "passed": true,
+      "details": {
+        "alignmentVocabulary": [
+          "shotgun",
+          "non_shotgun",
+          "unknown_or_unclassified_alignment"
+        ],
+        "forbiddenLabel": "under_center",
+        "forbiddenLabelFound": false
+      }
+    },
+    {
+      "name": "rate_fields_bounded_0_1_or_null",
+      "passed": true,
+      "details": {
+        "outOfBounds": []
+      }
+    },
+    {
+      "name": "alignment_rates_match_counts",
+      "passed": true,
+      "details": {
+        "mismatches": []
+      }
+    },
+    {
+      "name": "unknown_bucket_explicit_even_when_zero",
+      "passed": true,
+      "details": {
+        "rowsMissingUnknownBucket": []
+      }
+    },
+    {
+      "name": "dropback_split_fail_closed",
+      "passed": true,
+      "details": {
+        "violations": []
+      }
+    },
+    {
+      "name": "sample_thresholds_enforced",
+      "passed": true,
+      "details": {
+        "violations": []
+      }
+    },
+    {
+      "name": "unknown_share_uncertainty_flag_consistent",
+      "passed": true,
+      "details": {
+        "violations": []
+      }
+    },
+    {
+      "name": "aborted_and_two_point_exclusions_explicit",
+      "passed": true,
+      "details": {
+        "abortedPlaysExcludedTotal": 111,
+        "twoPointPlaysExcludedTotal": 135
+      }
+    },
+    {
+      "name": "success_definition_disclosed",
+      "passed": true,
+      "details": {
+        "successDefinition": "tiber_team_state_distance_success"
+      }
+    },
+    {
+      "name": "epa_disclosure_present",
+      "passed": true,
+      "details": {
+        "epaDisclosure": true
+      }
+    },
+    {
+      "name": "retrieval_metadata_complete",
+      "passed": true,
+      "details": {
+        "incompleteSources": [],
+        "sourceCount": 1
+      }
+    },
+    {
+      "name": "source_checksums_present",
+      "passed": true,
+      "details": {
+        "sourcesMissingChecksum": []
+      }
+    },
+    {
+      "name": "non_governed_non_promoted_status",
+      "passed": true,
+      "details": {
+        "governanceStatus": "ungoverned",
+        "provenanceStatus": "candidate_real_data"
+      }
+    },
+    {
+      "name": "json_schema_validation",
+      "passed": true,
+      "details": {
+        "errors": []
+      }
+    }
+  ]
+}
