@@ -65,6 +65,36 @@
     },
     "drift_rule": "material deviation from these #214-recorded values means upstream drift in the mutable release asset and must be investigated, not absorbed silently"
   },
+  "addendum_2026_07_14": {
+    "status": "dry_run_completed_and_committed",
+    "detail": "The remaining step is complete: the operator ran the builder and standalone validator in an independent source-enabled environment and pushed the three generated files (candidate artifact, validation report, lineage manifest) to the PR branch as commit fa84f1afa398618fa46e75e0739b6f93d77ed939. The dry_run_attempt_this_session record above is preserved unchanged as the earlier fail-closed attempt.",
+    "commands": [
+      "python scripts/build_formation_summary_v0_2024_candidate.py",
+      "python scripts/validate_formation_summary_v0.py exports/candidates/formation_summary/formation_summary_v0_2024_real_source_candidate.json"
+    ],
+    "package_versions": {"nflreadpy": "0.1.5", "polars": "1.42.1"},
+    "retrieval_timestamp": "2026-07-14T01:44:19+00:00",
+    "source_url": "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet",
+    "source_checksum_sha256": "6d432dd4308329bfddaef633309ea119f9ca46d52cbb3c09f47172a2e8efcd01",
+    "artifact_generated_at": "2026-07-14T01:44:28+00:00",
+    "build_validation": "all 19 checks passed (allPassed: true), including JSON Schema validation",
+    "standalone_validator": "PASS: 32 row(s) validated against schema and business rules",
+    "cross_check_against_214": {
+      "reverified_in_session_against_committed_files": true,
+      "team_rows": {"expected": 32, "observed": 32, "match": true},
+      "qualifyingPlaysTotal": {"expected": 33225, "observed": 33225, "match": true},
+      "abortedPlaysExcludedTotal": {"expected": 111, "observed": 111, "match": true},
+      "per_team_offensive_plays_range": {"expected": [981, 1110], "observed": [981, 1110], "match": true},
+      "unknownAlignmentPlaysTotal": {"expected": 0, "observed": 0, "match": true},
+      "three_bucket_reconciliation_exact_all_rows": true,
+      "dropbackSplitBlockedRowCount": 0,
+      "under_center_absent": true,
+      "provenanceStatus": "candidate_real_data",
+      "governanceStatus": "ungoverned"
+    },
+    "drift_observed": false,
+    "authorizes": "nothing beyond #214; no promotion, no downstream consumer"
+  },
   "non_goals_observed": [
     "no promotion to exports/promoted or governed_real_data",
     "no governance marker set",

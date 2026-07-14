@@ -67,7 +67,46 @@ python scripts/validate_formation_summary_v0.py \
 
 The build emits the candidate artifact, validation report, and lineage manifest (retrieval method, `nflreadpy`/`polars` versions, retrieval timestamp, source URL, and sha256 checksum of the exact bytes consumed) only if every validation check passes, and refuses to write anything otherwise. Expected cross-checks against §1.1: 32 team rows; `qualifyingPlaysTotal` = 33,225; `abortedPlaysExcludedTotal` = 111; per-team `offensive_plays` within 981–1,110; `unknownAlignmentPlaysTotal` = 0 — material deviation means upstream drift (the release asset is mutable) and must be investigated, not absorbed silently.
 
-## 5. Non-goals observed
+## 5. Addendum (2026-07-14): dry run completed in a source-enabled environment and committed
+
+The remaining step in §4 is now complete. The operator ran the builder and the standalone
+validator in an independent source-enabled environment and pushed the three generated
+files to the PR branch as commit
+[`fa84f1a`](https://github.com/Prometheus-Frameworks/TIBER-Data/commit/fa84f1afa398618fa46e75e0739b6f93d77ed939)
+("Add 2024 formation summary candidate evidence"). §3 above is preserved unchanged as the
+record of this session's earlier fail-closed attempt.
+
+| item | value |
+|---|---|
+| Commands | `python scripts/build_formation_summary_v0_2024_candidate.py` then `python scripts/validate_formation_summary_v0.py exports/candidates/formation_summary/formation_summary_v0_2024_real_source_candidate.json` |
+| Package versions | `nflreadpy 0.1.5`, `polars 1.42.1` |
+| Retrieval timestamp | `2026-07-14T01:44:19+00:00` |
+| Source URL | `https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet` |
+| Source checksum (sha256, exact bytes consumed) | `6d432dd4308329bfddaef633309ea119f9ca46d52cbb3c09f47172a2e8efcd01` |
+| Artifact generatedAt | `2026-07-14T01:44:28+00:00` |
+| Build validation | all 19 checks passed (`allPassed: true`), including JSON Schema validation |
+| Standalone validator | `PASS: 32 row(s) validated against schema and business rules.` |
+
+**Independent cross-check against §1.1 (#214's recorded observations), re-run in this
+session against the committed files** — every expected value matched exactly:
+
+| expected (§1.1 / #214) | committed evidence | match |
+|---|---|---|
+| 32 team rows, full league, none suppressed | 32 rows; `isFullLeague: true`; `suppressedRows: []` | ✅ |
+| `qualifyingPlaysTotal` = 33,225 | 33,225 (and per-row `offensive_plays` sums to the same) | ✅ |
+| `abortedPlaysExcludedTotal` = 111 | 111 | ✅ |
+| per-team `offensive_plays` in 981–1,110 | min 981, max 1,110 | ✅ |
+| `unknownAlignmentPlaysTotal` = 0 | 0 (bucket still explicit per row) | ✅ |
+| exact three-bucket reconciliation per row | holds on all 32 rows | ✅ |
+| no `dropback_split_blocked` rows expected (qb_dropback non-null on every qualifying play) | `dropbackSplitBlockedRowCount: 0` | ✅ |
+| no `under_center` anywhere | absent from the serialized artifact | ✅ |
+| candidate-only markers | `provenanceStatus: candidate_real_data`; `governanceStatus: ungoverned` | ✅ |
+
+No drift from the mutable release asset was observed between the #214 verification pull
+and this retrieval. The artifact remains a non-promoted candidate; nothing in this
+addendum authorizes promotion or downstream consumption.
+
+## 6. Non-goals observed
 
 - No promotion to `exports/promoted` or `governed_real_data`; no governance marker set.
 - No Teamstate `formation_lens_v0` consumer, no Fantasy/Forecast/ranking/advice integration.
