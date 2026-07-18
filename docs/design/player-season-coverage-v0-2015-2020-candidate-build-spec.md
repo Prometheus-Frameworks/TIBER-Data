@@ -171,11 +171,17 @@ Rules:
   **not detectable against #218**, and this design does not claim that it is. The
   authority claim is narrowed accordingly, and value-level drift is bounded instead
   of ignored:
-  - at build time the builder computes, per season, a deterministic sha256 over the
-    canonically serialized, `(season, player_id, week)`-sorted source rows restricted
-    to exactly the columns the build consumes, plus one hash over the consumed
-    `load_players()` identity fields of joined players, and records all seven
-    source-content hashes in the candidate manifest and build report;
+  - at build time the builder computes deterministic sha256 source-content hashes
+    over canonically serialized rows restricted to exactly the columns the build
+    consumes, covering **both** consumed frames (discussion_r3608761219): per season,
+    one hash over the week-level rows sorted by `(season, player_id, week)`, and one
+    hash over the REG-summary rows — which carry no `week` column and supply `games`,
+    player name, and the season rollup stats — sorted by `(season, player_id)`; plus
+    one hash over the consumed `load_players()` identity fields of joined players,
+    sorted by `gsis_id`. All **thirteen** source-content hashes (six week-level, six
+    REG-summary, one identity) are recorded in the candidate manifest and build
+    report, so no consumed value at either level sits outside the accepted rebuild
+    hash;
   - those recorded hashes make the exact consumed source content part of the
     candidate's reviewable evidence: row **values** are accepted at gates G4/G5 by
     the independent audit and operator acceptance — never silently under #218;
@@ -308,11 +314,18 @@ Rules:
 
 ## 10. Identity and nullable metadata
 
-- **Join expectation:** the audit observed 100% `gsis_id` joins for every season. The
-  build keeps the family's fail-closed floor `IDENTITY_JOIN_RATE_FLOOR = 0.95`
-  (consistent with the accepted 2021 builder and the #198 lineage) and additionally
-  records the achieved rate in the manifest/build report; a rate below 1.0 is not an
-  error by itself but must be visible to the audit gate (G4). Below 0.95 → abort.
+- **Join expectation (corrected per discussion_r3608761214):** the audit observed
+  100% `gsis_id` joins for every season, and the §6 accepted-source fingerprint gate
+  requires exact agreement with that audited rate. Under the current #218 evidence
+  lock the build therefore requires **exactly 1.0**: any season joining below 1.0 —
+  including 0.97 — is source drift and aborts **before any output is staged** (test
+  N-24). A sub-1.0 rate is never published and deferred to G4. The family constant
+  `IDENTITY_JOIN_RATE_FLOOR = 0.95` is retained only as a defense-in-depth lower
+  bound for lineage consistency with the accepted 2021 builder (test N-7); it cannot
+  bind while the fingerprint gate demands 1.0, and relaxing the 1.0 requirement would
+  itself be an evidence-lock change requiring a new source-audit issue and explicit
+  operator acceptance. The achieved rate is still recorded in the manifest and build
+  report.
 - **Identity-join success is separate from optional-field completeness:** a joined row
   with null draft fields is `identity_confidence: source_verified` with those fields
   null and listed in `missing_fields`. An unjoined row is `provisional` with all
@@ -487,7 +500,7 @@ Fail-closed negative tests — **every one must abort and publish nothing**
 | N-4 | wrong-season rows in one season's response | abort naming counts + observed season values |
 | N-5 | mixed-season response (correct + wrong rows) | abort — build never filters drifted responses into a usable subset |
 | N-6 | duplicate `(player_id, season, season_type)` grain | abort |
-| N-7 | identity join rate 0.90 (< 0.95 floor) | abort |
+| N-7 | identity join rate 0.90 (< 0.95 legacy floor; also fails the exact-1.0 gate, see N-24) | abort |
 | N-9 | contradictory duplicate `gsis_id` identity rows | abort naming collision count (no names in output) |
 | N-10 | `load_players()` call fails | abort (identity required) |
 | N-11 | one season's source call fails | abort entire build — no five-season candidate |
@@ -498,7 +511,7 @@ Fail-closed negative tests — **every one must abort and publish nothing**
 | N-16c | **rerun** over a prior successful set, injected failure after **each** of the five replacement points in turn | rollback restores **every prior final byte-for-byte**; no residue |
 | N-16d | injected failure during rollback itself | every recoverable backup **retained on disk**; fatal torn-state diagnostic emitted naming per-path journal state; the only recoverable prior copy is never deleted |
 | N-16e | pre-existing `.tmp-*` or `.prev-*` residue at builder start | abort in phase 0 **before any staging**; residue left byte-for-byte untouched; fatal residue diagnostic |
-| N-25 | rebuild after an accepted candidate (G5) where one source row value changed but every aggregate fingerprint still matches | per-season source-content hash differs from the accepted manifest; abort before staging with a value-drift diagnostic |
+| N-25 | rebuild after an accepted candidate (G5) where one source row value changed — in either the week-level or the REG-summary frame — but every aggregate fingerprint still matches | the affected frame's per-season source-content hash differs from the accepted manifest; abort before staging with a value-drift diagnostic |
 | N-17 | builder path-guard: any output path under `exports/**` | abort before network |
 | N-21 | installed nflreadpy version is not exactly `0.1.5` | abort before staging; bounded source-evidence-drift diagnostic; no candidate |
 | N-22 | one per-season fingerprint count differs from #218 (e.g. week-level REG row count off by one for 2017) | abort before staging; drift diagnostic names season + expected-vs-observed aggregate |
@@ -526,7 +539,7 @@ Invariant / guard tests — assertions about constants, determinism, and boundar
 | G-4 (was N-19) | no support-claim widening: candidate artifact/manifest/reports never contain the phrase "2015–2025 is available"; status fields are exactly `candidate_evidence_artifact_not_promoted` |
 | G-5 (was N-20) | candidate status never interpreted as promotion: manifest lacks every promoted-envelope required field (`promoted_at`, `promotion_review`, …) and the promoted schema rejects it |
 | G-6 | successful run leaves **zero** `.tmp-*` or `.prev-*` residue in every output directory |
-| G-7 | the candidate manifest records all seven source-content hashes (six per-season row hashes + one identity-fields hash), and they are deterministic across repeat runs on unchanged fixtures |
+| G-7 | the candidate manifest records all thirteen source-content hashes (six per-season week-level + six per-season REG-summary + one identity-fields), and they are deterministic across repeat runs on unchanged fixtures |
 
 ## 15. Audit, review, and promotion gates
 
