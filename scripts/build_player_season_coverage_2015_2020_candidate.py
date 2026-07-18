@@ -292,6 +292,16 @@ class TornStateError(PublicationError):
     """Raised when the published output set fails the mandatory integrity rejection gate."""
 
 
+class BackupCleanupError(PublicationError):
+    """Raised when all five outputs installed successfully but a backup file left over
+
+    from the transaction could not be deleted afterward. This is not data loss and not
+    a torn state (every final output is correct on disk); it means final housekeeping
+    did not complete and a retained backup must be cleared by an operator before the
+    next run's phase-0 residue preflight would otherwise reject it.
+    """
+
+
 # ---------------------------------------------------------------------------
 # Generic helpers (family conventions shared with the accepted 2021 builder)
 # ---------------------------------------------------------------------------
@@ -1680,8 +1690,12 @@ def publish_output_set(contents: dict[Path, str], *, after_install=None) -> None
         for final_path in final_paths:
             final_path.parent.mkdir(parents=True, exist_ok=True)
             temp_path = final_path.parent / f"{final_path.name}.tmp-{pid}"
-            _write_bytes(temp_path, contents[final_path].encode("utf-8"))
+            # Recorded before writing (not after): if _write_bytes raises after
+            # creating a partial file (e.g. disk full mid-write), cleanup below must
+            # still find and remove it, or the leftover .tmp-<pid> would fail the
+            # next run's phase-0 residue preflight.
             temp_paths[final_path] = temp_path
+            _write_bytes(temp_path, contents[final_path].encode("utf-8"))
     except BaseException as exc:
         for temp_path in temp_paths.values():
             try:
@@ -1740,9 +1754,22 @@ def publish_output_set(contents: dict[Path, str], *, after_install=None) -> None
             "(prior bytes for pre-existing outputs, absence for never-existing outputs)."
         ) from exc
 
+    cleanup_failures: list[str] = []
     for entry in journal:
         if entry["backup_made"]:
-            entry["backup"].unlink()
+            try:
+                entry["backup"].unlink()
+            except OSError as exc:
+                cleanup_failures.append(f"{entry['backup'].name}: {exc}")
+    if cleanup_failures:
+        raise BackupCleanupError(
+            "publication succeeded (all five outputs were correctly installed), but "
+            f"{len(cleanup_failures)} recoverable backup(s) could not be removed: "
+            + "; ".join(cleanup_failures)
+            + ". This is not data loss and no output was lost or torn -- the retained "
+            "backup(s) must be cleared by an operator before the next run, since phase-0 "
+            "residue preflight will otherwise reject it."
+        )
 
 
 def verify_published_set(base_dir: Path | None = None) -> None:
@@ -1822,11 +1849,36 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         default=None,
         help=(
             "Path to a JSON file holding the thirteen accepted source-content hashes of a "
-            "previously accepted (G5) candidate. When provided, a rebuild must reproduce "
-            "them exactly or abort before staging with a value-drift diagnostic."
+            "previously accepted (G5) candidate, overriding the default auto-discovery "
+            "below. Ordinarily this flag is unnecessary: if the candidate manifest at its "
+            "standard output path already exists on disk, its recorded source_content_hashes "
+            "are loaded and enforced automatically -- a rebuild over an existing manifest "
+            "must reproduce them exactly or abort before staging with a value-drift "
+            "diagnostic, without depending on this flag being remembered. A genuinely first "
+            "build (no manifest yet on disk) has no lock to enforce."
         ),
     )
     return parser.parse_args(argv)
+
+
+def _load_accepted_source_content_hashes(
+    manifest_path: Path, explicit_path: str | None
+) -> dict | None:
+    """Resolve the source-content hash lock a rebuild must reproduce.
+
+    An explicit --accepted-source-hashes path always wins. Otherwise, if a candidate
+    manifest already exists at its standard output path (i.e. a candidate was
+    previously published from this location), its recorded hashes are loaded and
+    enforced automatically -- the §6 post-G5 rebuild lock must not depend on an
+    operator remembering to pass a flag. A first-ever build (no prior manifest) has
+    no lock to enforce.
+    """
+    if explicit_path:
+        return json.loads(Path(explicit_path).read_text(encoding="utf-8"))
+    if manifest_path.exists():
+        existing_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        return existing_manifest.get("source_content_hashes")
+    return None
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1838,11 +1890,9 @@ def main(argv: list[str] | None = None) -> int:
 
     verify_nflreadpy_version(_installed_nflreadpy_version())  # before any source call
 
-    accepted_source_content_hashes = None
-    if args.accepted_source_hashes:
-        accepted_source_content_hashes = json.loads(
-            Path(args.accepted_source_hashes).read_text(encoding="utf-8")
-        )
+    accepted_source_content_hashes = _load_accepted_source_content_hashes(
+        paths["manifest"], args.accepted_source_hashes
+    )
 
     # Per-season isolated approved source calls (design SS6): six independent
     # week-level and six independent reg-level calls. Any season's failure fails the

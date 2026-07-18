@@ -540,6 +540,63 @@ def test_n16d_rollback_failure_retains_backups_and_names_journal_state(
         assert backup.read_bytes().endswith(b"-v1\n")
 
 
+def test_codex_p2_partial_temp_write_is_still_cleaned_up(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Regression for a Codex review finding on PR #223: if _write_bytes raises after
+    creating a partial temp file (e.g. disk full mid-write), the path must already be
+    tracked so cleanup removes it -- otherwise the leftover .tmp-<pid> would fail the
+    next run's phase-0 residue preflight."""
+    module = _load_module()
+    contents = _publish_contents(module, tmp_path, "v1")
+    original = module._write_bytes
+    calls = {"n": 0}
+
+    def _partial_then_fail(path: Path, data: bytes) -> None:
+        calls["n"] += 1
+        if calls["n"] == 3:
+            path.write_bytes(b"partial-garbage-from-a-mid-write-failure")
+            raise OSError("disk full mid-write")
+        original(path, data)
+
+    monkeypatch.setattr(module, "_write_bytes", _partial_then_fail)
+    with pytest.raises(module.PublicationError, match="phase-1 staging failed"):
+        module.publish_output_set(contents)
+    assert _tree_files(tmp_path) == [], "the partial temp file must not survive cleanup"
+
+
+def test_codex_p2_backup_cleanup_failure_raises_named_error_without_data_loss(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Regression for a Codex review finding on PR #223: if deleting a .prev-* backup
+    fails after all five replacements installed successfully, that must not escape as
+    a raw unhandled exception. All five outputs remain correctly published and the
+    undeleted backup is retained (not lost); a dedicated exception names what happened."""
+    module = _load_module()
+    prior = _publish_contents(module, tmp_path, "v1")
+    module.publish_output_set(prior)
+
+    replacement = _publish_contents(module, tmp_path, "v2")
+    paths = module.candidate_output_paths(tmp_path)
+    pid = module.os.getpid()
+    target_backup_name = f"{paths['artifact'].name}.prev-{pid}"
+    original_unlink = Path.unlink
+
+    def _failing_unlink(self: Path, *args, **kwargs):
+        if self.name == target_backup_name:
+            raise OSError("permission denied")
+        return original_unlink(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "unlink", _failing_unlink)
+    with pytest.raises(module.BackupCleanupError, match="publication succeeded"):
+        module.publish_output_set(replacement)
+
+    for name, path in paths.items():
+        assert path.read_bytes() == replacement[path].encode("utf-8"), f"{name} was not correctly published"
+    retained_backup = paths["artifact"].parent / target_backup_name
+    assert retained_backup.exists(), "the backup that failed to delete must be retained, not lost"
+
+
 def test_n16e_pre_existing_residue_aborts_before_staging_untouched(tmp_path: Path) -> None:
     module = _load_module()
     contents = _publish_contents(module, tmp_path, "v1")
@@ -649,6 +706,56 @@ def test_n25_value_drift_inside_unchanged_aggregates_aborts() -> None:
     drifted_week = _frames(module, {2015: {"week": week_rows}})
     with pytest.raises(module.SourceEvidenceDriftError, match=r"week_level_by_season\[2015\]"):
         _build(module, frames=drifted_week, accepted_hashes=accepted_hashes)
+
+
+def test_load_accepted_source_content_hashes_precedence(tmp_path: Path) -> None:
+    module = _load_module()
+    manifest_path = tmp_path / "manifest.json"
+
+    assert module._load_accepted_source_content_hashes(manifest_path, None) is None
+
+    manifest_path.write_text(json.dumps({"source_content_hashes": {"a": 1}}), encoding="utf-8")
+    assert module._load_accepted_source_content_hashes(manifest_path, None) == {"a": 1}
+
+    explicit_path = tmp_path / "explicit.json"
+    explicit_path.write_text(json.dumps({"b": 2}), encoding="utf-8")
+    assert module._load_accepted_source_content_hashes(manifest_path, str(explicit_path)) == {"b": 2}
+
+
+def test_codex_p1_rebuild_over_existing_manifest_auto_enforces_hash_lock(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Regression for a Codex review finding on PR #223: without this fix, invoking the
+    documented build without --accepted-source-hashes left the post-G5 hash lock (§6)
+    unenforced, so an upstream value correction that preserves the aggregate fingerprint
+    was silently accepted and could overwrite an already-accepted candidate. A rebuild
+    over an existing manifest must now enforce that manifest's recorded hashes
+    automatically, without depending on the operator remembering the flag."""
+    module = _load_module()
+    frames = _frames(module)
+    players_frame = _FakeFrame(_players_rows())
+    accepted_fp = _accepted_fp(module, frames, players_frame)
+
+    monkeypatch.setattr(module, "OUTPUT_BASE_DIR", tmp_path)
+    monkeypatch.setattr(module, "_installed_nflreadpy_version", lambda: "0.1.5")
+    monkeypatch.setattr(module, "ACCEPTED_SOURCE_FINGERPRINT_2015_2020", accepted_fp)
+    monkeypatch.setattr(module, "_load_week_frame", lambda season: frames[season]["week"])
+    monkeypatch.setattr(module, "_load_reg_frame", lambda season: frames[season]["reg"])
+    monkeypatch.setattr(module, "_load_players_frame", lambda: players_frame)
+
+    assert module.main(["--generated-at", GEN_AT]) == 0  # first build publishes a manifest
+
+    drifted_reg = _season_reg_rows(2016)
+    drifted_reg[0] = dict(drifted_reg[0], passing_yards=999)  # value drift, aggregates unchanged
+    drifted_reg_frame = _FakeFrame(drifted_reg)
+
+    def _load_reg_maybe_drifted(season: int):
+        return drifted_reg_frame if season == 2016 else frames[season]["reg"]
+
+    monkeypatch.setattr(module, "_load_reg_frame", _load_reg_maybe_drifted)
+
+    with pytest.raises(module.SourceEvidenceDriftError, match=r"reg_summary_by_season\[2016\]"):
+        module.main(["--generated-at", GEN_AT])  # no --accepted-source-hashes passed
 
 
 # ---------------------------------------------------------------------------
