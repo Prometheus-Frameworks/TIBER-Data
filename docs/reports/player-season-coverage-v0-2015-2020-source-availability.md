@@ -1,9 +1,9 @@
 # Source-Availability Report: `player_season_coverage_v0` — 2015-2020 REG
 
-- **Generated at:** 2026-07-18T01:07:31.909395+00:00
+- **Generated at:** 2026-07-18T13:23:40.070250+00:00
 - **Tracking issue:** TIBER-Data#216
 - **Status:** `source_availability_evidence_report_not_an_artifact`
-- **Environment:** Python 3.11.15, nflreadpy 0.1.5
+- **Environment:** Python 3.14.0, nflreadpy 0.1.5
 - **Scope:** seasons 2015-2020, season_type REG, positions QB/RB/WR/TE, approved source family only (`nflreadpy.load_player_stats`, `nflreadpy.load_players`). This report is aggregate evidence only: it is **not** a candidate artifact, **not** a promoted artifact, carries **no** player-level rows, and authorizes **no** candidate build, promotion, Forecast behavior, or product behavior.
 - **Strategy context (not authority):** TIBER-Strategy#3 (research/proven-production-discount-field-note-v0, commit 9992648, docs/design/proven-production-discount-research-note-v0.md) motivates why deeper player history may later matter; it carries NO authority over TIBER-Data behavior and did not influence this audit's verdict.
 
@@ -18,71 +18,185 @@ May NOT establish: `candidate_built`, `promoted`, `Forecast_ready`, `2015-2025_a
 - `nflreadpy.load_player_stats(seasons=[year], summary_level='week')`
 - `nflreadpy.load_player_stats(seasons=[year], summary_level='reg')`
 - `nflreadpy.load_players()`
-- `nflreadpy.load_players()` status: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/players/players.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/players/players.parquet`
+- `nflreadpy.load_players()` status: **ok**
 
 ## Schedule methodology
 
 - Rule deliberately not reused: `EXPECTED_REG_WEEKS = set(range(1, 19)) (2021+ assumption) was NOT applied`
 - Bounds applied: weeks must fall within 1-18; span itself is taken from evidence
-- **Narrowest supported rule from evidence:** no schedule-span rule can be stated: no season's REG week span was observed from source in this run
+- **Narrowest supported rule from evidence:** every observed season 2015-2020 exposes exactly REG weeks 1-17; the narrowest supported rule is EXPECTED_REG_WEEKS = set(range(1, 18)) for these seasons only (NOT the 2021+ range(1, 19) rule)
 
 ## Per-season results
 
 | season | source calls | week rows (all/REG) | REG-summary rows (all/QB+RB+WR+TE) | unique players | REG weeks observed | gaps | dup grain | identity join |
 |---|---|---|---|---|---|---|---|---|
-| 2015 | ERROR | not observed | not observed | not observed | not observed | — | — | not observed |
-| 2016 | ERROR | not observed | not observed | not observed | not observed | — | — | not observed |
-| 2017 | ERROR | not observed | not observed | not observed | not observed | — | — | not observed |
-| 2018 | ERROR | not observed | not observed | not observed | not observed | — | — | not observed |
-| 2019 | ERROR | not observed | not observed | not observed | not observed | — | — | not observed |
-| 2020 | ERROR | not observed | not observed | not observed | not observed | — | — | not observed |
+| 2015 | ok | 17613/16905 | 1846/556 | 556 | 1-17 | none | 0 | 1.0 |
+| 2016 | ok | 17552/16840 | 1856/557 | 557 | 1-17 | none | 0 | 1.0 |
+| 2017 | ok | 17477/16786 | 1869/553 | 553 | 1-17 | none | 0 | 1.0 |
+| 2018 | ok | 17414/16728 | 1884/577 | 577 | 1-17 | none | 0 | 1.0 |
+| 2019 | ok | 17362/16663 | 1889/572 | 572 | 1-17 | none | 0 | 1.0 |
+| 2020 | ok | 17602/16774 | 1984/602 | 602 | 1-17 | none | 0 | 1.0 |
 
 ### Per-season statuses (kept separate per #216)
 
 | season | source_rows_exist | required_columns_present | identity_join_sufficient | schedule_method_observed | existing_schema_compatible | existing_validator_semantics_compatible | builder_compatible |
 |---|---|---|---|---|---|---|---|
-| 2015 | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed |
-| 2016 | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed |
-| 2017 | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed |
-| 2018 | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed |
-| 2019 | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed |
-| 2020 | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed | not_observed |
+| 2015 | pass | pass | pass | pass | pass | pass | compatible_with_explicit_week_span_parameter |
+| 2016 | pass | pass | pass | pass | pass | pass | compatible_with_explicit_week_span_parameter |
+| 2017 | pass | pass | pass | pass | pass | pass | compatible_with_explicit_week_span_parameter |
+| 2018 | pass | pass | pass | pass | pass | pass | compatible_with_explicit_week_span_parameter |
+| 2019 | pass | pass | pass | pass | pass | pass | compatible_with_explicit_week_span_parameter |
+| 2020 | pass | pass | pass | pass | pass | pass | compatible_with_explicit_week_span_parameter |
 
 ### Season 2015
 
-- `nflreadpy.load_player_stats(seasons=[2015], summary_level='week')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2015.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2015.parquet`
-- `nflreadpy.load_player_stats(seasons=[2015], summary_level='reg')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2015.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2015.parquet`
-- Not observed: source calls failed, so availability for this season is **unknown** (this is an access failure, not evidence the source lacks the season).
+- `nflreadpy.load_player_stats(seasons=[2015], summary_level='week')`: **ok**
+- `nflreadpy.load_player_stats(seasons=[2015], summary_level='reg')`: **ok**
+- Week-level rows: 17613 total, 16905 REG (season values observed: [2015]; wrong-season rows excluded: 0)
+- REG-summary rows: 1846 total, 556 QB/RB/WR/TE (season values observed: [2015]; wrong-season rows excluded: 0)
+- Rows by position: QB: 74 rows / 74 players, RB: 151 rows / 151 players, WR: 212 rows / 212 players, TE: 119 rows / 119 players; unique players total: 556
+- REG weeks observed: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] (min 1, max 17, gaps none, unexpected none)
+- Max games (REG summary): 16; max distinct weeks any player: 16; duplicate grain pairs: 0
+- Missing required columns: week-level none, reg-level none; missing optional reg-level: none
+- Identity join (gsis_id): 1.0 (556/556; floor 0.95)
+- Identity field availability: birth_date: 1.0, rookie_season: 1.0, draft_year: 0.6924, draft_round: 0.6924, draft_pick: 0.6924, draft_team: 0.6924
+- Null observations (REG summary, QB/RB/WR/TE):
+  - `games`: 0/556 null (rate 0.0)
+  - `fantasy_points_ppr`: 0/556 null (rate 0.0)
+  - `targets`: 0/556 null (rate 0.0)
+  - `receptions`: 0/556 null (rate 0.0)
+  - `carries`: 0/556 null (rate 0.0)
+  - `receiving_air_yards`: 0/556 null (rate 0.0)
+  - `target_share`: 0/556 null (rate 0.0)
+  - `air_yards_share`: 0/556 null (rate 0.0)
+  - `wopr`: 0/556 null (rate 0.0)
+  - `racr`: 102/556 null (rate 0.1835)
+  - `team_context`: 0/16905 null (rate 0.0)
 
 ### Season 2016
 
-- `nflreadpy.load_player_stats(seasons=[2016], summary_level='week')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2016.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2016.parquet`
-- `nflreadpy.load_player_stats(seasons=[2016], summary_level='reg')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2016.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2016.parquet`
-- Not observed: source calls failed, so availability for this season is **unknown** (this is an access failure, not evidence the source lacks the season).
+- `nflreadpy.load_player_stats(seasons=[2016], summary_level='week')`: **ok**
+- `nflreadpy.load_player_stats(seasons=[2016], summary_level='reg')`: **ok**
+- Week-level rows: 17552 total, 16840 REG (season values observed: [2016]; wrong-season rows excluded: 0)
+- REG-summary rows: 1856 total, 557 QB/RB/WR/TE (season values observed: [2016]; wrong-season rows excluded: 0)
+- Rows by position: QB: 71 rows / 71 players, RB: 151 rows / 151 players, WR: 210 rows / 210 players, TE: 125 rows / 125 players; unique players total: 557
+- REG weeks observed: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] (min 1, max 17, gaps none, unexpected none)
+- Max games (REG summary): 16; max distinct weeks any player: 16; duplicate grain pairs: 0
+- Missing required columns: week-level none, reg-level none; missing optional reg-level: none
+- Identity join (gsis_id): 1.0 (557/557; floor 0.95)
+- Identity field availability: birth_date: 1.0, rookie_season: 1.0, draft_year: 0.6858, draft_round: 0.6858, draft_pick: 0.6858, draft_team: 0.6858
+- Null observations (REG summary, QB/RB/WR/TE):
+  - `games`: 0/557 null (rate 0.0)
+  - `fantasy_points_ppr`: 0/557 null (rate 0.0)
+  - `targets`: 0/557 null (rate 0.0)
+  - `receptions`: 0/557 null (rate 0.0)
+  - `carries`: 0/557 null (rate 0.0)
+  - `receiving_air_yards`: 0/557 null (rate 0.0)
+  - `target_share`: 0/557 null (rate 0.0)
+  - `air_yards_share`: 0/557 null (rate 0.0)
+  - `wopr`: 0/557 null (rate 0.0)
+  - `racr`: 88/557 null (rate 0.158)
+  - `team_context`: 0/16840 null (rate 0.0)
 
 ### Season 2017
 
-- `nflreadpy.load_player_stats(seasons=[2017], summary_level='week')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2017.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2017.parquet`
-- `nflreadpy.load_player_stats(seasons=[2017], summary_level='reg')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2017.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2017.parquet`
-- Not observed: source calls failed, so availability for this season is **unknown** (this is an access failure, not evidence the source lacks the season).
+- `nflreadpy.load_player_stats(seasons=[2017], summary_level='week')`: **ok**
+- `nflreadpy.load_player_stats(seasons=[2017], summary_level='reg')`: **ok**
+- Week-level rows: 17477 total, 16786 REG (season values observed: [2017]; wrong-season rows excluded: 0)
+- REG-summary rows: 1869 total, 553 QB/RB/WR/TE (season values observed: [2017]; wrong-season rows excluded: 0)
+- Rows by position: QB: 73 rows / 73 players, RB: 143 rows / 143 players, WR: 214 rows / 214 players, TE: 123 rows / 123 players; unique players total: 553
+- REG weeks observed: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] (min 1, max 17, gaps none, unexpected none)
+- Max games (REG summary): 16; max distinct weeks any player: 16; duplicate grain pairs: 0
+- Missing required columns: week-level none, reg-level none; missing optional reg-level: none
+- Identity join (gsis_id): 1.0 (553/553; floor 0.95)
+- Identity field availability: birth_date: 1.0, rookie_season: 1.0, draft_year: 0.6872, draft_round: 0.6872, draft_pick: 0.6872, draft_team: 0.6872
+- Null observations (REG summary, QB/RB/WR/TE):
+  - `games`: 0/553 null (rate 0.0)
+  - `fantasy_points_ppr`: 0/553 null (rate 0.0)
+  - `targets`: 0/553 null (rate 0.0)
+  - `receptions`: 0/553 null (rate 0.0)
+  - `carries`: 0/553 null (rate 0.0)
+  - `receiving_air_yards`: 0/553 null (rate 0.0)
+  - `target_share`: 0/553 null (rate 0.0)
+  - `air_yards_share`: 0/553 null (rate 0.0)
+  - `wopr`: 0/553 null (rate 0.0)
+  - `racr`: 102/553 null (rate 0.1844)
+  - `team_context`: 0/16786 null (rate 0.0)
 
 ### Season 2018
 
-- `nflreadpy.load_player_stats(seasons=[2018], summary_level='week')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2018.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2018.parquet`
-- `nflreadpy.load_player_stats(seasons=[2018], summary_level='reg')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2018.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2018.parquet`
-- Not observed: source calls failed, so availability for this season is **unknown** (this is an access failure, not evidence the source lacks the season).
+- `nflreadpy.load_player_stats(seasons=[2018], summary_level='week')`: **ok**
+- `nflreadpy.load_player_stats(seasons=[2018], summary_level='reg')`: **ok**
+- Week-level rows: 17414 total, 16728 REG (season values observed: [2018]; wrong-season rows excluded: 0)
+- REG-summary rows: 1884 total, 577 QB/RB/WR/TE (season values observed: [2018]; wrong-season rows excluded: 0)
+- Rows by position: QB: 72 rows / 72 players, RB: 149 rows / 149 players, WR: 228 rows / 228 players, TE: 128 rows / 128 players; unique players total: 577
+- REG weeks observed: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] (min 1, max 17, gaps none, unexpected none)
+- Max games (REG summary): 16; max distinct weeks any player: 17; duplicate grain pairs: 0
+- Missing required columns: week-level none, reg-level none; missing optional reg-level: none
+- Identity join (gsis_id): 1.0 (577/577; floor 0.95)
+- Identity field availability: birth_date: 1.0, rookie_season: 1.0, draft_year: 0.688, draft_round: 0.688, draft_pick: 0.688, draft_team: 0.688
+- Null observations (REG summary, QB/RB/WR/TE):
+  - `games`: 0/577 null (rate 0.0)
+  - `fantasy_points_ppr`: 0/577 null (rate 0.0)
+  - `targets`: 0/577 null (rate 0.0)
+  - `receptions`: 0/577 null (rate 0.0)
+  - `carries`: 0/577 null (rate 0.0)
+  - `receiving_air_yards`: 0/577 null (rate 0.0)
+  - `target_share`: 0/577 null (rate 0.0)
+  - `air_yards_share`: 0/577 null (rate 0.0)
+  - `wopr`: 0/577 null (rate 0.0)
+  - `racr`: 92/577 null (rate 0.1594)
+  - `team_context`: 0/16728 null (rate 0.0)
 
 ### Season 2019
 
-- `nflreadpy.load_player_stats(seasons=[2019], summary_level='week')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2019.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2019.parquet`
-- `nflreadpy.load_player_stats(seasons=[2019], summary_level='reg')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2019.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2019.parquet`
-- Not observed: source calls failed, so availability for this season is **unknown** (this is an access failure, not evidence the source lacks the season).
+- `nflreadpy.load_player_stats(seasons=[2019], summary_level='week')`: **ok**
+- `nflreadpy.load_player_stats(seasons=[2019], summary_level='reg')`: **ok**
+- Week-level rows: 17362 total, 16663 REG (season values observed: [2019]; wrong-season rows excluded: 0)
+- REG-summary rows: 1889 total, 572 QB/RB/WR/TE (season values observed: [2019]; wrong-season rows excluded: 0)
+- Rows by position: QB: 71 rows / 71 players, RB: 146 rows / 146 players, WR: 230 rows / 230 players, TE: 125 rows / 125 players; unique players total: 572
+- REG weeks observed: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] (min 1, max 17, gaps none, unexpected none)
+- Max games (REG summary): 17; max distinct weeks any player: 17; duplicate grain pairs: 0
+- Missing required columns: week-level none, reg-level none; missing optional reg-level: none
+- Identity join (gsis_id): 1.0 (572/572; floor 0.95)
+- Identity field availability: birth_date: 1.0, rookie_season: 1.0, draft_year: 0.6713, draft_round: 0.6713, draft_pick: 0.6713, draft_team: 0.6713
+- Null observations (REG summary, QB/RB/WR/TE):
+  - `games`: 0/572 null (rate 0.0)
+  - `fantasy_points_ppr`: 0/572 null (rate 0.0)
+  - `targets`: 0/572 null (rate 0.0)
+  - `receptions`: 0/572 null (rate 0.0)
+  - `carries`: 0/572 null (rate 0.0)
+  - `receiving_air_yards`: 0/572 null (rate 0.0)
+  - `target_share`: 0/572 null (rate 0.0)
+  - `air_yards_share`: 0/572 null (rate 0.0)
+  - `wopr`: 0/572 null (rate 0.0)
+  - `racr`: 99/572 null (rate 0.1731)
+  - `team_context`: 0/16663 null (rate 0.0)
 
 ### Season 2020
 
-- `nflreadpy.load_player_stats(seasons=[2020], summary_level='week')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2020.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2020.parquet`
-- `nflreadpy.load_player_stats(seasons=[2020], summary_level='reg')`: **error** — `ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2020.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2020.parquet`
-- Not observed: source calls failed, so availability for this season is **unknown** (this is an access failure, not evidence the source lacks the season).
+- `nflreadpy.load_player_stats(seasons=[2020], summary_level='week')`: **ok**
+- `nflreadpy.load_player_stats(seasons=[2020], summary_level='reg')`: **ok**
+- Week-level rows: 17602 total, 16774 REG (season values observed: [2020]; wrong-season rows excluded: 0)
+- REG-summary rows: 1984 total, 602 QB/RB/WR/TE (season values observed: [2020]; wrong-season rows excluded: 0)
+- Rows by position: QB: 82 rows / 82 players, RB: 157 rows / 157 players, WR: 233 rows / 233 players, TE: 130 rows / 130 players; unique players total: 602
+- REG weeks observed: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] (min 1, max 17, gaps none, unexpected none)
+- Max games (REG summary): 16; max distinct weeks any player: 16; duplicate grain pairs: 0
+- Missing required columns: week-level none, reg-level none; missing optional reg-level: none
+- Identity join (gsis_id): 1.0 (602/602; floor 0.95)
+- Identity field availability: birth_date: 1.0, rookie_season: 1.0, draft_year: 0.691, draft_round: 0.691, draft_pick: 0.691, draft_team: 0.691
+- Null observations (REG summary, QB/RB/WR/TE):
+  - `games`: 0/602 null (rate 0.0)
+  - `fantasy_points_ppr`: 0/602 null (rate 0.0)
+  - `targets`: 0/602 null (rate 0.0)
+  - `receptions`: 0/602 null (rate 0.0)
+  - `carries`: 0/602 null (rate 0.0)
+  - `receiving_air_yards`: 0/602 null (rate 0.0)
+  - `target_share`: 0/602 null (rate 0.0)
+  - `air_yards_share`: 0/602 null (rate 0.0)
+  - `wopr`: 0/602 null (rate 0.0)
+  - `racr`: 102/602 null (rate 0.1694)
+  - `team_context`: 0/16774 null (rate 0.0)
 
 ## Builder / validator / schema reuse assessment
 
@@ -106,15 +220,15 @@ Must not change:
 ## Decision
 
 ```text
-player_season_coverage_2015_2020_source_audit_requires_followup
+may_open_player_season_coverage_2015_2020_candidate_build_issue
 ```
 
-- Basis: season(s) [2015, 2016, 2017, 2018, 2019, 2020] have unresolved followup items or were not observed: 2015: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2016: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2017: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2018: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2019: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2020: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']
+- Basis: every season 2015-2020 cleared source_rows_exist, required_columns_present, identity_join_sufficient, schedule_method_observed, existing_schema_compatible, existing_validator_semantics_compatible, and a builder_compatible path
 
-- Seasons fully cleared: none
+- Seasons fully cleared: [2015, 2016, 2017, 2018, 2019, 2020]
 - Seasons with definitive failures: none
-- Seasons with follow-up items: [2015, 2016, 2017, 2018, 2019, 2020]
-- Seasons not observed: [2015, 2016, 2017, 2018, 2019, 2020]
+- Seasons with follow-up items: none
+- Seasons not observed: none
 
 ### Explicitly NOT emitted / NOT authorized by this report
 

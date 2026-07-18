@@ -3,9 +3,9 @@
   "status": "source_availability_evidence_report_not_an_artifact",
   "tracking_issue": "TIBER-Data#216",
   "strategy_context_not_authority": "TIBER-Strategy#3 (research/proven-production-discount-field-note-v0, commit 9992648, docs/design/proven-production-discount-research-note-v0.md) motivates why deeper player history may later matter; it carries NO authority over TIBER-Data behavior and did not influence this audit's verdict.",
-  "generated_at": "2026-07-18T01:07:31.909395+00:00",
+  "generated_at": "2026-07-18T13:23:40.070250+00:00",
   "environment": {
-    "python_version": "3.11.15",
+    "python_version": "3.14.0",
     "nflreadpy_version": "0.1.5"
   },
   "seasons_inspected": [
@@ -31,8 +31,7 @@
   "approved_source_allowlist_reference": "exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json",
   "load_players_call": {
     "call": "nflreadpy.load_players()",
-    "status": "error",
-    "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/players/players.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/players/players.parquet"
+    "status": "ok"
   },
   "non_goals": [
     "no candidate artifact is built or emitted (no player-season rows exist in this report)",
@@ -57,14 +56,14 @@
     "rule_not_reused": "EXPECTED_REG_WEEKS = set(range(1, 19)) (2021+ assumption) was NOT applied",
     "absolute_bounds_applied": "weeks must fall within 1-18; span itself is taken from evidence",
     "observed_week_span_rules_by_season": {
-      "2015": null,
-      "2016": null,
-      "2017": null,
-      "2018": null,
-      "2019": null,
-      "2020": null
+      "2015": "REG weeks 1-17, contiguous, source-observed",
+      "2016": "REG weeks 1-17, contiguous, source-observed",
+      "2017": "REG weeks 1-17, contiguous, source-observed",
+      "2018": "REG weeks 1-17, contiguous, source-observed",
+      "2019": "REG weeks 1-17, contiguous, source-observed",
+      "2020": "REG weeks 1-17, contiguous, source-observed"
     },
-    "narrowest_supported_rule": "no schedule-span rule can be stated: no season's REG week span was observed from source in this run"
+    "narrowest_supported_rule": "every observed season 2015-2020 exposes exactly REG weeks 1-17; the narrowest supported rule is EXPECTED_REG_WEEKS = set(range(1, 18)) for these seasons only (NOT the 2021+ range(1, 19) rule)"
   },
   "seasons": [
     {
@@ -73,34 +72,721 @@
       "source_calls": [
         {
           "call": "nflreadpy.load_player_stats(seasons=[2015], summary_level='week')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2015.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2015.parquet"
+          "status": "ok"
         },
         {
           "call": "nflreadpy.load_player_stats(seasons=[2015], summary_level='reg')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2015.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2015.parquet"
+          "status": "ok"
         }
       ],
-      "columns_observed": null,
-      "availability": null,
-      "schema_compatibility": null,
-      "identity_age_draft": null,
-      "null_observations": null,
-      "observed_week_span_rule": null,
+      "columns_observed": {
+        "week_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "game_id",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "opponent_team",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "team",
+          "week",
+          "wopr"
+        ],
+        "reg_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "games",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance_list",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "recent_team",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "wopr"
+        ]
+      },
+      "availability": {
+        "week_level_rows_total": 17613,
+        "week_level_rows_reg": 16905,
+        "observed_week_level_season_values": [
+          2015
+        ],
+        "wrong_season_week_row_count": 0,
+        "reg_level_rows_total": 1846,
+        "reg_level_rows_reg_qb_rb_wr_te": 556,
+        "observed_reg_level_season_values": [
+          2015
+        ],
+        "wrong_season_reg_row_count": 0,
+        "season_type_values_week_level": [
+          "POST",
+          "REG"
+        ],
+        "season_type_values_reg_level": [
+          "REG"
+        ],
+        "row_counts_by_position_reg_level": {
+          "QB": 74,
+          "RB": 151,
+          "WR": 212,
+          "TE": 119
+        },
+        "player_counts_by_position": {
+          "QB": 74,
+          "RB": 151,
+          "WR": 212,
+          "TE": 119
+        },
+        "unique_players_all_positions": 556,
+        "reg_week_numbers_observed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "min_reg_week": 1,
+        "max_reg_week": 17,
+        "week_gaps": [],
+        "unexpected_week_values": [],
+        "max_weeks_observed_any_player": 16,
+        "max_games_reg_level": 16,
+        "duplicate_grain_pairs": 0
+      },
+      "schema_compatibility": {
+        "week_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "week": {
+            "candidates": [
+              "week"
+            ],
+            "required": true,
+            "resolved_column": "week",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "team": {
+            "candidates": [
+              "team",
+              "recent_team"
+            ],
+            "required": true,
+            "resolved_column": "team",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": true,
+            "resolved_column": "season_type",
+            "present": true
+          }
+        },
+        "reg_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "player_name": {
+            "candidates": [
+              "player_display_name",
+              "player_name"
+            ],
+            "required": true,
+            "resolved_column": "player_display_name",
+            "present": true
+          },
+          "position": {
+            "candidates": [
+              "position"
+            ],
+            "required": true,
+            "resolved_column": "position",
+            "present": true
+          },
+          "games": {
+            "candidates": [
+              "games"
+            ],
+            "required": true,
+            "resolved_column": "games",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": false,
+            "resolved_column": "season_type",
+            "present": true
+          },
+          "completions": {
+            "candidates": [
+              "completions"
+            ],
+            "required": false,
+            "resolved_column": "completions",
+            "present": true
+          },
+          "attempts": {
+            "candidates": [
+              "attempts"
+            ],
+            "required": false,
+            "resolved_column": "attempts",
+            "present": true
+          },
+          "passing_yards": {
+            "candidates": [
+              "passing_yards"
+            ],
+            "required": false,
+            "resolved_column": "passing_yards",
+            "present": true
+          },
+          "passing_tds": {
+            "candidates": [
+              "passing_tds"
+            ],
+            "required": false,
+            "resolved_column": "passing_tds",
+            "present": true
+          },
+          "passing_interceptions": {
+            "candidates": [
+              "passing_interceptions"
+            ],
+            "required": false,
+            "resolved_column": "passing_interceptions",
+            "present": true
+          },
+          "carries": {
+            "candidates": [
+              "carries"
+            ],
+            "required": false,
+            "resolved_column": "carries",
+            "present": true
+          },
+          "rushing_yards": {
+            "candidates": [
+              "rushing_yards"
+            ],
+            "required": false,
+            "resolved_column": "rushing_yards",
+            "present": true
+          },
+          "rushing_tds": {
+            "candidates": [
+              "rushing_tds"
+            ],
+            "required": false,
+            "resolved_column": "rushing_tds",
+            "present": true
+          },
+          "receptions": {
+            "candidates": [
+              "receptions"
+            ],
+            "required": false,
+            "resolved_column": "receptions",
+            "present": true
+          },
+          "targets": {
+            "candidates": [
+              "targets"
+            ],
+            "required": false,
+            "resolved_column": "targets",
+            "present": true
+          },
+          "receiving_yards": {
+            "candidates": [
+              "receiving_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_yards",
+            "present": true
+          },
+          "receiving_tds": {
+            "candidates": [
+              "receiving_tds"
+            ],
+            "required": false,
+            "resolved_column": "receiving_tds",
+            "present": true
+          },
+          "receiving_air_yards": {
+            "candidates": [
+              "receiving_air_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_air_yards",
+            "present": true
+          },
+          "target_share": {
+            "candidates": [
+              "target_share"
+            ],
+            "required": false,
+            "resolved_column": "target_share",
+            "present": true
+          },
+          "air_yards_share": {
+            "candidates": [
+              "air_yards_share"
+            ],
+            "required": false,
+            "resolved_column": "air_yards_share",
+            "present": true
+          },
+          "wopr": {
+            "candidates": [
+              "wopr"
+            ],
+            "required": false,
+            "resolved_column": "wopr",
+            "present": true
+          },
+          "racr": {
+            "candidates": [
+              "racr"
+            ],
+            "required": false,
+            "resolved_column": "racr",
+            "present": true
+          },
+          "fantasy_points_ppr": {
+            "candidates": [
+              "fantasy_points_ppr"
+            ],
+            "required": false,
+            "resolved_column": "fantasy_points_ppr",
+            "present": true
+          }
+        },
+        "missing_required_week_level": [],
+        "missing_required_reg_level": [],
+        "missing_optional_reg_level": []
+      },
+      "identity_age_draft": {
+        "load_players_gsis_join_available": true,
+        "identity_join_rate_gsis_id": 1.0,
+        "identity_join_rate_floor": 0.95,
+        "players_joined": 556,
+        "players_total": 556,
+        "field_availability_for_joined_players": {
+          "birth_date": {
+            "available": 556,
+            "total": 556,
+            "rate": 1.0
+          },
+          "rookie_season": {
+            "available": 556,
+            "total": 556,
+            "rate": 1.0
+          },
+          "draft_year": {
+            "available": 385,
+            "total": 556,
+            "rate": 0.6924
+          },
+          "draft_round": {
+            "available": 385,
+            "total": 556,
+            "rate": 0.6924
+          },
+          "draft_pick": {
+            "available": 385,
+            "total": 556,
+            "rate": 0.6924
+          },
+          "draft_team": {
+            "available": 385,
+            "total": 556,
+            "rate": 0.6924
+          }
+        }
+      },
+      "null_observations": {
+        "games": {
+          "nulls": 0,
+          "total": 556,
+          "rate": 0.0
+        },
+        "fantasy_points_ppr": {
+          "nulls": 0,
+          "total": 556,
+          "rate": 0.0
+        },
+        "targets": {
+          "nulls": 0,
+          "total": 556,
+          "rate": 0.0
+        },
+        "receptions": {
+          "nulls": 0,
+          "total": 556,
+          "rate": 0.0
+        },
+        "carries": {
+          "nulls": 0,
+          "total": 556,
+          "rate": 0.0
+        },
+        "receiving_air_yards": {
+          "nulls": 0,
+          "total": 556,
+          "rate": 0.0
+        },
+        "target_share": {
+          "nulls": 0,
+          "total": 556,
+          "rate": 0.0
+        },
+        "air_yards_share": {
+          "nulls": 0,
+          "total": 556,
+          "rate": 0.0
+        },
+        "wopr": {
+          "nulls": 0,
+          "total": 556,
+          "rate": 0.0
+        },
+        "racr": {
+          "nulls": 102,
+          "total": 556,
+          "rate": 0.1835
+        },
+        "team_context": {
+          "nulls": 0,
+          "total": 16905,
+          "rate": 0.0,
+          "level": "week_level_reg_rows"
+        }
+      },
+      "observed_week_span_rule": "REG weeks 1-17, contiguous, source-observed",
       "statuses": {
-        "source_rows_exist": "not_observed",
-        "required_columns_present": "not_observed",
-        "identity_join_sufficient": "not_observed",
-        "schedule_method_observed": "not_observed",
-        "existing_schema_compatible": "not_observed",
-        "existing_validator_semantics_compatible": "not_observed",
-        "builder_compatible": "not_observed"
+        "source_rows_exist": "pass",
+        "required_columns_present": "pass",
+        "identity_join_sufficient": "pass",
+        "schedule_method_observed": "pass",
+        "existing_schema_compatible": "pass",
+        "existing_validator_semantics_compatible": "pass",
+        "builder_compatible": "compatible_with_explicit_week_span_parameter"
       },
       "definitive_failures": [],
-      "followup_items": [
-        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
-      ]
+      "followup_items": []
     },
     {
       "season": 2016,
@@ -108,34 +794,721 @@
       "source_calls": [
         {
           "call": "nflreadpy.load_player_stats(seasons=[2016], summary_level='week')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2016.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2016.parquet"
+          "status": "ok"
         },
         {
           "call": "nflreadpy.load_player_stats(seasons=[2016], summary_level='reg')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2016.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2016.parquet"
+          "status": "ok"
         }
       ],
-      "columns_observed": null,
-      "availability": null,
-      "schema_compatibility": null,
-      "identity_age_draft": null,
-      "null_observations": null,
-      "observed_week_span_rule": null,
+      "columns_observed": {
+        "week_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "game_id",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "opponent_team",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "team",
+          "week",
+          "wopr"
+        ],
+        "reg_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "games",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance_list",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "recent_team",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "wopr"
+        ]
+      },
+      "availability": {
+        "week_level_rows_total": 17552,
+        "week_level_rows_reg": 16840,
+        "observed_week_level_season_values": [
+          2016
+        ],
+        "wrong_season_week_row_count": 0,
+        "reg_level_rows_total": 1856,
+        "reg_level_rows_reg_qb_rb_wr_te": 557,
+        "observed_reg_level_season_values": [
+          2016
+        ],
+        "wrong_season_reg_row_count": 0,
+        "season_type_values_week_level": [
+          "POST",
+          "REG"
+        ],
+        "season_type_values_reg_level": [
+          "REG"
+        ],
+        "row_counts_by_position_reg_level": {
+          "QB": 71,
+          "RB": 151,
+          "WR": 210,
+          "TE": 125
+        },
+        "player_counts_by_position": {
+          "QB": 71,
+          "RB": 151,
+          "WR": 210,
+          "TE": 125
+        },
+        "unique_players_all_positions": 557,
+        "reg_week_numbers_observed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "min_reg_week": 1,
+        "max_reg_week": 17,
+        "week_gaps": [],
+        "unexpected_week_values": [],
+        "max_weeks_observed_any_player": 16,
+        "max_games_reg_level": 16,
+        "duplicate_grain_pairs": 0
+      },
+      "schema_compatibility": {
+        "week_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "week": {
+            "candidates": [
+              "week"
+            ],
+            "required": true,
+            "resolved_column": "week",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "team": {
+            "candidates": [
+              "team",
+              "recent_team"
+            ],
+            "required": true,
+            "resolved_column": "team",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": true,
+            "resolved_column": "season_type",
+            "present": true
+          }
+        },
+        "reg_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "player_name": {
+            "candidates": [
+              "player_display_name",
+              "player_name"
+            ],
+            "required": true,
+            "resolved_column": "player_display_name",
+            "present": true
+          },
+          "position": {
+            "candidates": [
+              "position"
+            ],
+            "required": true,
+            "resolved_column": "position",
+            "present": true
+          },
+          "games": {
+            "candidates": [
+              "games"
+            ],
+            "required": true,
+            "resolved_column": "games",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": false,
+            "resolved_column": "season_type",
+            "present": true
+          },
+          "completions": {
+            "candidates": [
+              "completions"
+            ],
+            "required": false,
+            "resolved_column": "completions",
+            "present": true
+          },
+          "attempts": {
+            "candidates": [
+              "attempts"
+            ],
+            "required": false,
+            "resolved_column": "attempts",
+            "present": true
+          },
+          "passing_yards": {
+            "candidates": [
+              "passing_yards"
+            ],
+            "required": false,
+            "resolved_column": "passing_yards",
+            "present": true
+          },
+          "passing_tds": {
+            "candidates": [
+              "passing_tds"
+            ],
+            "required": false,
+            "resolved_column": "passing_tds",
+            "present": true
+          },
+          "passing_interceptions": {
+            "candidates": [
+              "passing_interceptions"
+            ],
+            "required": false,
+            "resolved_column": "passing_interceptions",
+            "present": true
+          },
+          "carries": {
+            "candidates": [
+              "carries"
+            ],
+            "required": false,
+            "resolved_column": "carries",
+            "present": true
+          },
+          "rushing_yards": {
+            "candidates": [
+              "rushing_yards"
+            ],
+            "required": false,
+            "resolved_column": "rushing_yards",
+            "present": true
+          },
+          "rushing_tds": {
+            "candidates": [
+              "rushing_tds"
+            ],
+            "required": false,
+            "resolved_column": "rushing_tds",
+            "present": true
+          },
+          "receptions": {
+            "candidates": [
+              "receptions"
+            ],
+            "required": false,
+            "resolved_column": "receptions",
+            "present": true
+          },
+          "targets": {
+            "candidates": [
+              "targets"
+            ],
+            "required": false,
+            "resolved_column": "targets",
+            "present": true
+          },
+          "receiving_yards": {
+            "candidates": [
+              "receiving_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_yards",
+            "present": true
+          },
+          "receiving_tds": {
+            "candidates": [
+              "receiving_tds"
+            ],
+            "required": false,
+            "resolved_column": "receiving_tds",
+            "present": true
+          },
+          "receiving_air_yards": {
+            "candidates": [
+              "receiving_air_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_air_yards",
+            "present": true
+          },
+          "target_share": {
+            "candidates": [
+              "target_share"
+            ],
+            "required": false,
+            "resolved_column": "target_share",
+            "present": true
+          },
+          "air_yards_share": {
+            "candidates": [
+              "air_yards_share"
+            ],
+            "required": false,
+            "resolved_column": "air_yards_share",
+            "present": true
+          },
+          "wopr": {
+            "candidates": [
+              "wopr"
+            ],
+            "required": false,
+            "resolved_column": "wopr",
+            "present": true
+          },
+          "racr": {
+            "candidates": [
+              "racr"
+            ],
+            "required": false,
+            "resolved_column": "racr",
+            "present": true
+          },
+          "fantasy_points_ppr": {
+            "candidates": [
+              "fantasy_points_ppr"
+            ],
+            "required": false,
+            "resolved_column": "fantasy_points_ppr",
+            "present": true
+          }
+        },
+        "missing_required_week_level": [],
+        "missing_required_reg_level": [],
+        "missing_optional_reg_level": []
+      },
+      "identity_age_draft": {
+        "load_players_gsis_join_available": true,
+        "identity_join_rate_gsis_id": 1.0,
+        "identity_join_rate_floor": 0.95,
+        "players_joined": 557,
+        "players_total": 557,
+        "field_availability_for_joined_players": {
+          "birth_date": {
+            "available": 557,
+            "total": 557,
+            "rate": 1.0
+          },
+          "rookie_season": {
+            "available": 557,
+            "total": 557,
+            "rate": 1.0
+          },
+          "draft_year": {
+            "available": 382,
+            "total": 557,
+            "rate": 0.6858
+          },
+          "draft_round": {
+            "available": 382,
+            "total": 557,
+            "rate": 0.6858
+          },
+          "draft_pick": {
+            "available": 382,
+            "total": 557,
+            "rate": 0.6858
+          },
+          "draft_team": {
+            "available": 382,
+            "total": 557,
+            "rate": 0.6858
+          }
+        }
+      },
+      "null_observations": {
+        "games": {
+          "nulls": 0,
+          "total": 557,
+          "rate": 0.0
+        },
+        "fantasy_points_ppr": {
+          "nulls": 0,
+          "total": 557,
+          "rate": 0.0
+        },
+        "targets": {
+          "nulls": 0,
+          "total": 557,
+          "rate": 0.0
+        },
+        "receptions": {
+          "nulls": 0,
+          "total": 557,
+          "rate": 0.0
+        },
+        "carries": {
+          "nulls": 0,
+          "total": 557,
+          "rate": 0.0
+        },
+        "receiving_air_yards": {
+          "nulls": 0,
+          "total": 557,
+          "rate": 0.0
+        },
+        "target_share": {
+          "nulls": 0,
+          "total": 557,
+          "rate": 0.0
+        },
+        "air_yards_share": {
+          "nulls": 0,
+          "total": 557,
+          "rate": 0.0
+        },
+        "wopr": {
+          "nulls": 0,
+          "total": 557,
+          "rate": 0.0
+        },
+        "racr": {
+          "nulls": 88,
+          "total": 557,
+          "rate": 0.158
+        },
+        "team_context": {
+          "nulls": 0,
+          "total": 16840,
+          "rate": 0.0,
+          "level": "week_level_reg_rows"
+        }
+      },
+      "observed_week_span_rule": "REG weeks 1-17, contiguous, source-observed",
       "statuses": {
-        "source_rows_exist": "not_observed",
-        "required_columns_present": "not_observed",
-        "identity_join_sufficient": "not_observed",
-        "schedule_method_observed": "not_observed",
-        "existing_schema_compatible": "not_observed",
-        "existing_validator_semantics_compatible": "not_observed",
-        "builder_compatible": "not_observed"
+        "source_rows_exist": "pass",
+        "required_columns_present": "pass",
+        "identity_join_sufficient": "pass",
+        "schedule_method_observed": "pass",
+        "existing_schema_compatible": "pass",
+        "existing_validator_semantics_compatible": "pass",
+        "builder_compatible": "compatible_with_explicit_week_span_parameter"
       },
       "definitive_failures": [],
-      "followup_items": [
-        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
-      ]
+      "followup_items": []
     },
     {
       "season": 2017,
@@ -143,34 +1516,721 @@
       "source_calls": [
         {
           "call": "nflreadpy.load_player_stats(seasons=[2017], summary_level='week')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2017.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2017.parquet"
+          "status": "ok"
         },
         {
           "call": "nflreadpy.load_player_stats(seasons=[2017], summary_level='reg')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2017.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2017.parquet"
+          "status": "ok"
         }
       ],
-      "columns_observed": null,
-      "availability": null,
-      "schema_compatibility": null,
-      "identity_age_draft": null,
-      "null_observations": null,
-      "observed_week_span_rule": null,
+      "columns_observed": {
+        "week_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "game_id",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "opponent_team",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "team",
+          "week",
+          "wopr"
+        ],
+        "reg_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "games",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance_list",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "recent_team",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "wopr"
+        ]
+      },
+      "availability": {
+        "week_level_rows_total": 17477,
+        "week_level_rows_reg": 16786,
+        "observed_week_level_season_values": [
+          2017
+        ],
+        "wrong_season_week_row_count": 0,
+        "reg_level_rows_total": 1869,
+        "reg_level_rows_reg_qb_rb_wr_te": 553,
+        "observed_reg_level_season_values": [
+          2017
+        ],
+        "wrong_season_reg_row_count": 0,
+        "season_type_values_week_level": [
+          "POST",
+          "REG"
+        ],
+        "season_type_values_reg_level": [
+          "REG"
+        ],
+        "row_counts_by_position_reg_level": {
+          "QB": 73,
+          "RB": 143,
+          "WR": 214,
+          "TE": 123
+        },
+        "player_counts_by_position": {
+          "QB": 73,
+          "RB": 143,
+          "WR": 214,
+          "TE": 123
+        },
+        "unique_players_all_positions": 553,
+        "reg_week_numbers_observed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "min_reg_week": 1,
+        "max_reg_week": 17,
+        "week_gaps": [],
+        "unexpected_week_values": [],
+        "max_weeks_observed_any_player": 16,
+        "max_games_reg_level": 16,
+        "duplicate_grain_pairs": 0
+      },
+      "schema_compatibility": {
+        "week_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "week": {
+            "candidates": [
+              "week"
+            ],
+            "required": true,
+            "resolved_column": "week",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "team": {
+            "candidates": [
+              "team",
+              "recent_team"
+            ],
+            "required": true,
+            "resolved_column": "team",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": true,
+            "resolved_column": "season_type",
+            "present": true
+          }
+        },
+        "reg_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "player_name": {
+            "candidates": [
+              "player_display_name",
+              "player_name"
+            ],
+            "required": true,
+            "resolved_column": "player_display_name",
+            "present": true
+          },
+          "position": {
+            "candidates": [
+              "position"
+            ],
+            "required": true,
+            "resolved_column": "position",
+            "present": true
+          },
+          "games": {
+            "candidates": [
+              "games"
+            ],
+            "required": true,
+            "resolved_column": "games",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": false,
+            "resolved_column": "season_type",
+            "present": true
+          },
+          "completions": {
+            "candidates": [
+              "completions"
+            ],
+            "required": false,
+            "resolved_column": "completions",
+            "present": true
+          },
+          "attempts": {
+            "candidates": [
+              "attempts"
+            ],
+            "required": false,
+            "resolved_column": "attempts",
+            "present": true
+          },
+          "passing_yards": {
+            "candidates": [
+              "passing_yards"
+            ],
+            "required": false,
+            "resolved_column": "passing_yards",
+            "present": true
+          },
+          "passing_tds": {
+            "candidates": [
+              "passing_tds"
+            ],
+            "required": false,
+            "resolved_column": "passing_tds",
+            "present": true
+          },
+          "passing_interceptions": {
+            "candidates": [
+              "passing_interceptions"
+            ],
+            "required": false,
+            "resolved_column": "passing_interceptions",
+            "present": true
+          },
+          "carries": {
+            "candidates": [
+              "carries"
+            ],
+            "required": false,
+            "resolved_column": "carries",
+            "present": true
+          },
+          "rushing_yards": {
+            "candidates": [
+              "rushing_yards"
+            ],
+            "required": false,
+            "resolved_column": "rushing_yards",
+            "present": true
+          },
+          "rushing_tds": {
+            "candidates": [
+              "rushing_tds"
+            ],
+            "required": false,
+            "resolved_column": "rushing_tds",
+            "present": true
+          },
+          "receptions": {
+            "candidates": [
+              "receptions"
+            ],
+            "required": false,
+            "resolved_column": "receptions",
+            "present": true
+          },
+          "targets": {
+            "candidates": [
+              "targets"
+            ],
+            "required": false,
+            "resolved_column": "targets",
+            "present": true
+          },
+          "receiving_yards": {
+            "candidates": [
+              "receiving_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_yards",
+            "present": true
+          },
+          "receiving_tds": {
+            "candidates": [
+              "receiving_tds"
+            ],
+            "required": false,
+            "resolved_column": "receiving_tds",
+            "present": true
+          },
+          "receiving_air_yards": {
+            "candidates": [
+              "receiving_air_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_air_yards",
+            "present": true
+          },
+          "target_share": {
+            "candidates": [
+              "target_share"
+            ],
+            "required": false,
+            "resolved_column": "target_share",
+            "present": true
+          },
+          "air_yards_share": {
+            "candidates": [
+              "air_yards_share"
+            ],
+            "required": false,
+            "resolved_column": "air_yards_share",
+            "present": true
+          },
+          "wopr": {
+            "candidates": [
+              "wopr"
+            ],
+            "required": false,
+            "resolved_column": "wopr",
+            "present": true
+          },
+          "racr": {
+            "candidates": [
+              "racr"
+            ],
+            "required": false,
+            "resolved_column": "racr",
+            "present": true
+          },
+          "fantasy_points_ppr": {
+            "candidates": [
+              "fantasy_points_ppr"
+            ],
+            "required": false,
+            "resolved_column": "fantasy_points_ppr",
+            "present": true
+          }
+        },
+        "missing_required_week_level": [],
+        "missing_required_reg_level": [],
+        "missing_optional_reg_level": []
+      },
+      "identity_age_draft": {
+        "load_players_gsis_join_available": true,
+        "identity_join_rate_gsis_id": 1.0,
+        "identity_join_rate_floor": 0.95,
+        "players_joined": 553,
+        "players_total": 553,
+        "field_availability_for_joined_players": {
+          "birth_date": {
+            "available": 553,
+            "total": 553,
+            "rate": 1.0
+          },
+          "rookie_season": {
+            "available": 553,
+            "total": 553,
+            "rate": 1.0
+          },
+          "draft_year": {
+            "available": 380,
+            "total": 553,
+            "rate": 0.6872
+          },
+          "draft_round": {
+            "available": 380,
+            "total": 553,
+            "rate": 0.6872
+          },
+          "draft_pick": {
+            "available": 380,
+            "total": 553,
+            "rate": 0.6872
+          },
+          "draft_team": {
+            "available": 380,
+            "total": 553,
+            "rate": 0.6872
+          }
+        }
+      },
+      "null_observations": {
+        "games": {
+          "nulls": 0,
+          "total": 553,
+          "rate": 0.0
+        },
+        "fantasy_points_ppr": {
+          "nulls": 0,
+          "total": 553,
+          "rate": 0.0
+        },
+        "targets": {
+          "nulls": 0,
+          "total": 553,
+          "rate": 0.0
+        },
+        "receptions": {
+          "nulls": 0,
+          "total": 553,
+          "rate": 0.0
+        },
+        "carries": {
+          "nulls": 0,
+          "total": 553,
+          "rate": 0.0
+        },
+        "receiving_air_yards": {
+          "nulls": 0,
+          "total": 553,
+          "rate": 0.0
+        },
+        "target_share": {
+          "nulls": 0,
+          "total": 553,
+          "rate": 0.0
+        },
+        "air_yards_share": {
+          "nulls": 0,
+          "total": 553,
+          "rate": 0.0
+        },
+        "wopr": {
+          "nulls": 0,
+          "total": 553,
+          "rate": 0.0
+        },
+        "racr": {
+          "nulls": 102,
+          "total": 553,
+          "rate": 0.1844
+        },
+        "team_context": {
+          "nulls": 0,
+          "total": 16786,
+          "rate": 0.0,
+          "level": "week_level_reg_rows"
+        }
+      },
+      "observed_week_span_rule": "REG weeks 1-17, contiguous, source-observed",
       "statuses": {
-        "source_rows_exist": "not_observed",
-        "required_columns_present": "not_observed",
-        "identity_join_sufficient": "not_observed",
-        "schedule_method_observed": "not_observed",
-        "existing_schema_compatible": "not_observed",
-        "existing_validator_semantics_compatible": "not_observed",
-        "builder_compatible": "not_observed"
+        "source_rows_exist": "pass",
+        "required_columns_present": "pass",
+        "identity_join_sufficient": "pass",
+        "schedule_method_observed": "pass",
+        "existing_schema_compatible": "pass",
+        "existing_validator_semantics_compatible": "pass",
+        "builder_compatible": "compatible_with_explicit_week_span_parameter"
       },
       "definitive_failures": [],
-      "followup_items": [
-        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
-      ]
+      "followup_items": []
     },
     {
       "season": 2018,
@@ -178,34 +2238,721 @@
       "source_calls": [
         {
           "call": "nflreadpy.load_player_stats(seasons=[2018], summary_level='week')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2018.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2018.parquet"
+          "status": "ok"
         },
         {
           "call": "nflreadpy.load_player_stats(seasons=[2018], summary_level='reg')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2018.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2018.parquet"
+          "status": "ok"
         }
       ],
-      "columns_observed": null,
-      "availability": null,
-      "schema_compatibility": null,
-      "identity_age_draft": null,
-      "null_observations": null,
-      "observed_week_span_rule": null,
+      "columns_observed": {
+        "week_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "game_id",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "opponent_team",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "team",
+          "week",
+          "wopr"
+        ],
+        "reg_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "games",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance_list",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "recent_team",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "wopr"
+        ]
+      },
+      "availability": {
+        "week_level_rows_total": 17414,
+        "week_level_rows_reg": 16728,
+        "observed_week_level_season_values": [
+          2018
+        ],
+        "wrong_season_week_row_count": 0,
+        "reg_level_rows_total": 1884,
+        "reg_level_rows_reg_qb_rb_wr_te": 577,
+        "observed_reg_level_season_values": [
+          2018
+        ],
+        "wrong_season_reg_row_count": 0,
+        "season_type_values_week_level": [
+          "POST",
+          "REG"
+        ],
+        "season_type_values_reg_level": [
+          "REG"
+        ],
+        "row_counts_by_position_reg_level": {
+          "QB": 72,
+          "RB": 149,
+          "WR": 228,
+          "TE": 128
+        },
+        "player_counts_by_position": {
+          "QB": 72,
+          "RB": 149,
+          "WR": 228,
+          "TE": 128
+        },
+        "unique_players_all_positions": 577,
+        "reg_week_numbers_observed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "min_reg_week": 1,
+        "max_reg_week": 17,
+        "week_gaps": [],
+        "unexpected_week_values": [],
+        "max_weeks_observed_any_player": 17,
+        "max_games_reg_level": 16,
+        "duplicate_grain_pairs": 0
+      },
+      "schema_compatibility": {
+        "week_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "week": {
+            "candidates": [
+              "week"
+            ],
+            "required": true,
+            "resolved_column": "week",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "team": {
+            "candidates": [
+              "team",
+              "recent_team"
+            ],
+            "required": true,
+            "resolved_column": "team",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": true,
+            "resolved_column": "season_type",
+            "present": true
+          }
+        },
+        "reg_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "player_name": {
+            "candidates": [
+              "player_display_name",
+              "player_name"
+            ],
+            "required": true,
+            "resolved_column": "player_display_name",
+            "present": true
+          },
+          "position": {
+            "candidates": [
+              "position"
+            ],
+            "required": true,
+            "resolved_column": "position",
+            "present": true
+          },
+          "games": {
+            "candidates": [
+              "games"
+            ],
+            "required": true,
+            "resolved_column": "games",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": false,
+            "resolved_column": "season_type",
+            "present": true
+          },
+          "completions": {
+            "candidates": [
+              "completions"
+            ],
+            "required": false,
+            "resolved_column": "completions",
+            "present": true
+          },
+          "attempts": {
+            "candidates": [
+              "attempts"
+            ],
+            "required": false,
+            "resolved_column": "attempts",
+            "present": true
+          },
+          "passing_yards": {
+            "candidates": [
+              "passing_yards"
+            ],
+            "required": false,
+            "resolved_column": "passing_yards",
+            "present": true
+          },
+          "passing_tds": {
+            "candidates": [
+              "passing_tds"
+            ],
+            "required": false,
+            "resolved_column": "passing_tds",
+            "present": true
+          },
+          "passing_interceptions": {
+            "candidates": [
+              "passing_interceptions"
+            ],
+            "required": false,
+            "resolved_column": "passing_interceptions",
+            "present": true
+          },
+          "carries": {
+            "candidates": [
+              "carries"
+            ],
+            "required": false,
+            "resolved_column": "carries",
+            "present": true
+          },
+          "rushing_yards": {
+            "candidates": [
+              "rushing_yards"
+            ],
+            "required": false,
+            "resolved_column": "rushing_yards",
+            "present": true
+          },
+          "rushing_tds": {
+            "candidates": [
+              "rushing_tds"
+            ],
+            "required": false,
+            "resolved_column": "rushing_tds",
+            "present": true
+          },
+          "receptions": {
+            "candidates": [
+              "receptions"
+            ],
+            "required": false,
+            "resolved_column": "receptions",
+            "present": true
+          },
+          "targets": {
+            "candidates": [
+              "targets"
+            ],
+            "required": false,
+            "resolved_column": "targets",
+            "present": true
+          },
+          "receiving_yards": {
+            "candidates": [
+              "receiving_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_yards",
+            "present": true
+          },
+          "receiving_tds": {
+            "candidates": [
+              "receiving_tds"
+            ],
+            "required": false,
+            "resolved_column": "receiving_tds",
+            "present": true
+          },
+          "receiving_air_yards": {
+            "candidates": [
+              "receiving_air_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_air_yards",
+            "present": true
+          },
+          "target_share": {
+            "candidates": [
+              "target_share"
+            ],
+            "required": false,
+            "resolved_column": "target_share",
+            "present": true
+          },
+          "air_yards_share": {
+            "candidates": [
+              "air_yards_share"
+            ],
+            "required": false,
+            "resolved_column": "air_yards_share",
+            "present": true
+          },
+          "wopr": {
+            "candidates": [
+              "wopr"
+            ],
+            "required": false,
+            "resolved_column": "wopr",
+            "present": true
+          },
+          "racr": {
+            "candidates": [
+              "racr"
+            ],
+            "required": false,
+            "resolved_column": "racr",
+            "present": true
+          },
+          "fantasy_points_ppr": {
+            "candidates": [
+              "fantasy_points_ppr"
+            ],
+            "required": false,
+            "resolved_column": "fantasy_points_ppr",
+            "present": true
+          }
+        },
+        "missing_required_week_level": [],
+        "missing_required_reg_level": [],
+        "missing_optional_reg_level": []
+      },
+      "identity_age_draft": {
+        "load_players_gsis_join_available": true,
+        "identity_join_rate_gsis_id": 1.0,
+        "identity_join_rate_floor": 0.95,
+        "players_joined": 577,
+        "players_total": 577,
+        "field_availability_for_joined_players": {
+          "birth_date": {
+            "available": 577,
+            "total": 577,
+            "rate": 1.0
+          },
+          "rookie_season": {
+            "available": 577,
+            "total": 577,
+            "rate": 1.0
+          },
+          "draft_year": {
+            "available": 397,
+            "total": 577,
+            "rate": 0.688
+          },
+          "draft_round": {
+            "available": 397,
+            "total": 577,
+            "rate": 0.688
+          },
+          "draft_pick": {
+            "available": 397,
+            "total": 577,
+            "rate": 0.688
+          },
+          "draft_team": {
+            "available": 397,
+            "total": 577,
+            "rate": 0.688
+          }
+        }
+      },
+      "null_observations": {
+        "games": {
+          "nulls": 0,
+          "total": 577,
+          "rate": 0.0
+        },
+        "fantasy_points_ppr": {
+          "nulls": 0,
+          "total": 577,
+          "rate": 0.0
+        },
+        "targets": {
+          "nulls": 0,
+          "total": 577,
+          "rate": 0.0
+        },
+        "receptions": {
+          "nulls": 0,
+          "total": 577,
+          "rate": 0.0
+        },
+        "carries": {
+          "nulls": 0,
+          "total": 577,
+          "rate": 0.0
+        },
+        "receiving_air_yards": {
+          "nulls": 0,
+          "total": 577,
+          "rate": 0.0
+        },
+        "target_share": {
+          "nulls": 0,
+          "total": 577,
+          "rate": 0.0
+        },
+        "air_yards_share": {
+          "nulls": 0,
+          "total": 577,
+          "rate": 0.0
+        },
+        "wopr": {
+          "nulls": 0,
+          "total": 577,
+          "rate": 0.0
+        },
+        "racr": {
+          "nulls": 92,
+          "total": 577,
+          "rate": 0.1594
+        },
+        "team_context": {
+          "nulls": 0,
+          "total": 16728,
+          "rate": 0.0,
+          "level": "week_level_reg_rows"
+        }
+      },
+      "observed_week_span_rule": "REG weeks 1-17, contiguous, source-observed",
       "statuses": {
-        "source_rows_exist": "not_observed",
-        "required_columns_present": "not_observed",
-        "identity_join_sufficient": "not_observed",
-        "schedule_method_observed": "not_observed",
-        "existing_schema_compatible": "not_observed",
-        "existing_validator_semantics_compatible": "not_observed",
-        "builder_compatible": "not_observed"
+        "source_rows_exist": "pass",
+        "required_columns_present": "pass",
+        "identity_join_sufficient": "pass",
+        "schedule_method_observed": "pass",
+        "existing_schema_compatible": "pass",
+        "existing_validator_semantics_compatible": "pass",
+        "builder_compatible": "compatible_with_explicit_week_span_parameter"
       },
       "definitive_failures": [],
-      "followup_items": [
-        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
-      ]
+      "followup_items": []
     },
     {
       "season": 2019,
@@ -213,34 +2960,721 @@
       "source_calls": [
         {
           "call": "nflreadpy.load_player_stats(seasons=[2019], summary_level='week')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2019.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2019.parquet"
+          "status": "ok"
         },
         {
           "call": "nflreadpy.load_player_stats(seasons=[2019], summary_level='reg')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2019.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2019.parquet"
+          "status": "ok"
         }
       ],
-      "columns_observed": null,
-      "availability": null,
-      "schema_compatibility": null,
-      "identity_age_draft": null,
-      "null_observations": null,
-      "observed_week_span_rule": null,
+      "columns_observed": {
+        "week_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "game_id",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "opponent_team",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "team",
+          "week",
+          "wopr"
+        ],
+        "reg_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "games",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance_list",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "recent_team",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "wopr"
+        ]
+      },
+      "availability": {
+        "week_level_rows_total": 17362,
+        "week_level_rows_reg": 16663,
+        "observed_week_level_season_values": [
+          2019
+        ],
+        "wrong_season_week_row_count": 0,
+        "reg_level_rows_total": 1889,
+        "reg_level_rows_reg_qb_rb_wr_te": 572,
+        "observed_reg_level_season_values": [
+          2019
+        ],
+        "wrong_season_reg_row_count": 0,
+        "season_type_values_week_level": [
+          "POST",
+          "REG"
+        ],
+        "season_type_values_reg_level": [
+          "REG"
+        ],
+        "row_counts_by_position_reg_level": {
+          "QB": 71,
+          "RB": 146,
+          "WR": 230,
+          "TE": 125
+        },
+        "player_counts_by_position": {
+          "QB": 71,
+          "RB": 146,
+          "WR": 230,
+          "TE": 125
+        },
+        "unique_players_all_positions": 572,
+        "reg_week_numbers_observed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "min_reg_week": 1,
+        "max_reg_week": 17,
+        "week_gaps": [],
+        "unexpected_week_values": [],
+        "max_weeks_observed_any_player": 17,
+        "max_games_reg_level": 17,
+        "duplicate_grain_pairs": 0
+      },
+      "schema_compatibility": {
+        "week_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "week": {
+            "candidates": [
+              "week"
+            ],
+            "required": true,
+            "resolved_column": "week",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "team": {
+            "candidates": [
+              "team",
+              "recent_team"
+            ],
+            "required": true,
+            "resolved_column": "team",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": true,
+            "resolved_column": "season_type",
+            "present": true
+          }
+        },
+        "reg_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "player_name": {
+            "candidates": [
+              "player_display_name",
+              "player_name"
+            ],
+            "required": true,
+            "resolved_column": "player_display_name",
+            "present": true
+          },
+          "position": {
+            "candidates": [
+              "position"
+            ],
+            "required": true,
+            "resolved_column": "position",
+            "present": true
+          },
+          "games": {
+            "candidates": [
+              "games"
+            ],
+            "required": true,
+            "resolved_column": "games",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": false,
+            "resolved_column": "season_type",
+            "present": true
+          },
+          "completions": {
+            "candidates": [
+              "completions"
+            ],
+            "required": false,
+            "resolved_column": "completions",
+            "present": true
+          },
+          "attempts": {
+            "candidates": [
+              "attempts"
+            ],
+            "required": false,
+            "resolved_column": "attempts",
+            "present": true
+          },
+          "passing_yards": {
+            "candidates": [
+              "passing_yards"
+            ],
+            "required": false,
+            "resolved_column": "passing_yards",
+            "present": true
+          },
+          "passing_tds": {
+            "candidates": [
+              "passing_tds"
+            ],
+            "required": false,
+            "resolved_column": "passing_tds",
+            "present": true
+          },
+          "passing_interceptions": {
+            "candidates": [
+              "passing_interceptions"
+            ],
+            "required": false,
+            "resolved_column": "passing_interceptions",
+            "present": true
+          },
+          "carries": {
+            "candidates": [
+              "carries"
+            ],
+            "required": false,
+            "resolved_column": "carries",
+            "present": true
+          },
+          "rushing_yards": {
+            "candidates": [
+              "rushing_yards"
+            ],
+            "required": false,
+            "resolved_column": "rushing_yards",
+            "present": true
+          },
+          "rushing_tds": {
+            "candidates": [
+              "rushing_tds"
+            ],
+            "required": false,
+            "resolved_column": "rushing_tds",
+            "present": true
+          },
+          "receptions": {
+            "candidates": [
+              "receptions"
+            ],
+            "required": false,
+            "resolved_column": "receptions",
+            "present": true
+          },
+          "targets": {
+            "candidates": [
+              "targets"
+            ],
+            "required": false,
+            "resolved_column": "targets",
+            "present": true
+          },
+          "receiving_yards": {
+            "candidates": [
+              "receiving_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_yards",
+            "present": true
+          },
+          "receiving_tds": {
+            "candidates": [
+              "receiving_tds"
+            ],
+            "required": false,
+            "resolved_column": "receiving_tds",
+            "present": true
+          },
+          "receiving_air_yards": {
+            "candidates": [
+              "receiving_air_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_air_yards",
+            "present": true
+          },
+          "target_share": {
+            "candidates": [
+              "target_share"
+            ],
+            "required": false,
+            "resolved_column": "target_share",
+            "present": true
+          },
+          "air_yards_share": {
+            "candidates": [
+              "air_yards_share"
+            ],
+            "required": false,
+            "resolved_column": "air_yards_share",
+            "present": true
+          },
+          "wopr": {
+            "candidates": [
+              "wopr"
+            ],
+            "required": false,
+            "resolved_column": "wopr",
+            "present": true
+          },
+          "racr": {
+            "candidates": [
+              "racr"
+            ],
+            "required": false,
+            "resolved_column": "racr",
+            "present": true
+          },
+          "fantasy_points_ppr": {
+            "candidates": [
+              "fantasy_points_ppr"
+            ],
+            "required": false,
+            "resolved_column": "fantasy_points_ppr",
+            "present": true
+          }
+        },
+        "missing_required_week_level": [],
+        "missing_required_reg_level": [],
+        "missing_optional_reg_level": []
+      },
+      "identity_age_draft": {
+        "load_players_gsis_join_available": true,
+        "identity_join_rate_gsis_id": 1.0,
+        "identity_join_rate_floor": 0.95,
+        "players_joined": 572,
+        "players_total": 572,
+        "field_availability_for_joined_players": {
+          "birth_date": {
+            "available": 572,
+            "total": 572,
+            "rate": 1.0
+          },
+          "rookie_season": {
+            "available": 572,
+            "total": 572,
+            "rate": 1.0
+          },
+          "draft_year": {
+            "available": 384,
+            "total": 572,
+            "rate": 0.6713
+          },
+          "draft_round": {
+            "available": 384,
+            "total": 572,
+            "rate": 0.6713
+          },
+          "draft_pick": {
+            "available": 384,
+            "total": 572,
+            "rate": 0.6713
+          },
+          "draft_team": {
+            "available": 384,
+            "total": 572,
+            "rate": 0.6713
+          }
+        }
+      },
+      "null_observations": {
+        "games": {
+          "nulls": 0,
+          "total": 572,
+          "rate": 0.0
+        },
+        "fantasy_points_ppr": {
+          "nulls": 0,
+          "total": 572,
+          "rate": 0.0
+        },
+        "targets": {
+          "nulls": 0,
+          "total": 572,
+          "rate": 0.0
+        },
+        "receptions": {
+          "nulls": 0,
+          "total": 572,
+          "rate": 0.0
+        },
+        "carries": {
+          "nulls": 0,
+          "total": 572,
+          "rate": 0.0
+        },
+        "receiving_air_yards": {
+          "nulls": 0,
+          "total": 572,
+          "rate": 0.0
+        },
+        "target_share": {
+          "nulls": 0,
+          "total": 572,
+          "rate": 0.0
+        },
+        "air_yards_share": {
+          "nulls": 0,
+          "total": 572,
+          "rate": 0.0
+        },
+        "wopr": {
+          "nulls": 0,
+          "total": 572,
+          "rate": 0.0
+        },
+        "racr": {
+          "nulls": 99,
+          "total": 572,
+          "rate": 0.1731
+        },
+        "team_context": {
+          "nulls": 0,
+          "total": 16663,
+          "rate": 0.0,
+          "level": "week_level_reg_rows"
+        }
+      },
+      "observed_week_span_rule": "REG weeks 1-17, contiguous, source-observed",
       "statuses": {
-        "source_rows_exist": "not_observed",
-        "required_columns_present": "not_observed",
-        "identity_join_sufficient": "not_observed",
-        "schedule_method_observed": "not_observed",
-        "existing_schema_compatible": "not_observed",
-        "existing_validator_semantics_compatible": "not_observed",
-        "builder_compatible": "not_observed"
+        "source_rows_exist": "pass",
+        "required_columns_present": "pass",
+        "identity_join_sufficient": "pass",
+        "schedule_method_observed": "pass",
+        "existing_schema_compatible": "pass",
+        "existing_validator_semantics_compatible": "pass",
+        "builder_compatible": "compatible_with_explicit_week_span_parameter"
       },
       "definitive_failures": [],
-      "followup_items": [
-        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
-      ]
+      "followup_items": []
     },
     {
       "season": 2020,
@@ -248,40 +3682,725 @@
       "source_calls": [
         {
           "call": "nflreadpy.load_player_stats(seasons=[2020], summary_level='week')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2020.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2020.parquet"
+          "status": "ok"
         },
         {
           "call": "nflreadpy.load_player_stats(seasons=[2020], summary_level='reg')",
-          "status": "error",
-          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2020.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2020.parquet"
+          "status": "ok"
         }
       ],
-      "columns_observed": null,
-      "availability": null,
-      "schema_compatibility": null,
-      "identity_age_draft": null,
-      "null_observations": null,
-      "observed_week_span_rule": null,
+      "columns_observed": {
+        "week_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "game_id",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "opponent_team",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "team",
+          "week",
+          "wopr"
+        ],
+        "reg_level": [
+          "air_yards_share",
+          "attempts",
+          "carries",
+          "completions",
+          "def_fumbles",
+          "def_fumbles_forced",
+          "def_interception_yards",
+          "def_interceptions",
+          "def_pass_defended",
+          "def_qb_hits",
+          "def_sack_yards",
+          "def_sacks",
+          "def_safeties",
+          "def_tackle_assists",
+          "def_tackles_for_loss",
+          "def_tackles_for_loss_yards",
+          "def_tackles_solo",
+          "def_tackles_with_assist",
+          "def_tds",
+          "fantasy_points",
+          "fantasy_points_ppr",
+          "fg_att",
+          "fg_blocked",
+          "fg_blocked_distance",
+          "fg_blocked_list",
+          "fg_long",
+          "fg_made",
+          "fg_made_0_19",
+          "fg_made_20_29",
+          "fg_made_30_39",
+          "fg_made_40_49",
+          "fg_made_50_59",
+          "fg_made_60_",
+          "fg_made_distance",
+          "fg_made_list",
+          "fg_missed",
+          "fg_missed_0_19",
+          "fg_missed_20_29",
+          "fg_missed_30_39",
+          "fg_missed_40_49",
+          "fg_missed_50_59",
+          "fg_missed_60_",
+          "fg_missed_distance",
+          "fg_missed_list",
+          "fg_pct",
+          "fumble_recovery_opp",
+          "fumble_recovery_own",
+          "fumble_recovery_tds",
+          "fumble_recovery_yards_opp",
+          "fumble_recovery_yards_own",
+          "fumbles_forced_by_opp",
+          "fumbles_lost_total",
+          "fumbles_not_forced",
+          "fumbles_out_of_bounds",
+          "fumbles_total",
+          "games",
+          "gwfg_att",
+          "gwfg_blocked",
+          "gwfg_distance_list",
+          "gwfg_made",
+          "gwfg_missed",
+          "headshot_url",
+          "kickoff_return_yards",
+          "kickoff_returns",
+          "misc_yards",
+          "pacr",
+          "passing_10",
+          "passing_16",
+          "passing_20",
+          "passing_2pt_conversions",
+          "passing_40",
+          "passing_air_yards",
+          "passing_cpoe",
+          "passing_epa",
+          "passing_first_downs",
+          "passing_interceptions",
+          "passing_tds",
+          "passing_yards",
+          "passing_yards_after_catch",
+          "pat_att",
+          "pat_blocked",
+          "pat_made",
+          "pat_missed",
+          "pat_pct",
+          "penalties",
+          "penalty_yards",
+          "player_display_name",
+          "player_id",
+          "player_name",
+          "position",
+          "position_group",
+          "pt_att",
+          "pt_blocked",
+          "pt_downed",
+          "pt_fair_caught",
+          "pt_inside_20",
+          "pt_long",
+          "pt_net_yards",
+          "pt_out_of_bounds",
+          "pt_return_tds",
+          "pt_return_yards",
+          "pt_returned",
+          "pt_touchback",
+          "pt_yards",
+          "punt_return_yards",
+          "punt_returns",
+          "racr",
+          "receiving_10",
+          "receiving_16",
+          "receiving_20",
+          "receiving_2pt_conversions",
+          "receiving_40",
+          "receiving_air_yards",
+          "receiving_epa",
+          "receiving_first_downs",
+          "receiving_fumbles",
+          "receiving_fumbles_lost",
+          "receiving_tds",
+          "receiving_yards",
+          "receiving_yards_after_catch",
+          "recent_team",
+          "receptions",
+          "rushing_10",
+          "rushing_12",
+          "rushing_20",
+          "rushing_2pt_conversions",
+          "rushing_40",
+          "rushing_epa",
+          "rushing_first_downs",
+          "rushing_fumbles",
+          "rushing_fumbles_lost",
+          "rushing_tds",
+          "rushing_yards",
+          "sack_fumbles",
+          "sack_fumbles_lost",
+          "sack_yards_lost",
+          "sacks_suffered",
+          "season",
+          "season_type",
+          "special_teams_tds",
+          "target_share",
+          "targets",
+          "wopr"
+        ]
+      },
+      "availability": {
+        "week_level_rows_total": 17602,
+        "week_level_rows_reg": 16774,
+        "observed_week_level_season_values": [
+          2020
+        ],
+        "wrong_season_week_row_count": 0,
+        "reg_level_rows_total": 1984,
+        "reg_level_rows_reg_qb_rb_wr_te": 602,
+        "observed_reg_level_season_values": [
+          2020
+        ],
+        "wrong_season_reg_row_count": 0,
+        "season_type_values_week_level": [
+          "POST",
+          "REG"
+        ],
+        "season_type_values_reg_level": [
+          "REG"
+        ],
+        "row_counts_by_position_reg_level": {
+          "QB": 82,
+          "RB": 157,
+          "WR": 233,
+          "TE": 130
+        },
+        "player_counts_by_position": {
+          "QB": 82,
+          "RB": 157,
+          "WR": 233,
+          "TE": 130
+        },
+        "unique_players_all_positions": 602,
+        "reg_week_numbers_observed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "min_reg_week": 1,
+        "max_reg_week": 17,
+        "week_gaps": [],
+        "unexpected_week_values": [],
+        "max_weeks_observed_any_player": 16,
+        "max_games_reg_level": 16,
+        "duplicate_grain_pairs": 0
+      },
+      "schema_compatibility": {
+        "week_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "week": {
+            "candidates": [
+              "week"
+            ],
+            "required": true,
+            "resolved_column": "week",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "team": {
+            "candidates": [
+              "team",
+              "recent_team"
+            ],
+            "required": true,
+            "resolved_column": "team",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": true,
+            "resolved_column": "season_type",
+            "present": true
+          }
+        },
+        "reg_level_columns": {
+          "season": {
+            "candidates": [
+              "season"
+            ],
+            "required": true,
+            "resolved_column": "season",
+            "present": true
+          },
+          "player_id": {
+            "candidates": [
+              "player_id",
+              "gsis_id"
+            ],
+            "required": true,
+            "resolved_column": "player_id",
+            "present": true
+          },
+          "player_name": {
+            "candidates": [
+              "player_display_name",
+              "player_name"
+            ],
+            "required": true,
+            "resolved_column": "player_display_name",
+            "present": true
+          },
+          "position": {
+            "candidates": [
+              "position"
+            ],
+            "required": true,
+            "resolved_column": "position",
+            "present": true
+          },
+          "games": {
+            "candidates": [
+              "games"
+            ],
+            "required": true,
+            "resolved_column": "games",
+            "present": true
+          },
+          "season_type": {
+            "candidates": [
+              "season_type"
+            ],
+            "required": false,
+            "resolved_column": "season_type",
+            "present": true
+          },
+          "completions": {
+            "candidates": [
+              "completions"
+            ],
+            "required": false,
+            "resolved_column": "completions",
+            "present": true
+          },
+          "attempts": {
+            "candidates": [
+              "attempts"
+            ],
+            "required": false,
+            "resolved_column": "attempts",
+            "present": true
+          },
+          "passing_yards": {
+            "candidates": [
+              "passing_yards"
+            ],
+            "required": false,
+            "resolved_column": "passing_yards",
+            "present": true
+          },
+          "passing_tds": {
+            "candidates": [
+              "passing_tds"
+            ],
+            "required": false,
+            "resolved_column": "passing_tds",
+            "present": true
+          },
+          "passing_interceptions": {
+            "candidates": [
+              "passing_interceptions"
+            ],
+            "required": false,
+            "resolved_column": "passing_interceptions",
+            "present": true
+          },
+          "carries": {
+            "candidates": [
+              "carries"
+            ],
+            "required": false,
+            "resolved_column": "carries",
+            "present": true
+          },
+          "rushing_yards": {
+            "candidates": [
+              "rushing_yards"
+            ],
+            "required": false,
+            "resolved_column": "rushing_yards",
+            "present": true
+          },
+          "rushing_tds": {
+            "candidates": [
+              "rushing_tds"
+            ],
+            "required": false,
+            "resolved_column": "rushing_tds",
+            "present": true
+          },
+          "receptions": {
+            "candidates": [
+              "receptions"
+            ],
+            "required": false,
+            "resolved_column": "receptions",
+            "present": true
+          },
+          "targets": {
+            "candidates": [
+              "targets"
+            ],
+            "required": false,
+            "resolved_column": "targets",
+            "present": true
+          },
+          "receiving_yards": {
+            "candidates": [
+              "receiving_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_yards",
+            "present": true
+          },
+          "receiving_tds": {
+            "candidates": [
+              "receiving_tds"
+            ],
+            "required": false,
+            "resolved_column": "receiving_tds",
+            "present": true
+          },
+          "receiving_air_yards": {
+            "candidates": [
+              "receiving_air_yards"
+            ],
+            "required": false,
+            "resolved_column": "receiving_air_yards",
+            "present": true
+          },
+          "target_share": {
+            "candidates": [
+              "target_share"
+            ],
+            "required": false,
+            "resolved_column": "target_share",
+            "present": true
+          },
+          "air_yards_share": {
+            "candidates": [
+              "air_yards_share"
+            ],
+            "required": false,
+            "resolved_column": "air_yards_share",
+            "present": true
+          },
+          "wopr": {
+            "candidates": [
+              "wopr"
+            ],
+            "required": false,
+            "resolved_column": "wopr",
+            "present": true
+          },
+          "racr": {
+            "candidates": [
+              "racr"
+            ],
+            "required": false,
+            "resolved_column": "racr",
+            "present": true
+          },
+          "fantasy_points_ppr": {
+            "candidates": [
+              "fantasy_points_ppr"
+            ],
+            "required": false,
+            "resolved_column": "fantasy_points_ppr",
+            "present": true
+          }
+        },
+        "missing_required_week_level": [],
+        "missing_required_reg_level": [],
+        "missing_optional_reg_level": []
+      },
+      "identity_age_draft": {
+        "load_players_gsis_join_available": true,
+        "identity_join_rate_gsis_id": 1.0,
+        "identity_join_rate_floor": 0.95,
+        "players_joined": 602,
+        "players_total": 602,
+        "field_availability_for_joined_players": {
+          "birth_date": {
+            "available": 602,
+            "total": 602,
+            "rate": 1.0
+          },
+          "rookie_season": {
+            "available": 602,
+            "total": 602,
+            "rate": 1.0
+          },
+          "draft_year": {
+            "available": 416,
+            "total": 602,
+            "rate": 0.691
+          },
+          "draft_round": {
+            "available": 416,
+            "total": 602,
+            "rate": 0.691
+          },
+          "draft_pick": {
+            "available": 416,
+            "total": 602,
+            "rate": 0.691
+          },
+          "draft_team": {
+            "available": 416,
+            "total": 602,
+            "rate": 0.691
+          }
+        }
+      },
+      "null_observations": {
+        "games": {
+          "nulls": 0,
+          "total": 602,
+          "rate": 0.0
+        },
+        "fantasy_points_ppr": {
+          "nulls": 0,
+          "total": 602,
+          "rate": 0.0
+        },
+        "targets": {
+          "nulls": 0,
+          "total": 602,
+          "rate": 0.0
+        },
+        "receptions": {
+          "nulls": 0,
+          "total": 602,
+          "rate": 0.0
+        },
+        "carries": {
+          "nulls": 0,
+          "total": 602,
+          "rate": 0.0
+        },
+        "receiving_air_yards": {
+          "nulls": 0,
+          "total": 602,
+          "rate": 0.0
+        },
+        "target_share": {
+          "nulls": 0,
+          "total": 602,
+          "rate": 0.0
+        },
+        "air_yards_share": {
+          "nulls": 0,
+          "total": 602,
+          "rate": 0.0
+        },
+        "wopr": {
+          "nulls": 0,
+          "total": 602,
+          "rate": 0.0
+        },
+        "racr": {
+          "nulls": 102,
+          "total": 602,
+          "rate": 0.1694
+        },
+        "team_context": {
+          "nulls": 0,
+          "total": 16774,
+          "rate": 0.0,
+          "level": "week_level_reg_rows"
+        }
+      },
+      "observed_week_span_rule": "REG weeks 1-17, contiguous, source-observed",
       "statuses": {
-        "source_rows_exist": "not_observed",
-        "required_columns_present": "not_observed",
-        "identity_join_sufficient": "not_observed",
-        "schedule_method_observed": "not_observed",
-        "existing_schema_compatible": "not_observed",
-        "existing_validator_semantics_compatible": "not_observed",
-        "builder_compatible": "not_observed"
+        "source_rows_exist": "pass",
+        "required_columns_present": "pass",
+        "identity_join_sufficient": "pass",
+        "schedule_method_observed": "pass",
+        "existing_schema_compatible": "pass",
+        "existing_validator_semantics_compatible": "pass",
+        "builder_compatible": "compatible_with_explicit_week_span_parameter"
       },
       "definitive_failures": [],
-      "followup_items": [
-        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
-      ]
+      "followup_items": []
     }
   ],
   "summary": {
-    "seasons_fully_cleared": [],
-    "seasons_with_definitive_failures": [],
-    "seasons_with_followup_items": [
+    "seasons_fully_cleared": [
       2015,
       2016,
       2017,
@@ -289,14 +4408,9 @@
       2019,
       2020
     ],
-    "seasons_not_observed": [
-      2015,
-      2016,
-      2017,
-      2018,
-      2019,
-      2020
-    ]
+    "seasons_with_definitive_failures": [],
+    "seasons_with_followup_items": [],
+    "seasons_not_observed": []
   },
   "builder_reuse_assessment": {
     "reusable_unchanged": [
@@ -314,8 +4428,8 @@
       "the promoted artifact, its manifest, the schema, the validator, and the source allowlist"
     ]
   },
-  "decision": "player_season_coverage_2015_2020_source_audit_requires_followup",
-  "decision_basis": "season(s) [2015, 2016, 2017, 2018, 2019, 2020] have unresolved followup items or were not observed: 2015: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2016: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2017: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2018: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2019: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2020: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']",
+  "decision": "may_open_player_season_coverage_2015_2020_candidate_build_issue",
+  "decision_basis": "every season 2015-2020 cleared source_rows_exist, required_columns_present, identity_join_sufficient, schedule_method_observed, existing_schema_compatible, existing_validator_semantics_compatible, and a builder_compatible path",
   "decisions_not_emitted_and_not_authorized": [
     "candidate build (a later issue must separately authorize it)",
     "promotion of any artifact",
