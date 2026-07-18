@@ -322,6 +322,38 @@ def test_duplicate_grain_emits_followup() -> None:
     assert by_season[2020]["statuses"]["existing_schema_compatible"] == "fail"
 
 
+def test_wrong_season_rows_are_excluded_and_flagged_for_followup() -> None:
+    """PR #217 review (Codex P2): rows whose own season value differs from the
+    requested season must never count as evidence for it."""
+    module = _load_module()
+    contaminated = _FakeFrame(
+        _week_rows(2016) + _week_rows(2015), columns=_WEEK_COLUMNS
+    )
+    payload = _run(module, week_overrides={2016: contaminated})
+    assert payload["decision"] == "player_season_coverage_2015_2020_source_audit_requires_followup"
+    by_season = {r["season"]: r for r in payload["seasons"]}
+    a = by_season[2016]["availability"]
+    # The 2015-labeled rows are excluded from every 2016 evidence count.
+    assert a["week_level_rows_wrong_season_excluded"] == len(_week_rows(2015))
+    assert a["week_level_rows_reg"] == len(_week_rows(2016))
+    assert any("wrong_season_rows_present" in item for item in by_season[2016]["followup_items"])
+    assert 2016 not in payload["summary"]["seasons_fully_cleared"]
+
+
+def test_only_wrong_season_rows_is_followup_not_definitive_absence() -> None:
+    """A response containing ONLY wrong-season rows is a contaminated loader
+    response (follow-up), not definitive evidence the source lacks the season."""
+    module = _load_module()
+    wrong_only = _FakeFrame(_week_rows(2015), columns=_WEEK_COLUMNS)
+    payload = _run(module, week_overrides={2016: wrong_only})
+    assert payload["decision"] == "player_season_coverage_2015_2020_source_audit_requires_followup"
+    by_season = {r["season"]: r for r in payload["seasons"]}
+    assert by_season[2016]["statuses"]["source_rows_exist"] == "fail"
+    assert by_season[2016]["definitive_failures"] == []
+    assert 2016 not in payload["summary"]["seasons_with_definitive_failures"]
+    assert by_season[2016]["availability"]["week_level_rows_reg"] == 0
+
+
 def test_report_is_aggregate_only_no_player_names_ids_or_rows() -> None:
     import json
 

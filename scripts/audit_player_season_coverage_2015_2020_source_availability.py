@@ -234,17 +234,51 @@ def inspect_season(
         {str(r.get(reg_season_type_col, "")).strip().upper() for r in reg_records_all}
     ) if reg_season_type_col else []
 
+    # Season matching (PR #217 review): rows are evidence for THIS season only if
+    # their own `season` value says so. A loader/cache/API regression that returns
+    # wrong-season rows must never be counted as availability for the requested
+    # season; such rows are excluded, counted, and flagged for follow-up below.
+    wk_season_col = _col(week_resolved, "season")
+
+    def _row_season_matches(row: dict, season_col: str | None) -> bool:
+        if season_col is None:
+            return False
+        value = row.get(season_col)
+        if _is_null(value):
+            return False
+        try:
+            return int(value) == season
+        except (TypeError, ValueError):
+            return False
+
+    week_wrong_season_rows = sum(
+        1 for r in week_records_all if wk_season_col and not _row_season_matches(r, wk_season_col)
+    )
     week_reg_rows = [
         r
         for r in week_records_all
-        if wk_season_type_col and str(r.get(wk_season_type_col, "")).strip().upper() == SEASON_TYPE
+        if wk_season_type_col
+        and str(r.get(wk_season_type_col, "")).strip().upper() == SEASON_TYPE
+        and _row_season_matches(r, wk_season_col)
     ]
+    # `season` is not part of the builder's REG-level required spec, so it is only
+    # enforceable at the reg level when the source actually exposes the column.
+    reg_season_col = "season" if "season" in reg_columns else None
+    reg_wrong_season_rows = (
+        sum(1 for r in reg_records_all if not _row_season_matches(r, reg_season_col))
+        if reg_season_col
+        else None
+    )
     reg_rows = [
         r
         for r in reg_records_all
-        if (reg_season_type_col is None)
-        or str(r.get(reg_season_type_col, "")).strip().upper() == SEASON_TYPE
+        if (
+            (reg_season_type_col is None)
+            or str(r.get(reg_season_type_col, "")).strip().upper() == SEASON_TYPE
+        )
+        and (reg_season_col is None or _row_season_matches(r, reg_season_col))
     ]
+    wrong_season_contamination = bool(week_wrong_season_rows) or bool(reg_wrong_season_rows)
 
     position_col = _col(reg_resolved, "position")
     reg_player_id_col = _col(reg_resolved, "player_id")
@@ -443,8 +477,23 @@ def inspect_season(
 
     definitive_failures: list[str] = []
     followup_items: list[str] = []
+    if wrong_season_contamination:
+        followup_items.append(
+            "wrong_season_rows_present: source calls for this season returned "
+            f"{week_wrong_season_rows} week-level and {reg_wrong_season_rows or 0} reg-level "
+            f"row(s) whose own season value is not {season}; they were excluded from all "
+            "evidence counts and indicate a loader/cache/API regression that must be "
+            "understood before any evidence from this run is trusted"
+        )
     if not rows_exist:
-        definitive_failures.append("source_rows_exist")
+        if wrong_season_contamination:
+            followup_items.append(
+                "source_rows_exist: no season-matching rows remained after excluding "
+                "wrong-season rows; treated as follow-up (contaminated response), not as "
+                "definitive evidence that the source lacks this season"
+            )
+        else:
+            definitive_failures.append("source_rows_exist")
     if not required_columns_present:
         definitive_failures.append(
             "required_columns_present: week-level missing "
@@ -489,8 +538,10 @@ def inspect_season(
         "availability": {
             "week_level_rows_total": len(week_records_all),
             "week_level_rows_reg": len(week_reg_rows),
+            "week_level_rows_wrong_season_excluded": week_wrong_season_rows,
             "reg_level_rows_total": len(reg_records_all),
             "reg_level_rows_reg_qb_rb_wr_te": len(reg_position_rows),
+            "reg_level_rows_wrong_season_excluded": reg_wrong_season_rows,
             "season_type_values_week_level": week_season_types,
             "season_type_values_reg_level": reg_season_types,
             "row_counts_by_position_reg_level": row_counts_by_position,
@@ -906,10 +957,14 @@ def render_markdown(payload: dict) -> str:
             lines.append("")
             continue
         a = r["availability"]
-        lines.append(f"- Week-level rows: {a['week_level_rows_total']} total, {a['week_level_rows_reg']} REG")
+        lines.append(
+            f"- Week-level rows: {a['week_level_rows_total']} total, {a['week_level_rows_reg']} REG "
+            f"(wrong-season rows excluded: {a['week_level_rows_wrong_season_excluded']})"
+        )
         lines.append(
             f"- REG-summary rows: {a['reg_level_rows_total']} total, "
-            f"{a['reg_level_rows_reg_qb_rb_wr_te']} QB/RB/WR/TE"
+            f"{a['reg_level_rows_reg_qb_rb_wr_te']} QB/RB/WR/TE "
+            f"(wrong-season rows excluded: {a['reg_level_rows_wrong_season_excluded']})"
         )
         by_pos = a["row_counts_by_position_reg_level"]
         by_pl = a["player_counts_by_position"]
