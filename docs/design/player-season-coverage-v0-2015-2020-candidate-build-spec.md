@@ -162,9 +162,27 @@ Rules:
   staged**; emit a bounded source-evidence-drift diagnostic (aggregate expected-vs-
   observed values only, no player rows); produce **no candidate**; and require a new
   source-audit issue plus explicit operator acceptance before the evidence lock may
-  change. Upstream corrections and dependency drift are **never silently accepted**
-  under the existing #218 authority — even an upstream fix that looks like an
-  improvement is unverified evidence until a new audit accepts it.
+  change. Structural drift and dependency drift are therefore never silently
+  accepted under the existing #218 authority.
+- **Value-level drift and source-content hashes (G1 round,
+  discussion_r3608751684):** the aggregate fingerprint detects *structural* drift
+  only. #218 recorded no row-level values, so value-level drift inside unchanged
+  aggregates (a corrected stat, team, player name, birth date, or draft value) is
+  **not detectable against #218**, and this design does not claim that it is. The
+  authority claim is narrowed accordingly, and value-level drift is bounded instead
+  of ignored:
+  - at build time the builder computes, per season, a deterministic sha256 over the
+    canonically serialized, `(season, player_id, week)`-sorted source rows restricted
+    to exactly the columns the build consumes, plus one hash over the consumed
+    `load_players()` identity fields of joined players, and records all seven
+    source-content hashes in the candidate manifest and build report;
+  - those recorded hashes make the exact consumed source content part of the
+    candidate's reviewable evidence: row **values** are accepted at gates G4/G5 by
+    the independent audit and operator acceptance — never silently under #218;
+  - once a candidate has been accepted (G5), any rebuild must reproduce the accepted
+    per-season source-content hashes exactly or abort before staging with a drift
+    diagnostic; a value-level upstream correction therefore requires a fresh
+    source-audit issue and explicit operator acceptance before any republication.
 - **Row-level source references:** identical semantics to the accepted 2021 builder —
   every record carries `source_refs` whose `source_name` values start with the approved
   prefixes (`nflreadpy.load_player_stats(`, `nflreadpy.load_players(`), with
@@ -383,10 +401,18 @@ this candidate reaches a terminal state, and is explicitly not part of this desi
   fail-closed-verified **in memory**; only then does publication begin. A failure in
   any season, check, or serialization step publishes nothing ("no partial candidate
   publication after a failed season").
-- **Two-phase set publication with a transaction journal (PR #221 review,
-  discussion_r3608615744; G1 correction round):** the five outputs (artifact,
-  manifest, validation result, md report, json report) are published as a **set**,
-  never individually:
+- **Journaled set publication — preflight, stage, commit (PR #221 review,
+  discussion_r3608615744 and discussion_r3608751685; G1 correction round):** the five
+  outputs (artifact, manifest, validation result, md report, json report) are
+  published as a **set**, never individually:
+  - *Phase 0 — residue preflight:* before any staging, the builder scans every output
+    directory for `.tmp-*` / `.prev-*` files matching any of the five final names.
+    If any exist, it aborts immediately with a fatal residue diagnostic — no staging,
+    no cleanup, and the leftovers (which may include the only recoverable prior copy
+    left by a prior hard kill) are left exactly as found. Recovery from residue is a
+    deliberate, audited operator step (inspect, then restore or clear), never an
+    automatic action of the next run — so crash leftovers can never be overwritten
+    or cleaned away by a rerun's success path.
   - *Phase 1 — stage:* every output is fully written to a temp file
     (`<final>.tmp-<pid>`) in its destination directory; the manifest's sha256 is
     computed from the staged artifact bytes. Any phase-1 failure deletes all temps and
@@ -471,6 +497,8 @@ Fail-closed negative tests — **every one must abort and publish nothing**
 | N-16b | **first run** (no prior outputs), injected failure after **each** of the five replacement points in turn | rollback removes every newly installed final; **every final remains absent**; no `.tmp-*`/`.prev-*` residue |
 | N-16c | **rerun** over a prior successful set, injected failure after **each** of the five replacement points in turn | rollback restores **every prior final byte-for-byte**; no residue |
 | N-16d | injected failure during rollback itself | every recoverable backup **retained on disk**; fatal torn-state diagnostic emitted naming per-path journal state; the only recoverable prior copy is never deleted |
+| N-16e | pre-existing `.tmp-*` or `.prev-*` residue at builder start | abort in phase 0 **before any staging**; residue left byte-for-byte untouched; fatal residue diagnostic |
+| N-25 | rebuild after an accepted candidate (G5) where one source row value changed but every aggregate fingerprint still matches | per-season source-content hash differs from the accepted manifest; abort before staging with a value-drift diagnostic |
 | N-17 | builder path-guard: any output path under `exports/**` | abort before network |
 | N-21 | installed nflreadpy version is not exactly `0.1.5` | abort before staging; bounded source-evidence-drift diagnostic; no candidate |
 | N-22 | one per-season fingerprint count differs from #218 (e.g. week-level REG row count off by one for 2017) | abort before staging; drift diagnostic names season + expected-vs-observed aggregate |
@@ -498,6 +526,7 @@ Invariant / guard tests — assertions about constants, determinism, and boundar
 | G-4 (was N-19) | no support-claim widening: candidate artifact/manifest/reports never contain the phrase "2015–2025 is available"; status fields are exactly `candidate_evidence_artifact_not_promoted` |
 | G-5 (was N-20) | candidate status never interpreted as promotion: manifest lacks every promoted-envelope required field (`promoted_at`, `promotion_review`, …) and the promoted schema rejects it |
 | G-6 | successful run leaves **zero** `.tmp-*` or `.prev-*` residue in every output directory |
+| G-7 | the candidate manifest records all seven source-content hashes (six per-season row hashes + one identity-fields hash), and they are deterministic across repeat runs on unchanged fixtures |
 
 ## 15. Audit, review, and promotion gates
 
@@ -539,7 +568,9 @@ None blocking. Non-blocking notes for the implementation reviewer:
   deterministic execution contract with a journaled publication transaction (exact
   pre-run state restored on every caught failure, first-run absence included), an
   accepted-source fingerprint gate binding generation to the audited nflreadpy 0.1.5
-  evidence, a mechanically actionable test matrix, and eight non-automatic gates.
+  evidence (structural drift blocked pre-staging; value-level content pinned by
+  recorded source-content hashes and accepted only at gates G4/G5), a mechanically
+  actionable test matrix, and eight non-automatic gates.
 - The design binds exclusively to accepted, pinned evidence (§3) and changes no
   repository behavior.
 
