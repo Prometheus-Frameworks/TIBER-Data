@@ -1,0 +1,354 @@
+{
+  "report_id": "player_season_coverage_v0_2015_2020_source_availability",
+  "status": "source_availability_evidence_report_not_an_artifact",
+  "tracking_issue": "TIBER-Data#216",
+  "strategy_context_not_authority": "TIBER-Strategy#3 (research/proven-production-discount-field-note-v0, commit 9992648, docs/design/proven-production-discount-research-note-v0.md) motivates why deeper player history may later matter; it carries NO authority over TIBER-Data behavior and did not influence this audit's verdict.",
+  "generated_at": "2026-07-18T01:07:31.909395+00:00",
+  "environment": {
+    "python_version": "3.11.15",
+    "nflreadpy_version": "0.1.5"
+  },
+  "seasons_inspected": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020
+  ],
+  "season_type_inspected": "REG",
+  "positions_inspected": [
+    "QB",
+    "RB",
+    "WR",
+    "TE"
+  ],
+  "sources_authorized": [
+    "nflreadpy.load_player_stats(seasons=[year], summary_level='week')",
+    "nflreadpy.load_player_stats(seasons=[year], summary_level='reg')",
+    "nflreadpy.load_players()"
+  ],
+  "approved_source_allowlist_reference": "exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json",
+  "load_players_call": {
+    "call": "nflreadpy.load_players()",
+    "status": "error",
+    "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/players/players.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/players/players.parquet"
+  },
+  "non_goals": [
+    "no candidate artifact is built or emitted (no player-season rows exist in this report)",
+    "no promoted artifact or manifest is modified",
+    "no README/contract support window is widened; 2021-2025 REG remains the only promoted window",
+    "no ADP, market, ranking, or advice data is ingested or evaluated",
+    "no Forecast mirror refresh, rerun, validation, or feature change is performed or authorized",
+    "no bust/rebound cohort is computed and no operator-supplied player examples are evaluated"
+  ],
+  "audit_may_establish_only": [
+    "source_rows_exist",
+    "builder_compatible",
+    "candidate_build_may_be_proposed"
+  ],
+  "audit_may_not_establish": [
+    "candidate_built",
+    "promoted",
+    "Forecast_ready",
+    "2015-2025_available_to_consumers"
+  ],
+  "schedule_methodology": {
+    "rule_not_reused": "EXPECTED_REG_WEEKS = set(range(1, 19)) (2021+ assumption) was NOT applied",
+    "absolute_bounds_applied": "weeks must fall within 1-18; span itself is taken from evidence",
+    "observed_week_span_rules_by_season": {
+      "2015": null,
+      "2016": null,
+      "2017": null,
+      "2018": null,
+      "2019": null,
+      "2020": null
+    },
+    "narrowest_supported_rule": "no schedule-span rule can be stated: no season's REG week span was observed from source in this run"
+  },
+  "seasons": [
+    {
+      "season": 2015,
+      "season_type": "REG",
+      "source_calls": [
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2015], summary_level='week')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2015.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2015.parquet"
+        },
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2015], summary_level='reg')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2015.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2015.parquet"
+        }
+      ],
+      "columns_observed": null,
+      "availability": null,
+      "schema_compatibility": null,
+      "identity_age_draft": null,
+      "null_observations": null,
+      "observed_week_span_rule": null,
+      "statuses": {
+        "source_rows_exist": "not_observed",
+        "required_columns_present": "not_observed",
+        "identity_join_sufficient": "not_observed",
+        "schedule_method_observed": "not_observed",
+        "existing_schema_compatible": "not_observed",
+        "existing_validator_semantics_compatible": "not_observed",
+        "builder_compatible": "not_observed"
+      },
+      "definitive_failures": [],
+      "followup_items": [
+        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
+      ]
+    },
+    {
+      "season": 2016,
+      "season_type": "REG",
+      "source_calls": [
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2016], summary_level='week')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2016.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2016.parquet"
+        },
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2016], summary_level='reg')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2016.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2016.parquet"
+        }
+      ],
+      "columns_observed": null,
+      "availability": null,
+      "schema_compatibility": null,
+      "identity_age_draft": null,
+      "null_observations": null,
+      "observed_week_span_rule": null,
+      "statuses": {
+        "source_rows_exist": "not_observed",
+        "required_columns_present": "not_observed",
+        "identity_join_sufficient": "not_observed",
+        "schedule_method_observed": "not_observed",
+        "existing_schema_compatible": "not_observed",
+        "existing_validator_semantics_compatible": "not_observed",
+        "builder_compatible": "not_observed"
+      },
+      "definitive_failures": [],
+      "followup_items": [
+        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
+      ]
+    },
+    {
+      "season": 2017,
+      "season_type": "REG",
+      "source_calls": [
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2017], summary_level='week')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2017.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2017.parquet"
+        },
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2017], summary_level='reg')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2017.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2017.parquet"
+        }
+      ],
+      "columns_observed": null,
+      "availability": null,
+      "schema_compatibility": null,
+      "identity_age_draft": null,
+      "null_observations": null,
+      "observed_week_span_rule": null,
+      "statuses": {
+        "source_rows_exist": "not_observed",
+        "required_columns_present": "not_observed",
+        "identity_join_sufficient": "not_observed",
+        "schedule_method_observed": "not_observed",
+        "existing_schema_compatible": "not_observed",
+        "existing_validator_semantics_compatible": "not_observed",
+        "builder_compatible": "not_observed"
+      },
+      "definitive_failures": [],
+      "followup_items": [
+        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
+      ]
+    },
+    {
+      "season": 2018,
+      "season_type": "REG",
+      "source_calls": [
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2018], summary_level='week')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2018.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2018.parquet"
+        },
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2018], summary_level='reg')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2018.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2018.parquet"
+        }
+      ],
+      "columns_observed": null,
+      "availability": null,
+      "schema_compatibility": null,
+      "identity_age_draft": null,
+      "null_observations": null,
+      "observed_week_span_rule": null,
+      "statuses": {
+        "source_rows_exist": "not_observed",
+        "required_columns_present": "not_observed",
+        "identity_join_sufficient": "not_observed",
+        "schedule_method_observed": "not_observed",
+        "existing_schema_compatible": "not_observed",
+        "existing_validator_semantics_compatible": "not_observed",
+        "builder_compatible": "not_observed"
+      },
+      "definitive_failures": [],
+      "followup_items": [
+        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
+      ]
+    },
+    {
+      "season": 2019,
+      "season_type": "REG",
+      "source_calls": [
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2019], summary_level='week')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2019.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2019.parquet"
+        },
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2019], summary_level='reg')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2019.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2019.parquet"
+        }
+      ],
+      "columns_observed": null,
+      "availability": null,
+      "schema_compatibility": null,
+      "identity_age_draft": null,
+      "null_observations": null,
+      "observed_week_span_rule": null,
+      "statuses": {
+        "source_rows_exist": "not_observed",
+        "required_columns_present": "not_observed",
+        "identity_join_sufficient": "not_observed",
+        "schedule_method_observed": "not_observed",
+        "existing_schema_compatible": "not_observed",
+        "existing_validator_semantics_compatible": "not_observed",
+        "builder_compatible": "not_observed"
+      },
+      "definitive_failures": [],
+      "followup_items": [
+        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
+      ]
+    },
+    {
+      "season": 2020,
+      "season_type": "REG",
+      "source_calls": [
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2020], summary_level='week')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2020.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2020.parquet"
+        },
+        {
+          "call": "nflreadpy.load_player_stats(seasons=[2020], summary_level='reg')",
+          "status": "error",
+          "error": "ConnectionError: Failed to download https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2020.parquet: 403 Client Error: Forbidden for url: https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2020.parquet"
+        }
+      ],
+      "columns_observed": null,
+      "availability": null,
+      "schema_compatibility": null,
+      "identity_age_draft": null,
+      "null_observations": null,
+      "observed_week_span_rule": null,
+      "statuses": {
+        "source_rows_exist": "not_observed",
+        "required_columns_present": "not_observed",
+        "identity_join_sufficient": "not_observed",
+        "schedule_method_observed": "not_observed",
+        "existing_schema_compatible": "not_observed",
+        "existing_validator_semantics_compatible": "not_observed",
+        "builder_compatible": "not_observed"
+      },
+      "definitive_failures": [],
+      "followup_items": [
+        "source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season."
+      ]
+    }
+  ],
+  "summary": {
+    "seasons_fully_cleared": [],
+    "seasons_with_definitive_failures": [],
+    "seasons_with_followup_items": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020
+    ],
+    "seasons_not_observed": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020
+    ]
+  },
+  "builder_reuse_assessment": {
+    "reusable_unchanged": [
+      "schemas/player_season_coverage_v0.schema.json is season-agnostic (season >= 1900; no week-span constant) and needs no change for 2015-2020 rows",
+      "scripts/validate_player_season_coverage_v0.py semantics (unique player_id+season+season_type grain, explicit REG season_type, approved-source-prefix refs, null-vs-zero honesty, no availability assertions) contain no season-shape assumption and need no change",
+      "the approved source allowlist (nflreadpy.load_player_stats(, nflreadpy.load_players() call family) is unchanged for these seasons"
+    ],
+    "not_reusable_as_is": [
+      "EXPECTED_REG_WEEKS = set(range(1, 19)) in scripts/build_player_season_coverage_2021_candidate.py fails closed on any season whose observed REG span is not exactly weeks 1-18; a 2015-2020 build must take an explicit per-season expected-week-span constant justified by this audit's observations",
+      "COVERAGE_STATUS_RULE (full_season: weeks_observed >= 15) is calibrated to a 17-game/18-week season; for a shorter observed span the threshold's meaning changes (15 of 17 vs 15 of 18 weeks) and must be explicitly restated and re-justified, not silently reused",
+      "the 17-game games cap and bye/trade allowances assumed by the 2021+ builders must be re-derived from the observed max games and week span for each older season"
+    ],
+    "must_not_change": [
+      "the 2021 and 2022-2025 builders themselves (out of scope for this audit and for any follow-up 2015-2020 build)",
+      "the promoted artifact, its manifest, the schema, the validator, and the source allowlist"
+    ]
+  },
+  "decision": "player_season_coverage_2015_2020_source_audit_requires_followup",
+  "decision_basis": "season(s) [2015, 2016, 2017, 2018, 2019, 2020] have unresolved followup items or were not observed: 2015: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2016: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2017: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2018: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2019: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']; 2020: ['source_call_failed: season not observed; availability is UNKNOWN, not absent. This is an inspection-environment/source-access failure, not evidence that the upstream source lacks this season.']",
+  "decisions_not_emitted_and_not_authorized": [
+    "candidate build (a later issue must separately authorize it)",
+    "promotion of any artifact",
+    "support-window widening to 2015-2025 anywhere",
+    "Forecast mirror refresh, rerun, or validation",
+    "ADP or market-data ingestion",
+    "rankings, projections, advice, or product behavior"
+  ],
+  "comparison_to_promoted_2021_2025": {
+    "promoted_artifact": "exports/promoted/nfl/player_season_coverage_v0.json",
+    "promoted_manifest": "exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json",
+    "promoted_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "promoted_counts": {
+      "records": 3016,
+      "by_season": {
+        "2021": 633,
+        "2022": 609,
+        "2023": 576,
+        "2024": 588,
+        "2025": 610
+      },
+      "by_position": {
+        "QB": 404,
+        "RB": 771,
+        "TE": 650,
+        "WR": 1191
+      }
+    }
+  }
+}
