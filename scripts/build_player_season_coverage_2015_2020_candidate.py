@@ -1697,11 +1697,25 @@ def publish_output_set(contents: dict[Path, str], *, after_install=None) -> None
             temp_paths[final_path] = temp_path
             _write_bytes(temp_path, contents[final_path].encode("utf-8"))
     except BaseException as exc:
+        # Every tracked temp is attempted regardless of an earlier cleanup failure: a
+        # single stubborn temp (e.g. a permission error) must not stop cleanup of the
+        # rest or mask the original staging error with an unrelated one.
+        cleanup_failures: list[str] = []
         for temp_path in temp_paths.values():
             try:
                 temp_path.unlink()
             except FileNotFoundError:
                 pass
+            except OSError as cleanup_exc:
+                cleanup_failures.append(f"{temp_path.name}: {cleanup_exc}")
+        if cleanup_failures:
+            raise PublicationError(
+                f"phase-1 staging failed ({exc}); additionally {len(cleanup_failures)} "
+                f"temp file(s) could not be removed during cleanup: {'; '.join(cleanup_failures)}. "
+                "Pre-run state for already-existing outputs is intact, but the named temp(s) "
+                "remain on disk and will require operator clearance before the next run's "
+                "residue preflight will pass."
+            ) from exc
         raise PublicationError(
             f"phase-1 staging failed ({exc}); all temps removed, pre-run state intact, nothing published."
         ) from exc
@@ -1772,22 +1786,30 @@ def publish_output_set(contents: dict[Path, str], *, after_install=None) -> None
         )
 
 
-def verify_published_set(base_dir: Path | None = None) -> None:
+def verify_published_set(base_dir: Path | None = None, *, check_residue: bool = True) -> None:
     """Mandatory torn-state rejection gate after publication (design SS13).
 
-    All five outputs must exist, no staging/backup residue may remain, and the
-    manifest's recorded artifact sha256 must match the artifact bytes on disk.
+    All five outputs must exist and the manifest's recorded artifact sha256 must match
+    the artifact bytes on disk. By default (check_residue=True, the strict/general
+    case used by every caller except one) any leftover .tmp-*/.prev-* file is also
+    treated as torn-state evidence -- from the outside, a caller generally cannot tell
+    a genuinely torn install apart from benign backup-cleanup residue just by looking
+    at the filesystem. check_residue=False exists only for main()'s own recovery path
+    immediately after it has caught a BackupCleanupError: at that specific call site
+    the exception's origin already proves installation fully succeeded and the only
+    residue is the one named, retained backup.
     """
     paths = candidate_output_paths(base_dir)
     missing = [str(path) for path in paths.values() if not path.exists()]
     if missing:
         raise TornStateError(f"torn output state: missing published output(s): {', '.join(missing)}")
-    residue = _residue_candidates(list(paths.values()))
-    if residue:
-        raise TornStateError(
-            "torn output state: staging/backup residue remains after publication: "
-            + ", ".join(str(p) for p in residue)
-        )
+    if check_residue:
+        residue = _residue_candidates(list(paths.values()))
+        if residue:
+            raise TornStateError(
+                "torn output state: staging/backup residue remains after publication: "
+                + ", ".join(str(p) for p in residue)
+            )
     manifest = json.loads(paths["manifest"].read_text(encoding="utf-8"))
     artifact_sha256 = _sha256_text(paths["artifact"].read_text(encoding="utf-8"))
     if manifest.get("artifact_sha256") != artifact_sha256:
@@ -1861,6 +1883,9 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+_REQUIRED_SOURCE_CONTENT_HASH_KEYS = ("week_level_by_season", "reg_summary_by_season", "joined_identity_fields")
+
+
 def _load_accepted_source_content_hashes(
     manifest_path: Path, explicit_path: str | None
 ) -> dict | None:
@@ -1872,13 +1897,38 @@ def _load_accepted_source_content_hashes(
     enforced automatically -- the §6 post-G5 rebuild lock must not depend on an
     operator remembering to pass a flag. A first-ever build (no prior manifest) has
     no lock to enforce.
+
+    An existing manifest that is unreadable, unparsable, or missing a valid
+    source_content_hashes object is never treated as equivalent to "no lock exists":
+    that would let a rebuild silently overwrite an already-published candidate despite
+    unverifiable value-level drift. It fails closed instead.
     """
     if explicit_path:
         return json.loads(Path(explicit_path).read_text(encoding="utf-8"))
-    if manifest_path.exists():
+    if not manifest_path.exists():
+        return None
+    try:
         existing_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        return existing_manifest.get("source_content_hashes")
-    return None
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SourceFeasibilityError(
+            f"existing candidate manifest at {manifest_path} could not be read or parsed "
+            f"({exc}); a rebuild cannot verify the required post-G5 hash lock (design §6) "
+            "against it. Build fails closed rather than treating a damaged manifest as "
+            "'no lock exists'."
+        ) from exc
+    hashes = existing_manifest.get("source_content_hashes")
+    if (
+        not isinstance(hashes, dict)
+        or not all(hashes.get(key) for key in _REQUIRED_SOURCE_CONTENT_HASH_KEYS)
+    ):
+        raise SourceFeasibilityError(
+            f"existing candidate manifest at {manifest_path} is missing a valid "
+            "source_content_hashes lock (design §6 requires every rebuild over an "
+            "already-published candidate to reproduce its accepted hashes exactly). "
+            "An incomplete or damaged manifest must never be treated as 'no lock exists'; "
+            "build fails closed rather than silently republishing over it."
+        )
+    return hashes
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1927,8 +1977,20 @@ def main(argv: list[str] | None = None) -> int:
 
     environment = collect_environment_metadata(generated_at)
     contents = build_output_set(payload, build_evidence, environment)
-    publish_output_set(contents)
-    verify_published_set()
+    try:
+        publish_output_set(contents)
+    except BackupCleanupError as exc:
+        # All five outputs installed and were already sha256-verified as part of that
+        # installation; only a stale backup could not be removed afterward. Per design
+        # SS13's exit-code contract, exit 0 means "candidate built, validated, all
+        # outputs written" -- that remains true here, so this must not be reported as
+        # exit 1 ("no candidate exists from this run"). The general strict residue scan
+        # is skipped only at this specific call site, since the exception's own origin
+        # already proves the retained backup is benign, not evidence of a torn install.
+        verify_published_set(check_residue=False)
+        print(f"WARNING: {exc}", file=sys.stderr)
+    else:
+        verify_published_set()
 
     print(f"Wrote 2015-2020 candidate output set under: {OUTPUT_BASE_DIR}")
     print(f"Record count: {len(payload['records'])}")

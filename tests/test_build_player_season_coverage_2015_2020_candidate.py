@@ -708,18 +708,152 @@ def test_n25_value_drift_inside_unchanged_aggregates_aborts() -> None:
         _build(module, frames=drifted_week, accepted_hashes=accepted_hashes)
 
 
+_VALID_HASH_LOCK_FIXTURE = {
+    "week_level_by_season": {"2015": "wk-hash"},
+    "reg_summary_by_season": {"2015": "reg-hash"},
+    "joined_identity_fields": "identity-hash",
+}
+
+
 def test_load_accepted_source_content_hashes_precedence(tmp_path: Path) -> None:
     module = _load_module()
     manifest_path = tmp_path / "manifest.json"
 
     assert module._load_accepted_source_content_hashes(manifest_path, None) is None
 
-    manifest_path.write_text(json.dumps({"source_content_hashes": {"a": 1}}), encoding="utf-8")
-    assert module._load_accepted_source_content_hashes(manifest_path, None) == {"a": 1}
+    manifest_path.write_text(
+        json.dumps({"source_content_hashes": _VALID_HASH_LOCK_FIXTURE}), encoding="utf-8"
+    )
+    assert module._load_accepted_source_content_hashes(manifest_path, None) == _VALID_HASH_LOCK_FIXTURE
 
     explicit_path = tmp_path / "explicit.json"
     explicit_path.write_text(json.dumps({"b": 2}), encoding="utf-8")
     assert module._load_accepted_source_content_hashes(manifest_path, str(explicit_path)) == {"b": 2}
+
+
+def test_codex_p2_fail_closed_on_damaged_manifest_hash_lock(tmp_path: Path) -> None:
+    """Regression for a second-round Codex review finding on PR #223: an existing
+    manifest that is unreadable, unparsable, or missing a valid source_content_hashes
+    object must never be treated as equivalent to "no lock exists" -- that would let a
+    rebuild silently overwrite an already-published candidate despite unverifiable
+    value-level drift."""
+    module = _load_module()
+    manifest_path = tmp_path / "manifest.json"
+
+    manifest_path.write_text(
+        json.dumps({"status": "candidate_evidence_artifact_not_promoted"}), encoding="utf-8"
+    )
+    with pytest.raises(module.SourceFeasibilityError, match="missing a valid"):
+        module._load_accepted_source_content_hashes(manifest_path, None)
+
+    manifest_path.write_text(json.dumps({"source_content_hashes": None}), encoding="utf-8")
+    with pytest.raises(module.SourceFeasibilityError, match="missing a valid"):
+        module._load_accepted_source_content_hashes(manifest_path, None)
+
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "source_content_hashes": {
+                    "week_level_by_season": {},
+                    "reg_summary_by_season": {},
+                    "joined_identity_fields": "",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(module.SourceFeasibilityError, match="missing a valid"):
+        module._load_accepted_source_content_hashes(manifest_path, None)
+
+    manifest_path.write_text("{not valid json", encoding="utf-8")
+    with pytest.raises(module.SourceFeasibilityError, match="could not be read or parsed"):
+        module._load_accepted_source_content_hashes(manifest_path, None)
+
+
+def test_codex_p2_backup_cleanup_failure_still_exits_zero_via_main(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    """Regression for a second-round Codex review finding on PR #223: a backup-cleanup-
+    only failure must not be reported as exit 1 ("no candidate exists from this run")
+    when all five outputs were in fact installed and verified correctly -- that would
+    let automation treat a genuinely-published candidate as a no-op run."""
+    module = _load_module()
+    frames = _frames(module)
+    players_frame = _FakeFrame(_players_rows())
+    accepted_fp = _accepted_fp(module, frames, players_frame)
+
+    monkeypatch.setattr(module, "OUTPUT_BASE_DIR", tmp_path)
+    monkeypatch.setattr(module, "_installed_nflreadpy_version", lambda: "0.1.5")
+    monkeypatch.setattr(module, "ACCEPTED_SOURCE_FINGERPRINT_2015_2020", accepted_fp)
+    monkeypatch.setattr(module, "_load_week_frame", lambda season: frames[season]["week"])
+    monkeypatch.setattr(module, "_load_reg_frame", lambda season: frames[season]["reg"])
+    monkeypatch.setattr(module, "_load_players_frame", lambda: players_frame)
+
+    assert module.main(["--generated-at", GEN_AT]) == 0  # first build, no prior manifest
+
+    paths = module.candidate_output_paths(tmp_path)
+    pid = module.os.getpid()
+    target_backup_name = f"{paths['artifact'].name}.prev-{pid}"
+    original_unlink = Path.unlink
+
+    def _failing_unlink(self: Path, *args, **kwargs):
+        if self.name == target_backup_name:
+            raise OSError("permission denied")
+        return original_unlink(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "unlink", _failing_unlink)
+
+    exit_code = module.main(["--generated-at", GEN_AT])  # rebuild, unchanged fixtures
+    assert exit_code == 0, "a backup-cleanup-only failure must not report exit 1"
+    err = capsys.readouterr().err
+    assert "WARNING" in err
+    assert "publication succeeded" in err
+
+    retained_backup = paths["artifact"].parent / target_backup_name
+    assert retained_backup.exists(), "the backup that failed to delete must be retained, not lost"
+    for name, path in paths.items():
+        assert path.exists(), f"{name} must still be present after a backup-cleanup-only failure"
+
+
+def test_codex_p2_phase1_cleanup_continues_past_a_stubborn_temp(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Regression for a second-round Codex review finding on PR #223: if unlinking one
+    tracked temp file raises something other than FileNotFoundError during phase-1
+    cleanup, every other temp must still be attempted and the original staging error
+    must remain the reported cause (not masked by the cleanup exception)."""
+    module = _load_module()
+    contents = _publish_contents(module, tmp_path, "v1")
+    ordered_paths = list(contents.keys())
+    calls = {"n": 0}
+    original_write = module._write_bytes
+
+    def _fail_on_third_write(path: Path, data: bytes) -> None:
+        calls["n"] += 1
+        if calls["n"] == 3:
+            raise OSError("disk full")
+        original_write(path, data)
+
+    monkeypatch.setattr(module, "_write_bytes", _fail_on_third_write)
+
+    pid = module.os.getpid()
+    stubborn_temp_name = f"{ordered_paths[0].name}.tmp-{pid}"
+    original_unlink = Path.unlink
+
+    def _failing_unlink(self: Path, *args, **kwargs):
+        if self.name == stubborn_temp_name:
+            raise OSError("permission denied")
+        return original_unlink(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "unlink", _failing_unlink)
+
+    with pytest.raises(module.PublicationError, match=r"phase-1 staging failed.*disk full.*additionally 1 temp"):
+        module.publish_output_set(contents)
+
+    remaining = _tree_files(tmp_path)
+    assert [p.name for p in remaining] == [stubborn_temp_name], (
+        "every temp besides the stubborn one must still have been removed"
+    )
 
 
 def test_codex_p1_rebuild_over_existing_manifest_auto_enforces_hash_lock(
