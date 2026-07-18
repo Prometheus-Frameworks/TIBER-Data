@@ -113,7 +113,7 @@ Rules:
   `exports/promoted/**` specifically, and must not modify
   `exports/promoted/nfl/player_season_coverage_v0.json`, its
   `PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json`, the 2021/2022–2025 builders, or
-  README support claims. These prohibitions are hard test assertions (§14, N-17/N-18/N-19).
+  README support claims. These prohibitions are hard test assertions (§14, N-17/G-3/G-4).
 - **Candidate manifest content:** sha256 of the artifact, seasons, per-season and
   per-position counts, environment metadata (§6), the pinned evidence lock (§3), the
   exact source calls executed, and `status: candidate_evidence_artifact_not_promoted`.
@@ -127,7 +127,7 @@ Rules:
   `allow_nan=False`; unavailable values are `null`, never sentinel numbers.
 - **Repeat-run identity:** the builder accepts an explicit `--generated-at <ISO-8601>`
   argument. Two runs with the same `--generated-at` against unchanged upstream data
-  must be **byte-identical** (test N-15). Without the flag, `generated_at` defaults to
+  must be **byte-identical** (test G-2). Without the flag, `generated_at` defaults to
   now-UTC and repeat runs must be identical after normalizing only the
   `generated_at`/`observed_at` timestamp fields.
 
@@ -195,7 +195,7 @@ Rules:
 - **2021+ isolation:** the 2021+ builders' `EXPECTED_REG_WEEKS = set(range(1, 19))`
   constant is neither modified nor reinterpreted. The historical constant lives only in
   the new builder, under a distinct era-scoped name. Negative test N-2 proves a week-18
-  row fails the historical build; negative test N-20 proves the accepted builders'
+  row fails the historical build; guard test G-3 proves the accepted builders'
   files are untouched.
 
 ## 8. Coverage-status semantics
@@ -235,7 +235,7 @@ Rules:
 - **Artifact obligations:** the artifact's `methodology.coverage_status_rule` must
   state the historical rule and its rationale explicitly; `coverage_notes` must say
   "of up to 17 REG week numbers", not 18.
-- **Negative tests (§14):** N-1b asserts a 14-weeks-observed row is `full_season`
+- **Negative tests (§14):** guard test G-1 asserts a 14-weeks-observed row is `full_season`
   under the historical rule and would NOT be under a mechanically copied 2021+
   constant; a guard test asserts the builder's constant equals 14 and its week span
   equals `set(range(1, 18))`, so silent reuse of 2021+ calibration cannot pass CI.
@@ -269,7 +269,7 @@ Rules:
 - **Rejection evidence (build must fail, not accept):** single-team overage; >17 games;
   duplicate grains; games/weeks contradictions. **Acceptance evidence** for >16 games:
   ≥2 teams in the same row's week-level context with week sets consistent with the
-  games total (test N-13 vs N-14).
+  games total (test B-3 vs N-14).
 
 ## 10. Identity and nullable metadata
 
@@ -350,7 +350,7 @@ Options compared:
 **Selected: A.** Rationale: the family precedent is already parallel bounded builders
 per window (2021 vs 2022–2025); A adds a third bounded window with its era rules
 explicit and reviewable in one file, and leaves the accepted builders byte-identical
-(test N-18). The known cost — some duplicated assembly logic — is accepted; a future
+(test G-3). The known cost — some duplicated assembly logic — is accepted; a future
 consolidation into option B may be *proposed* as a separate refactor issue only after
 this candidate reaches a terminal state, and is explicitly not part of this design.
 
@@ -363,15 +363,30 @@ this candidate reaches a terminal state, and is explicitly not part of this desi
   offline-testable with injected fixture frames — same pattern as the accepted audit
   script and builders.
 - **All-or-nothing publication:** the full six-season payload is assembled and
-  fail-closed-verified **in memory**; only then are the artifact, manifest, validation
-  result, and reports written. A failure in any season, check, or serialization step
-  writes nothing ("no partial candidate publication after a failed season").
-- **Atomic writes:** each output is written to a temp file in its destination
-  directory and `os.replace`d into place; artifact first, then manifest (containing
-  the artifact's sha256), then validation result, then reports. A failure mid-sequence
-  removes already-written temp files and leaves any earlier-completed outputs from a
-  *previous* successful run untouched (never half-overwritten).
-- **Cleanup after failure:** temp files deleted; no `.partial` residue; exit non-zero.
+  fail-closed-verified **in memory**; only then does publication begin. A failure in
+  any season, check, or serialization step publishes nothing ("no partial candidate
+  publication after a failed season").
+- **Two-phase set publication (PR #221 review, discussion_r3608615744):** the five
+  outputs (artifact, manifest, validation result, md report, json report) are
+  published as a **set**, never individually:
+  - *Phase 1 — stage:* every output is fully written to a temp file
+    (`<final>.tmp-<pid>`) in its destination directory; the manifest's sha256 is
+    computed from the staged artifact bytes. Any phase-1 failure deletes all temps and
+    exits non-zero — the previous successful output set (if any) remains byte-for-byte
+    intact and internally consistent.
+  - *Phase 2 — commit:* only after all five temps exist, any previous finals are first
+    renamed to backups (`<final>.prev-<pid>`), then each temp is `os.replace`d into
+    place. If any rename/replace in this phase fails, the builder rolls the backups
+    back into place, deletes the temps, and exits non-zero — restoring the previous
+    consistent set. Backups are deleted only after all five replacements succeed.
+  - *Torn-state detection:* because the manifest pins the artifact's sha256, any
+    mismatched pairing that survives a rollback failure (e.g. process kill mid-phase-2)
+    is mechanically detectable; the validation step and the G4 audit gate must verify
+    manifest-sha-vs-artifact agreement before trusting any output set, and the repo's
+    git working-tree diff makes a torn state visible before it can be committed.
+- **Cleanup after failure:** all `.tmp-*` staging files deleted; `.prev-*` backups
+  either rolled back (phase-2 failure) or deleted (success); no residue; exit
+  non-zero.
 - **Exit codes:** `0` = candidate built, validated, all outputs written; `1` = source
   or feasibility failure (nothing written); `2` = post-assembly validation failure
   (artifact withheld, diagnostic report path printed to stderr only). Any non-zero
@@ -398,33 +413,48 @@ Positive:
 | P-5 | multi-team fixture with 2 teams, disjoint weeks, `games_played == 17` → accepted, `primary_team_rule` present |
 | P-6 | joined identity rows: `source_verified`, null draft fields preserved as null and listed in `missing_fields` |
 | P-7 | payload validates against `schemas/player_season_coverage_v0.schema.json` and passes the unchanged validator |
-| P-8 | repeat build with pinned `--generated-at` is byte-identical (N-15's positive half) |
+| P-8 | repeat build with pinned `--generated-at` is byte-identical (G-2's positive half) |
 
-Negative (every one must fail closed, writing nothing):
+Fail-closed negative tests — **every one must abort and publish nothing**
+(PR #221 review, discussion_r3608615746: this table now contains *only* abort cases):
 
 | id | scenario | required outcome |
 |---|---|---|
 | N-1 | one season missing week 5 | abort naming season + missing week |
-| N-1b | builder constant guard: `FULL_SEASON_MIN_WEEKS_2015_2020 == 14`, `EXPECTED_REG_WEEKS_2015_2020 == set(range(1, 18))`; a 14-week row classified with the 2021+ constant (15) would flip status — proves silent 2021+ reuse cannot pass |
 | N-2 | unexpected week 18 in one season | abort (historical span violated; 2021+ rule not applied) |
-| N-3 | POST rows present | excluded from REG evidence; REG counts unchanged; POST never errors alone |
 | N-4 | wrong-season rows in one season's response | abort naming counts + observed season values |
 | N-5 | mixed-season response (correct + wrong rows) | abort — build never filters drifted responses into a usable subset |
 | N-6 | duplicate `(player_id, season, season_type)` grain | abort |
 | N-7 | identity join rate 0.90 (< 0.95 floor) | abort |
-| N-8 | null draft fields | rows emitted with nulls; never zero-filled; validator passes (fabrication would fail) |
 | N-9 | contradictory duplicate `gsis_id` identity rows | abort naming collision count (no names in output) |
 | N-10 | `load_players()` call fails | abort (identity required) |
 | N-11 | one season's source call fails | abort entire build — no five-season candidate |
-| N-12 | ordinary cap: single-team `games_played == 16` accepted; `17` single-team rejected | as stated |
-| N-13 | valid trade overage: 2 teams, disjoint weeks, 17 games | accepted |
-| N-14 | unsupported overage: 17 games, one team (or >17 any) | abort |
-| N-15 | two runs, same pinned timestamp, same fixtures | byte-identical outputs |
-| N-16 | failure after partial in-memory assembly | no file written; no temp residue |
-| N-17 | builder path-guard: refuses any output path under `exports/**` | abort before network |
-| N-18 | accepted builders + audit script blobs unchanged by the implementation PR (git-level assertion in review, mirrored as a test reading file hashes) |
-| N-19 | no support-claim widening: candidate artifact/manifest/reports never contain the phrase "2015–2025 is available"; status fields are exactly `candidate_evidence_artifact_not_promoted` |
-| N-20 | candidate status never interpreted as promotion: manifest lacks every promoted-envelope required field (`promoted_at`, `promotion_review`, …) and the promoted schema rejects it |
+| N-12b | `games_played == 17` with a single team | abort (unexplained overage) |
+| N-14 | `games_played > 17` with any team context | abort |
+| N-16 | failure during phase-1 staging | nothing published; no `.tmp-*` residue; previous output set untouched |
+| N-16b | injected failure during phase-2 commit | backups rolled back; previous consistent output set restored; no `.tmp-*`/`.prev-*` residue |
+| N-17 | builder path-guard: any output path under `exports/**` | abort before network |
+
+Boundary-acceptance tests — legitimate source conditions the fail-closed rules must
+**not** over-reject (each builds successfully with the stated handling):
+
+| id | scenario | required outcome |
+|---|---|---|
+| B-1 (was N-3) | POST rows present in a season's response | excluded from REG evidence by the season_type filter; REG counts unchanged; POST rows alone never abort the build |
+| B-2 (was N-8) | null draft fields for joined players | rows emitted with nulls, listed in `missing_fields`; never zero-filled; unchanged validator passes (fabrication would fail it) |
+| B-3 (was N-13) | valid trade overage: 2 teams, disjoint weeks, `games_played == 17` | accepted; `primary_team_rule` present |
+| B-4 (was N-12's first half) | ordinary cap: single-team `games_played == 16` | accepted |
+
+Invariant / guard tests — assertions about constants, determinism, and boundaries
+(neither abort cases nor build outcomes):
+
+| id | assertion |
+|---|---|
+| G-1 (was N-1b) | builder constant guard: `FULL_SEASON_MIN_WEEKS_2015_2020 == 14`, `EXPECTED_REG_WEEKS_2015_2020 == set(range(1, 18))`; a 14-week row classified with the 2021+ constant (15) would flip status — proves silent 2021+ reuse cannot pass |
+| G-2 (was N-15) | two runs, same pinned timestamp, same fixtures → byte-identical outputs |
+| G-3 (was N-18) | accepted builders + audit script blobs unchanged by the implementation PR (git-level assertion in review, mirrored as a test reading file hashes) |
+| G-4 (was N-19) | no support-claim widening: candidate artifact/manifest/reports never contain the phrase "2015–2025 is available"; status fields are exactly `candidate_evidence_artifact_not_promoted` |
+| G-5 (was N-20) | candidate status never interpreted as promotion: manifest lacks every promoted-envelope required field (`promoted_at`, `promotion_review`, …) and the promoted schema rejects it |
 
 ## 15. Audit, review, and promotion gates
 
