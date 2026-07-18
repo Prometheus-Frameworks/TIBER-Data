@@ -328,8 +328,14 @@ Rules:
   report.
 - **Identity-join success is separate from optional-field completeness:** a joined row
   with null draft fields is `identity_confidence: source_verified` with those fields
-  null and listed in `missing_fields`. An unjoined row is `provisional` with all
-  identity-derived fields null. Neither state fabricates values.
+  null and listed in `missing_fields` — optional-field gaps never abort and are never
+  fabricated. The schema's `provisional` identity state is **unreachable in this
+  build** (corrected per discussion_r3608772421): under the exact-1.0 join gate above,
+  an unjoined included row *is* a join rate below 1.0 and aborts before staging
+  (N-24). This spec therefore defines **no emission rule for provisional rows**; the
+  enum value stays schema-compatible for other windows or a future re-audited
+  evidence lock only, and a published 2015–2020 candidate containing any
+  `provisional` row is by definition invalid (guard test G-8).
 - **No fabrication:** `birth_date`, `season_age`, `rookie_year`, `career_year`,
   `draft_year`, `draft_round`, `draft_pick`, `draft_team` are emitted only from
   `load_players()` values (with `season_age` computed from `birth_date` against the
@@ -540,6 +546,7 @@ Invariant / guard tests — assertions about constants, determinism, and boundar
 | G-5 (was N-20) | candidate status never interpreted as promotion: manifest lacks every promoted-envelope required field (`promoted_at`, `promotion_review`, …) and the promoted schema rejects it |
 | G-6 | successful run leaves **zero** `.tmp-*` or `.prev-*` residue in every output directory |
 | G-7 | the candidate manifest records all thirteen source-content hashes (six per-season week-level + six per-season REG-summary + one identity-fields), and they are deterministic across repeat runs on unchanged fixtures |
+| G-8 | every published record has `identity_confidence == source_verified`; the `provisional` path is unreachable — a fixture with one unjoined included player must abort via N-24 and never emit a provisional row |
 
 ## 15. Audit, review, and promotion gates
 
