@@ -144,10 +144,27 @@ Rules:
   requires a new source-audit issue first.**
 - **Environment/dependency metadata recorded** in the candidate manifest and build
   report: Python version, nflreadpy version, polars version, OS platform, UTC build
-  timestamp, and the §3 evidence lock (accepted main SHA + audit-script blob). If the
-  nflreadpy version at build time differs from the audited 0.1.5, the build proceeds
-  only if every fail-closed check still passes, and the version delta must be
-  prominently recorded in the build report for the independent audit gate (G4).
+  timestamp, and the §3 evidence lock (accepted main SHA + audit-script blob).
+- **Accepted-source fingerprint gate (G1 correction round):** candidate generation is
+  bound to the accepted #218 evidence, not merely reconciled against it afterwards.
+  Before any output is staged, the implementation must verify:
+  - **dependency pin:** the installed nflreadpy version is **exactly `0.1.5`** — the
+    version the accepted #218 audit observed. Any other version aborts; no
+    "newer-but-checks-pass" acceptance exists under the current evidence lock.
+  - **per-season fingerprint:** for every season 2015–2020, the freshly loaded source
+    must agree **exactly** with the accepted #218 machine-readable evidence report on:
+    week-level total row count; week-level REG row count; REG-summary total row
+    count; included QB/RB/WR/TE row and player counts; unique included player count;
+    the exact REG week set; wrong-season row counts (must be 0); duplicate grain
+    count (must be 0); maximum games observed; and identity-join rate.
+
+  Any dependency-version or fingerprint mismatch must: abort **before any output is
+  staged**; emit a bounded source-evidence-drift diagnostic (aggregate expected-vs-
+  observed values only, no player rows); produce **no candidate**; and require a new
+  source-audit issue plus explicit operator acceptance before the evidence lock may
+  change. Upstream corrections and dependency drift are **never silently accepted**
+  under the existing #218 authority — even an upstream fix that looks like an
+  improvement is unverified evidence until a new audit accepts it.
 - **Row-level source references:** identical semantics to the accepted 2021 builder —
   every record carries `source_refs` whose `source_name` values start with the approved
   prefixes (`nflreadpy.load_player_stats(`, `nflreadpy.load_players(`), with
@@ -366,27 +383,43 @@ this candidate reaches a terminal state, and is explicitly not part of this desi
   fail-closed-verified **in memory**; only then does publication begin. A failure in
   any season, check, or serialization step publishes nothing ("no partial candidate
   publication after a failed season").
-- **Two-phase set publication (PR #221 review, discussion_r3608615744):** the five
-  outputs (artifact, manifest, validation result, md report, json report) are
-  published as a **set**, never individually:
+- **Two-phase set publication with a transaction journal (PR #221 review,
+  discussion_r3608615744; G1 correction round):** the five outputs (artifact,
+  manifest, validation result, md report, json report) are published as a **set**,
+  never individually:
   - *Phase 1 — stage:* every output is fully written to a temp file
     (`<final>.tmp-<pid>`) in its destination directory; the manifest's sha256 is
     computed from the staged artifact bytes. Any phase-1 failure deletes all temps and
-    exits non-zero — the previous successful output set (if any) remains byte-for-byte
-    intact and internally consistent.
-  - *Phase 2 — commit:* only after all five temps exist, any previous finals are first
-    renamed to backups (`<final>.prev-<pid>`), then each temp is `os.replace`d into
-    place. If any rename/replace in this phase fails, the builder rolls the backups
-    back into place, deletes the temps, and exits non-zero — restoring the previous
-    consistent set. Backups are deleted only after all five replacements succeed.
-  - *Torn-state detection:* because the manifest pins the artifact's sha256, any
-    mismatched pairing that survives a rollback failure (e.g. process kill mid-phase-2)
-    is mechanically detectable; the validation step and the G4 audit gate must verify
-    manifest-sha-vs-artifact agreement before trusting any output set, and the repo's
-    git working-tree diff makes a torn state visible before it can be committed.
-- **Cleanup after failure:** all `.tmp-*` staging files deleted; `.prev-*` backups
-  either rolled back (phase-2 failure) or deleted (success); no residue; exit
-  non-zero.
+    exits non-zero — the pre-run state (including the *absence* of any output that did
+    not exist before the run) remains exactly intact.
+  - *Transaction journal:* before phase 2 begins, the builder records in memory, for
+    **every** final path: whether it existed before publication; its backup path
+    (`<final>.prev-<pid>`) when it existed; and, as phase 2 proceeds, whether the
+    staged replacement has been installed at that path.
+  - *Phase 2 — commit:* for each path in a fixed order: if a previous final exists it
+    is first renamed to its backup, then the staged temp is `os.replace`d into place
+    and the journal marks it installed. Backups are deleted only after **all five**
+    installations succeed.
+  - *Rollback on any phase-2 failure*, in **reverse installation order**:
+    1. remove every newly installed final recorded in the journal;
+    2. restore the prior backup for every path that existed before the run;
+    3. ensure every path that did **not** exist before the run is absent again
+       (first-run failures must not leave a partial first set behind);
+    4. if rollback itself cannot complete, retain every recoverable backup on disk
+       and emit a **fatal torn-state diagnostic** naming the journal state per path;
+    5. never delete the only recoverable prior copy of any output after a rollback
+       failure — backups are removed only on full success or full rollback.
+  - *Atomicity claims, stated accurately:* this contract makes every **caught**
+    staging/commit failure restore the exact pre-run state (presence and bytes, or
+    absence). It does **not** claim process-crash atomicity across multiple files: an
+    external hard kill mid-phase-2 can leave a torn but detectable state (journal not
+    consulted, backups still on disk). Manifest/artifact sha256 verification and
+    repository working-tree diff inspection are therefore mandatory rejection gates —
+    a torn state must be rejected before any commit to git and before any review
+    trusts the output set.
+- **Cleanup:** on success, all `.tmp-*` and `.prev-*` files removed (test G-6 asserts
+  zero residue); on caught failure, temps removed and pre-run state restored per the
+  rollback rules; on rollback failure, backups deliberately retained.
 - **Exit codes:** `0` = candidate built, validated, all outputs written; `1` = source
   or feasibility failure (nothing written); `2` = post-assembly validation failure
   (artifact withheld, diagnostic report path printed to stderr only). Any non-zero
@@ -394,8 +427,11 @@ this candidate reaches a terminal state, and is explicitly not part of this desi
 - **Report generation:** the build report (md+json) mirrors the 2021 candidate-build
   report conventions: sha256, artifact_id, status, seasons, counts by position and
   season, coverage-status distribution, identity join rate, environment metadata, and
-  a reconciliation table against the #218 audited per-season counts (§3). Reports
-  contain aggregates only — never player names or IDs beyond counts.
+  a reconciliation table against the #218 audited per-season counts (§3). That
+  reconciliation is a **gate, not merely informational**: it restates the §6
+  accepted-source fingerprint verification that already had to pass before staging —
+  a build whose reconciliation table disagrees with #218 cannot exist as a published
+  set. Reports contain aggregates only — never player names or IDs beyond counts.
 
 ## 14. Positive and negative test matrix
 
@@ -431,9 +467,15 @@ Fail-closed negative tests — **every one must abort and publish nothing**
 | N-11 | one season's source call fails | abort entire build — no five-season candidate |
 | N-12b | `games_played == 17` with a single team | abort (unexplained overage) |
 | N-14 | `games_played > 17` with any team context | abort |
-| N-16 | failure during phase-1 staging | nothing published; no `.tmp-*` residue; previous output set untouched |
-| N-16b | injected failure during phase-2 commit | backups rolled back; previous consistent output set restored; no `.tmp-*`/`.prev-*` residue |
+| N-16 | failure during phase-1 staging | nothing published; no `.tmp-*` residue; pre-run state (including absence of never-existing outputs) untouched |
+| N-16b | **first run** (no prior outputs), injected failure after **each** of the five replacement points in turn | rollback removes every newly installed final; **every final remains absent**; no `.tmp-*`/`.prev-*` residue |
+| N-16c | **rerun** over a prior successful set, injected failure after **each** of the five replacement points in turn | rollback restores **every prior final byte-for-byte**; no residue |
+| N-16d | injected failure during rollback itself | every recoverable backup **retained on disk**; fatal torn-state diagnostic emitted naming per-path journal state; the only recoverable prior copy is never deleted |
 | N-17 | builder path-guard: any output path under `exports/**` | abort before network |
+| N-21 | installed nflreadpy version is not exactly `0.1.5` | abort before staging; bounded source-evidence-drift diagnostic; no candidate |
+| N-22 | one per-season fingerprint count differs from #218 (e.g. week-level REG row count off by one for 2017) | abort before staging; drift diagnostic names season + expected-vs-observed aggregate |
+| N-23 | max-games fingerprint mismatch (e.g. 2018 source now shows 17) | abort before staging; drift diagnostic |
+| N-24 | identity-join rate differs from the audited #218 fingerprint | abort before staging; drift diagnostic |
 
 Boundary-acceptance tests — legitimate source conditions the fail-closed rules must
 **not** over-reject (each builds successfully with the stated handling):
@@ -455,6 +497,7 @@ Invariant / guard tests — assertions about constants, determinism, and boundar
 | G-3 (was N-18) | accepted builders + audit script blobs unchanged by the implementation PR (git-level assertion in review, mirrored as a test reading file hashes) |
 | G-4 (was N-19) | no support-claim widening: candidate artifact/manifest/reports never contain the phrase "2015–2025 is available"; status fields are exactly `candidate_evidence_artifact_not_promoted` |
 | G-5 (was N-20) | candidate status never interpreted as promotion: manifest lacks every promoted-envelope required field (`promoted_at`, `promotion_review`, …) and the promoted schema rejects it |
+| G-6 | successful run leaves **zero** `.tmp-*` or `.prev-*` residue in every output directory |
 
 ## 15. Audit, review, and promotion gates
 
@@ -477,8 +520,10 @@ independent audit because generated data + builder code can be misread as promot
 
 None blocking. Non-blocking notes for the implementation reviewer:
 
-1. nflreadpy version drift (audit ran 0.1.5): handled by §6's record-and-verify rule,
-   not by pinning a dependency version in this design.
+1. nflreadpy version drift: resolved by §6's accepted-source fingerprint gate — the
+   implementation requires exactly the audited 0.1.5 and exact per-season fingerprint
+   agreement with #218; changing either requires a new source-audit issue and explicit
+   operator acceptance of a revised evidence lock.
 2. The candidate-manifest shape (§5) is new (prior candidates carried metadata
    in-artifact only); it is additive evidence and requires no contract change.
 3. The 2019 17-game observation is bound at build time by §9's trade-evidence rule;
@@ -491,8 +536,10 @@ None blocking. Non-blocking notes for the implementation reviewer:
   week rule, a justified `full_season >= 14` historical threshold, games/trade
   semantics with fail-closed caps, identity and nullability rules, schema/validator
   reuse with zero contract changes, builder architecture (new bounded builder), a
-  deterministic execution contract, a mechanically actionable test matrix, and eight
-  non-automatic gates.
+  deterministic execution contract with a journaled publication transaction (exact
+  pre-run state restored on every caught failure, first-run absence included), an
+  accepted-source fingerprint gate binding generation to the audited nflreadpy 0.1.5
+  evidence, a mechanically actionable test matrix, and eight non-automatic gates.
 - The design binds exclusively to accepted, pinned evidence (§3) and changes no
   repository behavior.
 
