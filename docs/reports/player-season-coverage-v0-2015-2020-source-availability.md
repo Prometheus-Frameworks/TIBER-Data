@@ -1,6 +1,6 @@
 # Source-Availability Report: `player_season_coverage_v0` — 2015-2020 REG
 
-- **Generated at:** 2026-07-18T01:03:58.408044+00:00
+- **Generated at:** 2026-07-18T01:07:31.909395+00:00
 - **Tracking issue:** TIBER-Data#216
 - **Status:** `source_availability_evidence_report_not_an_artifact`
 - **Environment:** Python 3.11.15, nflreadpy 0.1.5

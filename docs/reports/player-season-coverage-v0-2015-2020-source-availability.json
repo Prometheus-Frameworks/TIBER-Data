@@ -3,7 +3,7 @@
   "status": "source_availability_evidence_report_not_an_artifact",
   "tracking_issue": "TIBER-Data#216",
   "strategy_context_not_authority": "TIBER-Strategy#3 (research/proven-production-discount-field-note-v0, commit 9992648, docs/design/proven-production-discount-research-note-v0.md) motivates why deeper player history may later matter; it carries NO authority over TIBER-Data behavior and did not influence this audit's verdict.",
-  "generated_at": "2026-07-18T01:03:58.408044+00:00",
+  "generated_at": "2026-07-18T01:07:31.909395+00:00",
   "environment": {
     "python_version": "3.11.15",
     "nflreadpy_version": "0.1.5"

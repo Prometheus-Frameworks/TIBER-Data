@@ -66,6 +66,7 @@ _REG_STAT_FIELDS = {
 
 _WEEK_COLUMNS = ["season", "week", "player_id", "team", "season_type", "position"]
 _REG_COLUMNS = [
+    "season",
     "player_id",
     "player_display_name",
     "position",
@@ -95,6 +96,7 @@ def _week_rows(season: int, weeks=None) -> list[dict]:
 def _reg_rows(season: int, games: int = 16) -> list[dict]:
     return [
         {
+            "season": season,
             "player_id": pid,
             "player_display_name": f"FIXTURE PLAYER {pid}",
             "position": pos,
@@ -334,13 +336,14 @@ def test_wrong_season_rows_are_excluded_and_flagged_for_followup() -> None:
     by_season = {r["season"]: r for r in payload["seasons"]}
     a = by_season[2016]["availability"]
     # The 2015-labeled rows are excluded from every 2016 evidence count.
-    assert a["week_level_rows_wrong_season_excluded"] == len(_week_rows(2015))
+    assert a["wrong_season_week_row_count"] == len(_week_rows(2015))
     assert a["week_level_rows_reg"] == len(_week_rows(2016))
+    assert a["observed_week_level_season_values"] == [2015, 2016]
     assert any("wrong_season_rows_present" in item for item in by_season[2016]["followup_items"])
     assert 2016 not in payload["summary"]["seasons_fully_cleared"]
 
 
-def test_only_wrong_season_rows_is_followup_not_definitive_absence() -> None:
+def test_only_wrong_season_week_rows_is_followup_not_definitive_absence() -> None:
     """A response containing ONLY wrong-season rows is a contaminated loader
     response (follow-up), not definitive evidence the source lacks the season."""
     module = _load_module()
@@ -349,9 +352,81 @@ def test_only_wrong_season_rows_is_followup_not_definitive_absence() -> None:
     assert payload["decision"] == "player_season_coverage_2015_2020_source_audit_requires_followup"
     by_season = {r["season"]: r for r in payload["seasons"]}
     assert by_season[2016]["statuses"]["source_rows_exist"] == "fail"
+    assert by_season[2016]["statuses"]["builder_compatible"] == "incompatible"
     assert by_season[2016]["definitive_failures"] == []
     assert 2016 not in payload["summary"]["seasons_with_definitive_failures"]
     assert by_season[2016]["availability"]["week_level_rows_reg"] == 0
+    assert by_season[2016]["availability"]["observed_week_level_season_values"] == [2015]
+
+
+def test_only_wrong_season_reg_rows_is_followup_and_counts_nothing() -> None:
+    module = _load_module()
+    wrong_only = _FakeFrame(_reg_rows(2015), columns=_REG_COLUMNS)
+    payload = _run(module, reg_overrides={2016: wrong_only})
+    assert payload["decision"] == "player_season_coverage_2015_2020_source_audit_requires_followup"
+    by_season = {r["season"]: r for r in payload["seasons"]}
+    a = by_season[2016]["availability"]
+    assert a["wrong_season_reg_row_count"] == len(_reg_rows(2015))
+    assert a["observed_reg_level_season_values"] == [2015]
+    assert a["reg_level_rows_reg_qb_rb_wr_te"] == 0
+    assert a["unique_players_all_positions"] == 0
+    assert by_season[2016]["statuses"]["source_rows_exist"] == "fail"
+    assert by_season[2016]["statuses"]["builder_compatible"] == "incompatible"
+    assert by_season[2016]["definitive_failures"] == []
+
+
+def test_mixed_seasons_at_both_levels_count_only_requested_season() -> None:
+    module = _load_module()
+    week_mixed = _FakeFrame(_week_rows(2017) + _week_rows(2016), columns=_WEEK_COLUMNS)
+    reg_mixed = _FakeFrame(_reg_rows(2017) + _reg_rows(2016), columns=_REG_COLUMNS)
+    payload = _run(module, week_overrides={2017: week_mixed}, reg_overrides={2017: reg_mixed})
+    assert payload["decision"] == "player_season_coverage_2015_2020_source_audit_requires_followup"
+    by_season = {r["season"]: r for r in payload["seasons"]}
+    a = by_season[2017]["availability"]
+    # Only 2017-labeled rows count anywhere: row counts, player counts, weeks, grain.
+    assert a["week_level_rows_reg"] == len(_week_rows(2017))
+    assert a["reg_level_rows_reg_qb_rb_wr_te"] == len(_reg_rows(2017))
+    assert a["unique_players_all_positions"] == len(_PLAYER_IDS)
+    assert a["duplicate_grain_pairs"] == 0
+    assert a["wrong_season_week_row_count"] == len(_week_rows(2016))
+    assert a["wrong_season_reg_row_count"] == len(_reg_rows(2016))
+    assert a["observed_week_level_season_values"] == [2016, 2017]
+    assert a["observed_reg_level_season_values"] == [2016, 2017]
+    # Contamination still forces at least follow-up; the season is never cleared.
+    assert 2017 not in payload["summary"]["seasons_fully_cleared"]
+    assert any(
+        "wrong_season_rows_present" in item for item in by_season[2017]["followup_items"]
+    )
+    # But the untouched seasons remain fully inspected and clean.
+    assert by_season[2015]["statuses"]["source_rows_exist"] == "pass"
+
+
+def test_wrong_season_evidence_is_surfaced_in_rendered_report() -> None:
+    module = _load_module()
+    week_mixed = _FakeFrame(_week_rows(2016) + _week_rows(2015), columns=_WEEK_COLUMNS)
+    payload = _run(module, week_overrides={2016: week_mixed})
+    md = module.render_markdown(payload)
+    assert "wrong-season rows excluded" in md
+    assert "season values observed" in md
+    assert "wrong_season_rows_present" in md
+
+
+def test_missing_reg_season_column_fails_required_columns_closed() -> None:
+    module = _load_module()
+    reg_cols = [c for c in _REG_COLUMNS if c != "season"]
+    rows = [{k: v for k, v in r.items() if k != "season"} for r in _reg_rows(2019)]
+    payload = _run(module, reg_overrides={2019: _FakeFrame(rows, columns=reg_cols)})
+    by_season = {r["season"]: r for r in payload["seasons"]}
+    assert by_season[2019]["statuses"]["required_columns_present"] == "fail"
+    assert "season" in by_season[2019]["schema_compatibility"]["missing_required_reg_level"]
+    # Without a season column no reg row can prove it belongs to 2019.
+    assert by_season[2019]["availability"]["reg_level_rows_reg_qb_rb_wr_te"] == 0
+    assert by_season[2019]["availability"]["observed_reg_level_season_values"] is None
+    assert by_season[2019]["statuses"]["builder_compatible"] == "incompatible"
+    assert (
+        payload["decision"]
+        != "may_open_player_season_coverage_2015_2020_candidate_build_issue"
+    )
 
 
 def test_report_is_aggregate_only_no_player_names_ids_or_rows() -> None:
