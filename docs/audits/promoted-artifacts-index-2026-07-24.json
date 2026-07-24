@@ -1,0 +1,80 @@
+{
+  "audit_id": "promoted-artifacts-index-2026-07-24",
+  "date": "2026-07-24",
+  "scope": "TIBER-Data only. Read-only contradiction audit of the documentation-only promoted artifacts index introduced by PR #225 under TIBER-Ops #44.",
+  "tracking": [
+    "TIBER-Data#97",
+    "TIBER-Data PR#225",
+    "TIBER-Ops#44"
+  ],
+  "review_input": {
+    "base_commit": "85f8a46b924d2e051729b78af25fcfc5b677ba69",
+    "pr_head": "46519949243ff8470980fee0450b450a4b6a4be2"
+  },
+  "type": "audit_only",
+  "audit_trigger": "AGENTS.md audit triggers: adds a document under docs/contracts/** and changes provenance/support-claim wording",
+  "executive_verdict": "pass_after_documentation_correction",
+  "checks": {
+    "committed_inventory_parity": {
+      "committed_files": 15,
+      "indexed_paths": 15,
+      "missing_paths": [],
+      "extra_paths": [],
+      "result": "pass"
+    },
+    "payload_readability": {
+      "json_files_parsed": 14,
+      "jsonl_files_parsed": 1,
+      "jsonl_rows": 1,
+      "result": "pass"
+    },
+    "local_markdown_links": {
+      "missing_targets": [],
+      "result": "pass"
+    },
+    "directory_provenance_separation": {
+      "promoted_directory_treated_as_provenance_guarantee": false,
+      "fixture_and_provisional_states_preserved": true,
+      "result": "pass"
+    },
+    "producer_claims": {
+      "unsupported_producer_inference_found": false,
+      "player_ownership_aliases_producer": "unknown",
+      "result": "pass"
+    },
+    "ownership_support_window": {
+      "total_rows": 27,
+      "roster_backed_2025_rows": 19,
+      "roster_week_distribution": {
+        "18": 4,
+        "19": 8,
+        "20": 5,
+        "22": 2
+      },
+      "draft_backed_2026_rows": 7,
+      "fixture_rows": 1,
+      "week_21_support_inferred": false,
+      "current_roster_truth_claimed": false,
+      "result": "pass_after_correction"
+    },
+    "scope_drift": {
+      "promoted_artifacts_modified": false,
+      "data_modified": false,
+      "schemas_modified": false,
+      "source_or_validator_modified": false,
+      "downstream_repository_modified": false,
+      "promotion_attempted": false,
+      "result": "pass"
+    }
+  },
+  "audit_conclusion": "no_contradiction_found_after_ownership_window_wording_correction",
+  "decisions_not_authorized": [
+    "promotion or mutation of any artifact",
+    "producer reassignment",
+    "support-window expansion",
+    "downstream availability",
+    "merge or deployment",
+    "product behavior"
+  ],
+  "final_authority": "operator"
+}
