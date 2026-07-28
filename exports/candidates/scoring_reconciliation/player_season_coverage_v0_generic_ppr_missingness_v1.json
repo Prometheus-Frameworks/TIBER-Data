@@ -1,0 +1,33 @@
+{
+  "artifact_id": "player_season_coverage_v0_generic_ppr_missingness_v1",
+  "generated_at": "2026-07-27T23:28:38Z",
+  "profile_sha256": "b1404afb1c7c6c9760b36090e5a84ef3fd2a29dfe8ba2e2fe0efb98d0ac6622e",
+  "records": [],
+  "row_count": 0,
+  "source_artifact_sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+  "spec_version": "1.0.0",
+  "status": "candidate_evidence_not_promoted",
+  "summary": {
+    "component_missing_counts": {
+      "production_summary.passing.interceptions": 0,
+      "production_summary.passing.passing_tds": 0,
+      "production_summary.passing.passing_yards": 0,
+      "production_summary.receiving.receiving_tds": 0,
+      "production_summary.receiving.receiving_yards": 0,
+      "production_summary.rushing.rushing_tds": 0,
+      "production_summary.rushing.rushing_yards": 0,
+      "usage_summary.receptions": 0
+    },
+    "genuine_zero_rule": "Present numeric zero is observed, scored, and never listed as missing.",
+    "non_evaluable_status_counts": {
+      "component_missing": 0,
+      "identity_unresolved": 0,
+      "regular_season_scope_unresolved": 0,
+      "season_incomplete": 0,
+      "source_total_missing": 0,
+      "unsupported_position": 0
+    },
+    "source_total_missing_count": 0
+  },
+  "tracking_issue": "TIBER-Data#228"
+}
