@@ -29,6 +29,7 @@ Canonical architecture governance documents:
 - [TIBER Intelligence Evolution Roadmap](docs/governance/tiber-intelligence-evolution-roadmap.md)
 - [Evidence Layer v0 Contract Shapes](docs/contracts/evidence-layer-v0.md)
 - [Promoted Artifacts Index](docs/contracts/promoted-artifacts-index.md) — observed committed paths and their declared provenance/support boundaries; directory location alone is not a provenance guarantee
+- [Bounded 2026 Population Census v0](docs/contracts/bounded-2026-population-census-v0.md) — candidate-only, row-preserving union of the pinned 2025 historical-offense and promoted 2026 rookie-transition cohorts; not a full/current-active universe or Forecast authorization
 - [Historical Rookie Replay v0 Governance](docs/governance/historical-rookie-replay-v0.md)
 - [Historical Rookie Replay v0 Contract](docs/contracts/history-rookie-replay-v0.md)
 - [Roster Snapshot v0 Contract](docs/contracts/roster-snapshot-v0.md) — canonical roster identity, team membership, source metadata, and time-bounded snapshot scaffold

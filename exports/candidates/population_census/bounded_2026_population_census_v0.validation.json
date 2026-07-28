@@ -1,0 +1,46 @@
+{
+  "artifact_id": "bounded_2026_population_census_v0",
+  "artifact_path": "exports/candidates/population_census/bounded_2026_population_census_v0.json",
+  "artifact_sha256": "6057031bfc6dfedac1a5b2957ec194e738df5fbdb12dfec80d1e8ad773f0d1ea",
+  "deterministic_source_rebuild_equal": true,
+  "forecast_run_authorized": false,
+  "identity_status_counts": {
+    "canonical_id_source_verified": 610,
+    "source_id_present_canonical_unresolved": 48
+  },
+  "population_row_count": 658,
+  "promotion_authorized": false,
+  "reconciliation_counts": {
+    "cross_source_canonical_identity_collision_groups": null,
+    "cross_source_source_id_reuse_groups": 0,
+    "duplicate_resolved_canonical_id_groups": 0,
+    "duplicate_source_id_groups": 0,
+    "duplicate_source_row_hash_groups": 0,
+    "missing_identity_rows": 0,
+    "unresolved_identity_rows": 48
+  },
+  "schema_version": "bounded_2026_population_census_v0.1.0",
+  "source_pins_verified": true,
+  "source_row_counts": {
+    "tiber_data_player_season_coverage_v0_2025": 610,
+    "tiber_rookies_transition_profile_v0_2_2026": 48
+  },
+  "source_row_index_ranges": {
+    "tiber_data_player_season_coverage_v0_2025": {
+      "count": 610,
+      "maximum": 3015,
+      "minimum": 2406
+    },
+    "tiber_rookies_transition_profile_v0_2_2026": {
+      "count": 48,
+      "maximum": 47,
+      "minimum": 0
+    }
+  },
+  "team_status_counts": {
+    "source_backed_2026_drafted_team": 47,
+    "source_backed_2026_udfa_team": 1,
+    "source_backed_historical_team": 610
+  },
+  "validation_status": "passed"
+}
