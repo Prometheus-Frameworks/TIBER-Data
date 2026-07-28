@@ -1,0 +1,86 @@
+{
+  "artifact_id": "player_season_coverage_v0_generic_ppr_reconciliation_v1_manifest",
+  "authority_boundary": "TIBER-Data candidate evidence only. No source mutation, promotion, Forecast admission, cutoff selection, model/run execution, or advice.",
+  "generated_at": "2026-07-27T23:28:38Z",
+  "generator": "scripts/reconcile_player_season_coverage_ppr_v1.py",
+  "invariants": {
+    "completeness_count_sum": 3016,
+    "discrepancy_rows": 830,
+    "forecast_authorized": false,
+    "missingness_rows": 0,
+    "promotion_attempted": false,
+    "reconciliation_rows": 3016,
+    "source_bytes_modified": false,
+    "source_rows": 3016,
+    "status_count_sum": 3016
+  },
+  "outputs": [
+    {
+      "bytes": 15366,
+      "path": "docs/contracts/player-season-coverage-v0-generic-ppr-reconciliation-v1.json",
+      "sha256": "6542e32ffba6446d982c8459e7a81187e7970cb6ef1a74e76be5d35edd26dd98"
+    },
+    {
+      "bytes": 6065,
+      "path": "docs/reports/player-season-coverage-v0-generic-ppr-reconciliation-v1.md",
+      "sha256": "4ecad3fce211b319d2de7fda2155cebc3cbed144c0578f93f5c5089f9ab471e8"
+    },
+    {
+      "bytes": 683849,
+      "path": "exports/candidates/scoring_reconciliation/player_season_coverage_v0_generic_ppr_discrepancies_v1.json",
+      "sha256": "4a7fbf1b0c8c710ff51315498759b01f6dc04bca43d1ecdbdfebf0d9ff527b6c"
+    },
+    {
+      "bytes": 1299,
+      "path": "exports/candidates/scoring_reconciliation/player_season_coverage_v0_generic_ppr_missingness_v1.json",
+      "sha256": "6dbcae1234614e497700ee454eebe97b96f5362d9651b77b8f4b0d69a35b80b6"
+    },
+    {
+      "bytes": 5165772,
+      "path": "exports/candidates/scoring_reconciliation/player_season_coverage_v0_generic_ppr_reconciliation_v1.json",
+      "sha256": "7b29b96b784875595151c2670c77c006f60b8354afbd76db7603ae03b54cf582"
+    }
+  ],
+  "profile_sha256": "b1404afb1c7c6c9760b36090e5a84ef3fd2a29dfe8ba2e2fe0efb98d0ac6622e",
+  "reproduce": [
+    "python3 scripts/reconcile_player_season_coverage_ppr_v1.py",
+    "python3 scripts/reconcile_player_season_coverage_ppr_v1.py --check"
+  ],
+  "source": {
+    "artifact": {
+      "artifact_id": "player_season_coverage_v0",
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "promotion_decision": "promote_player_season_coverage_v0_2021_2025",
+      "promotion_review": "TIBER-Data#202",
+      "row_count": 3016,
+      "season_type_scope": [
+        "REG"
+      ],
+      "seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+      "spec_version": "player_season_coverage_v0_promoted_v1",
+      "status": "promoted_governed_artifact"
+    },
+    "promotion_manifest": {
+      "declared_promoted_artifact_sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+      "path": "exports/promoted/nfl/PLAYER_SEASON_COVERAGE_V0_PROMOTION_MANIFEST.json",
+      "sha256": "5e9a382db0681e7a808a1d5fdf4334653cf2f0b26314c45425b333aa2024d154"
+    },
+    "repository": "Prometheus-Frameworks/TIBER-Data",
+    "repository_commit": "31c0c8e751816d262cf79ffef1a4ae9b6c9b70d5",
+    "source_candidate": {
+      "path": "data/processed/evidence/player_season_coverage_2021_2025.source_backed.json",
+      "sha256": "c92404a1b519a62ee9f4b75f74662157fc8dd02b883648d4cdae694d0e021424"
+    }
+  },
+  "spec_version": "1.0.0",
+  "status": "candidate_evidence_manifest_not_promoted",
+  "terminal_decision": "scoring_reconciliation_evidence_ready",
+  "tracking_issue": "TIBER-Data#228"
+}

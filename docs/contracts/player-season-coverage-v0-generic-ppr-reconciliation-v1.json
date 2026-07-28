@@ -1,0 +1,342 @@
+{
+  "aggregation_precedence": {
+    "candidate_profile_total": "Compute from the eight governed season component fields; this is the only exact tiber-generic-full-ppr-v1 value.",
+    "promoted_source_total": "Preserve production_summary.season_ppr as a comparator; never overwrite it or treat it as profile-equivalent when it mismatches.",
+    "weekly_total": "No weekly scoring rows exist in the promoted source. Do not fabricate a weekly sum or use an unpinned weekly artifact as a substitute."
+  },
+  "component_bindings": [
+    {
+      "component_name": "receptions",
+      "input_type": "finite_integer_valued_json_number",
+      "profile_term": "reception",
+      "source_path": "usage_summary.receptions",
+      "weight": "1"
+    },
+    {
+      "component_name": "receiving_yards",
+      "input_type": "finite_integer_valued_json_number",
+      "profile_term": "receiving_yard",
+      "source_path": "production_summary.receiving.receiving_yards",
+      "weight": "0.1"
+    },
+    {
+      "component_name": "receiving_touchdowns",
+      "input_type": "finite_integer_valued_json_number",
+      "profile_term": "receiving_touchdown",
+      "source_path": "production_summary.receiving.receiving_tds",
+      "weight": "6"
+    },
+    {
+      "component_name": "rushing_yards",
+      "input_type": "finite_integer_valued_json_number",
+      "profile_term": "rushing_yard",
+      "source_path": "production_summary.rushing.rushing_yards",
+      "weight": "0.1"
+    },
+    {
+      "component_name": "rushing_touchdowns",
+      "input_type": "finite_integer_valued_json_number",
+      "profile_term": "rushing_touchdown",
+      "source_path": "production_summary.rushing.rushing_tds",
+      "weight": "6"
+    },
+    {
+      "component_name": "passing_yards",
+      "input_type": "finite_integer_valued_json_number",
+      "profile_term": "passing_yard",
+      "source_path": "production_summary.passing.passing_yards",
+      "weight": "0.04"
+    },
+    {
+      "component_name": "passing_touchdowns",
+      "input_type": "finite_integer_valued_json_number",
+      "profile_term": "passing_touchdown",
+      "source_path": "production_summary.passing.passing_tds",
+      "weight": "4"
+    },
+    {
+      "component_name": "interceptions",
+      "input_type": "finite_integer_valued_json_number",
+      "profile_term": "interception",
+      "source_path": "production_summary.passing.interceptions",
+      "weight": "-2"
+    }
+  ],
+  "consumer_boundary": {
+    "allowed": [
+      "inspect generic full-PPR component identity",
+      "use derived_generic_ppr as candidate evidence after downstream admission",
+      "inspect source-total discrepancies and explicit completeness"
+    ],
+    "not_allowed": [
+      "rewrite promoted source bytes or totals",
+      "infer omitted source-total components per row",
+      "claim every source season_ppr conforms to the candidate profile",
+      "authorize Forecast model admission, cutoff selection, or run execution",
+      "promote, deploy, rank, advise, or produce league-specific scoring"
+    ]
+  },
+  "contract_id": "player-season-coverage-v0-generic-ppr-reconciliation-v1",
+  "contract_version": "1.0.0",
+  "missingness_and_zero": {
+    "genuine_zero": "A present numeric 0 is a governed observed zero and participates in the score; it is listed in observed_zero_components.",
+    "source_total_unavailable": "A missing/null production_summary.season_ppr yields source_total_missing and is not reconstructed.",
+    "unavailable": "A missing key or JSON null is unavailable, remains null, and yields component_missing; no unavailable component is zero-filled."
+  },
+  "numeric_rule": {
+    "arithmetic": "base-10 Decimal constructed from JSON numeric text",
+    "comparison": "Quantize component-derived and source totals independently to 0.01, then compare the cent-scale values. Raw decimal values/deltas remain visible as diagnostics but never drive semantic status.",
+    "component_input_type": "finite integer-valued JSON numbers; strings and booleans are rejected",
+    "exact": "absolute cent-scale delta == 0.00",
+    "mismatch": "absolute cent-scale delta > 0.00",
+    "published_scale": "0.01 points",
+    "rounding": "ROUND_HALF_UP",
+    "source_total_input_type": "finite JSON number; strings and booleans are rejected",
+    "tolerance": "0.00",
+    "within_tolerance": "Reserved state; v1 tolerance is 0.00, so no nonzero cent-scale delta qualifies."
+  },
+  "profile": {
+    "canonical_json_rule": "UTF-8 JSON; object keys sorted recursively; separators ',' and ':'; no insignificant whitespace; profile_sha256 is SHA-256 over the canonical JSON bytes of profile.definition only",
+    "definition": {
+      "bonuses": "none",
+      "league_specific": false,
+      "profile_id": "tiber-generic-full-ppr-v1",
+      "profile_version": "1.0.0",
+      "regular_season_only": true,
+      "scoring": {
+        "interception": "-2",
+        "passing_touchdown": "4",
+        "passing_yard": "0.04",
+        "receiving_touchdown": "6",
+        "receiving_yard": "0.1",
+        "reception": "1",
+        "rushing_touchdown": "6",
+        "rushing_yard": "0.1"
+      },
+      "supported_positions": [
+        "QB",
+        "RB",
+        "WR",
+        "TE"
+      ]
+    },
+    "profile_sha256": "b1404afb1c7c6c9760b36090e5a84ef3fd2a29dfe8ba2e2fe0efb98d0ac6622e"
+  },
+  "reconciliation_states": [
+    "reconciled_exact",
+    "reconciled_within_tolerance",
+    "component_missing",
+    "source_total_missing",
+    "regular_season_scope_unresolved",
+    "season_incomplete",
+    "scoring_mismatch",
+    "unsupported_position",
+    "identity_unresolved"
+  ],
+  "reconciliation_status_contract": {
+    "ordered_precedence": [
+      {
+        "condition": "position is outside QB/RB/WR/TE",
+        "order": 1,
+        "reason_codes": [
+          "position_outside_qb_rb_wr_te_scope"
+        ],
+        "status": "unsupported_position"
+      },
+      {
+        "condition": "player_id/player_name is missing or identity_confidence is not source_verified",
+        "order": 2,
+        "reason_codes": [
+          "source_verified_identity_required"
+        ],
+        "status": "identity_unresolved"
+      },
+      {
+        "condition": "season is outside 2021-2025, season_type is not REG, or season completeness is irreconcilable",
+        "order": 3,
+        "reason_codes": [
+          "weeks_observed_not_integer",
+          "weeks_observed_outside_0_18",
+          "coverage_status_conflicts_with_weeks_observed",
+          "declared_<coverage_status>",
+          "computed_<season_completeness>",
+          "season_or_season_type_outside_contract"
+        ],
+        "status": "regular_season_scope_unresolved"
+      },
+      {
+        "condition": "weeks_observed is 0",
+        "order": 4,
+        "reason_codes": [
+          "zero_regular_season_weeks_observed"
+        ],
+        "status": "season_incomplete"
+      },
+      {
+        "condition": "one or more governed component paths is null or absent",
+        "order": 5,
+        "reason_codes": [
+          "required_profile_component_unavailable"
+        ],
+        "status": "component_missing"
+      },
+      {
+        "condition": "production_summary.season_ppr is null or absent",
+        "order": 6,
+        "reason_codes": [
+          "promoted_season_ppr_unavailable"
+        ],
+        "status": "source_total_missing"
+      },
+      {
+        "condition": "signed cent-scale derived-minus-source delta is 0.00",
+        "order": 7,
+        "reason_codes": [
+          "candidate_profile_matches_source_total_at_cent_scale"
+        ],
+        "status": "reconciled_exact"
+      },
+      {
+        "condition": "signed cent-scale delta is nonzero and absolute delta is at most tolerance; reserved and unreachable while tolerance is 0.00",
+        "order": 8,
+        "reason_codes": [
+          "candidate_profile_within_declared_numeric_tolerance"
+        ],
+        "status": "reconciled_within_tolerance"
+      },
+      {
+        "condition": "absolute cent-scale delta exceeds tolerance",
+        "order": 9,
+        "reason_codes": [
+          "source_total_not_equivalent_to_candidate_profile",
+          "delta_not_attributable_from_promoted_component_set"
+        ],
+        "status": "scoring_mismatch"
+      }
+    ],
+    "reason_code_vocabulary": {
+      "fixed": {
+        "candidate_profile_matches_source_total_at_cent_scale": "Independently normalized candidate and source totals match exactly.",
+        "candidate_profile_within_declared_numeric_tolerance": "A nonzero normalized delta is no greater than tolerance.",
+        "coverage_status_conflicts_with_weeks_observed": "Declared coverage_status disagrees with deterministic classification.",
+        "delta_not_attributable_from_promoted_component_set": "Promoted rows omit the out-of-profile fields needed for per-row attribution.",
+        "position_outside_qb_rb_wr_te_scope": "Producer-native position is outside the approved profile.",
+        "promoted_season_ppr_unavailable": "production_summary.season_ppr is absent or null.",
+        "required_profile_component_unavailable": "One or more exact source paths in component_bindings is absent or null.",
+        "season_or_season_type_outside_contract": "season is outside 2021-2025 or season_type is not REG.",
+        "source_total_not_equivalent_to_candidate_profile": "The normalized source total differs from the candidate profile total.",
+        "source_verified_identity_required": "A nonempty player ID/name and source_verified confidence are required.",
+        "weeks_observed_not_integer": "weeks_observed is not a non-boolean JSON integer.",
+        "weeks_observed_outside_0_18": "weeks_observed is outside the inclusive range 0-18.",
+        "zero_regular_season_weeks_observed": "No regular-season stat-line week is represented."
+      },
+      "patterns": {
+        "computed_<season_completeness>": "Carries the deterministic completeness class on a conflict.",
+        "declared_<coverage_status>": "Carries the producer-declared coverage_status value on a conflict."
+      }
+    },
+    "selection_rule": "Evaluate ordered_precedence from lowest order to highest and emit the first matching status. The final three delta states apply only after all eligibility, completeness, component, and source-total conditions pass.",
+    "status_definitions": {
+      "component_missing": "At least one governed component path is absent or null; no component is inferred or zero-filled.",
+      "identity_unresolved": "Source-verified player identity is not established.",
+      "reconciled_exact": "All higher-precedence gates pass and candidate/source totals match after independent cent-scale normalization.",
+      "reconciled_within_tolerance": "All higher-precedence gates pass and a nonzero normalized delta is within tolerance; reserved in v1 because tolerance is 0.00.",
+      "regular_season_scope_unresolved": "Season/season_type or deterministic completeness evidence does not satisfy the governed regular-season scope.",
+      "scoring_mismatch": "All higher-precedence gates pass and the normalized delta is nonzero and outside tolerance.",
+      "season_incomplete": "The row declares zero observed regular-season weeks.",
+      "source_total_missing": "The promoted comparator total is absent or null.",
+      "unsupported_position": "The producer-native position is outside QB/RB/WR/TE."
+    },
+    "validation_precondition": "Before status selection, governed component and source-total values must satisfy numeric_rule. A malformed numeric type, non-finite value, or non-integral component is a build-stopping contract violation; it is not converted into a row status."
+  },
+  "season_completeness": {
+    "full_season": "15-18 distinct REG week numbers with a stat line",
+    "irreconcilable": "non-integer/out-of-range weeks_observed or declared coverage_status conflicting with the deterministic count rule",
+    "missing": "0 distinct REG week numbers",
+    "non_inference": "A missing stat-line week is not interpreted as a missed game, injury, inactive status, or roster absence.",
+    "partial_season": "2-14 distinct REG week numbers with a stat line",
+    "single_week": "exactly 1 distinct REG week number with a stat line"
+  },
+  "season_completeness_states": [
+    "full_season",
+    "partial_season",
+    "single_week",
+    "missing",
+    "irreconcilable"
+  ],
+  "source_scope": {
+    "artifact_path": "exports/promoted/nfl/player_season_coverage_v0.json",
+    "artifact_sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+    "candidate_temporal_origins_covered_by_season_presence": [
+      "2022_to_2023",
+      "2023_to_2024",
+      "2024_to_2025"
+    ],
+    "origin_boundary": "Season presence and scoring identity only; this evidence does not define, execute, or accept any Forecast split.",
+    "repository_commit": "31c0c8e751816d262cf79ffef1a4ae9b6c9b70d5",
+    "season_type": "REG",
+    "seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "supported_positions": [
+      "QB",
+      "RB",
+      "WR",
+      "TE"
+    ]
+  },
+  "source_total_semantics": {
+    "candidate_profile_equivalence": "not_equivalent_for_all_rows",
+    "interpretation_rule": "A nonzero delta is preserved as scoring_mismatch. The promoted artifact does not expose the out-of-profile component families, so the net delta must not be reverse-engineered or attributed per row.",
+    "promoted_builder_declaration": "nflreadpy.load_player_stats(summary_level='reg').fantasy_points_ppr is passed through directly from the nflverse season rollup",
+    "promoted_field": "production_summary.season_ppr",
+    "semantic_corroboration": {
+      "blob_sha": "c54e875f9898ef9a4bbd5e7dd879c6e3c2abbc0a",
+      "commit": "0489133d85c5f11682572d9436c4a7b371a789aa",
+      "observed_formula_families_outside_candidate_profile": [
+        "special_teams_touchdowns",
+        "passing_two_point_conversions",
+        "rushing_two_point_conversions",
+        "receiving_two_point_conversions",
+        "sack_fumbles_lost",
+        "rushing_fumbles_lost",
+        "receiving_fumbles_lost"
+      ],
+      "path": "R/aggregate_game_stats.R",
+      "provenance_limit": "Current official producer code corroborates field semantics but is not claimed as the exact historical nflreadpy/nflverse release used to create the promoted source; that release was not pinned.",
+      "repository": "nflverse/nflfastR",
+      "url": "https://github.com/nflverse/nflfastR/blob/0489133d85c5f11682572d9436c4a7b371a789aa/R/aggregate_game_stats.R"
+    }
+  },
+  "status": "candidate_evidence_contract_not_promoted",
+  "tracking_issue": "TIBER-Data#228",
+  "week_inclusion": {
+    "malformed_or_out_of_scope_rule": "A row whose season_type is not REG, whose season is outside 2021-2025, or whose weeks_observed is outside 0-18 is regular_season_scope_unresolved and is not silently scored as valid.",
+    "source_limitation": "Promoted rows expose weeks_observed counts, not individual week numbers. This evidence binds the declared REG aggregation and count range; it does not invent or independently reconstruct per-week rows.",
+    "valid_week_numbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "week_18": "included_as_regular_season"
+  }
+}
