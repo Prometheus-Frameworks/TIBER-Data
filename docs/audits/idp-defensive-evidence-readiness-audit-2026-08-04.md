@@ -37,6 +37,9 @@ profile.
 This is a **provenance/source audit** plus an **external dataset audit** under
 `AGENTS.md`.
 
+Per-source `AGENTS.md` classification is recorded in the rights ledger below.
+It is independent of both the issue capability status and TIBER-Data admission.
+
 Allowed here:
 
 - inspect committed TIBER contracts, artifacts, builders, and audit records;
@@ -141,9 +144,10 @@ name:
 1. `src/contracts/v1/enums.ts` restricts the current canonical position enum to
    `QB/RB/WR/TE` and its role enum is offensive.
 2. `scripts/build_roster_player_team_map_source_backed_2025.py` explicitly
-   filters weekly roster rows to `QB/RB/WR/TE`. The existing export test does
-   not include a negative defensive-position case, so that boundary lacks a
-   direct regression assertion.
+   filters weekly roster rows to `QB/RB/WR/TE`. The existing export test has no
+   negative defensive-position input fixture, so the builder's filter behavior
+   is asserted only through output-position properties, and only when raw
+   sources are present.
 3. Player-week PPR and usage builders apply the same offensive filter. Their
    current fixtures are offensive; they do not prove defensive rows fail closed.
 4. The bounded 2026 population census declares
@@ -337,9 +341,10 @@ readiness at the audited ref:
 
 `Current Data state` separately states whether TIBER has admitted the evidence.
 This keeps a real upstream candidate distinct from a governed TIBER artifact.
-The matrix is the only assignment of the issue's capability-status vocabulary;
-the later rights ledger records admission facts in prose and does not assign a
-second capability status.
+The matrix is the only assignment of the issue's capability-status vocabulary.
+The later rights ledger separately applies the closed `AGENTS.md`
+external-source classification vocabulary and records admission facts; neither
+is a second capability status.
 
 Shared provenance rule for every source-backed row below: exact URL/source-code
 ref, retrieval time, byte hash, source key, season/game/week scope, and
@@ -369,7 +374,8 @@ state is absent even when an upstream source candidate is strong.
 | Special-teams snaps | `provider_or_license_blocked` | Exact PFR-keyed player-game counts/percentages were observed, but source admission rights are not cleared. | Absent. **Optional after rights qualification and separate**; never mix into defensive opportunity. |
 | Pass-rush snaps | `absent` | No verified source field. | **Required for edge/interior role; defer** rather than infer from sacks/hits. |
 | Run-defense snaps | `absent` | No verified source field. | **Required for phase role; defer**. |
-| Coverage snaps / targets in coverage | `absent` | Not present in the audited weekly stats/snaps, and no exact player-level charting source was inspected. | **Required for DB/LB coverage role; unavailable at this ref**. Any later provider needs a separate semantics/rights review. |
+| Coverage snaps | `absent` | Not present in the audited weekly stats/snaps, and no exact player-level charting source was inspected. | **Required for DB/LB coverage opportunity; unavailable at this ref**. Any later provider needs a separate semantics/rights review. |
+| Targets in coverage | `absent` | Not present in the audited weekly stats/snaps, and no exact player-level target-assignment source was inspected. | **Optional only if source-backed; unavailable at this ref**. Target attribution must not be inferred from pass defenses or interceptions. |
 | Defensive personnel/package observation | `absent` | No frozen player-level or team-play personnel/package row was verified; existing participation work is only a proposed source lane. | **Optional context, not deployment truth**. A team package cannot assign an individual alignment without participant evidence. |
 | Interior/edge/box/slot/perimeter/deep alignment | `absent` | Per-player alignment was not proven in any exact frozen input. | **Required for broad defensive roles; unavailable at this ref**. Do not derive from fantasy tags or depth charts. |
 | Solo tackle | `source_backed` | Weekly player-game count, GSIS. | Absent. **Required aggregate view**; event identity still required for bundle truth. |
@@ -418,15 +424,22 @@ underlying NFL data. Internal operator approval can authorize TIBER work, but it
 cannot grant third-party storage, derivation, redistribution, or attribution
 rights. Those decisions require the applicable source terms and rights owner.
 
-| Candidate source | Owner/lineage and exact inspected terms ref | Access/storage/derivation/redistribution/attribution | Availability/correction evidence | Admission state |
-| --- | --- | --- | --- | --- |
-| nflreadpy loader code | nflreadpy project at `66bb305e...`; `LICENSE.md` (MIT) and `pyproject.toml` | Public code access and MIT code use; **does not transfer rights to downloaded data**. | Loader version and constructed URLs are pinned; Data currently allows `>=0.1.0`, so build reproducibility is unresolved. | Code may inform a source adapter; no dataset admitted. |
-| 2025 player-week stats asset | Public nflverse release path above, reached through pinned `src/nflreadpy/load_stats.py`; underlying NFL/stat-owner terms remain applicable and were not resolved here. | Public no-credential retrieval succeeded. Intended TIBER storage, derivation, redistribution, and required attribution remain unresolved. | Mutable release URL; retrieval date and byte hash recorded, but publication time and correction ledger absent. | Candidate only; rights and revision qualification required. |
-| 2025 weekly-roster asset | Public nflverse release path above, reached through pinned `src/nflreadpy/load_rosters_weekly.py`; original roster lineage/owner terms not proven by this audit. | Public no-credential retrieval succeeded. Storage, derived membership publication, redistribution, and attribution remain unresolved. | Weekly grain observed; mutable release, publication/effective-time semantics, and correction policy unresolved. | Candidate only; no roster/status semantics admitted. |
-| Player master/crosswalk asset | Public nflverse release path above, reached through pinned `src/nflreadpy/load_players.py`; aggregates multiple provider identifiers whose underlying terms were not separately resolved. | Public no-credential retrieval succeeded. Exact-ID analysis is allowed for this audit; persistent storage, republishing provider IDs, derivation, redistribution, and attribution remain unresolved. | Mutable current snapshot; no historical effective-date or correction chain proven. | Candidate bridge only; no fuzzy join or governed identity admission. |
-| 2025 PFR snap-count asset | Public nflverse mirror reached through pinned `src/nflreadpy/load_snap_counts.py`; source is documented as Pro Football Reference, whose underlying terms control the data. | Public no-credential retrieval succeeded. PFR-derived storage, transformation, redistribution, and attribution have not been approved. | Mutable release; source denominator, publication clock, and revisions unresolved. | Admission is blocked pending explicit rights/semantics review; probe evidence remains non-governed. |
-| nflfastR/PBP producer candidate | nflfastR at `0489133d...`; `LICENSE.md` (MIT), `R/helper_tidy_play_stats.R`, `R/aggregate_game_stats_def.R`, and `R/top-level_scraper.R`; underlying NFL play data terms are separate. | Only public code was inspected. No PBP bytes were downloaded or admitted; future storage/derivation/redistribution/attribution requires source review. | Producer logic exposes candidate participant relationships, not a frozen data revision or correction history. | Code-path candidate only; event evidence remains absent. |
-| FTN participation candidate | Existing Data audit `docs/data/nflverse-participation-route-proxy-audit.md` documents FTN-via-nflverse lineage, attribution, and CC-BY-SA handling concerns. No exact 2025 snapshot or columns were verified here. | No new access occurred. Any use must satisfy FTN/nflverse attribution, share-alike, storage, and redistribution obligations identified by a dedicated rights review. | Exact publication, retrieval, availability, and correction clocks for this use are unverified. | Absent; not an admitted alignment or deployment source. |
+The closed `AGENTS.md` classification below is separate from capability status
+and admission. `external_candidate` means only eligible for a later, separately
+authorized governed experimental mirror after every listed rights and semantics
+gate passes; it does not admit or authorize a source. `schema_reference_only`
+permits code or schema vocabulary to inform design while source rows remain
+unusable.
+
+| Candidate source | `AGENTS.md` classification | Owner/lineage and exact inspected terms ref | Access/storage/derivation/redistribution/attribution | Availability/correction evidence | Admission state |
+| --- | --- | --- | --- | --- | --- |
+| nflreadpy loader code | `schema_reference_only` | nflreadpy project at `66bb305e...`; `LICENSE.md` (MIT) and `pyproject.toml` | Public code access and MIT code use; **does not transfer rights to downloaded data**. | Loader version and constructed URLs are pinned; Data currently allows `>=0.1.0`, so build reproducibility is unresolved. | Code may inform a source adapter; no dataset admitted. |
+| 2025 player-week stats asset | `external_candidate` | Public nflverse release path above, reached through pinned `src/nflreadpy/load_stats.py`; underlying NFL/stat-owner terms remain applicable and were not resolved here. | Public no-credential retrieval succeeded. Intended TIBER storage, derivation, redistribution, and required attribution remain unresolved. | Mutable release URL; retrieval date and byte hash recorded, but publication time and correction ledger absent. | Candidate only; rights and revision qualification required. |
+| 2025 weekly-roster asset | `external_candidate` | Public nflverse release path above, reached through pinned `src/nflreadpy/load_rosters_weekly.py`; original roster lineage/owner terms not proven by this audit. | Public no-credential retrieval succeeded. Storage, derived membership publication, redistribution, and attribution remain unresolved. | Weekly grain observed; mutable release, publication/effective-time semantics, and correction policy unresolved. | Candidate only; no roster/status semantics admitted. |
+| Player master/crosswalk asset | `external_candidate` | Public nflverse release path above, reached through pinned `src/nflreadpy/load_players.py`; aggregates multiple provider identifiers whose underlying terms were not separately resolved. | Public no-credential retrieval succeeded. Exact-ID analysis is allowed for this audit; persistent storage, republishing provider IDs, derivation, redistribution, and attribution remain unresolved. | Mutable current snapshot; no historical effective-date or correction chain proven. | Candidate bridge only; no fuzzy join or governed identity admission. |
+| 2025 PFR snap-count asset | `schema_reference_only` | Public nflverse mirror reached through pinned `src/nflreadpy/load_snap_counts.py`; source is documented as Pro Football Reference, whose underlying terms control the data. | Public no-credential retrieval succeeded. PFR-derived storage, transformation, redistribution, and attribution have not been approved. | Mutable release; source denominator, publication clock, and revisions unresolved. | Admission is blocked pending explicit rights/semantics review; probe evidence remains non-governed. |
+| nflfastR/PBP producer candidate | `schema_reference_only` | nflfastR at `0489133d...`; `LICENSE.md` (MIT), `R/helper_tidy_play_stats.R`, `R/aggregate_game_stats_def.R`, and `R/top-level_scraper.R`; underlying NFL play data terms are separate. | Only public code was inspected. No PBP bytes were downloaded or admitted; future storage/derivation/redistribution/attribution requires source review. | Producer logic exposes candidate participant relationships, not a frozen data revision or correction history. | Code-path candidate only; event evidence remains absent. |
+| FTN participation candidate | `schema_reference_only` | Existing Data audit `docs/data/nflverse-participation-route-proxy-audit.md` documents FTN-via-nflverse lineage, attribution, and CC-BY-SA handling concerns. No exact 2025 snapshot or columns were verified here. | No new access occurred. Any use must satisfy FTN/nflverse attribution, share-alike, storage, and redistribution obligations identified by a dedicated rights review. | Exact publication, retrieval, availability, and correction clocks for this use are unverified. | Absent; not an admitted alignment or deployment source. |
 
 This rights table is a stop condition, not legal clearance. The later source
 qualification must attach the actual terms/version or owner approval for each
@@ -692,7 +705,11 @@ Before Data contract implementation:
 7. decide whether open evidence can support pass-rush/run/coverage and player
    alignment; otherwise make those capabilities explicitly unavailable;
 8. define zero/null/missing and missed-game behavior;
-9. obtain operator approval for the smallest contract and bounded cohort.
+9. obtain operator approval for the smallest contract and bounded cohort;
+10. decide and separately authorize the typical machine-readable companion at
+    `docs/audits/idp-defensive-evidence-readiness-audit-2026-08-04.json`; D0
+    intentionally defers it because #232 authorized exactly one Markdown
+    deliverable.
 
 If any gate requires a paid/private provider, new credentials, redistribution
 rights, or spending, stop for separate operator authority.
