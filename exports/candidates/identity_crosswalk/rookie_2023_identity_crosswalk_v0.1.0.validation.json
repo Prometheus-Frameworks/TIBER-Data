@@ -1,0 +1,44 @@
+{
+  "artifact_id": "rookie_2023_identity_crosswalk_candidate_validation",
+  "checks": [
+    "source_content_pins",
+    "deterministic_rebuild",
+    "80_row_census_and_position_counts",
+    "unique_gsis_slug_pick_and_row_ids",
+    "exact_gsis_only_data_resolution",
+    "display_name_join_ban",
+    "explicit_unresolved_forecast_conflicts",
+    "forecast_non_name_fingerprint_to_pinned_seed_row_binding",
+    "puka_dual_id_conflict",
+    "directed_date_scoped_team_alias_policy",
+    "version_and_sha256_consumer_binding",
+    "candidate_and_no_mutation_boundaries",
+    "optional_cross_repo_git_blob_and_forecast_row_pins"
+  ],
+  "crosswalk_version": "0.1.0",
+  "error_count": 0,
+  "errors": [],
+  "external_source_verification": {
+    "forecast_repo_root_supplied": true,
+    "rookies_repo_root_supplied": true,
+    "status": "passed"
+  },
+  "generated_at": "2026-08-05T00:00:00Z",
+  "status": "valid",
+  "valid": true,
+  "validated_artifacts": [
+    {
+      "path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.json",
+      "sha256": "db1a08192aacf604d0be7930147b3e0182c28250bda246c65fbca290ed9a11e2"
+    },
+    {
+      "path": "exports/candidates/identity_crosswalk/rookie_2023_identity_conflicts_v0.1.0.json",
+      "sha256": "619044e2a547c002570db66fee7deb40ababb28da4c2a95407d0998ed6a3d883"
+    },
+    {
+      "path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.manifest.json",
+      "sha256": "ff3eacdd8e8f5c1b5ab59911b3f7fd8601cb2e17aadce1ab1c57c1f06e949c2d"
+    }
+  ],
+  "validator_version": "0.1.0"
+}

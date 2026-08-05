@@ -1,0 +1,636 @@
+{
+  "artifact_id": "rookie_2023_identity_conflicts_candidate",
+  "conflicts": [
+    {
+      "affected_gsis_id": "00-0038977",
+      "blocked_edge": "forecast_raw_id_to_core_identity",
+      "conflict_id": "collision-forecast-run1-collision-bucky-uses-tank-dell-id",
+      "conflict_type": "forecast_raw_id_assigned_to_different_census_identity",
+      "governed_assertion": {
+        "gsis_id": "00-0038977"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-collision-bucky-uses-tank-dell-id",
+        "assertion_kind": "canonical_id_assigned_to_other_subject",
+        "association_method": "exact_raw_id_collision_with_census_identity",
+        "forecast_display_name_audit_only": "Bucky Irving",
+        "forecast_position_audit_only": "RB",
+        "forecast_raw_player_id": "00-0038977",
+        "prediction_jsonl_line_one_based": 33,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "9219bda1078dbd47f1d67852d8c3ec83b5c183543c36cf6d21d8aaffe657b996",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 16,
+        "seed_source_line_sha256": "61e0f59076e49aaa645df2f866e6a9c56fd613cc8932a279a751dd63266d87c0",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0039163",
+      "blocked_edge": "forecast_raw_id_to_core_identity",
+      "conflict_id": "collision-forecast-run1-collision-jayden-uses-stroud-id",
+      "conflict_type": "forecast_raw_id_assigned_to_different_census_identity",
+      "governed_assertion": {
+        "gsis_id": "00-0039163"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-collision-jayden-uses-stroud-id",
+        "assertion_kind": "canonical_id_assigned_to_other_subject",
+        "association_method": "exact_raw_id_collision_with_census_identity",
+        "forecast_display_name_audit_only": "Jayden Daniels",
+        "forecast_position_audit_only": "QB",
+        "forecast_raw_player_id": "00-0039163",
+        "prediction_jsonl_line_one_based": 36,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "6264eb7b8d6011fb17d8e2cdba0ce43866717182dcc9240f2c9a986d1365a189",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 4,
+        "seed_source_line_sha256": "99a8fb515e69d812468ea1f8d4ac2fb8a988aeaed2006db8e45719e876dcd7fa",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0038542",
+      "blocked_edge": "forecast_raw_id_to_core_identity",
+      "conflict_id": "collision-forecast-run1-collision-saquon-uses-bijan-id",
+      "conflict_type": "forecast_raw_id_assigned_to_different_census_identity",
+      "governed_assertion": {
+        "gsis_id": "00-0038542"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-collision-saquon-uses-bijan-id",
+        "assertion_kind": "canonical_id_assigned_to_other_subject",
+        "association_method": "exact_raw_id_collision_with_census_identity",
+        "forecast_display_name_audit_only": "Saquon Barkley",
+        "forecast_position_audit_only": "RB",
+        "forecast_raw_player_id": "00-0038542",
+        "prediction_jsonl_line_one_based": 31,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "91bfe9da55e55c086f1b90c013a628d12a3d7fb15b85f24a94bd7c5253d400ef",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 8,
+        "seed_source_line_sha256": "582f5a9728f7fc1ea7b1a201895903e61453cba9680e417ed356870bb04a7b52",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0038996",
+      "blocked_edge": "forecast_raw_id_to_core_identity",
+      "conflict_id": "collision-forecast-run1-subject-dalton-kincaid",
+      "conflict_type": "forecast_raw_id_assigned_to_different_census_identity",
+      "governed_assertion": {
+        "gsis_id": "00-0038996"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-subject-dalton-kincaid",
+        "assertion_kind": "subject_identity_conflict",
+        "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+        "association_status": "needs_operator_review",
+        "collision_origin": "subject_conflict_raw_id",
+        "forecast_display_name_audit_only": "Dalton Kincaid",
+        "forecast_position_audit_only": "TE",
+        "forecast_raw_player_id": "00-0038996",
+        "non_name_fingerprint": {
+          "canonical_team": "BUF",
+          "games_played": 13,
+          "position": "TE",
+          "receptions": 44,
+          "season": 2024,
+          "targets": 75
+        },
+        "prediction_jsonl_line_one_based": 34,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "cbc3fd836eaa2031132bed308fa2d113cefaa0f1debd909aa2057ef9059ee24c",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 37,
+        "seed_source_line_sha256": "124c81d73b5a3ad332dcb3c3957f6a98b68081f20e63ce278417de21d70de76b",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0038543",
+      "blocked_edge": "forecast_raw_id_to_core_identity",
+      "conflict_id": "collision-forecast-run1-subject-puka-nacua",
+      "conflict_type": "forecast_raw_id_assigned_to_different_census_identity",
+      "governed_assertion": {
+        "gsis_id": "00-0038543"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-subject-puka-nacua",
+        "assertion_kind": "subject_identity_conflict",
+        "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+        "association_status": "needs_operator_review",
+        "collision_origin": "subject_conflict_raw_id",
+        "forecast_display_name_audit_only": "Puka Nacua",
+        "forecast_position_audit_only": "WR",
+        "forecast_raw_player_id": "00-0038543",
+        "non_name_fingerprint": {
+          "canonical_team": "LAR",
+          "games_played": 11,
+          "position": "WR",
+          "receptions": 79,
+          "season": 2024,
+          "targets": 106
+        },
+        "prediction_jsonl_line_one_based": 32,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "c9dc54582bfc44605d37fc269629939d7607c02b72726a788bb4a683dbc80a5c",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 26,
+        "seed_source_line_sha256": "091cb298bba7bcb3e1a95a70d8ef8f866aac7921cb7aab0a17797d2f7e1b6ee0",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0038542",
+      "blocked_edge": "forecast_row_to_core_identity",
+      "conflict_id": "subject-forecast-run1-subject-bijan-robinson",
+      "conflict_type": "forecast_subject_raw_id_mismatch",
+      "governed_assertion": {
+        "gsis_id": "00-0038542"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-subject-bijan-robinson",
+        "assertion_kind": "subject_identity_conflict",
+        "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+        "association_status": "needs_operator_review",
+        "forecast_display_name_audit_only": "Bijan Robinson",
+        "forecast_position_audit_only": "RB",
+        "forecast_raw_player_id": "00-0036223",
+        "non_name_fingerprint": {
+          "canonical_team": "ATL",
+          "games_played": 17,
+          "position": "RB",
+          "receptions": 61,
+          "season": 2024,
+          "targets": 72
+        },
+        "prediction_jsonl_line_one_based": 15,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "29a97b9b6d1e6437a1162897fa3875a7a13b5966c1d574df016297a5033a09b1",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 10,
+        "seed_source_line_sha256": "d6b7eebf7f6d984dfd560a0d9c0802c30ea41733587bbe5e9cb62a5458b7f20e",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0038597",
+      "blocked_edge": "forecast_row_to_core_identity",
+      "conflict_id": "subject-forecast-run1-subject-chase-brown",
+      "conflict_type": "forecast_subject_raw_id_mismatch",
+      "governed_assertion": {
+        "gsis_id": "00-0038597"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-subject-chase-brown",
+        "assertion_kind": "subject_identity_conflict",
+        "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+        "association_status": "needs_operator_review",
+        "forecast_display_name_audit_only": "Chase Brown",
+        "forecast_position_audit_only": "RB",
+        "forecast_raw_player_id": "00-0035685",
+        "non_name_fingerprint": {
+          "canonical_team": "CIN",
+          "games_played": 16,
+          "position": "RB",
+          "receptions": 54,
+          "season": 2024,
+          "targets": 65
+        },
+        "prediction_jsonl_line_one_based": 13,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "5e93d3f993617ce9beae8ac678785450480ef65c2e22e5164b6650a7d6351a34",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 15,
+        "seed_source_line_sha256": "3cfa68b38414db72591448e456ba0ea101edd4e30cbfd8f1edbb52a112317208",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0038933",
+      "blocked_edge": "forecast_row_to_core_identity",
+      "conflict_id": "subject-forecast-run1-subject-dalton-kincaid",
+      "conflict_type": "forecast_subject_raw_id_mismatch",
+      "governed_assertion": {
+        "gsis_id": "00-0038933"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-subject-dalton-kincaid",
+        "assertion_kind": "subject_identity_conflict",
+        "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+        "association_status": "needs_operator_review",
+        "forecast_display_name_audit_only": "Dalton Kincaid",
+        "forecast_position_audit_only": "TE",
+        "forecast_raw_player_id": "00-0038996",
+        "non_name_fingerprint": {
+          "canonical_team": "BUF",
+          "games_played": 13,
+          "position": "TE",
+          "receptions": 44,
+          "season": 2024,
+          "targets": 75
+        },
+        "prediction_jsonl_line_one_based": 34,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "cbc3fd836eaa2031132bed308fa2d113cefaa0f1debd909aa2057ef9059ee24c",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 37,
+        "seed_source_line_sha256": "124c81d73b5a3ad332dcb3c3957f6a98b68081f20e63ce278417de21d70de76b",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0039040",
+      "blocked_edge": "forecast_row_to_core_identity",
+      "conflict_id": "subject-forecast-run1-subject-devon-achane",
+      "conflict_type": "forecast_subject_raw_id_mismatch",
+      "governed_assertion": {
+        "gsis_id": "00-0039040"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-subject-devon-achane",
+        "assertion_kind": "subject_identity_conflict",
+        "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+        "association_status": "needs_operator_review",
+        "forecast_display_name_audit_only": "De'Von Achane",
+        "forecast_position_audit_only": "RB",
+        "forecast_raw_player_id": "00-0038120",
+        "non_name_fingerprint": {
+          "canonical_team": "MIA",
+          "games_played": 17,
+          "position": "RB",
+          "receptions": 78,
+          "season": 2024,
+          "targets": 87
+        },
+        "prediction_jsonl_line_one_based": 30,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "35234c167985f87040e83f1f2df06dc6ef5ab8c436f85cff31c349a71dfde0c6",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 14,
+        "seed_source_line_sha256": "a1ca2ef269ed1a870d1964d78fa245081175562436bf68ee8cff16269c6acb8a",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0039139",
+      "blocked_edge": "forecast_row_to_core_identity",
+      "conflict_id": "subject-forecast-run1-subject-jahmyr-gibbs",
+      "conflict_type": "forecast_subject_raw_id_mismatch",
+      "governed_assertion": {
+        "gsis_id": "00-0039139"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-subject-jahmyr-gibbs",
+        "assertion_kind": "subject_identity_conflict",
+        "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+        "association_status": "needs_operator_review",
+        "forecast_display_name_audit_only": "Jahmyr Gibbs",
+        "forecast_position_audit_only": "RB",
+        "forecast_raw_player_id": "00-0037539",
+        "non_name_fingerprint": {
+          "canonical_team": "DET",
+          "games_played": 17,
+          "position": "RB",
+          "receptions": 52,
+          "season": 2024,
+          "targets": 63
+        },
+        "prediction_jsonl_line_one_based": 27,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "9ca6b22e6159ef063b3d07c16935e13bcd6c6f5154f97a7a80d6a90635244148",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 9,
+        "seed_source_line_sha256": "21871846ff5c2e473ccc1fd6fb2b272b872cd02c80bc93b3946078011da1e0c5",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0038543",
+      "blocked_edge": "forecast_row_to_core_identity",
+      "conflict_id": "subject-forecast-run1-subject-jaxon-smith-njigba",
+      "conflict_type": "forecast_subject_raw_id_mismatch",
+      "governed_assertion": {
+        "gsis_id": "00-0038543"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-subject-jaxon-smith-njigba",
+        "assertion_kind": "subject_identity_conflict",
+        "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+        "association_status": "needs_operator_review",
+        "forecast_display_name_audit_only": "Jaxon Smith-Njigba",
+        "forecast_position_audit_only": "WR",
+        "forecast_raw_player_id": "00-0039051",
+        "non_name_fingerprint": {
+          "canonical_team": "SEA",
+          "games_played": 17,
+          "position": "WR",
+          "receptions": 100,
+          "season": 2024,
+          "targets": 137
+        },
+        "prediction_jsonl_line_one_based": 35,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "c890bf9a5fafdafab8ae8eed20c5db90291923e297be9a91d27dc741e45a1481",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 30,
+        "seed_source_line_sha256": "965b6a3611e29c8bf087a36d8d654fa5600b3456118e96984571bde3894ba7bc",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0039075",
+      "blocked_edge": "forecast_row_to_core_identity",
+      "conflict_id": "subject-forecast-run1-subject-puka-nacua",
+      "conflict_type": "forecast_subject_raw_id_mismatch",
+      "governed_assertion": {
+        "gsis_id": "00-0039075"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-subject-puka-nacua",
+        "assertion_kind": "subject_identity_conflict",
+        "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+        "association_status": "needs_operator_review",
+        "forecast_display_name_audit_only": "Puka Nacua",
+        "forecast_position_audit_only": "WR",
+        "forecast_raw_player_id": "00-0038543",
+        "non_name_fingerprint": {
+          "canonical_team": "LAR",
+          "games_played": 11,
+          "position": "WR",
+          "receptions": 79,
+          "season": 2024,
+          "targets": 106
+        },
+        "prediction_jsonl_line_one_based": 32,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "c9dc54582bfc44605d37fc269629939d7607c02b72726a788bb4a683dbc80a5c",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 26,
+        "seed_source_line_sha256": "091cb298bba7bcb3e1a95a70d8ef8f866aac7921cb7aab0a17797d2f7e1b6ee0",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    },
+    {
+      "affected_gsis_id": "00-0039065",
+      "blocked_edge": "forecast_row_to_core_identity",
+      "conflict_id": "subject-forecast-run1-subject-sam-laporta",
+      "conflict_type": "forecast_subject_raw_id_mismatch",
+      "governed_assertion": {
+        "gsis_id": "00-0039065"
+      },
+      "resolution": null,
+      "source_assertion": {
+        "assertion_id": "forecast-run1-subject-sam-laporta",
+        "assertion_kind": "subject_identity_conflict",
+        "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+        "association_status": "needs_operator_review",
+        "forecast_display_name_audit_only": "Sam LaPorta",
+        "forecast_position_audit_only": "TE",
+        "forecast_raw_player_id": "00-0037744",
+        "non_name_fingerprint": {
+          "canonical_team": "DET",
+          "games_played": 16,
+          "position": "TE",
+          "receptions": 60,
+          "season": 2024,
+          "targets": 83
+        },
+        "prediction_jsonl_line_one_based": 28,
+        "prediction_path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+        "prediction_source_line_sha256": "49cf11058e6a872dbe78dc3cb571abf2d70f0491f7108e1d6ba6662d7387c95a",
+        "resolution_effect": "none",
+        "seed_path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+        "seed_row_index_zero_based": 36,
+        "seed_source_line_sha256": "b57a5260ce22d6c4b017b21a50c779319976ef0afd3c3cb1ed74b1730939e80a",
+        "source_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+        "source_repository": "Prometheus-Frameworks/TIBER-Forecast"
+      },
+      "status": "unresolved"
+    }
+  ],
+  "crosswalk_ref": {
+    "path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.json",
+    "sha256": "db1a08192aacf604d0be7930147b3e0182c28250bda246c65fbca290ed9a11e2"
+  },
+  "crosswalk_version": "0.1.0",
+  "generated_at": "2026-08-05T00:00:00Z",
+  "impacted_artifact_inventory": {
+    "tiber_data": [
+      {
+        "path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v1.json",
+        "sha256": "5ce5cd3f5dc8fd27c28c5a5fb283431ac648f764c3f8f2b645f6ad924338f263",
+        "status": "governed_tiber_id_namespace_but_not_admissible_for_gsis_join_sleeper_only_no_mutation"
+      },
+      {
+        "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+        "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+        "status": "governed_exact_gsis_source_read_only"
+      }
+    ],
+    "tiber_forecast": {
+      "artifacts": [
+        {
+          "git_blob": "cfbd61f069287b721d660ebd774930de5a0d7c0f",
+          "impact": "primary_scaffold_seed_identity_claims_conflict",
+          "path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+          "sha256": "3f9862b7b5d1b92bbb777399617c501328fcc00358e665c74c84cf368856f4f2"
+        },
+        {
+          "git_blob": "53f0152d21164d7bfb3dc463a755bbec1da347d9",
+          "impact": "emitted_rows_inherit_conflicting_identity_claims",
+          "path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+          "sha256": "0955ffbeb750dff5659fbaa115eba4dcc208223a6b3a2859a7256a989ad34c09"
+        },
+        {
+          "git_blob": "be03bdeb6183a1b51e5455197a7b1963d63a01cf",
+          "impact": "derived_explanations_inherit_conflicting_identity_claims",
+          "path": "data/backtests/seasonal-ppr/seasonal_ppr_prediction_explanations.jsonl",
+          "sha256": "f9bf5dac9a6c7be4c65e2f6513b0f590b5a1463ecdf485dea83ccc2042acf323"
+        },
+        {
+          "git_blob": "0fe175ae72c53a15fb16387e6d05deb7014c6580",
+          "impact": "derived_report_inherits_conflicting_identity_claims",
+          "path": "data/backtests/seasonal-ppr/seasonal_ppr_backtest_report.json",
+          "sha256": "d7ebadf7f16f8a37de4626c8bb7a9c2a28152e424553caadb1b1184937703bfa"
+        },
+        {
+          "git_blob": "bdfafc6f421c8601033f9d25d8a5bf46b62a35f8",
+          "impact": "baseline_fixture_inherits_conflicting_identity_claims",
+          "path": "data/fixtures/seasonalPpr/pre_143_baseline_predictions.jsonl",
+          "sha256": "d447fe62f910388ec4dbfb4abe58188d02faeef1f09634315f52a1aca40e4c7c"
+        },
+        {
+          "git_blob": "27aa03928d92044721f713c2d91b6bffaf6726e5",
+          "impact": "baseline_report_inherits_conflicting_identity_claims",
+          "path": "data/fixtures/seasonalPpr/pre_143_baseline_report.json",
+          "sha256": "01682d6824cb9a28080d45057e8bd9b4cb4c8d32894649ea4c6eade750a9378f"
+        },
+        {
+          "git_blob": "eb00f8aecba21078b5bff1e7a89cfa88fd3f6462",
+          "impact": "limitation_reference_requires_identity_caveat",
+          "path": "docs/reports/player-history-experiment-dry-run-matrix-2026-07-02.json",
+          "sha256": "b49892b2e4df0de1931a8abb86fe02ae333de14c6858ecfaff389fd03db9b1fa"
+        },
+        {
+          "git_blob": "c6c40f8affea9ca0c4228a56d297777f6b2be172",
+          "impact": "limitation_reference_requires_identity_caveat",
+          "path": "docs/reports/teamstate-run2-coverage-gate-evaluation-2026-06-29.json",
+          "sha256": "2be103540d1e9d40a1633923e8d11a73be994e012facbd9a16965c9933c8eec2"
+        },
+        {
+          "git_blob": "891f44e784036987c4c737103b72416f25f5941d",
+          "impact": "lineage_reference_requires_identity_caveat",
+          "path": "docs/reports/player-history-experiment-dry-run-matrix-2026-07-02.md",
+          "sha256": "4838a23ccad81c744bd3191d3b86b94fa56530723d12cdbdaf1414a56bc7e47f"
+        },
+        {
+          "git_blob": "b1898040cfc1e639571fc0f4e928fb261932ffbf",
+          "impact": "evaluates_conflicting_raw_ids_requires_limitation",
+          "path": "docs/reports/player-history-production-binding-activation-verification-2026-07-08.json",
+          "sha256": "33b5d11940af40a37ffe203e52590ef8743b6ef929e0a5c53c30d1cf1637e0b9"
+        },
+        {
+          "git_blob": "331697eb3e3202aff0582c0a8fa0382ed82d723d",
+          "impact": "evaluates_conflicting_raw_ids_requires_limitation",
+          "path": "docs/reports/player-history-production-binding-activation-verification-2026-07-08.md",
+          "sha256": "648bcec403b5b12098712bd79435c9083a72dc5e01e0a3da1f196ef7b5c0eb06"
+        },
+        {
+          "git_blob": "987beb736eb69304b95c0f49f54c3de28ab42fa9",
+          "impact": "seed_lineage_reference_requires_identity_caveat",
+          "path": "docs/reports/player-history-production-binding-implementation-2026-07-08.md",
+          "sha256": "f6a414e6028a4fddacdc1e8836adf679feef93a0d3b18c28e440c8ac6b06f5e7"
+        },
+        {
+          "git_blob": "b57db4f04ad21aee029a7cce5a56a31efd3e36b7",
+          "impact": "pins_contaminated_seed_lineage_requires_limitation",
+          "path": "docs/reports/player-history-production-binding-review-2026-07-08.json",
+          "sha256": "a0f156fbd0c567dcaa023012381ab4e095e67b8134bb2a8a0b913fc58f7df96a"
+        },
+        {
+          "git_blob": "90533da036a6908f906099c87abf20d9a8c47b1e",
+          "impact": "pins_contaminated_seed_lineage_requires_limitation",
+          "path": "docs/reports/player-history-production-binding-review-2026-07-08.md",
+          "sha256": "03ff37a67a0f365205323c2f56b7d627e92e887adbbdfbc73fe8e379cfb8a248"
+        },
+        {
+          "git_blob": "a49eab995f6cf825ea75b0abdadf21131e496a9c",
+          "impact": "direct_seed_consumer_code_review_boundary",
+          "path": "src/datasets/seasonal/fixtures/tiberDataWeeklyPprScaffold.ts",
+          "sha256": "4e75305f9ab4a52ac218aeaecba08fafa746cded369412ece9c94e0cf8b68e89"
+        },
+        {
+          "git_blob": "ee846d226d3cd395c151c2609a8a56acbc9742ae",
+          "impact": "scaffold_consumer_code_review_boundary",
+          "path": "src/datasets/seasonal/tiberDataSeasonalPprDataset.ts",
+          "sha256": "5f2b843dc3fc763807df6786066ff5e78aaf1c321ff9998cb5c11d829fedc763"
+        }
+      ],
+      "discovery_rule": "paths at the pinned commit matching the seed path, scaffold dataset version, or known conflicting raw IDs within seasonal source, backtest fixtures, and reports",
+      "git_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+      "inventory_scope": "bounded_direct_and_reference_inventory_not_a_full_transitive_dependency_graph",
+      "known_gap_behavior": "additional_transitive_consumers_need_verification",
+      "mutation_authorized": false,
+      "repository": "Prometheus-Frameworks/TIBER-Forecast"
+    },
+    "tiber_rookies": [
+      {
+        "path": "data/historical/reconstruction_2023/2023_skill_class_census_v0.json",
+        "sha256": "90796d23a35547a43555fa9d6a4d519081fa424406ee9d56da59775ef291012f",
+        "status": "draft_census_source_do_not_mutate_from_data_issue"
+      }
+    ]
+  },
+  "issue": "Prometheus-Frameworks/TIBER-Data#237",
+  "open_operator_decisions": [
+    "durable_gsis_to_tiber_player_id_namespace_edge",
+    "disposition_of_already_emitted_forecast_artifacts",
+    "promotion_or_governance_status_of_this_candidate_crosswalk"
+  ],
+  "puka_required_conflict": {
+    "forecast_raw_gsis": "00-0038543",
+    "governed_gsis": "00-0039075",
+    "note": "00-0038543 remains the governed GSIS for Jaxon Smith-Njigba; it is never a Puka alias.",
+    "resolution": null,
+    "status": "unresolved_fail_closed"
+  },
+  "recommended_remediation_sequence": [
+    "pilot_source_identity_consumers_may_use_only_exact_gsis_to_data_source_player_id_edges_after_version_and_hash_verification",
+    "operator_defines_or_sources_a_non_name_gsis_to_tiber_player_id_edge_before_full_crosswalk_readiness",
+    "keep_every_forecast_edge_blocked_and_publish_limitation_record",
+    "operator_decides_correction_supersession_or_limitation_for_already_emitted_forecast_artifacts",
+    "separate_authority_required_before_any_forecast_mutation_or_rerun"
+  ],
+  "schema_version": "rookie_2023_identity_conflicts_candidate_v0.1.0",
+  "status": "candidate_explicit_unresolved_conflicts",
+  "summary": {
+    "affected_census_rows": 11,
+    "open_conflicts": 13,
+    "raw_id_collision_findings": 5,
+    "resolved_conflicts": 0,
+    "subject_identity_conflicts": 8,
+    "unique_forecast_source_rows": 11
+  },
+  "tiber_canonical_namespace_gap": {
+    "admissible_gsis_to_tiber_player_id_links": 0,
+    "governed_namespace": "TIBER_IDENTITY_CROSSWALK_V1.tiber_player_id",
+    "gsis_field_present_in_source": false,
+    "note": "Sleeper-only V1 descriptors cannot be joined to this census by display name; no candidate TIBER ID is minted.",
+    "source_artifact": {
+      "path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v1.json",
+      "sha256": "5ce5cd3f5dc8fd27c28c5a5fb283431ac648f764c3f8f2b645f6ad924338f263"
+    },
+    "status": "blocked_no_non_name_cross_namespace_edge",
+    "unresolved_census_rows": 80
+  }
+}

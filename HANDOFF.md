@@ -48,6 +48,43 @@ Example:
 - Now true: W1–W6 supported and fail-closed
 - Missing: honest raw support beyond W6
 - Must not assume: W7+ exists unless committed support is present
+
+## Current handoff — #237 2023 rookie identity crosswalk candidate
+
+- Active task: TIBER-Data #237 builds a versioned, candidate-only 80-player
+  2023 QB/RB/WR/TE identity census across pinned Rookies GSIS/slug assertions,
+  exact-GSIS TIBER-Data source-player identities, the explicit unresolved
+  governed TIBER canonical namespace, and fail-closed Forecast row
+  conflicts.
+- Files touched: a pinned source-assertion snapshot, deterministic builder and
+  validator, focused tests, candidate crosswalk/conflict/manifest/validation
+  artifacts, the identity contract, paired audit reports, and this handoff.
+- Audit-trigger status: independent final artifact audit completed before draft
+  PR handoff. Read-only reviews informed the source pins, conflict scope, and
+  alias boundary, then verified the TIBER namespace split, explicit override
+  lineage, bounded impact inventory, source-scoped team policy, and exact
+  Forecast-row fingerprint binding. The final re-audit found no blocker.
+- What is now true: all 80 census rows are represented; exact GSIS resolves 76
+  promoted Data source-player IDs (68 in 2023 REG, eight first observed later),
+  while four stay explicit nulls; the distinct governed `tiber_player_id`
+  namespace stays null and blocked for all 80 because V1 has no admissible GSIS
+  edge; all eight audited Forecast 2023-subject rows use explicit non-name
+  fingerprint overrides marked `needs_operator_review` and stay conflict-blocked;
+  five raw-ID collisions are separately ledgered; Puka's
+  Forecast `00-0038543` claim remains distinct from governed `00-0039075`;
+  `LAR` is canonical with a directed source/date-scoped `LA→LAR` rule; and
+  downstream consumers must verify crosswalk version `0.1.0` plus SHA-256.
+- What is still missing: an operator-owned durable GSIS-to-`tiber_player_id`
+  edge, operator review of Forecast subject overrides, any promotion/governance
+  decision, and the operator's disposition for already-emitted Forecast artifacts.
+- What must not be assumed: structural validation does not resolve or admit a
+  Forecast edge; the bounded #236 pilot may use only the manifest-bound
+  GSIS-to-Data-source-player edge; proposed Rookies slugs are not promoted IDs;
+  neither the four missing Data records nor V1 descriptors permit minted or
+  name-joined TIBER IDs; no Forecast, Rookies, governed
+  schema, or promoted export was mutated; and no rerun, correction,
+  supersession, or promotion is authorized.
+
 ## Current handoff — NFL Draft results v1 contract foundation
 
 - Active task: implement issue #112 by adding the first-pass canonical NFL Draft results contract, one-year fixture validation path, and documented promoted export boundary.
