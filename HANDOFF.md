@@ -49,6 +49,42 @@ Example:
 - Missing: honest raw support beyond W6
 - Must not assume: W7+ exists unless committed support is present
 
+## Current handoff — #236 historical landing-context design/evidence pilots
+
+- Active task: design the minimum cutoff-aware historical landing-context
+  candidate interface and reproduce bounded April 2023 evidence/gaps for BAL,
+  IND, and LAR, stacked on the #237 identity candidate.
+- Files touched: a candidate-only source-assertion fixture and draft schema,
+  deterministic builder/validator, focused tests, three pilot artifacts and
+  bundle manifest/validation, a source availability report, interface/handoff
+  documentation, and this handoff. No governed schema or promoted path changed.
+- Audit-trigger status: independent final artifact audit completed before draft
+  PR handoff. Three read-only reviews established source gaps, temporal/team
+  boundaries, frozen-pilot discrepancies, and the minimum validator surface,
+  then verified strict commit/blob/hash replay, source-row fidelity, resolved
+  missingness paths, cutoff semantics, typed available/unavailable branches,
+  and fail-closed ownership/terminal boundaries. The final focused suite passed
+  26/26 and the full repository suite passed 565 with 1 skipped.
+- What is now true: all three pilots bind by exact GSIS through #237 version and
+  hash; draft assignments are projected without names or later history; 2022
+  single-team player-season rows are reproducible but stay unadmitted because
+  source availability by cutoff is unproven; multi-team rows are excluded from
+  diagnostic subtotals; raw 2022 Rams `LA` stays blocked rather than silently
+  normalized; complete team/vacated values and roster, transaction, QB,
+  coaching, offense, and injury families remain explicit nulls; interpretations
+  are structurally empty.
+- What is still missing: operator ownership decisions, immutable cutoff-safe
+  roster/transaction/coaching/injury sources, team-split multi-team usage, a
+  supported 2022 Rams alias if desired, exact pick-time policy, a durable
+  GSIS-to-governed-TIBER-ID edge, operator acceptance, and any later promotion
+  proposal.
+- What must not be assumed: candidate presence is not interface readiness;
+  prior-season usage is not returning roster/depth truth; partial subtotals are
+  not team totals; null vacancy is not zero; the EOD cutoffs are proxies; frozen
+  Rookies references are not Data fact authority; no ownership or terminal
+  decision was made; no model, Forecast, promotion, or Rookies mutation is
+  authorized.
+
 ## Current handoff — #237 2023 rookie identity crosswalk candidate
 
 - Active task: TIBER-Data #237 builds a versioned, candidate-only 80-player

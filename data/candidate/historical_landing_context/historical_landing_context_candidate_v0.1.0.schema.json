@@ -1,0 +1,1696 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Prometheus-Frameworks/TIBER-Data/data/candidate/historical_landing_context/historical_landing_context_candidate_v0.1.0.schema.json",
+  "title": "Historical landing context candidate v0.1.0",
+  "description": "Draft-only, time-bounded evidence interface for TIBER-Data#236. This is not a governed schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact",
+    "schema_version",
+    "status",
+    "issue",
+    "generated_at",
+    "promotion_authorized",
+    "context",
+    "identity_binding",
+    "source_registry",
+    "observations",
+    "deterministic_derivations",
+    "interpretations",
+    "missingness",
+    "reproducibility",
+    "open_questions"
+  ],
+  "properties": {
+    "artifact": {
+      "type": "string",
+      "pattern": "^historical_landing_context_2023_(bal|ind|lar)_candidate$"
+    },
+    "schema_version": {
+      "const": "historical_landing_context_candidate_v0.1.0"
+    },
+    "status": {
+      "const": "candidate_partial_evidence_not_promoted"
+    },
+    "issue": {
+      "const": "Prometheus-Frameworks/TIBER-Data#236"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "promotion_authorized": {
+      "const": false
+    },
+    "context": {
+      "$ref": "#/$defs/context"
+    },
+    "identity_binding": {
+      "$ref": "#/$defs/identityBinding"
+    },
+    "source_registry": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "$ref": "#/$defs/sourceRef"
+      }
+    },
+    "observations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "draft_assignment",
+        "prior_season_usage",
+        "returning_inventory",
+        "vacated_opportunity",
+        "offseason_chronology",
+        "roster_at_cutoff",
+        "quarterback_state",
+        "coaching_play_caller_state",
+        "prior_season_offense_quality",
+        "injury_availability"
+      ],
+      "properties": {
+        "draft_assignment": {
+          "$ref": "#/$defs/draftAssignment"
+        },
+        "prior_season_usage": {
+          "$ref": "#/$defs/priorSeasonUsage"
+        },
+        "returning_inventory": {
+          "$ref": "#/$defs/returningInventoryGroup"
+        },
+        "vacated_opportunity": {
+          "$ref": "#/$defs/vacatedOpportunity"
+        },
+        "offseason_chronology": {
+          "$ref": "#/$defs/chronologyGroup"
+        },
+        "roster_at_cutoff": {
+          "$ref": "#/$defs/rosterAtCutoffGroup"
+        },
+        "quarterback_state": {
+          "$ref": "#/$defs/quarterbackStateGroup"
+        },
+        "coaching_play_caller_state": {
+          "$ref": "#/$defs/coachingStateGroup"
+        },
+        "prior_season_offense_quality": {
+          "$ref": "#/$defs/offenseQualityGroup"
+        },
+        "injury_availability": {
+          "$ref": "#/$defs/injuryAvailabilityGroup"
+        }
+      }
+    },
+    "deterministic_derivations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "known_single_team_rows_subtotal"
+      ],
+      "properties": {
+        "known_single_team_rows_subtotal": {
+          "$ref": "#/$defs/partialSubtotal"
+        }
+      }
+    },
+    "interpretations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "records"
+      ],
+      "properties": {
+        "status": {
+          "const": "not_in_scope_design_and_evidence_only"
+        },
+        "records": {
+          "type": "array",
+          "maxItems": 0
+        }
+      }
+    },
+    "missingness": {
+      "type": "array",
+      "minItems": 9,
+      "items": {
+        "$ref": "#/$defs/missingnessEntry"
+      }
+    },
+    "reproducibility": {
+      "$ref": "#/$defs/reproducibility"
+    },
+    "open_questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "nullableDateTime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "temporalEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effective_at",
+        "effective_period",
+        "source_available_at",
+        "source_updated_at",
+        "known_by_cutoff",
+        "knowledge_basis"
+      ],
+      "properties": {
+        "effective_at": {
+          "$ref": "#/$defs/nullableDateTime"
+        },
+        "effective_period": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "season",
+            "season_type"
+          ],
+          "properties": {
+            "season": {
+              "type": "integer"
+            },
+            "season_type": {
+              "type": "string"
+            }
+          }
+        },
+        "source_available_at": {
+          "$ref": "#/$defs/nullableDateTime"
+        },
+        "source_updated_at": {
+          "$ref": "#/$defs/nullableDateTime"
+        },
+        "known_by_cutoff": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "knowledge_basis": {
+          "enum": [
+            "draft_selection_ordinal_at_configured_cutoff",
+            "source_timestamp_on_or_before_cutoff",
+            "source_timestamp_after_cutoff",
+            "source_timing_unavailable",
+            "not_applicable_missing_group"
+          ]
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "season",
+        "prior_season",
+        "effective_at",
+        "context_cutoff",
+        "cutoff_precision",
+        "same_day_admission_policy",
+        "historical_mode",
+        "known_by_cutoff",
+        "team",
+        "subject"
+      ],
+      "properties": {
+        "season": {
+          "const": 2023
+        },
+        "prior_season": {
+          "const": 2022
+        },
+        "effective_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "context_cutoff": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "cutoff_precision": {
+          "const": "configured_end_of_draft_day_utc_proxy"
+        },
+        "same_day_admission_policy": {
+          "const": "draft_selection_ordinal_only_no_external_same_day_fact_without_sequence_evidence"
+        },
+        "historical_mode": {
+          "const": "as_known_at_cutoff"
+        },
+        "known_by_cutoff": {
+          "const": true
+        },
+        "team": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "canonical_code",
+            "draft_source_raw_code",
+            "prior_season_source_raw_code",
+            "prior_season_team_binding_status",
+            "prior_season_bound_canonical_code",
+            "prior_season_normalization_applied"
+          ],
+          "properties": {
+            "canonical_code": {
+              "enum": [
+                "BAL",
+                "IND",
+                "LAR"
+              ]
+            },
+            "draft_source_raw_code": {
+              "type": "string",
+              "minLength": 2
+            },
+            "prior_season_source_raw_code": {
+              "type": "string",
+              "minLength": 2
+            },
+            "prior_season_team_binding_status": {
+              "enum": [
+                "exact_code_match",
+                "blocked_2022_alias_outside_issue_237_supported_scope"
+              ]
+            },
+            "prior_season_bound_canonical_code": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "prior_season_normalization_applied": {
+              "const": false
+            }
+          }
+        },
+        "subject": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "crosswalk_row_id",
+            "gsis_id",
+            "rookies_slug",
+            "rookies_slug_status",
+            "tiber_data_source_player_id",
+            "tiber_canonical_player_id",
+            "display_name_join_used"
+          ],
+          "properties": {
+            "crosswalk_row_id": {
+              "type": "string"
+            },
+            "gsis_id": {
+              "type": "string",
+              "pattern": "^00-[0-9]{7}$"
+            },
+            "rookies_slug": {
+              "type": "string",
+              "pattern": "^[a-z]+-[a-z0-9-]+$"
+            },
+            "rookies_slug_status": {
+              "enum": [
+                "existing_repo_id",
+                "proposed_slug"
+              ]
+            },
+            "tiber_data_source_player_id": {
+              "type": "string",
+              "pattern": "^00-[0-9]{7}$"
+            },
+            "tiber_canonical_player_id": {
+              "type": "null"
+            },
+            "display_name_join_used": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "identityBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "crosswalk_version",
+        "crosswalk_path",
+        "crosswalk_sha256",
+        "manifest_path",
+        "manifest_sha256",
+        "allowed_edge",
+        "tiber_canonical_player_id_edge_authorized",
+        "projection_policy"
+      ],
+      "properties": {
+        "crosswalk_version": {
+          "const": "0.1.0"
+        },
+        "crosswalk_path": {
+          "type": "string"
+        },
+        "crosswalk_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "manifest_path": {
+          "type": "string"
+        },
+        "manifest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "allowed_edge": {
+          "const": "gsis_to_tiber_data_source_player_id"
+        },
+        "tiber_canonical_player_id_edge_authorized": {
+          "const": false
+        },
+        "projection_policy": {
+          "const": "identity_spine_and_2023_draft_fields_only_no_history_or_forecast_context"
+        }
+      }
+    },
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_ref_id",
+        "repository",
+        "git_commit",
+        "path",
+        "git_blob",
+        "sha256",
+        "role",
+        "authority",
+        "observed_at",
+        "source_updated_at"
+      ],
+      "properties": {
+        "source_ref_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "git_commit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "git_blob": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed_at": {
+          "$ref": "#/$defs/nullableDateTime"
+        },
+        "source_updated_at": {
+          "$ref": "#/$defs/nullableDateTime"
+        }
+      }
+    },
+    "draftAssignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row_kind",
+        "support_status",
+        "needs_verification",
+        "overall_pick",
+        "canonical_team",
+        "raw_team_code",
+        "temporal",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "row_kind": {
+          "const": "observation"
+        },
+        "support_status": {
+          "const": "candidate_source_asserted"
+        },
+        "needs_verification": {
+          "const": false
+        },
+        "overall_pick": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 259
+        },
+        "canonical_team": {
+          "type": "string"
+        },
+        "raw_team_code": {
+          "type": "string"
+        },
+        "temporal": {
+          "$ref": "#/$defs/temporalEvidence"
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "usageRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row_kind",
+        "support_status",
+        "needs_verification",
+        "admitted_to_reconstruction",
+        "roster_or_depth_inference_allowed",
+        "source_record_key",
+        "player_id",
+        "player_name_audit_only",
+        "position",
+        "raw_teams",
+        "targets",
+        "receptions",
+        "receiving_yards",
+        "receiving_tds",
+        "receiving_air_yards",
+        "target_share",
+        "air_yards_share",
+        "temporal",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "row_kind": {
+          "const": "observation"
+        },
+        "support_status": {
+          "const": "source_backed_candidate_timing_unproven"
+        },
+        "needs_verification": {
+          "const": true
+        },
+        "admitted_to_reconstruction": {
+          "const": false
+        },
+        "roster_or_depth_inference_allowed": {
+          "const": false
+        },
+        "source_record_key": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "player_id",
+            "season",
+            "season_type"
+          ],
+          "properties": {
+            "player_id": {
+              "type": "string"
+            },
+            "season": {
+              "const": 2022
+            },
+            "season_type": {
+              "const": "REG"
+            }
+          }
+        },
+        "player_id": {
+          "type": "string",
+          "pattern": "^00-[0-9]{7}$"
+        },
+        "player_name_audit_only": {
+          "type": "string"
+        },
+        "position": {
+          "enum": [
+            "QB",
+            "RB",
+            "TE",
+            "WR"
+          ]
+        },
+        "raw_teams": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "targets": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "receptions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "receiving_yards": {
+          "type": "integer"
+        },
+        "receiving_tds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "receiving_air_yards": {
+          "type": "integer"
+        },
+        "target_share": {
+          "type": "number"
+        },
+        "air_yards_share": {
+          "type": "number"
+        },
+        "temporal": {
+          "$ref": "#/$defs/temporalEvidence"
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "excludedMultiTeamRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "player_id",
+        "player_name_audit_only",
+        "raw_teams",
+        "full_season_targets",
+        "exclusion_reason",
+        "admitted_to_team_values",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "player_id": {
+          "type": "string"
+        },
+        "player_name_audit_only": {
+          "type": "string"
+        },
+        "raw_teams": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string"
+          }
+        },
+        "full_season_targets": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "exclusion_reason": {
+          "const": "full_season_usage_not_split_across_teams"
+        },
+        "admitted_to_team_values": {
+          "const": false
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "priorSeasonUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row_kind",
+        "support_status",
+        "needs_verification",
+        "source_team_raw_code",
+        "team_binding_status",
+        "normalization_applied",
+        "complete_team_distribution",
+        "complete_team_totals",
+        "routes_run",
+        "snap_share",
+        "route_participation",
+        "red_zone_targets",
+        "red_zone_carries",
+        "known_single_team_rows",
+        "excluded_multi_team_rows",
+        "temporal",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "row_kind": {
+          "const": "observation"
+        },
+        "support_status": {
+          "enum": [
+            "candidate_partial_rows_source_timing_unproven",
+            "blocked_team_alias_and_source_timing_unproven"
+          ]
+        },
+        "needs_verification": {
+          "const": true
+        },
+        "source_team_raw_code": {
+          "type": "string"
+        },
+        "team_binding_status": {
+          "enum": [
+            "exact_code_match",
+            "blocked_2022_alias_outside_issue_237_supported_scope"
+          ]
+        },
+        "normalization_applied": {
+          "const": false
+        },
+        "complete_team_distribution": {
+          "const": false
+        },
+        "complete_team_totals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targets",
+            "target_share",
+            "receiving_air_yards",
+            "air_yards_share",
+            "receiving_yards",
+            "receiving_tds"
+          ],
+          "properties": {
+            "targets": {
+              "type": "null"
+            },
+            "target_share": {
+              "type": "null"
+            },
+            "receiving_air_yards": {
+              "type": "null"
+            },
+            "air_yards_share": {
+              "type": "null"
+            },
+            "receiving_yards": {
+              "type": "null"
+            },
+            "receiving_tds": {
+              "type": "null"
+            }
+          }
+        },
+        "routes_run": {
+          "type": "null"
+        },
+        "snap_share": {
+          "type": "null"
+        },
+        "route_participation": {
+          "type": "null"
+        },
+        "red_zone_targets": {
+          "type": "null"
+        },
+        "red_zone_carries": {
+          "type": "null"
+        },
+        "known_single_team_rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/usageRow"
+          }
+        },
+        "excluded_multi_team_rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/excludedMultiTeamRow"
+          }
+        },
+        "temporal": {
+          "$ref": "#/$defs/temporalEvidence"
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rosterMember": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "player_id",
+        "position",
+        "roster_status",
+        "depth_rank",
+        "needs_verification",
+        "temporal",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "player_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "position": {
+          "enum": [
+            "QB",
+            "RB",
+            "TE",
+            "WR"
+          ]
+        },
+        "roster_status": {
+          "enum": [
+            "returning",
+            "added",
+            "rostered_at_cutoff"
+          ]
+        },
+        "depth_rank": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "needs_verification": {
+          "type": "boolean"
+        },
+        "temporal": {
+          "$ref": "#/$defs/temporalEvidence"
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "returningInventoryGroup": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/unavailableGroup"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "row_kind",
+            "support_status",
+            "needs_verification",
+            "receivers",
+            "tight_ends",
+            "running_backs",
+            "temporal",
+            "source_ref_ids"
+          ],
+          "properties": {
+            "row_kind": {
+              "const": "observation"
+            },
+            "support_status": {
+              "const": "source_backed"
+            },
+            "needs_verification": {
+              "type": "boolean"
+            },
+            "receivers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/rosterMember"
+              }
+            },
+            "tight_ends": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/rosterMember"
+              }
+            },
+            "running_backs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/rosterMember"
+              }
+            },
+            "temporal": {
+              "$ref": "#/$defs/temporalEvidence"
+            },
+            "source_ref_ids": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "chronologyEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_id",
+        "event_type",
+        "player_id",
+        "from_team_code",
+        "to_team_code",
+        "effective_at",
+        "reported_at",
+        "needs_verification",
+        "temporal",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "agreement_reported",
+            "signed",
+            "released",
+            "waived",
+            "traded",
+            "re_signed"
+          ]
+        },
+        "player_id": {
+          "type": "string"
+        },
+        "from_team_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "to_team_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effective_at": {
+          "$ref": "#/$defs/nullableDateTime"
+        },
+        "reported_at": {
+          "$ref": "#/$defs/nullableDateTime"
+        },
+        "needs_verification": {
+          "type": "boolean"
+        },
+        "temporal": {
+          "$ref": "#/$defs/temporalEvidence"
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "chronologyGroup": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/unavailableGroup"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "row_kind",
+            "support_status",
+            "needs_verification",
+            "events",
+            "temporal",
+            "source_ref_ids"
+          ],
+          "properties": {
+            "row_kind": {
+              "const": "observation"
+            },
+            "support_status": {
+              "const": "source_backed"
+            },
+            "needs_verification": {
+              "type": "boolean"
+            },
+            "events": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/chronologyEvent"
+              }
+            },
+            "temporal": {
+              "$ref": "#/$defs/temporalEvidence"
+            },
+            "source_ref_ids": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "rosterAtCutoffGroup": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/unavailableGroup"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "row_kind",
+            "support_status",
+            "needs_verification",
+            "players",
+            "temporal",
+            "source_ref_ids"
+          ],
+          "properties": {
+            "row_kind": {
+              "const": "observation"
+            },
+            "support_status": {
+              "const": "source_backed"
+            },
+            "needs_verification": {
+              "type": "boolean"
+            },
+            "players": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/rosterMember"
+              }
+            },
+            "temporal": {
+              "$ref": "#/$defs/temporalEvidence"
+            },
+            "source_ref_ids": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "quarterbackStateGroup": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/unavailableGroup"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "row_kind",
+            "support_status",
+            "needs_verification",
+            "starter_player_id",
+            "competition_player_ids",
+            "stability_status",
+            "availability_status",
+            "temporal",
+            "source_ref_ids"
+          ],
+          "properties": {
+            "row_kind": {
+              "const": "observation"
+            },
+            "support_status": {
+              "const": "source_backed"
+            },
+            "needs_verification": {
+              "type": "boolean"
+            },
+            "starter_player_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "competition_player_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "stability_status": {
+              "enum": [
+                "established",
+                "competition",
+                "rookie_transition",
+                "unknown"
+              ]
+            },
+            "availability_status": {
+              "enum": [
+                "available",
+                "limited",
+                "unavailable",
+                "unknown"
+              ]
+            },
+            "temporal": {
+              "$ref": "#/$defs/temporalEvidence"
+            },
+            "source_ref_ids": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "coachingStateGroup": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/unavailableGroup"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "row_kind",
+            "support_status",
+            "needs_verification",
+            "head_coach_source_key",
+            "offensive_coordinator_source_key",
+            "play_caller_source_key",
+            "temporal",
+            "source_ref_ids"
+          ],
+          "properties": {
+            "row_kind": {
+              "const": "observation"
+            },
+            "support_status": {
+              "const": "source_backed"
+            },
+            "needs_verification": {
+              "type": "boolean"
+            },
+            "head_coach_source_key": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "offensive_coordinator_source_key": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "play_caller_source_key": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "temporal": {
+              "$ref": "#/$defs/temporalEvidence"
+            },
+            "source_ref_ids": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "offenseMetric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric_name",
+        "value",
+        "unit",
+        "temporal",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "metric_name": {
+          "enum": [
+            "team_targets",
+            "pass_attempts",
+            "points_scored",
+            "epa_per_play",
+            "seconds_per_play",
+            "pass_rate_over_expected",
+            "personnel_11_rate",
+            "red_zone_opportunities"
+          ]
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "temporal": {
+          "$ref": "#/$defs/temporalEvidence"
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "offenseQualityGroup": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/unavailableGroup"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "row_kind",
+            "support_status",
+            "needs_verification",
+            "metrics",
+            "temporal",
+            "source_ref_ids"
+          ],
+          "properties": {
+            "row_kind": {
+              "const": "observation"
+            },
+            "support_status": {
+              "const": "source_backed"
+            },
+            "needs_verification": {
+              "type": "boolean"
+            },
+            "metrics": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/offenseMetric"
+              }
+            },
+            "temporal": {
+              "$ref": "#/$defs/temporalEvidence"
+            },
+            "source_ref_ids": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "injuryAvailabilityGroup": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/unavailableGroup"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "row_kind",
+            "support_status",
+            "needs_verification",
+            "records",
+            "temporal",
+            "source_ref_ids"
+          ],
+          "properties": {
+            "row_kind": {
+              "const": "observation"
+            },
+            "support_status": {
+              "const": "source_backed"
+            },
+            "needs_verification": {
+              "type": "boolean"
+            },
+            "records": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "player_id",
+                  "availability_status",
+                  "injury_label",
+                  "temporal",
+                  "source_ref_ids"
+                ],
+                "properties": {
+                  "player_id": {
+                    "type": "string"
+                  },
+                  "availability_status": {
+                    "enum": [
+                      "available",
+                      "limited",
+                      "unavailable",
+                      "unknown"
+                    ]
+                  },
+                  "injury_label": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "temporal": {
+                    "$ref": "#/$defs/temporalEvidence"
+                  },
+                  "source_ref_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "temporal": {
+              "$ref": "#/$defs/temporalEvidence"
+            },
+            "source_ref_ids": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "unavailableGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row_kind",
+        "support_status",
+        "needs_verification",
+        "value",
+        "records",
+        "temporal",
+        "source_ref_ids",
+        "missing_reason"
+      ],
+      "properties": {
+        "row_kind": {
+          "const": "observation"
+        },
+        "support_status": {
+          "const": "unavailable"
+        },
+        "needs_verification": {
+          "const": true
+        },
+        "value": {
+          "type": "null"
+        },
+        "records": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "temporal": {
+          "$ref": "#/$defs/temporalEvidence"
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "missing_reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "blockedVacatedOpportunity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row_kind",
+        "support_status",
+        "needs_verification",
+        "vacated_targets",
+        "vacated_target_share",
+        "vacated_receiving_air_yards",
+        "vacated_routes",
+        "vacated_snaps",
+        "calculation_method",
+        "components",
+        "temporal",
+        "source_ref_ids",
+        "missing_reason"
+      ],
+      "properties": {
+        "row_kind": {
+          "const": "deterministic_derivation"
+        },
+        "support_status": {
+          "const": "blocked_missing_cutoff_transaction_and_team_split_sources"
+        },
+        "needs_verification": {
+          "const": true
+        },
+        "vacated_targets": {
+          "type": "null"
+        },
+        "vacated_target_share": {
+          "type": "null"
+        },
+        "vacated_receiving_air_yards": {
+          "type": "null"
+        },
+        "vacated_routes": {
+          "type": "null"
+        },
+        "vacated_snaps": {
+          "type": "null"
+        },
+        "calculation_method": {
+          "const": "sum exact team-split prior-season opportunity only for source-verified departures with effective_at on or before context_cutoff"
+        },
+        "components": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "temporal": {
+          "$ref": "#/$defs/temporalEvidence"
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "missing_reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "availableVacatedOpportunity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row_kind",
+        "support_status",
+        "needs_verification",
+        "vacated_targets",
+        "vacated_target_share",
+        "vacated_receiving_air_yards",
+        "vacated_routes",
+        "vacated_snaps",
+        "calculation_method",
+        "components",
+        "temporal",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "row_kind": {
+          "const": "deterministic_derivation"
+        },
+        "support_status": {
+          "const": "source_backed_complete_components"
+        },
+        "needs_verification": {
+          "type": "boolean"
+        },
+        "vacated_targets": {
+          "type": "number",
+          "minimum": 0
+        },
+        "vacated_target_share": {
+          "type": "number"
+        },
+        "vacated_receiving_air_yards": {
+          "type": "number"
+        },
+        "vacated_routes": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "vacated_snaps": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "calculation_method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "player_id",
+              "departure_event_id",
+              "targets",
+              "target_share",
+              "receiving_air_yards",
+              "source_ref_ids"
+            ],
+            "properties": {
+              "player_id": {
+                "type": "string"
+              },
+              "departure_event_id": {
+                "type": "string"
+              },
+              "targets": {
+                "type": "number",
+                "minimum": 0
+              },
+              "target_share": {
+                "type": "number"
+              },
+              "receiving_air_yards": {
+                "type": "number"
+              },
+              "source_ref_ids": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "temporal": {
+          "$ref": "#/$defs/temporalEvidence"
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "vacatedOpportunity": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/blockedVacatedOpportunity"
+        },
+        {
+          "$ref": "#/$defs/availableVacatedOpportunity"
+        }
+      ]
+    },
+    "partialSubtotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row_kind",
+        "status",
+        "row_count",
+        "targets",
+        "target_share_sum",
+        "air_yards_share_sum",
+        "admitted_to_reconstruction",
+        "completeness",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "row_kind": {
+          "const": "deterministic_derivation"
+        },
+        "status": {
+          "const": "candidate_diagnostic_only"
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target_share_sum": {
+          "type": "number"
+        },
+        "air_yards_share_sum": {
+          "type": "number"
+        },
+        "admitted_to_reconstruction": {
+          "const": false
+        },
+        "completeness": {
+          "const": "partial_single_team_player_season_rows_not_a_team_total"
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "missingnessEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field_path",
+        "reason_code",
+        "value_state",
+        "source_ref_ids"
+      ],
+      "properties": {
+        "field_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value_state": {
+          "const": "null_or_empty_never_zero_filled"
+        },
+        "source_ref_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "reproducibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deterministic",
+        "builder_command",
+        "validator_command",
+        "source_assertions_path",
+        "source_assertions_sha256",
+        "schema_path",
+        "schema_sha256"
+      ],
+      "properties": {
+        "deterministic": {
+          "const": true
+        },
+        "builder_command": {
+          "type": "string"
+        },
+        "validator_command": {
+          "type": "string"
+        },
+        "source_assertions_path": {
+          "type": "string"
+        },
+        "source_assertions_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "schema_path": {
+          "type": "string"
+        },
+        "schema_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,1108 @@
+{
+  "artifact": "historical_landing_context_2023_lar_candidate",
+  "context": {
+    "context_cutoff": "2023-04-29T23:59:59Z",
+    "cutoff_precision": "configured_end_of_draft_day_utc_proxy",
+    "effective_at": "2023-04-29T23:59:59Z",
+    "historical_mode": "as_known_at_cutoff",
+    "known_by_cutoff": true,
+    "prior_season": 2022,
+    "same_day_admission_policy": "draft_selection_ordinal_only_no_external_same_day_fact_without_sequence_evidence",
+    "season": 2023,
+    "subject": {
+      "crosswalk_row_id": "rookie-2023-gsis-00-0039075",
+      "display_name_join_used": false,
+      "gsis_id": "00-0039075",
+      "rookies_slug": "wr-puka-nacua",
+      "rookies_slug_status": "existing_repo_id",
+      "tiber_canonical_player_id": null,
+      "tiber_data_source_player_id": "00-0039075"
+    },
+    "team": {
+      "canonical_code": "LAR",
+      "draft_source_raw_code": "LAR",
+      "prior_season_bound_canonical_code": null,
+      "prior_season_normalization_applied": false,
+      "prior_season_source_raw_code": "LA",
+      "prior_season_team_binding_status": "blocked_2022_alias_outside_issue_237_supported_scope"
+    }
+  },
+  "deterministic_derivations": {
+    "known_single_team_rows_subtotal": {
+      "admitted_to_reconstruction": false,
+      "air_yards_share_sum": 0.9868,
+      "completeness": "partial_single_team_player_season_rows_not_a_team_total",
+      "row_count": 17,
+      "row_kind": "deterministic_derivation",
+      "source_ref_ids": [
+        "tiber-data-player-season-coverage-v0-promoted"
+      ],
+      "status": "candidate_diagnostic_only",
+      "target_share_sum": 0.9982,
+      "targets": 516
+    }
+  },
+  "generated_at": "2026-08-05T00:00:00Z",
+  "identity_binding": {
+    "allowed_edge": "gsis_to_tiber_data_source_player_id",
+    "crosswalk_path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.json",
+    "crosswalk_sha256": "db1a08192aacf604d0be7930147b3e0182c28250bda246c65fbca290ed9a11e2",
+    "crosswalk_version": "0.1.0",
+    "manifest_path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.manifest.json",
+    "manifest_sha256": "ff3eacdd8e8f5c1b5ab59911b3f7fd8601cb2e17aadce1ab1c57c1f06e949c2d",
+    "projection_policy": "identity_spine_and_2023_draft_fields_only_no_history_or_forecast_context",
+    "tiber_canonical_player_id_edge_authorized": false
+  },
+  "interpretations": {
+    "records": [],
+    "status": "not_in_scope_design_and_evidence_only"
+  },
+  "issue": "Prometheus-Frameworks/TIBER-Data#236",
+  "missingness": [
+    {
+      "field_path": "observations.returning_inventory.value",
+      "reason_code": "no_cutoff_bounded_roster_or_transaction_source",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.vacated_opportunity.vacated_targets",
+      "reason_code": "no_complete_departure_and_team_split_inputs",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.offseason_chronology.value",
+      "reason_code": "no_immutable_dated_transaction_feed",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.roster_at_cutoff.value",
+      "reason_code": "no_april_2023_roster_snapshot",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.quarterback_state.value",
+      "reason_code": "no_cutoff_bounded_qb_state_source",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.coaching_play_caller_state.value",
+      "reason_code": "no_cutoff_bounded_coaching_source",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.prior_season_offense_quality.value",
+      "reason_code": "no_2022_team_environment_source",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.injury_availability.value",
+      "reason_code": "no_cutoff_bounded_availability_source",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.prior_season_usage.complete_team_totals",
+      "reason_code": "player_season_rows_are_not_complete_team_or_team_split_aggregates",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.prior_season_usage.routes_run",
+      "reason_code": "source_field_unavailable",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.prior_season_usage.snap_share",
+      "reason_code": "source_field_unavailable",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.prior_season_usage.route_participation",
+      "reason_code": "source_field_unavailable",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.prior_season_usage.red_zone_targets",
+      "reason_code": "source_field_unavailable",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.prior_season_usage.red_zone_carries",
+      "reason_code": "source_field_unavailable",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "observations.prior_season_usage.temporal.known_by_cutoff",
+      "reason_code": "source_release_and_revision_timestamp_unavailable",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    },
+    {
+      "field_path": "context.team.prior_season_bound_canonical_code",
+      "reason_code": "2022_LA_to_LAR_alias_not_authorized_by_issue_237",
+      "source_ref_ids": [],
+      "value_state": "null_or_empty_never_zero_filled"
+    }
+  ],
+  "observations": {
+    "coaching_play_caller_state": {
+      "missing_reason": "No cutoff-bounded coaching or play-caller source is held.",
+      "needs_verification": true,
+      "records": [],
+      "row_kind": "observation",
+      "source_ref_ids": [],
+      "support_status": "unavailable",
+      "temporal": {
+        "effective_at": null,
+        "effective_period": null,
+        "knowledge_basis": "not_applicable_missing_group",
+        "known_by_cutoff": null,
+        "source_available_at": null,
+        "source_updated_at": null
+      },
+      "value": null
+    },
+    "draft_assignment": {
+      "canonical_team": "LAR",
+      "needs_verification": false,
+      "overall_pick": 177,
+      "raw_team_code": "LAR",
+      "row_kind": "observation",
+      "source_ref_ids": [
+        "issue-237-crosswalk-candidate",
+        "rookies-pilot-cutoff-reference-lar"
+      ],
+      "support_status": "candidate_source_asserted",
+      "temporal": {
+        "effective_at": null,
+        "effective_period": null,
+        "knowledge_basis": "draft_selection_ordinal_at_configured_cutoff",
+        "known_by_cutoff": true,
+        "source_available_at": null,
+        "source_updated_at": null
+      }
+    },
+    "injury_availability": {
+      "missing_reason": "No cutoff-bounded injury/availability feed is held; games played is not a health state.",
+      "needs_verification": true,
+      "records": [],
+      "row_kind": "observation",
+      "source_ref_ids": [],
+      "support_status": "unavailable",
+      "temporal": {
+        "effective_at": null,
+        "effective_period": null,
+        "knowledge_basis": "not_applicable_missing_group",
+        "known_by_cutoff": null,
+        "source_available_at": null,
+        "source_updated_at": null
+      },
+      "value": null
+    },
+    "offseason_chronology": {
+      "missing_reason": "No admissible April 2023 cutoff-bounded transaction feed is held; wrong-year and fixture-only lanes are inventory evidence only.",
+      "needs_verification": true,
+      "records": [],
+      "row_kind": "observation",
+      "source_ref_ids": [],
+      "support_status": "unavailable",
+      "temporal": {
+        "effective_at": null,
+        "effective_period": null,
+        "knowledge_basis": "not_applicable_missing_group",
+        "known_by_cutoff": null,
+        "source_available_at": null,
+        "source_updated_at": null
+      },
+      "value": null
+    },
+    "prior_season_offense_quality": {
+      "missing_reason": "No governed 2022 team offense, pace, personnel, or scoring artifact is held.",
+      "needs_verification": true,
+      "records": [],
+      "row_kind": "observation",
+      "source_ref_ids": [],
+      "support_status": "unavailable",
+      "temporal": {
+        "effective_at": null,
+        "effective_period": null,
+        "knowledge_basis": "not_applicable_missing_group",
+        "known_by_cutoff": null,
+        "source_available_at": null,
+        "source_updated_at": null
+      },
+      "value": null
+    },
+    "prior_season_usage": {
+      "complete_team_distribution": false,
+      "complete_team_totals": {
+        "air_yards_share": null,
+        "receiving_air_yards": null,
+        "receiving_tds": null,
+        "receiving_yards": null,
+        "target_share": null,
+        "targets": null
+      },
+      "excluded_multi_team_rows": [],
+      "known_single_team_rows": [
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.0881,
+          "needs_verification": true,
+          "player_id": "00-0033110",
+          "player_name_audit_only": "Tyler Higbee",
+          "position": "TE",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 327,
+          "receiving_tds": 3,
+          "receiving_yards": 620,
+          "receptions": 72,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0033110",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.2089,
+          "targets": 108,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.1921,
+          "needs_verification": true,
+          "player_id": "00-0033908",
+          "player_name_audit_only": "Cooper Kupp",
+          "position": "WR",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 713,
+          "receiving_tds": 6,
+          "receiving_yards": 812,
+          "receptions": 75,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0033908",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.1896,
+          "targets": 98,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.128,
+          "needs_verification": true,
+          "player_id": "00-0036862",
+          "player_name_audit_only": "Ben Skowronek",
+          "position": "WR",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 475,
+          "receiving_tds": 0,
+          "receiving_yards": 376,
+          "receptions": 39,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0036862",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.118,
+          "targets": 61,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.1352,
+          "needs_verification": true,
+          "player_id": "00-0031428",
+          "player_name_audit_only": "Allen Robinson",
+          "position": "WR",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 502,
+          "receiving_tds": 3,
+          "receiving_yards": 339,
+          "receptions": 33,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0031428",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.1006,
+          "targets": 52,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.1872,
+          "needs_verification": true,
+          "player_id": "00-0036415",
+          "player_name_audit_only": "Van Jefferson",
+          "position": "WR",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 695,
+          "receiving_tds": 3,
+          "receiving_yards": 369,
+          "receptions": 24,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0036415",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0851,
+          "targets": 44,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.1676,
+          "needs_verification": true,
+          "player_id": "00-0036849",
+          "player_name_audit_only": "Tutu Atwell",
+          "position": "WR",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 622,
+          "receiving_tds": 1,
+          "receiving_yards": 298,
+          "receptions": 18,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0036849",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0677,
+          "targets": 35,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.0129,
+          "needs_verification": true,
+          "player_id": "00-0034646",
+          "player_name_audit_only": "Brandon Powell",
+          "position": "WR",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 48,
+          "receiving_tds": 0,
+          "receiving_yards": 156,
+          "receptions": 24,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0034646",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0619,
+          "targets": 32,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.0075,
+          "needs_verification": true,
+          "player_id": "00-0035664",
+          "player_name_audit_only": "Darrell Henderson",
+          "position": "RB",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 28,
+          "receiving_tds": 0,
+          "receiving_yards": 102,
+          "receptions": 17,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0035664",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0426,
+          "targets": 22,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.0092,
+          "needs_verification": true,
+          "player_id": "00-0036414",
+          "player_name_audit_only": "Cam Akers",
+          "position": "RB",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 34,
+          "receiving_tds": 0,
+          "receiving_yards": 117,
+          "receptions": 13,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0036414",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0348,
+          "targets": 18,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.0046,
+          "needs_verification": true,
+          "player_id": "00-0037840",
+          "player_name_audit_only": "Kyren Williams",
+          "position": "RB",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 17,
+          "receiving_tds": 0,
+          "receiving_yards": 76,
+          "receptions": 9,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0037840",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0232,
+          "targets": 12,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.0304,
+          "needs_verification": true,
+          "player_id": "00-0036424",
+          "player_name_audit_only": "Brycen Hopkins",
+          "position": "TE",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 113,
+          "receiving_tds": 0,
+          "receiving_yards": 109,
+          "receptions": 7,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0036424",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0213,
+          "targets": 11,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": -0.0005,
+          "needs_verification": true,
+          "player_id": "00-0031806",
+          "player_name_audit_only": "Malcolm Brown",
+          "position": "RB",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": -2,
+          "receiving_tds": 0,
+          "receiving_yards": 37,
+          "receptions": 5,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0031806",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0116,
+          "targets": 6,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.0191,
+          "needs_verification": true,
+          "player_id": "00-0037055",
+          "player_name_audit_only": "Lance McCutcheon",
+          "position": "WR",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 71,
+          "receiving_tds": 0,
+          "receiving_yards": 0,
+          "receptions": 0,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0037055",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0097,
+          "targets": 5,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": -0.007,
+          "needs_verification": true,
+          "player_id": "00-0037557",
+          "player_name_audit_only": "Ronnie Rivers",
+          "position": "RB",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": -26,
+          "receiving_tds": 0,
+          "receiving_yards": 29,
+          "receptions": 5,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0037557",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0097,
+          "targets": 5,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.0081,
+          "needs_verification": true,
+          "player_id": "00-0036841",
+          "player_name_audit_only": "Austin Trammell",
+          "position": "WR",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 30,
+          "receiving_tds": 0,
+          "receiving_yards": 13,
+          "receptions": 2,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0036841",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0077,
+          "targets": 4,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.0032,
+          "needs_verification": true,
+          "player_id": "00-0035603",
+          "player_name_audit_only": "Kendall Blanton",
+          "position": "TE",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 12,
+          "receiving_tds": 0,
+          "receiving_yards": 35,
+          "receptions": 2,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0035603",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0039,
+          "targets": 2,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        },
+        {
+          "admitted_to_reconstruction": false,
+          "air_yards_share": 0.0011,
+          "needs_verification": true,
+          "player_id": "00-0036918",
+          "player_name_audit_only": "Jacob Harris",
+          "position": "WR",
+          "raw_teams": [
+            "LA"
+          ],
+          "receiving_air_yards": 4,
+          "receiving_tds": 0,
+          "receiving_yards": 6,
+          "receptions": 1,
+          "roster_or_depth_inference_allowed": false,
+          "row_kind": "observation",
+          "source_record_key": {
+            "player_id": "00-0036918",
+            "season": 2022,
+            "season_type": "REG"
+          },
+          "source_ref_ids": [
+            "tiber-data-player-season-coverage-v0-promoted"
+          ],
+          "support_status": "source_backed_candidate_timing_unproven",
+          "target_share": 0.0019,
+          "targets": 1,
+          "temporal": {
+            "effective_at": null,
+            "effective_period": {
+              "season": 2022,
+              "season_type": "REG"
+            },
+            "knowledge_basis": "source_timing_unavailable",
+            "known_by_cutoff": null,
+            "source_available_at": null,
+            "source_updated_at": null
+          }
+        }
+      ],
+      "needs_verification": true,
+      "normalization_applied": false,
+      "red_zone_carries": null,
+      "red_zone_targets": null,
+      "route_participation": null,
+      "routes_run": null,
+      "row_kind": "observation",
+      "snap_share": null,
+      "source_ref_ids": [
+        "tiber-data-player-season-coverage-v0-promoted",
+        "tiber-data-player-season-coverage-2022-2025-origin-candidate"
+      ],
+      "source_team_raw_code": "LA",
+      "support_status": "blocked_team_alias_and_source_timing_unproven",
+      "team_binding_status": "blocked_2022_alias_outside_issue_237_supported_scope",
+      "temporal": {
+        "effective_at": null,
+        "effective_period": {
+          "season": 2022,
+          "season_type": "REG"
+        },
+        "knowledge_basis": "source_timing_unavailable",
+        "known_by_cutoff": null,
+        "source_available_at": null,
+        "source_updated_at": null
+      }
+    },
+    "quarterback_state": {
+      "missing_reason": "Player-season production cannot establish starter hierarchy, contract state, or health.",
+      "needs_verification": true,
+      "records": [],
+      "row_kind": "observation",
+      "source_ref_ids": [],
+      "support_status": "unavailable",
+      "temporal": {
+        "effective_at": null,
+        "effective_period": null,
+        "knowledge_basis": "not_applicable_missing_group",
+        "known_by_cutoff": null,
+        "source_available_at": null,
+        "source_updated_at": null
+      },
+      "value": null
+    },
+    "returning_inventory": {
+      "missing_reason": "Prior-season production is not roster membership or a depth chart, and no cutoff-bounded April 2023 roster/transaction source is held.",
+      "needs_verification": true,
+      "records": [],
+      "row_kind": "observation",
+      "source_ref_ids": [],
+      "support_status": "unavailable",
+      "temporal": {
+        "effective_at": null,
+        "effective_period": null,
+        "knowledge_basis": "not_applicable_missing_group",
+        "known_by_cutoff": null,
+        "source_available_at": null,
+        "source_updated_at": null
+      },
+      "value": null
+    },
+    "roster_at_cutoff": {
+      "missing_reason": "The repository has a roster contract but no April 2023 as-of roster artifact.",
+      "needs_verification": true,
+      "records": [],
+      "row_kind": "observation",
+      "source_ref_ids": [],
+      "support_status": "unavailable",
+      "temporal": {
+        "effective_at": null,
+        "effective_period": null,
+        "knowledge_basis": "not_applicable_missing_group",
+        "known_by_cutoff": null,
+        "source_available_at": null,
+        "source_updated_at": null
+      },
+      "value": null
+    },
+    "vacated_opportunity": {
+      "calculation_method": "sum exact team-split prior-season opportunity only for source-verified departures with effective_at on or before context_cutoff",
+      "components": [],
+      "missing_reason": "No cutoff-bounded transaction feed exists, and full-season multi-team usage cannot be allocated to a team. Routes and snaps are null in the governed source.",
+      "needs_verification": true,
+      "row_kind": "deterministic_derivation",
+      "source_ref_ids": [],
+      "support_status": "blocked_missing_cutoff_transaction_and_team_split_sources",
+      "temporal": {
+        "effective_at": null,
+        "effective_period": null,
+        "knowledge_basis": "not_applicable_missing_group",
+        "known_by_cutoff": null,
+        "source_available_at": null,
+        "source_updated_at": null
+      },
+      "vacated_receiving_air_yards": null,
+      "vacated_routes": null,
+      "vacated_snaps": null,
+      "vacated_target_share": null,
+      "vacated_targets": null
+    }
+  },
+  "open_questions": [
+    "Which repository owns cutoff-bounded roster, quarterback, coaching, and opportunity interpretation?",
+    "What immutable historical transaction, roster, coaching, and injury sources are admissible?",
+    "Does a later-retrieved prior-season record with no source revision timestamp qualify as known by the April 2023 cutoff?",
+    "Should a separately evidenced candidate-only 2022 LA-to-LAR rule be admitted?",
+    "What source can allocate full-season usage across teams for multi-team players?",
+    "Is an end-of-draft-day cutoff proxy sufficient, or must exact pick timestamps be sourced?",
+    "What durable non-name edge will connect GSIS to the governed TIBER canonical player ID namespace?"
+  ],
+  "promotion_authorized": false,
+  "reproducibility": {
+    "builder_command": "python3 scripts/build_historical_landing_context_2023_pilots.py",
+    "deterministic": true,
+    "schema_path": "data/candidate/historical_landing_context/historical_landing_context_candidate_v0.1.0.schema.json",
+    "schema_sha256": "9a373e2e9e0220780e1b816be01f91125454c5e20fe9ab92eb1557a237b21b5e",
+    "source_assertions_path": "data/candidate/historical_landing_context/2023_pilot_source_assertions_v0.json",
+    "source_assertions_sha256": "c4bf8761c5a0088bcca9c8bf8038d47e0d36c5f9ca5b469c72ccdc3d6732e1fe",
+    "validator_command": "python3 scripts/validate_historical_landing_context_2023_pilots.py --report --data-repo-root . --rookies-repo-root ../TIBER-Rookies"
+  },
+  "schema_version": "historical_landing_context_candidate_v0.1.0",
+  "source_registry": [
+    {
+      "authority": "candidate_dependency_not_promoted",
+      "git_blob": "fa5fe3b15c208c13746cfacf6d039e1f66e8850f",
+      "git_commit": "781eb72d3a298701b0e5c7cd8849b8dbddac746b",
+      "observed_at": null,
+      "path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.json",
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "role": "exact GSIS identity spine and 2023 draft assignment",
+      "sha256": "db1a08192aacf604d0be7930147b3e0182c28250bda246c65fbca290ed9a11e2",
+      "source_ref_id": "issue-237-crosswalk-candidate",
+      "source_updated_at": null
+    },
+    {
+      "authority": "candidate_dependency_not_promoted",
+      "git_blob": "35011a4bcc8477ac9cc1cd69ff6d0ae52f6f99e2",
+      "git_commit": "781eb72d3a298701b0e5c7cd8849b8dbddac746b",
+      "observed_at": null,
+      "path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.manifest.json",
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "role": "version and content-hash consumer binding",
+      "sha256": "ff3eacdd8e8f5c1b5ab59911b3f7fd8601cb2e17aadce1ab1c57c1f06e949c2d",
+      "source_ref_id": "issue-237-crosswalk-manifest",
+      "source_updated_at": null
+    },
+    {
+      "authority": "production_and_usage_history_only_not_roster_or_availability",
+      "git_blob": "f7b2918b978d842cd8753a7f3dedd3836934859b",
+      "git_commit": "711d6ee158d4e3bd116d1df4d76dea282200454d",
+      "observed_at": "2026-06-30T19:36:52.260432+00:00",
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "role": "2022 REG player-season production and usage observations",
+      "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+      "source_ref_id": "tiber-data-player-season-coverage-v0-promoted",
+      "source_updated_at": null
+    },
+    {
+      "authority": "production-team-of-record-only; full-season usage is not split across teams",
+      "git_blob": "b17f90c7693016f4f16040f3e4a379da8f761bdd",
+      "git_commit": "7ee43097c44bdd350b11e06cf448a4e559eefe8c",
+      "observed_at": "2026-06-30T19:36:52.260432+00:00",
+      "path": "data/processed/evidence/player_season_coverage_2022_2025.source_backed.json",
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "role": "source-method and team-context semantics",
+      "sha256": "39b6e71e36d667509221137f2b712143fe5fdccf5423f50e81b5c7a138c0072b",
+      "source_ref_id": "tiber-data-player-season-coverage-2022-2025-origin-candidate",
+      "source_updated_at": null
+    },
+    {
+      "authority": "pinned_unmerged_pilot_cutoff_configuration_reference_only",
+      "git_blob": "d5ebbdb9479fd4de64087605e44779804462ca6f",
+      "git_commit": "8c95723ee08de2186ede74163fbb379969764296",
+      "observed_at": null,
+      "path": "data/historical/reconstruction_2023/landing_context/2023_wr_puka_nacua_landing_context_v0.json",
+      "repository": "Prometheus-Frameworks/TIBER-Rookies",
+      "role": "configured pilot cutoff comparison reference only",
+      "sha256": "3b0509bb29995eeedeffb7391777ccced7a7aa75cfd6703b4e77d4bdf596853d",
+      "source_ref_id": "rookies-pilot-cutoff-reference-lar",
+      "source_updated_at": null
+    }
+  ],
+  "status": "candidate_partial_evidence_not_promoted"
+}
