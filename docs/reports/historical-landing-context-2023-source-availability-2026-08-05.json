@@ -1,0 +1,386 @@
+{
+  "artifact_id": "historical_landing_context_2023_source_availability_gap_report",
+  "bounded_discovery_method": {
+    "method": "inspect tracked candidate/promoted artifacts and contracts whose paths or metadata claim roster, opportunity, team context, usage, offense, personnel, availability, or draft-result semantics; compare their explicit season/source scope to April 2023",
+    "not_a_claim": "not a full external-source census or transitive cross-repo ownership decision",
+    "repository": "Prometheus-Frameworks/TIBER-Data"
+  },
+  "bounded_repository_inventory": [
+    {
+      "april_2023_admissibility": "not_admissible_wrong_season_and_not_historical_as_of",
+      "git_blob": "eaaca7de017882a819968f6461ee4803cc7ec3a7",
+      "git_commit": "9a58e6ed4b748783869277bb430c60ae33f1d05a",
+      "observed_scope": "2025 offline fixture",
+      "path": "exports/promoted/nfl/roster_player_team_map_v1.json",
+      "sha256": "bea7961e8319ae5928b22de0a04b9969c3d4685819d9306187215895ddc33a3c",
+      "source_family": "draft_day_roster"
+    },
+    {
+      "april_2023_admissibility": "not_admissible_wrong_season",
+      "git_blob": "af2d5ecc7095bc2a27cbaaad482a6e5952adb51a",
+      "git_commit": "e95dd6143e5c0c0611ff6f6f1c2469bdde85a93b",
+      "observed_scope": "2025 weekly source-backed roster rows",
+      "path": "data/processed/evidence/roster_player_team_map_2025.source_backed.json",
+      "sha256": "6c0436a4da7b7d54ee58454ad912be2571f5695457d107ed37a467b79d0cb38a",
+      "source_family": "draft_day_roster"
+    },
+    {
+      "april_2023_admissibility": "not_admissible_wrong_season",
+      "git_blob": "315441a8837054306369e7e94a195b576b229003",
+      "git_commit": "bf2d1bf6a1453d62b9f3d3cc7222f898febc9f56",
+      "observed_scope": "2025 offline fixture",
+      "path": "exports/promoted/nfl/team_offense_summary_v1.json",
+      "sha256": "8850fb7e395a2115bf48d2946e97743536b5dacc338abb0fa432e988a1adfd1d",
+      "source_family": "prior_season_offense_quality"
+    },
+    {
+      "april_2023_admissibility": "not_admissible_wrong_season",
+      "git_blob": "dc6214349e8d2dea2f5cdb0ee00d76d08b47bd16",
+      "git_commit": "6559b427588c52f8676bc3fbb3948ba47c36ee78",
+      "observed_scope": "2025 offline fixture",
+      "path": "exports/promoted/nfl/team_pace_pass_environment_v1.json",
+      "sha256": "e4f61b024c5dd53fadf1c943add73e57435724d5ff694b0ee0dfa402acc5fbcb",
+      "source_family": "prior_season_pace_and_pass_environment"
+    },
+    {
+      "april_2023_admissibility": "not_admissible_wrong_season",
+      "git_blob": "ebe4eb26d73202894f5398ad8f4bdf7d72b0d7ed",
+      "git_commit": "40e120888415ef91d369663d1588a2ac1628109a",
+      "observed_scope": "2024 governed real data with explicit governed markers in candidate path",
+      "path": "exports/candidates/team_week_raw/team_week_raw_v0_2024_real_source_candidate.json",
+      "sha256": "2aed00e68c1620af10d2ea4350104f7e183ff6ee050f5d385a503ef027281de9",
+      "source_family": "prior_season_weekly_team_context"
+    },
+    {
+      "april_2023_admissibility": "not_admissible_wrong_season_and_not_promoted",
+      "git_blob": "85ad4e9fa7026380417c4527361bf8cb172f507e",
+      "git_commit": "a7c059412806470a9e0b89889cd85f01cf7aace9",
+      "observed_scope": "2024 candidate",
+      "path": "exports/candidates/formation_summary/formation_summary_v0_2024_real_source_candidate.json",
+      "sha256": "7278133e4f0f65a7f35e76c686d33c750f8afd6f09bf50938b0eade78cc85def",
+      "source_family": "prior_season_personnel_usage"
+    },
+    {
+      "april_2023_admissibility": "not_admissible_wrong_season_and_wrong_semantics",
+      "git_blob": "3c18796bb7ac6938100f72bfe6e269d453fffcab",
+      "git_commit": "7730cf414770ac34f1c15e302b947cd588574cdf",
+      "observed_scope": "2025 usage fixture; no historical availability state",
+      "path": "exports/promoted/nfl/player_weekly_usage_v1.json",
+      "sha256": "425db119ed6b6d78bead9a638a4295703bf316547c4b76c0022b0de765804260",
+      "source_family": "injury_and_availability"
+    },
+    {
+      "april_2023_admissibility": "not_admissible_wrong_draft_class",
+      "git_blob": "90b4d3900c18fd99d6876d88851dd33fda9872ca",
+      "git_commit": "a7f560734d665eecab2ae15a03bcbfdff00e93f7",
+      "observed_scope": "2026 only",
+      "path": "exports/promoted/nfl_draft_results/nfl_draft_results_2026.json",
+      "sha256": "c6ccb76085ae5726f92c543170f151a4d183920b6f61ec4de59a1883f7d7863a",
+      "source_family": "draft_results"
+    },
+    {
+      "april_2023_admissibility": "not_admissible_wrong_season_and_fixture_only",
+      "git_blob": "b2c23975a555411e9719e45e066468130be1ca70",
+      "git_commit": "834cb69d8433e5ecb471fa2e189bd9fe20cf60e0",
+      "observed_scope": "2026 fixture-only ownership event scaffold in promoted path",
+      "path": "exports/promoted/player_ownership/events/player_ownership_events_2026.jsonl",
+      "sha256": "6aee8de0d174371b42c82d548353ded0475d9383493d79bb171fd2adb2ebd53e",
+      "source_family": "offseason_arrivals_and_departures"
+    },
+    {
+      "april_2023_admissibility": "not_admissible_wrong_cutoff_and_not_historical_as_of",
+      "git_blob": "08ade3596a912df4a84cfa2872f5c9e4ad7bb3bb",
+      "git_commit": "12e6a284dee4f54f0b0a0cfc40fce1eb364071e5",
+      "observed_scope": "2026 current-state provisional artifact sourced from 2025 roster weeks",
+      "path": "exports/promoted/player_ownership/player_ownership_latest.json",
+      "sha256": "179a20410dac7d4b148966b2e577971ca4cad2da859cdaa397fde76461d5ccb7",
+      "source_family": "draft_day_roster"
+    },
+    {
+      "april_2023_admissibility": "no_fact_rows_available",
+      "git_blob": "c2e6f82b16550c0042b57ca1a5840dd264512dd5",
+      "git_commit": "834cb69d8433e5ecb471fa2e189bd9fe20cf60e0",
+      "observed_scope": "contract only; no April 2023 event rows",
+      "path": "schemas/player_ownership_change_event_v0.schema.json",
+      "sha256": "bb21ac41b8f965acc9205a136c63b24687034fca2e99431cd8a537775cb5c6da",
+      "source_family": "offseason_arrivals_and_departures_contract_only"
+    },
+    {
+      "april_2023_admissibility": "no_fact_rows_available",
+      "git_blob": "0449bd722293904e669de68a1c2b23c5198f246d",
+      "git_commit": "96f9a984601473bad6abb3deff9ca73f68a3b689",
+      "observed_scope": "contract only; no April 2023 artifact",
+      "path": "schemas/roster_snapshot_v0.schema.json",
+      "sha256": "b19cde6d383a331c12eba154f9f9408e628dc99eb08591cac6c2cbf6ca12f22a",
+      "source_family": "draft_day_roster_contract_only"
+    },
+    {
+      "april_2023_admissibility": "no_fact_rows_available",
+      "git_blob": "8b1ed2d7e2402da63793c6a76d924ef32248c6c8",
+      "git_commit": "96f9a984601473bad6abb3deff9ca73f68a3b689",
+      "observed_scope": "contract only; no April 2023 artifact",
+      "path": "docs/contracts/roster-snapshot-v0.md",
+      "sha256": "ad92862c0908bb40f20dd2d37f514a428b38eda2e6c7346294facd097d748c93",
+      "source_family": "draft_day_roster_contract_only"
+    }
+  ],
+  "frozen_rookies_reference_audit": {
+    "facts_admitted_from_reference": false,
+    "protected_paths_mutated": false,
+    "reasons": [
+      "reference records are name-keyed and are not a permitted identity join",
+      "some reference claims lack row-level immutable source hashes",
+      "agreement/reporting dates and executed transaction dates are not consistently distinguished",
+      "the Puka reference cites a June 2023 Cooper Kupp recovery article after its April 2023 cutoff"
+    ]
+  },
+  "generated_at": "2026-08-05T00:00:00Z",
+  "hindsight_firewall": {
+    "forecast_metadata_projected": false,
+    "later_crosswalk_history_projected": false,
+    "modern_source_observation_timestamp_treated_as_fact_effective_at": false,
+    "post_cutoff_puka_kupp_source_admitted": false,
+    "same_day_external_fact_without_sequence_evidence_admitted": false
+  },
+  "issue": "Prometheus-Frameworks/TIBER-Data#236",
+  "open_questions": [
+    "Which repository owns cutoff-bounded roster, quarterback, coaching, and opportunity interpretation?",
+    "What immutable historical transaction, roster, coaching, and injury sources are admissible?",
+    "Does a later-retrieved prior-season record with no source revision timestamp qualify as known by the April 2023 cutoff?",
+    "Should a separately evidenced candidate-only 2022 LA-to-LAR rule be admitted?",
+    "What source can allocate full-season usage across teams for multi-team players?",
+    "Is an end-of-draft-day cutoff proxy sufficient, or must exact pick timestamps be sourced?",
+    "What durable non-name edge will connect GSIS to the governed TIBER canonical player ID namespace?"
+  ],
+  "pilot_findings": [
+    {
+      "admitted_to_reconstruction": false,
+      "artifact_path": "exports/candidates/historical_landing_context/2023_bal_historical_landing_context_v0.1.0.json",
+      "canonical_team": "BAL",
+      "complete_team_distribution": false,
+      "context_cutoff": "2023-04-27T23:59:59Z",
+      "excluded_multi_team_row_count": 2,
+      "known_single_team_air_yards_share_sum": 0.9398,
+      "known_single_team_row_count": 15,
+      "known_single_team_target_share_sum": 0.9614,
+      "known_single_team_target_subtotal": 447,
+      "prior_season_source_raw_code": "BAL",
+      "prior_usage_known_by_cutoff": null,
+      "source_ref_ids": [
+        "issue-237-crosswalk-candidate",
+        "tiber-data-player-season-coverage-v0-promoted",
+        "tiber-data-player-season-coverage-2022-2025-origin-candidate"
+      ],
+      "team_binding_status": "exact_code_match"
+    },
+    {
+      "admitted_to_reconstruction": false,
+      "artifact_path": "exports/candidates/historical_landing_context/2023_ind_historical_landing_context_v0.1.0.json",
+      "canonical_team": "IND",
+      "complete_team_distribution": false,
+      "context_cutoff": "2023-04-28T23:59:59Z",
+      "excluded_multi_team_row_count": 2,
+      "known_single_team_air_yards_share_sum": 0.9549,
+      "known_single_team_row_count": 14,
+      "known_single_team_target_share_sum": 0.943,
+      "known_single_team_target_subtotal": 546,
+      "prior_season_source_raw_code": "IND",
+      "prior_usage_known_by_cutoff": null,
+      "source_ref_ids": [
+        "issue-237-crosswalk-candidate",
+        "tiber-data-player-season-coverage-v0-promoted",
+        "tiber-data-player-season-coverage-2022-2025-origin-candidate"
+      ],
+      "team_binding_status": "exact_code_match"
+    },
+    {
+      "admitted_to_reconstruction": false,
+      "artifact_path": "exports/candidates/historical_landing_context/2023_lar_historical_landing_context_v0.1.0.json",
+      "canonical_team": "LAR",
+      "complete_team_distribution": false,
+      "context_cutoff": "2023-04-29T23:59:59Z",
+      "excluded_multi_team_row_count": 0,
+      "known_single_team_air_yards_share_sum": 0.9868,
+      "known_single_team_row_count": 17,
+      "known_single_team_target_share_sum": 0.9982,
+      "known_single_team_target_subtotal": 516,
+      "prior_season_source_raw_code": "LA",
+      "prior_usage_known_by_cutoff": null,
+      "source_ref_ids": [
+        "issue-237-crosswalk-candidate",
+        "tiber-data-player-season-coverage-v0-promoted",
+        "tiber-data-player-season-coverage-2022-2025-origin-candidate"
+      ],
+      "team_binding_status": "blocked_2022_alias_outside_issue_237_supported_scope"
+    }
+  ],
+  "pinned_frozen_rookies_comparison_references": [
+    {
+      "authority": "pinned_unmerged_pilot_cutoff_configuration_reference_only",
+      "canonical_team": "BAL",
+      "context_cutoff": "2023-04-27T23:59:59Z",
+      "git_blob": "f759d36c6b2eb24074e80cf47f5373da7f57c1a0",
+      "git_commit": "8c95723ee08de2186ede74163fbb379969764296",
+      "path": "data/historical/reconstruction_2023/landing_context/2023_wr_zay_flowers_landing_context_v0.json",
+      "repository": "Prometheus-Frameworks/TIBER-Rookies",
+      "sha256": "b0e086f5dbfecf1ae5e9b8f97a1ac0f98d5abc6ffbd1fe621f95666a73bd01fd"
+    },
+    {
+      "authority": "pinned_unmerged_pilot_cutoff_configuration_reference_only",
+      "canonical_team": "IND",
+      "context_cutoff": "2023-04-28T23:59:59Z",
+      "git_blob": "0d7ce624c699586a63978ba1e0e4fbc2c189628a",
+      "git_commit": "8c95723ee08de2186ede74163fbb379969764296",
+      "path": "data/historical/reconstruction_2023/landing_context/2023_wr_josh_downs_landing_context_v0.json",
+      "repository": "Prometheus-Frameworks/TIBER-Rookies",
+      "sha256": "6f64d6d9a2de4d399efa7d3b2645bdbc1780791076226d6fd40a62488c65edfc"
+    },
+    {
+      "authority": "pinned_unmerged_pilot_cutoff_configuration_reference_only",
+      "canonical_team": "LAR",
+      "context_cutoff": "2023-04-29T23:59:59Z",
+      "git_blob": "d5ebbdb9479fd4de64087605e44779804462ca6f",
+      "git_commit": "8c95723ee08de2186ede74163fbb379969764296",
+      "path": "data/historical/reconstruction_2023/landing_context/2023_wr_puka_nacua_landing_context_v0.json",
+      "repository": "Prometheus-Frameworks/TIBER-Rookies",
+      "sha256": "3b0509bb29995eeedeffb7391777ccced7a7aa75cfd6703b4e77d4bdf596853d"
+    }
+  ],
+  "report_version": "0.1.0",
+  "scope": {
+    "context_season": 2023,
+    "cutoff_mode": "configured_end_of_selection_day_proxy_with_same_day_ordinal_firewall",
+    "ownership_decision_reserved_for_operator": true,
+    "pilot_teams": [
+      "BAL",
+      "IND",
+      "LAR"
+    ],
+    "prior_season": 2022,
+    "promotion_authorized": false
+  },
+  "source_families": [
+    {
+      "admitted_value_scope": "none_in_this_design_evidence_candidate",
+      "candidate_evidence_scope": "verbatim single-team 2022 REG player-season rows with nonzero targets",
+      "family": "prior_season_targets_shares_air_yards_and_receiving",
+      "source_ref_ids": [
+        "tiber-data-player-season-coverage-v0-promoted",
+        "tiber-data-player-season-coverage-2022-2025-origin-candidate"
+      ],
+      "status": "player_rows_available_but_cutoff_timing_and_team_completeness_unproven"
+    },
+    {
+      "admitted_value_scope": "none_all_totals_null",
+      "candidate_evidence_scope": "individual usage components only; no departure state",
+      "family": "vacated_targets_and_receiving_opportunity",
+      "source_ref_ids": [
+        "tiber-data-player-season-coverage-v0-promoted"
+      ],
+      "status": "blocked_no_cutoff_transaction_feed_or_team_split_usage"
+    },
+    {
+      "admitted_value_scope": "none",
+      "candidate_evidence_scope": "wrong-year fixture, source-backed 2025, and provisional current-state lanes are inventoried but inadmissible; prior-season usage is not a roster substitute",
+      "family": "draft_day_roster_or_depth_chart",
+      "source_ref_ids": [],
+      "status": "unavailable_no_april_2023_cutoff_historical_roster_artifact"
+    },
+    {
+      "admitted_value_scope": "none",
+      "candidate_evidence_scope": "the immutable 2026 fixture lane and event contract are inventoried but inadmissible; frozen Rookies URLs remain comparison-only",
+      "family": "offseason_arrivals_and_departures",
+      "source_ref_ids": [],
+      "status": "unavailable_no_admissible_april_2023_cutoff_bounded_transaction_feed"
+    },
+    {
+      "admitted_value_scope": "none",
+      "candidate_evidence_scope": "none",
+      "family": "quarterback_state",
+      "source_ref_ids": [],
+      "status": "unavailable_production_does_not_establish_cutoff_state"
+    },
+    {
+      "admitted_value_scope": "none",
+      "candidate_evidence_scope": "none",
+      "family": "coaching_and_play_caller_state",
+      "source_ref_ids": [],
+      "status": "unavailable_no_cutoff_bounded_source"
+    },
+    {
+      "admitted_value_scope": "none",
+      "candidate_evidence_scope": "player rows cannot be promoted to team totals",
+      "family": "prior_season_offense_quality_volume_personnel_and_scoring",
+      "source_ref_ids": [],
+      "status": "unavailable_no_2022_team_environment_artifact"
+    },
+    {
+      "admitted_value_scope": "none",
+      "candidate_evidence_scope": "games played cannot be used as injury state",
+      "family": "injury_and_availability",
+      "source_ref_ids": [],
+      "status": "unavailable_no_cutoff_bounded_availability_source"
+    },
+    {
+      "admitted_value_scope": "three pilot identities, overall picks, and draft teams",
+      "candidate_evidence_scope": "TIBER canonical IDs remain null",
+      "family": "draft_results_and_team_assignment",
+      "source_ref_ids": [
+        "issue-237-crosswalk-candidate",
+        "issue-237-crosswalk-manifest"
+      ],
+      "status": "bounded_candidate_available_via_issue_237_exact_gsis_projection"
+    }
+  ],
+  "source_registry": [
+    {
+      "authority": "candidate_dependency_not_promoted",
+      "git_blob": "fa5fe3b15c208c13746cfacf6d039e1f66e8850f",
+      "git_commit": "781eb72d3a298701b0e5c7cd8849b8dbddac746b",
+      "observed_at": null,
+      "path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.json",
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "role": "exact GSIS identity spine and 2023 draft assignment",
+      "sha256": "db1a08192aacf604d0be7930147b3e0182c28250bda246c65fbca290ed9a11e2",
+      "source_ref_id": "issue-237-crosswalk-candidate",
+      "source_updated_at": null
+    },
+    {
+      "authority": "candidate_dependency_not_promoted",
+      "git_blob": "35011a4bcc8477ac9cc1cd69ff6d0ae52f6f99e2",
+      "git_commit": "781eb72d3a298701b0e5c7cd8849b8dbddac746b",
+      "observed_at": null,
+      "path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.manifest.json",
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "role": "version and content-hash consumer binding",
+      "sha256": "ff3eacdd8e8f5c1b5ab59911b3f7fd8601cb2e17aadce1ab1c57c1f06e949c2d",
+      "source_ref_id": "issue-237-crosswalk-manifest",
+      "source_updated_at": null
+    },
+    {
+      "authority": "production_and_usage_history_only_not_roster_or_availability",
+      "git_blob": "f7b2918b978d842cd8753a7f3dedd3836934859b",
+      "git_commit": "711d6ee158d4e3bd116d1df4d76dea282200454d",
+      "observed_at": "2026-06-30T19:36:52.260432+00:00",
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "role": "2022 REG player-season production and usage observations",
+      "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+      "source_ref_id": "tiber-data-player-season-coverage-v0-promoted",
+      "source_updated_at": null
+    },
+    {
+      "authority": "production-team-of-record-only; full-season usage is not split across teams",
+      "git_blob": "b17f90c7693016f4f16040f3e4a379da8f761bdd",
+      "git_commit": "7ee43097c44bdd350b11e06cf448a4e559eefe8c",
+      "observed_at": "2026-06-30T19:36:52.260432+00:00",
+      "path": "data/processed/evidence/player_season_coverage_2022_2025.source_backed.json",
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "role": "source-method and team-context semantics",
+      "sha256": "39b6e71e36d667509221137f2b712143fe5fdccf5423f50e81b5c7a138c0072b",
+      "source_ref_id": "tiber-data-player-season-coverage-2022-2025-origin-candidate",
+      "source_updated_at": null
+    }
+  ],
+  "status": "design_and_evidence_gap_report_not_a_terminal_decision"
+}

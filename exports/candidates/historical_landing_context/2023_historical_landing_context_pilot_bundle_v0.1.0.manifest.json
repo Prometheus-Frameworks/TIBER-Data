@@ -1,0 +1,74 @@
+{
+  "artifact_id": "historical_landing_context_2023_pilot_bundle_v0.1.0",
+  "consumer_boundary": {
+    "design_and_evidence_only": true,
+    "full_team_totals_ready": false,
+    "identity_edge": "gsis_to_tiber_data_source_player_id",
+    "interpretations_authorized": false,
+    "ownership_decision_made": false,
+    "returning_inventory_ready": false,
+    "vacated_opportunity_ready": false
+  },
+  "generated_at": "2026-08-05T00:00:00Z",
+  "identity_dependency": {
+    "allowed_edge": "gsis_to_tiber_data_source_player_id",
+    "crosswalk_path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.json",
+    "crosswalk_sha256": "db1a08192aacf604d0be7930147b3e0182c28250bda246c65fbca290ed9a11e2",
+    "manifest_path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.manifest.json",
+    "manifest_sha256": "ff3eacdd8e8f5c1b5ab59911b3f7fd8601cb2e17aadce1ab1c57c1f06e949c2d",
+    "tiber_canonical_player_id_edge_authorized": false,
+    "version": "0.1.0"
+  },
+  "issue": "Prometheus-Frameworks/TIBER-Data#236",
+  "open_questions": [
+    "Which repository owns cutoff-bounded roster, quarterback, coaching, and opportunity interpretation?",
+    "What immutable historical transaction, roster, coaching, and injury sources are admissible?",
+    "Does a later-retrieved prior-season record with no source revision timestamp qualify as known by the April 2023 cutoff?",
+    "Should a separately evidenced candidate-only 2022 LA-to-LAR rule be admitted?",
+    "What source can allocate full-season usage across teams for multi-team players?",
+    "Is an end-of-draft-day cutoff proxy sufficient, or must exact pick timestamps be sourced?",
+    "What durable non-name edge will connect GSIS to the governed TIBER canonical player ID namespace?"
+  ],
+  "pilot_artifacts": [
+    {
+      "canonical_team": "BAL",
+      "context_cutoff": "2023-04-27T23:59:59Z",
+      "path": "exports/candidates/historical_landing_context/2023_bal_historical_landing_context_v0.1.0.json",
+      "sha256": "f029adcce36d1d57e241362bbddeeed496e2613bf2147dcfaa440f1c179ee10c",
+      "status": "candidate_partial_evidence_not_promoted"
+    },
+    {
+      "canonical_team": "IND",
+      "context_cutoff": "2023-04-28T23:59:59Z",
+      "path": "exports/candidates/historical_landing_context/2023_ind_historical_landing_context_v0.1.0.json",
+      "sha256": "6103e820be8401a56049bf3cb84d8dcef8585872616c6c35ba29c3bf12514ead",
+      "status": "candidate_partial_evidence_not_promoted"
+    },
+    {
+      "canonical_team": "LAR",
+      "context_cutoff": "2023-04-29T23:59:59Z",
+      "path": "exports/candidates/historical_landing_context/2023_lar_historical_landing_context_v0.1.0.json",
+      "sha256": "1fa473eb0257098480738cc03f2b6005ee53581a4f593d8cb3adc4762cbc2ec2",
+      "status": "candidate_partial_evidence_not_promoted"
+    }
+  ],
+  "promotion_authorized": false,
+  "schema": {
+    "governed_contract": false,
+    "path": "data/candidate/historical_landing_context/historical_landing_context_candidate_v0.1.0.schema.json",
+    "sha256": "9a373e2e9e0220780e1b816be01f91125454c5e20fe9ab92eb1557a237b21b5e",
+    "version": "historical_landing_context_candidate_v0.1.0"
+  },
+  "source_assertions": {
+    "authority": "candidate_input_fixture_not_governed_authority",
+    "path": "data/candidate/historical_landing_context/2023_pilot_source_assertions_v0.json",
+    "sha256": "c4bf8761c5a0088bcca9c8bf8038d47e0d36c5f9ca5b469c72ccdc3d6732e1fe"
+  },
+  "source_availability_report": {
+    "json_path": "docs/reports/historical-landing-context-2023-source-availability-2026-08-05.json",
+    "json_sha256": "a9e9f81919629e82acfe299c3647f47c4fdcf339f025423ef81a2751e12c4122",
+    "markdown_path": "docs/reports/historical-landing-context-2023-source-availability-2026-08-05.md",
+    "markdown_sha256": "f1c8d795566bfa166741edcc24195e5859343e08072d7a2ea3265fa0e512b460"
+  },
+  "status": "candidate_bundle_not_promoted"
+}
