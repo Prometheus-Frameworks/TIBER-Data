@@ -1,0 +1,1033 @@
+{
+  "artifact": "rookie_2023_identity_source_assertions_v0",
+  "status": "candidate_input_snapshot_non_authoritative",
+  "issue": "Prometheus-Frameworks/TIBER-Data#237",
+  "source_ref": {
+    "repository": "Prometheus-Frameworks/TIBER-Rookies",
+    "git_commit": "8c95723ee08de2186ede74163fbb379969764296",
+    "path": "data/historical/reconstruction_2023/2023_skill_class_census_v0.json",
+    "git_blob": "934499c5f204b79bf524f7124b26f3cf3cbb1a19",
+    "sha256": "90796d23a35547a43555fa9d6a4d519081fa424406ee9d56da59775ef291012f",
+    "source_status": "pinned_draft_pr_audit_census",
+    "note": "Copied as explicit source assertions; not a display-name join and not a promoted or governed Rookies artifact."
+  },
+  "forecast_source_refs": {
+    "repository": "Prometheus-Frameworks/TIBER-Forecast",
+    "git_commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+    "seed": {
+      "path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+      "git_blob": "cfbd61f069287b721d660ebd774930de5a0d7c0f",
+      "sha256": "3f9862b7b5d1b92bbb777399617c501328fcc00358e665c74c84cf368856f4f2"
+    },
+    "emitted_predictions": {
+      "path": "data/backtests/seasonal-ppr/seasonal_ppr_predictions.jsonl",
+      "git_blob": "53f0152d21164d7bfb3dc463a755bbec1da347d9",
+      "sha256": "0955ffbeb750dff5659fbaa115eba4dcc208223a6b3a2859a7256a989ad34c09"
+    },
+    "source_status": "scaffold_fixture_not_governed_identity_evidence",
+    "mutation_authorized": false
+  },
+  "identity_fingerprint_source_ref": {
+    "repository": "Prometheus-Frameworks/TIBER-Data",
+    "git_commit": "711d6ee158d4e3bd116d1df4d76dea282200454d",
+    "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+    "git_blob": "f7b2918b978d842cd8753a7f3dedd3836934859b",
+    "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+    "source_status": "promoted_governed_artifact"
+  },
+  "forecast_subject_override_policy": {
+    "status": "candidate_override_bindings_need_operator_review",
+    "source_row_key": "forecast_seed_row_index_plus_raw_player_id_plus_raw_line_sha256",
+    "target_key": "gsis_id",
+    "association_basis": "unique_exact_non_name_2024_fingerprint_in_pinned_data_source",
+    "fingerprint_fields": [
+      "position",
+      "canonical_team",
+      "games_played",
+      "receptions",
+      "targets"
+    ],
+    "display_name_used": false,
+    "resolution_effect": "none_conflict_binding_only",
+    "fail_closed": true,
+    "note": "The binding makes a conflict reviewable; it does not resolve or admit a Forecast identity edge."
+  },
+  "forecast_row_assertions": [
+    {
+      "assertion_id": "forecast-run1-subject-bijan-robinson",
+      "assertion_kind": "subject_identity_conflict",
+      "target_gsis_id": "00-0038542",
+      "seed_row_index_zero_based": 10,
+      "seed_source_line_sha256": "d6b7eebf7f6d984dfd560a0d9c0802c30ea41733587bbe5e9cb62a5458b7f20e",
+      "prediction_jsonl_line_one_based": 15,
+      "prediction_source_line_sha256": "29a97b9b6d1e6437a1162897fa3875a7a13b5966c1d574df016297a5033a09b1",
+      "forecast_raw_player_id": "00-0036223",
+      "forecast_display_name_audit_only": "Bijan Robinson",
+      "forecast_position_audit_only": "RB",
+      "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+      "association_status": "needs_operator_review",
+      "non_name_fingerprint": {
+        "season": 2024,
+        "position": "RB",
+        "canonical_team": "ATL",
+        "games_played": 17,
+        "receptions": 61,
+        "targets": 72
+      },
+      "resolution_effect": "none"
+    },
+    {
+      "assertion_id": "forecast-run1-subject-jahmyr-gibbs",
+      "assertion_kind": "subject_identity_conflict",
+      "target_gsis_id": "00-0039139",
+      "seed_row_index_zero_based": 9,
+      "seed_source_line_sha256": "21871846ff5c2e473ccc1fd6fb2b272b872cd02c80bc93b3946078011da1e0c5",
+      "prediction_jsonl_line_one_based": 27,
+      "prediction_source_line_sha256": "9ca6b22e6159ef063b3d07c16935e13bcd6c6f5154f97a7a80d6a90635244148",
+      "forecast_raw_player_id": "00-0037539",
+      "forecast_display_name_audit_only": "Jahmyr Gibbs",
+      "forecast_position_audit_only": "RB",
+      "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+      "association_status": "needs_operator_review",
+      "non_name_fingerprint": {
+        "season": 2024,
+        "position": "RB",
+        "canonical_team": "DET",
+        "games_played": 17,
+        "receptions": 52,
+        "targets": 63
+      },
+      "resolution_effect": "none"
+    },
+    {
+      "assertion_id": "forecast-run1-subject-devon-achane",
+      "assertion_kind": "subject_identity_conflict",
+      "target_gsis_id": "00-0039040",
+      "seed_row_index_zero_based": 14,
+      "seed_source_line_sha256": "a1ca2ef269ed1a870d1964d78fa245081175562436bf68ee8cff16269c6acb8a",
+      "prediction_jsonl_line_one_based": 30,
+      "prediction_source_line_sha256": "35234c167985f87040e83f1f2df06dc6ef5ab8c436f85cff31c349a71dfde0c6",
+      "forecast_raw_player_id": "00-0038120",
+      "forecast_display_name_audit_only": "De'Von Achane",
+      "forecast_position_audit_only": "RB",
+      "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+      "association_status": "needs_operator_review",
+      "non_name_fingerprint": {
+        "season": 2024,
+        "position": "RB",
+        "canonical_team": "MIA",
+        "games_played": 17,
+        "receptions": 78,
+        "targets": 87
+      },
+      "resolution_effect": "none"
+    },
+    {
+      "assertion_id": "forecast-run1-subject-chase-brown",
+      "assertion_kind": "subject_identity_conflict",
+      "target_gsis_id": "00-0038597",
+      "seed_row_index_zero_based": 15,
+      "seed_source_line_sha256": "3cfa68b38414db72591448e456ba0ea101edd4e30cbfd8f1edbb52a112317208",
+      "prediction_jsonl_line_one_based": 13,
+      "prediction_source_line_sha256": "5e93d3f993617ce9beae8ac678785450480ef65c2e22e5164b6650a7d6351a34",
+      "forecast_raw_player_id": "00-0035685",
+      "forecast_display_name_audit_only": "Chase Brown",
+      "forecast_position_audit_only": "RB",
+      "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+      "association_status": "needs_operator_review",
+      "non_name_fingerprint": {
+        "season": 2024,
+        "position": "RB",
+        "canonical_team": "CIN",
+        "games_played": 16,
+        "receptions": 54,
+        "targets": 65
+      },
+      "resolution_effect": "none"
+    },
+    {
+      "assertion_id": "forecast-run1-subject-puka-nacua",
+      "assertion_kind": "subject_identity_conflict",
+      "target_gsis_id": "00-0039075",
+      "seed_row_index_zero_based": 26,
+      "seed_source_line_sha256": "091cb298bba7bcb3e1a95a70d8ef8f866aac7921cb7aab0a17797d2f7e1b6ee0",
+      "prediction_jsonl_line_one_based": 32,
+      "prediction_source_line_sha256": "c9dc54582bfc44605d37fc269629939d7607c02b72726a788bb4a683dbc80a5c",
+      "forecast_raw_player_id": "00-0038543",
+      "forecast_display_name_audit_only": "Puka Nacua",
+      "forecast_position_audit_only": "WR",
+      "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+      "association_status": "needs_operator_review",
+      "non_name_fingerprint": {
+        "season": 2024,
+        "position": "WR",
+        "canonical_team": "LAR",
+        "games_played": 11,
+        "receptions": 79,
+        "targets": 106
+      },
+      "resolution_effect": "none"
+    },
+    {
+      "assertion_id": "forecast-run1-subject-jaxon-smith-njigba",
+      "assertion_kind": "subject_identity_conflict",
+      "target_gsis_id": "00-0038543",
+      "seed_row_index_zero_based": 30,
+      "seed_source_line_sha256": "965b6a3611e29c8bf087a36d8d654fa5600b3456118e96984571bde3894ba7bc",
+      "prediction_jsonl_line_one_based": 35,
+      "prediction_source_line_sha256": "c890bf9a5fafdafab8ae8eed20c5db90291923e297be9a91d27dc741e45a1481",
+      "forecast_raw_player_id": "00-0039051",
+      "forecast_display_name_audit_only": "Jaxon Smith-Njigba",
+      "forecast_position_audit_only": "WR",
+      "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+      "association_status": "needs_operator_review",
+      "non_name_fingerprint": {
+        "season": 2024,
+        "position": "WR",
+        "canonical_team": "SEA",
+        "games_played": 17,
+        "receptions": 100,
+        "targets": 137
+      },
+      "resolution_effect": "none"
+    },
+    {
+      "assertion_id": "forecast-run1-subject-sam-laporta",
+      "assertion_kind": "subject_identity_conflict",
+      "target_gsis_id": "00-0039065",
+      "seed_row_index_zero_based": 36,
+      "seed_source_line_sha256": "b57a5260ce22d6c4b017b21a50c779319976ef0afd3c3cb1ed74b1730939e80a",
+      "prediction_jsonl_line_one_based": 28,
+      "prediction_source_line_sha256": "49cf11058e6a872dbe78dc3cb571abf2d70f0491f7108e1d6ba6662d7387c95a",
+      "forecast_raw_player_id": "00-0037744",
+      "forecast_display_name_audit_only": "Sam LaPorta",
+      "forecast_position_audit_only": "TE",
+      "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+      "association_status": "needs_operator_review",
+      "non_name_fingerprint": {
+        "season": 2024,
+        "position": "TE",
+        "canonical_team": "DET",
+        "games_played": 16,
+        "receptions": 60,
+        "targets": 83
+      },
+      "resolution_effect": "none"
+    },
+    {
+      "assertion_id": "forecast-run1-subject-dalton-kincaid",
+      "assertion_kind": "subject_identity_conflict",
+      "target_gsis_id": "00-0038933",
+      "seed_row_index_zero_based": 37,
+      "seed_source_line_sha256": "124c81d73b5a3ad332dcb3c3957f6a98b68081f20e63ce278417de21d70de76b",
+      "prediction_jsonl_line_one_based": 34,
+      "prediction_source_line_sha256": "cbc3fd836eaa2031132bed308fa2d113cefaa0f1debd909aa2057ef9059ee24c",
+      "forecast_raw_player_id": "00-0038996",
+      "forecast_display_name_audit_only": "Dalton Kincaid",
+      "forecast_position_audit_only": "TE",
+      "association_method": "explicit_candidate_override_unique_non_name_fingerprint",
+      "association_status": "needs_operator_review",
+      "non_name_fingerprint": {
+        "season": 2024,
+        "position": "TE",
+        "canonical_team": "BUF",
+        "games_played": 13,
+        "receptions": 44,
+        "targets": 75
+      },
+      "resolution_effect": "none"
+    },
+    {
+      "assertion_id": "forecast-run1-collision-saquon-uses-bijan-id",
+      "assertion_kind": "canonical_id_assigned_to_other_subject",
+      "target_gsis_id": "00-0038542",
+      "seed_row_index_zero_based": 8,
+      "seed_source_line_sha256": "582f5a9728f7fc1ea7b1a201895903e61453cba9680e417ed356870bb04a7b52",
+      "prediction_jsonl_line_one_based": 31,
+      "prediction_source_line_sha256": "91bfe9da55e55c086f1b90c013a628d12a3d7fb15b85f24a94bd7c5253d400ef",
+      "forecast_raw_player_id": "00-0038542",
+      "forecast_display_name_audit_only": "Saquon Barkley",
+      "forecast_position_audit_only": "RB",
+      "association_method": "exact_raw_id_collision_with_census_identity",
+      "resolution_effect": "none"
+    },
+    {
+      "assertion_id": "forecast-run1-collision-bucky-uses-tank-dell-id",
+      "assertion_kind": "canonical_id_assigned_to_other_subject",
+      "target_gsis_id": "00-0038977",
+      "seed_row_index_zero_based": 16,
+      "seed_source_line_sha256": "61e0f59076e49aaa645df2f866e6a9c56fd613cc8932a279a751dd63266d87c0",
+      "prediction_jsonl_line_one_based": 33,
+      "prediction_source_line_sha256": "9219bda1078dbd47f1d67852d8c3ec83b5c183543c36cf6d21d8aaffe657b996",
+      "forecast_raw_player_id": "00-0038977",
+      "forecast_display_name_audit_only": "Bucky Irving",
+      "forecast_position_audit_only": "RB",
+      "association_method": "exact_raw_id_collision_with_census_identity",
+      "resolution_effect": "none"
+    },
+    {
+      "assertion_id": "forecast-run1-collision-jayden-uses-stroud-id",
+      "assertion_kind": "canonical_id_assigned_to_other_subject",
+      "target_gsis_id": "00-0039163",
+      "seed_row_index_zero_based": 4,
+      "seed_source_line_sha256": "99a8fb515e69d812468ea1f8d4ac2fb8a988aeaed2006db8e45719e876dcd7fa",
+      "prediction_jsonl_line_one_based": 36,
+      "prediction_source_line_sha256": "6264eb7b8d6011fb17d8e2cdba0ce43866717182dcc9240f2c9a986d1365a189",
+      "forecast_raw_player_id": "00-0039163",
+      "forecast_display_name_audit_only": "Jayden Daniels",
+      "forecast_position_audit_only": "QB",
+      "association_method": "exact_raw_id_collision_with_census_identity",
+      "resolution_effect": "none"
+    }
+  ],
+  "explicit_name_overrides": [
+    {
+      "override_id": "rookies-2023-tank-dell-slug",
+      "key_namespace": "gsis",
+      "key_value": "00-0038977",
+      "upstream_display_name": "Nathaniel Dell",
+      "target_display_name": "Tank Dell",
+      "target_rookies_slug": "wr-tank-dell",
+      "reason": "Pinned Rookies census builder documents the explicit draft-source name override.",
+      "resolution_effect": "slug_assertion_lineage_only",
+      "lineage": [
+        {
+          "repository": "Prometheus-Frameworks/TIBER-Rookies",
+          "git_commit": "8c95723ee08de2186ede74163fbb379969764296",
+          "path": "scripts/build_2023_reconstruction_census.py",
+          "git_blob": "41ec6cedfe076a692f2eab5bce520fb70671a0bc",
+          "sha256": "0f763e08d82965ef1e0f22b02f10ec96867219682a36c76c9ac7e5528da9b993"
+        },
+        {
+          "repository": "Prometheus-Frameworks/TIBER-Rookies",
+          "git_commit": "8c95723ee08de2186ede74163fbb379969764296",
+          "path": "docs/draft-results-provenance.md",
+          "git_blob": "5b07653975acc05a5feee8447c2f9b3b4b2f7d0c",
+          "sha256": "5c379536e533c844b92754ab3aeaabc84ceb70ce197e671e4512d7de6987e533"
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "overall_pick": 1,
+      "player_name": "Bryce Young",
+      "position": "QB",
+      "rookies_slug": "qb-bryce-young",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039150",
+      "draft_team_source_code": "CAR"
+    },
+    {
+      "overall_pick": 2,
+      "player_name": "C.J. Stroud",
+      "position": "QB",
+      "rookies_slug": "qb-c-j-stroud",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039163",
+      "draft_team_source_code": "HOU"
+    },
+    {
+      "overall_pick": 4,
+      "player_name": "Anthony Richardson",
+      "position": "QB",
+      "rookies_slug": "qb-anthony-richardson",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039164",
+      "draft_team_source_code": "IND"
+    },
+    {
+      "overall_pick": 8,
+      "player_name": "Bijan Robinson",
+      "position": "RB",
+      "rookies_slug": "rb-bijan-robinson",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0038542",
+      "draft_team_source_code": "ATL"
+    },
+    {
+      "overall_pick": 12,
+      "player_name": "Jahmyr Gibbs",
+      "position": "RB",
+      "rookies_slug": "rb-jahmyr-gibbs",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0039139",
+      "draft_team_source_code": "DET"
+    },
+    {
+      "overall_pick": 20,
+      "player_name": "Jaxon Smith-Njigba",
+      "position": "WR",
+      "rookies_slug": "wr-jaxon-smith-njigba",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0038543",
+      "draft_team_source_code": "SEA"
+    },
+    {
+      "overall_pick": 21,
+      "player_name": "Quentin Johnston",
+      "position": "WR",
+      "rookies_slug": "wr-quentin-johnston",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0038544",
+      "draft_team_source_code": "LAC"
+    },
+    {
+      "overall_pick": 22,
+      "player_name": "Zay Flowers",
+      "position": "WR",
+      "rookies_slug": "wr-zay-flowers",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0039064",
+      "draft_team_source_code": "BAL"
+    },
+    {
+      "overall_pick": 23,
+      "player_name": "Jordan Addison",
+      "position": "WR",
+      "rookies_slug": "wr-jordan-addison",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0038994",
+      "draft_team_source_code": "MIN"
+    },
+    {
+      "overall_pick": 25,
+      "player_name": "Dalton Kincaid",
+      "position": "TE",
+      "rookies_slug": "te-dalton-kincaid",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038933",
+      "draft_team_source_code": "BUF"
+    },
+    {
+      "overall_pick": 33,
+      "player_name": "Will Levis",
+      "position": "QB",
+      "rookies_slug": "qb-will-levis",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039152",
+      "draft_team_source_code": "TEN"
+    },
+    {
+      "overall_pick": 34,
+      "player_name": "Sam LaPorta",
+      "position": "TE",
+      "rookies_slug": "te-sam-laporta",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039065",
+      "draft_team_source_code": "DET"
+    },
+    {
+      "overall_pick": 35,
+      "player_name": "Michael Mayer",
+      "position": "TE",
+      "rookies_slug": "te-michael-mayer",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039066",
+      "draft_team_source_code": "LVR"
+    },
+    {
+      "overall_pick": 39,
+      "player_name": "Jonathan Mingo",
+      "position": "WR",
+      "rookies_slug": "wr-jonathan-mingo",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039062",
+      "draft_team_source_code": "CAR"
+    },
+    {
+      "overall_pick": 42,
+      "player_name": "Luke Musgrave",
+      "position": "TE",
+      "rookies_slug": "te-luke-musgrave",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039144",
+      "draft_team_source_code": "GNB"
+    },
+    {
+      "overall_pick": 50,
+      "player_name": "Jayden Reed",
+      "position": "WR",
+      "rookies_slug": "wr-jayden-reed",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039146",
+      "draft_team_source_code": "GNB"
+    },
+    {
+      "overall_pick": 52,
+      "player_name": "Zach Charbonnet",
+      "position": "RB",
+      "rookies_slug": "rb-zach-charbonnet",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039165",
+      "draft_team_source_code": "SEA"
+    },
+    {
+      "overall_pick": 55,
+      "player_name": "Rashee Rice",
+      "position": "WR",
+      "rookies_slug": "wr-rashee-rice",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0039067",
+      "draft_team_source_code": "KAN"
+    },
+    {
+      "overall_pick": 58,
+      "player_name": "Luke Schoonmaker",
+      "position": "TE",
+      "rookies_slug": "te-luke-schoonmaker",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038547",
+      "draft_team_source_code": "DAL"
+    },
+    {
+      "overall_pick": 61,
+      "player_name": "Brenton Strange",
+      "position": "TE",
+      "rookies_slug": "te-brenton-strange",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038935",
+      "draft_team_source_code": "JAX"
+    },
+    {
+      "overall_pick": 63,
+      "player_name": "Marvin Mims",
+      "position": "WR",
+      "rookies_slug": "wr-marvin-mims",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038976",
+      "draft_team_source_code": "DEN"
+    },
+    {
+      "overall_pick": 68,
+      "player_name": "Hendon Hooker",
+      "position": "QB",
+      "rookies_slug": "qb-hendon-hooker",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038550",
+      "draft_team_source_code": "DET"
+    },
+    {
+      "overall_pick": 69,
+      "player_name": "Tank Dell",
+      "position": "WR",
+      "rookies_slug": "wr-tank-dell",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0038977",
+      "draft_team_source_code": "HOU"
+    },
+    {
+      "overall_pick": 71,
+      "player_name": "Kendre Miller",
+      "position": "RB",
+      "rookies_slug": "rb-kendre-miller",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038551",
+      "draft_team_source_code": "NOR"
+    },
+    {
+      "overall_pick": 73,
+      "player_name": "Jalin Hyatt",
+      "position": "WR",
+      "rookies_slug": "wr-jalin-hyatt",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038938",
+      "draft_team_source_code": "NYG"
+    },
+    {
+      "overall_pick": 74,
+      "player_name": "Cedric Tillman",
+      "position": "WR",
+      "rookies_slug": "wr-cedric-tillman",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038979",
+      "draft_team_source_code": "CLE"
+    },
+    {
+      "overall_pick": 78,
+      "player_name": "Tucker Kraft",
+      "position": "TE",
+      "rookies_slug": "te-tucker-kraft",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038996",
+      "draft_team_source_code": "GNB"
+    },
+    {
+      "overall_pick": 79,
+      "player_name": "Josh Downs",
+      "position": "WR",
+      "rookies_slug": "wr-josh-downs",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038997",
+      "draft_team_source_code": "IND"
+    },
+    {
+      "overall_pick": 81,
+      "player_name": "Tyjae Spears",
+      "position": "RB",
+      "rookies_slug": "rb-tyjae-spears",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039032",
+      "draft_team_source_code": "TEN"
+    },
+    {
+      "overall_pick": 84,
+      "player_name": "De'Von Achane",
+      "position": "RB",
+      "rookies_slug": "rb-devon-achane",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0039040",
+      "draft_team_source_code": "MIA"
+    },
+    {
+      "overall_pick": 88,
+      "player_name": "Tank Bigsby",
+      "position": "RB",
+      "rookies_slug": "rb-tank-bigsby",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038555",
+      "draft_team_source_code": "JAX"
+    },
+    {
+      "overall_pick": 93,
+      "player_name": "Darnell Washington",
+      "position": "TE",
+      "rookies_slug": "te-darnell-washington",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038558",
+      "draft_team_source_code": "PIT"
+    },
+    {
+      "overall_pick": 94,
+      "player_name": "Michael Wilson",
+      "position": "WR",
+      "rookies_slug": "wr-michael-wilson",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0038559",
+      "draft_team_source_code": "ARI"
+    },
+    {
+      "overall_pick": 100,
+      "player_name": "Tre Tucker",
+      "position": "WR",
+      "rookies_slug": "wr-tre-tucker",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038563",
+      "draft_team_source_code": "LVR"
+    },
+    {
+      "overall_pick": 101,
+      "player_name": "Cameron Latu",
+      "position": "TE",
+      "rookies_slug": "te-cameron-latu",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038564",
+      "draft_team_source_code": "SFO"
+    },
+    {
+      "overall_pick": 115,
+      "player_name": "Roschon Johnson",
+      "position": "RB",
+      "rookies_slug": "rb-roschon-johnson",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039021",
+      "draft_team_source_code": "CHI"
+    },
+    {
+      "overall_pick": 125,
+      "player_name": "Derius Davis",
+      "position": "WR",
+      "rookies_slug": "wr-derius-davis",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038573",
+      "draft_team_source_code": "LAC"
+    },
+    {
+      "overall_pick": 127,
+      "player_name": "Jake Haener",
+      "position": "QB",
+      "rookies_slug": "qb-jake-haener",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038998",
+      "draft_team_source_code": "NOR"
+    },
+    {
+      "overall_pick": 128,
+      "player_name": "Stetson Bennett",
+      "position": "QB",
+      "rookies_slug": "qb-stetson-bennett",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039107",
+      "draft_team_source_code": "LAR"
+    },
+    {
+      "overall_pick": 131,
+      "player_name": "Charlie Jones",
+      "position": "WR",
+      "rookies_slug": "wr-charlie-jones",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038576",
+      "draft_team_source_code": "CIN"
+    },
+    {
+      "overall_pick": 133,
+      "player_name": "Tyler Scott",
+      "position": "WR",
+      "rookies_slug": "wr-tyler-scott",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038941",
+      "draft_team_source_code": "CHI"
+    },
+    {
+      "overall_pick": 135,
+      "player_name": "Aidan O'Connell",
+      "position": "QB",
+      "rookies_slug": "qb-aidan-oconnell",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038579",
+      "draft_team_source_code": "LVR"
+    },
+    {
+      "overall_pick": 139,
+      "player_name": "Clayton Tune",
+      "position": "QB",
+      "rookies_slug": "qb-clayton-tune",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038582",
+      "draft_team_source_code": "ARI"
+    },
+    {
+      "overall_pick": 140,
+      "player_name": "Dorian Thompson-Robinson",
+      "position": "QB",
+      "rookies_slug": "qb-dorian-thompson-robinson",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038583",
+      "draft_team_source_code": "CLE"
+    },
+    {
+      "overall_pick": 143,
+      "player_name": "Israel Abanikanda",
+      "position": "RB",
+      "rookies_slug": "rb-israel-abanikanda",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038389",
+      "draft_team_source_code": "NYJ"
+    },
+    {
+      "overall_pick": 147,
+      "player_name": "Josh Whyle",
+      "position": "TE",
+      "rookies_slug": "te-josh-whyle",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038589",
+      "draft_team_source_code": "TEN"
+    },
+    {
+      "overall_pick": 149,
+      "player_name": "Sean Clifford",
+      "position": "QB",
+      "rookies_slug": "qb-sean-clifford",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038391",
+      "draft_team_source_code": "GNB"
+    },
+    {
+      "overall_pick": 150,
+      "player_name": "Justin Shorter",
+      "position": "WR",
+      "rookies_slug": "wr-justin-shorter",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038590",
+      "draft_team_source_code": "BUF"
+    },
+    {
+      "overall_pick": 159,
+      "player_name": "Dontayvion Wicks",
+      "position": "WR",
+      "rookies_slug": "wr-dontayvion-wicks",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038393",
+      "draft_team_source_code": "GNB"
+    },
+    {
+      "overall_pick": 162,
+      "player_name": "Will Mallory",
+      "position": "TE",
+      "rookies_slug": "te-will-mallory",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038394",
+      "draft_team_source_code": "IND"
+    },
+    {
+      "overall_pick": 163,
+      "player_name": "Chase Brown",
+      "position": "RB",
+      "rookies_slug": "rb-chase-brown",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0038597",
+      "draft_team_source_code": "CIN"
+    },
+    {
+      "overall_pick": 164,
+      "player_name": "Jaren Hall",
+      "position": "QB",
+      "rookies_slug": "qb-jaren-hall",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038598",
+      "draft_team_source_code": "MIN"
+    },
+    {
+      "overall_pick": 171,
+      "player_name": "Payne Durham",
+      "position": "TE",
+      "rookies_slug": "te-payne-durham",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039050",
+      "draft_team_source_code": "TAM"
+    },
+    {
+      "overall_pick": 172,
+      "player_name": "Eric Gray",
+      "position": "RB",
+      "rookies_slug": "rb-eric-gray",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038396",
+      "draft_team_source_code": "NYG"
+    },
+    {
+      "overall_pick": 175,
+      "player_name": "Davis Allen",
+      "position": "TE",
+      "rookies_slug": "te-davis-allen",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039074",
+      "draft_team_source_code": "LAR"
+    },
+    {
+      "overall_pick": 176,
+      "player_name": "Evan Hull",
+      "position": "RB",
+      "rookies_slug": "rb-evan-hull",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038397",
+      "draft_team_source_code": "IND"
+    },
+    {
+      "overall_pick": 177,
+      "player_name": "Puka Nacua",
+      "position": "WR",
+      "rookies_slug": "wr-puka-nacua",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0039075",
+      "draft_team_source_code": "LAR"
+    },
+    {
+      "overall_pick": 185,
+      "player_name": "Parker Washington",
+      "position": "WR",
+      "rookies_slug": "wr-parker-washington",
+      "rookies_slug_status": "existing_repo_id",
+      "gsis_id": "00-0038606",
+      "draft_team_source_code": "JAX"
+    },
+    {
+      "overall_pick": 187,
+      "player_name": "Kayshon Boutte",
+      "position": "WR",
+      "rookies_slug": "wr-kayshon-boutte",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038608",
+      "draft_team_source_code": "NWE"
+    },
+    {
+      "overall_pick": 188,
+      "player_name": "Tanner McKee",
+      "position": "QB",
+      "rookies_slug": "qb-tanner-mckee",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038400",
+      "draft_team_source_code": "PHI"
+    },
+    {
+      "overall_pick": 191,
+      "player_name": "Trey Palmer",
+      "position": "WR",
+      "rookies_slug": "wr-trey-palmer",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039052",
+      "draft_team_source_code": "TAM"
+    },
+    {
+      "overall_pick": 193,
+      "player_name": "Chris Rodriguez",
+      "position": "RB",
+      "rookies_slug": "rb-chris-rodriguez",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038611",
+      "draft_team_source_code": "WAS"
+    },
+    {
+      "overall_pick": 195,
+      "player_name": "A.T. Perry",
+      "position": "WR",
+      "rookies_slug": "wr-a-t-perry",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038612",
+      "draft_team_source_code": "NOR"
+    },
+    {
+      "overall_pick": 197,
+      "player_name": "Elijah Higgins",
+      "position": "WR",
+      "rookies_slug": "wr-elijah-higgins",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039041",
+      "draft_team_source_code": "MIA"
+    },
+    {
+      "overall_pick": 205,
+      "player_name": "Xavier Hutchinson",
+      "position": "WR",
+      "rookies_slug": "wr-xavier-hutchinson",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038618",
+      "draft_team_source_code": "HOU"
+    },
+    {
+      "overall_pick": 206,
+      "player_name": "Andrei Iosivas",
+      "position": "WR",
+      "rookies_slug": "wr-andrei-iosivas",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038619",
+      "draft_team_source_code": "CIN"
+    },
+    {
+      "overall_pick": 210,
+      "player_name": "DeMario Douglas",
+      "position": "WR",
+      "rookies_slug": "wr-demario-douglas",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038621",
+      "draft_team_source_code": "NWE"
+    },
+    {
+      "overall_pick": 212,
+      "player_name": "Deuce Vaughn",
+      "position": "RB",
+      "rookies_slug": "rb-deuce-vaughn",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038622",
+      "draft_team_source_code": "DAL"
+    },
+    {
+      "overall_pick": 215,
+      "player_name": "Zach Evans",
+      "position": "RB",
+      "rookies_slug": "rb-zach-evans",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039136",
+      "draft_team_source_code": "LAR"
+    },
+    {
+      "overall_pick": 219,
+      "player_name": "Antoine Green",
+      "position": "WR",
+      "rookies_slug": "wr-antoine-green",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038627",
+      "draft_team_source_code": "DET"
+    },
+    {
+      "overall_pick": 220,
+      "player_name": "Zack Kuntz",
+      "position": "TE",
+      "rookies_slug": "te-zack-kuntz",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038406",
+      "draft_team_source_code": "NYJ"
+    },
+    {
+      "overall_pick": 222,
+      "player_name": "DeWayne McBride",
+      "position": "RB",
+      "rookies_slug": "rb-dewayne-mcbride",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0039046",
+      "draft_team_source_code": "MIN"
+    },
+    {
+      "overall_pick": 228,
+      "player_name": "Colton Dowell",
+      "position": "WR",
+      "rookies_slug": "wr-colton-dowell",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038632",
+      "draft_team_source_code": "TEN"
+    },
+    {
+      "overall_pick": 235,
+      "player_name": "Lew Nichols",
+      "position": "RB",
+      "rookies_slug": "rb-lew-nichols",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038409",
+      "draft_team_source_code": "GNB"
+    },
+    {
+      "overall_pick": 237,
+      "player_name": "Kenny McIntosh",
+      "position": "RB",
+      "rookies_slug": "rb-kenny-mcintosh",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038636",
+      "draft_team_source_code": "SEA"
+    },
+    {
+      "overall_pick": 239,
+      "player_name": "Max Duggan",
+      "position": "QB",
+      "rookies_slug": "qb-max-duggan",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038637",
+      "draft_team_source_code": "LAC"
+    },
+    {
+      "overall_pick": 244,
+      "player_name": "Jalen Brooks",
+      "position": "WR",
+      "rookies_slug": "wr-jalen-brooks",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038640",
+      "draft_team_source_code": "DAL"
+    },
+    {
+      "overall_pick": 247,
+      "player_name": "Brayden Willis",
+      "position": "TE",
+      "rookies_slug": "te-brayden-willis",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038643",
+      "draft_team_source_code": "SFO"
+    },
+    {
+      "overall_pick": 253,
+      "player_name": "Ronnie Bell",
+      "position": "WR",
+      "rookies_slug": "wr-ronnie-bell",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038647",
+      "draft_team_source_code": "SFO"
+    },
+    {
+      "overall_pick": 256,
+      "player_name": "Grant Dubose",
+      "position": "WR",
+      "rookies_slug": "wr-grant-dubose",
+      "rookies_slug_status": "proposed_slug",
+      "gsis_id": "00-0038507",
+      "draft_team_source_code": "GNB"
+    }
+  ]
+}

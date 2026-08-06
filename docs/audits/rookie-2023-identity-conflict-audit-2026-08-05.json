@@ -1,0 +1,93 @@
+{
+  "audit_id": "rookie-2023-identity-conflict-audit-2026-08-05",
+  "issue": "Prometheus-Frameworks/TIBER-Data#237",
+  "status": "candidate_audit_complete_operator_review_required",
+  "generated_at": "2026-08-05T00:00:00Z",
+  "candidate": {
+    "version": "0.1.0",
+    "path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.json",
+    "sha256": "db1a08192aacf604d0be7930147b3e0182c28250bda246c65fbca290ed9a11e2",
+    "promotion_authorized": false
+  },
+  "coverage": {
+    "census_rows": 80,
+    "position_counts": {
+      "QB": 14,
+      "RB": 18,
+      "TE": 15,
+      "WR": 33
+    },
+    "data_source_player_exact_gsis_resolved": 76,
+    "data_resolved_in_2023_reg": 68,
+    "data_resolved_in_later_promoted_reg_only": 8,
+    "data_source_player_unresolved_no_governed_record": 4,
+    "tiber_canonical_player_id_resolved": 0,
+    "tiber_canonical_player_id_unresolved": 80,
+    "forecast_subject_resolved": 0,
+    "forecast_subject_conflict_blocked": 8,
+    "forecast_subject_override_needs_operator_review": 8,
+    "forecast_raw_id_collision_findings": 5,
+    "forecast_unique_source_rows": 11,
+    "forecast_affected_census_rows": 11,
+    "forecast_total_open_findings": 13
+  },
+  "required_defects": {
+    "puka": {
+      "forecast_raw_gsis": "00-0038543",
+      "governed_gsis": "00-0039075",
+      "status": "unresolved_fail_closed",
+      "auto_resolved": false
+    },
+    "rams_team_policy": {
+      "canonical": "LAR",
+      "alias": "LA",
+      "direction": "LA_to_LAR_only",
+      "source_and_date_scoped": true,
+      "lac_distinct": true
+    }
+  },
+  "source_pins": [
+    {
+      "repository": "Prometheus-Frameworks/TIBER-Rookies",
+      "commit": "8c95723ee08de2186ede74163fbb379969764296",
+      "path": "data/historical/reconstruction_2023/2023_skill_class_census_v0.json",
+      "sha256": "90796d23a35547a43555fa9d6a4d519081fa424406ee9d56da59775ef291012f"
+    },
+    {
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "commit": "711d6ee158d4e3bd116d1df4d76dea282200454d",
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac"
+    },
+    {
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "commit": "3df598a43e6af41ccf0bbd9db206bc4504b5a8b2",
+      "path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v1.json",
+      "sha256": "5ce5cd3f5dc8fd27c28c5a5fb283431ac648f764c3f8f2b645f6ad924338f263"
+    },
+    {
+      "repository": "Prometheus-Frameworks/TIBER-Forecast",
+      "commit": "813eff8de0b4a8d4f29f5c37abe522fe3e792ca3",
+      "path": "src/datasets/seasonal/fixtures/seasonalPprSeedSnapshot.ts",
+      "sha256": "3f9862b7b5d1b92bbb777399617c501328fcc00358e665c74c84cf368856f4f2"
+    }
+  ],
+  "terminal_states": {
+    "source_player_edge_for_236": "exact_gsis_to_data_source_player_id_ready_for_bounded_pilot",
+    "full_tiber_canonical_crosswalk": "rookie_2023_identity_crosswalk_blocked",
+    "forecast_edges": "blocked_all_observed_edges_conflict",
+    "emitted_artifacts": "emitted_artifact_identity_remediation_requires_operator_decision"
+  },
+  "mutations": {
+    "forecast": false,
+    "rookies": false,
+    "promoted_exports": false,
+    "governed_schemas": false
+  },
+  "forecast_inventory_scope": "bounded_direct_and_reference_inventory_not_a_full_transitive_dependency_graph",
+  "open_operator_decisions": [
+    "durable_gsis_to_tiber_player_id_namespace_edge",
+    "disposition_of_already_emitted_forecast_artifacts",
+    "promotion_or_governance_status_of_this_candidate_crosswalk"
+  ]
+}

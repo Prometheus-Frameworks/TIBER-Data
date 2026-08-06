@@ -1,0 +1,38 @@
+{
+  "artifact_id": "rookie_2023_identity_crosswalk_candidate_manifest",
+  "artifacts": [
+    {
+      "path": "exports/candidates/identity_crosswalk/rookie_2023_identity_crosswalk_v0.1.0.json",
+      "sha256": "db1a08192aacf604d0be7930147b3e0182c28250bda246c65fbca290ed9a11e2"
+    },
+    {
+      "path": "exports/candidates/identity_crosswalk/rookie_2023_identity_conflicts_v0.1.0.json",
+      "sha256": "619044e2a547c002570db66fee7deb40ababb28da4c2a95407d0998ed6a3d883"
+    }
+  ],
+  "crosswalk_version": "0.1.0",
+  "downstream_binding": {
+    "allowed_identity_edge": "gsis_to_tiber_data_source_player_id",
+    "fail_on_mismatch": true,
+    "required_crosswalk_sha256": "db1a08192aacf604d0be7930147b3e0182c28250bda246c65fbca290ed9a11e2",
+    "required_version": "0.1.0",
+    "tiber_canonical_player_id_edge_authorized": false
+  },
+  "generated_at": "2026-08-05T00:00:00Z",
+  "inputs": [
+    {
+      "path": "data/candidate/identity/rookie_2023_identity_source_assertions_v0.json",
+      "sha256": "4c60962d5397b86acd13ed333d155ac9278ec04c3cc6e77c1527064bb3e26084"
+    },
+    {
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac"
+    },
+    {
+      "path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v1.json",
+      "sha256": "5ce5cd3f5dc8fd27c28c5a5fb283431ac648f764c3f8f2b645f6ad924338f263"
+    }
+  ],
+  "promotion_authorized": false,
+  "status": "candidate_manifest_not_promotion"
+}
