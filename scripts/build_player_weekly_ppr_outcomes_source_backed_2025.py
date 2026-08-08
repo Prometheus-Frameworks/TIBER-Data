@@ -80,7 +80,7 @@ def build_source_backed_payload() -> dict:
     rushing_tds_col = _resolve_column(columns, ["rushing_tds"], "rushing_tds", required=False)
     passing_yards_col = _resolve_column(columns, ["passing_yards"], "passing_yards", required=False)
     passing_tds_col = _resolve_column(columns, ["passing_tds"], "passing_tds", required=False)
-    interceptions_col = _resolve_column(columns, ["interceptions"], "interceptions", required=False)
+    interceptions_col = _resolve_column(columns, ["interceptions", "passing_interceptions"], "interceptions", required=False)
 
     roster_position_map = _load_roster_position_map()
 
