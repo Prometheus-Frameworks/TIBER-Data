@@ -66,7 +66,7 @@ def main() -> int:
         return 1
 
     events = sb.get("events", [])
-    games, skipped = [], []
+    games, skipped, fetch_failures = [], [], []
     for e in events:
         season_type = (e.get("season") or {}).get("type")
         status = ((e.get("status") or {}).get("type") or {}).get("detail", "")
@@ -83,7 +83,7 @@ def main() -> int:
         try:
             summary = get(f"{API}/summary?event={eid}")
         except Exception as ex:
-            skipped.append({"name": e.get("name"), "reason": f"summary fetch failed: {ex}"})
+            fetch_failures.append({"name": e.get("name"), "reason": f"summary fetch failed: {ex}"})
             continue
         games.append({
             "espn_event_id": eid,
@@ -114,8 +114,11 @@ def main() -> int:
         },
         "source": {"name": "espn_site_api", "scoreboard_url": sb_url, "fetched_at": fetched_at},
         "window": {"start": args.start, "end": args.end},
-        "counts": {"events_seen": len(events), "games_captured": len(games), "skipped": len(skipped)},
+        "partial": bool(fetch_failures),
+        "counts": {"events_seen": len(events), "games_captured": len(games),
+                   "skipped": len(skipped), "fetch_failures": len(fetch_failures)},
         "skipped": skipped,
+        "fetch_failures": fetch_failures,
         "games": games,
     }
 
@@ -124,8 +127,14 @@ def main() -> int:
     with open(path, "w") as f:
         json.dump(artifact, f, indent=1)
     total_lines = sum(len(g["player_lines"]) for g in games)
-    print(f"captured {len(games)} final game(s), {total_lines} player lines, skipped {len(skipped)}")
+    print(f"captured {len(games)} final game(s), {total_lines} player lines, "
+          f"skipped {len(skipped)}, fetch failures {len(fetch_failures)}")
     print(f"wrote {path}")
+    if fetch_failures:
+        # Partial publication is an explicit failure state: the artifact is written
+        # (marked partial) but a scheduled run must not report success.
+        print(f"PARTIAL snapshot — {len(fetch_failures)} game summary fetch(es) failed", file=sys.stderr)
+        return 1
     return 0
 
 

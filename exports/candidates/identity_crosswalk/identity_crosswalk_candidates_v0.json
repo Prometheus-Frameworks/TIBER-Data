@@ -1,7 +1,7 @@
 {
  "kind": "identity_crosswalk_candidates",
  "schema_version": "identity_crosswalk_candidates_v0",
- "generated_at": "2026-08-08T16:51:12.675163+00:00",
+ "generated_at": "2026-08-08T18:17:13.819524+00:00",
  "status": "candidate_only",
  "consumer_safety": {
   "not_allowed": [
@@ -23,13 +23,13 @@
  },
  "counts": {
   "universe": 1130,
-  "candidates": 1108,
+  "candidates": 1106,
   "by_tier": {
-   "gsis_direct": 465,
+   "gsis_direct": 463,
    "espn_bridge": 112,
    "name_exact": 531
   },
-  "review": 22
+  "review": 24
  },
  "rows": [
   {
@@ -1503,21 +1503,6 @@
    "last_coverage_season": 2024
   },
   {
-   "tiber_player_id": "00-0031484",
-   "player_name": "Chris Manhertz",
-   "position": "TE",
-   "sleeper_id": "3048",
-   "match_tier": "gsis_direct",
-   "evidence": {
-    "sleeper_gsis_id": "00-0031484",
-    "coverage_espn_id": "4071345",
-    "sleeper_espn_id": 2531358,
-    "sleeper_name": "Chris Manhertz",
-    "sleeper_team": "NYG"
-   },
-   "last_coverage_season": 2025
-  },
-  {
    "tiber_player_id": "00-0031503",
    "player_name": "Jameis Winston",
    "position": "QB",
@@ -1891,21 +1876,6 @@
     "sleeper_team": null
    },
    "last_coverage_season": 2022
-  },
-  {
-   "tiber_player_id": "00-0032098",
-   "player_name": "Daniel Brown",
-   "position": "TE",
-   "sleeper_id": "2751",
-   "match_tier": "gsis_direct",
-   "evidence": {
-    "sleeper_gsis_id": "00-0032098",
-    "coverage_espn_id": "2544798",
-    "sleeper_espn_id": 2519013,
-    "sleeper_name": "Daniel Brown",
-    "sleeper_team": null
-   },
-   "last_coverage_season": 2021
   },
   {
    "tiber_player_id": "00-0032104",

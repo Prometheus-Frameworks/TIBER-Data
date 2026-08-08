@@ -91,6 +91,14 @@ def main() -> int:
             review.append({**u, "issue": "gsis_vs_espn_conflict", "gsis_match": sid_gsis, "espn_match": sid_espn})
             continue
         if sid_gsis:
+            # A GSIS hit whose Sleeper row declares a DIFFERENT non-null espn_id than
+            # coverage is a conflicting identity, even when that espn_id maps to no
+            # other Sleeper row — route to review, never emit as a direct candidate.
+            sp_espn = sleeper[sid_gsis].get("espn_id")
+            if u["espn_id"] and sp_espn and str(sp_espn) != str(u["espn_id"]):
+                review.append({**u, "issue": "gsis_hit_espn_value_conflict",
+                               "gsis_match": sid_gsis, "espn_match": str(sp_espn)})
+                continue
             tier, sid = "gsis_direct", sid_gsis
         elif sid_espn:
             tier, sid = "espn_bridge", sid_espn

@@ -1,4 +1,6 @@
 player_id,player_name,position,last_season,espn_id,issue,gsis_match,espn_match,name_hits
+00-0031484,Chris Manhertz,TE,2025,4071345,gsis_hit_espn_value_conflict,3048,2531358,
+00-0032098,Daniel Brown,TE,2021,2544798,gsis_hit_espn_value_conflict,2751,2519013,
 00-0035957,Rodney Smith,RB,2021,3116074,no_id_match_ambiguous_name,,,2
 00-0036482,Mike Strachan,WR,2023,4589245,no_match,,,0
 00-0036727,Adam Prentice,RB,2025,3929914,no_match,,,0

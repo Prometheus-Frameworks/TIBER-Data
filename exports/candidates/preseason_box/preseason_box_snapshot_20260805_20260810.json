@@ -13,18 +13,21 @@
  "source": {
   "name": "espn_site_api",
   "scoreboard_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=20260805-20260810",
-  "fetched_at": "2026-08-08T16:54:45.032963+00:00"
+  "fetched_at": "2026-08-08T18:17:15.912577+00:00"
  },
  "window": {
   "start": "20260805",
   "end": "20260810"
  },
+ "partial": false,
  "counts": {
   "events_seen": 1,
   "games_captured": 1,
-  "skipped": 0
+  "skipped": 0,
+  "fetch_failures": 0
  },
  "skipped": [],
+ "fetch_failures": [],
  "games": [
   {
    "espn_event_id": "401873271",
