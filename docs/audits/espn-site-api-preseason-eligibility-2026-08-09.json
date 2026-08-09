@@ -1,0 +1,27 @@
+{
+ "audit_date": "2026-08-09",
+ "auditor": "claude-fable-5 harness session (operator-directed)",
+ "process_deviation": "ingestion_preceded_audit_caught_by_pr_review_operator_authorized_retention",
+ "authorizing_prs": [
+  "Prometheus-Frameworks/TIBER-Data#243"
+ ],
+ "source": "espn_site_api",
+ "endpoints": [
+  "scoreboard",
+  "summary"
+ ],
+ "tracking_issue": 242,
+ "license": "none_declared",
+ "access": "public_unauthenticated_undocumented",
+ "redistribution_rights": "none_fail_closed",
+ "classification": "external_candidate",
+ "scope": "preseason_box_score_evidence_only",
+ "constraints": [
+  "preseason_season_type_1_only",
+  "candidates_tier_only",
+  "operator_promotion_review",
+  "no_public_redistribution",
+  "identity_via_crosswalk_only",
+  "annual_re_review"
+ ]
+}
