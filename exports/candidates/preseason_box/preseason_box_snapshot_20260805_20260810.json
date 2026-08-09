@@ -1,0 +1,1511 @@
+{
+ "kind": "preseason_box_snapshot",
+ "schema_version": "preseason_box_snapshot_v0",
+ "status": "candidate_only",
+ "consumer_safety": {
+  "not_allowed": [
+   "consume as regular-season evidence",
+   "join into REG season_type artifacts",
+   "promote without operator source-policy review (ESPN is not an approved truth source)"
+  ],
+  "notes": "Preseason usage/box evidence only. Player identity is ESPN athlete id + display name \u2014 join via the identity crosswalk before any cross-artifact use."
+ },
+ "source": {
+  "name": "espn_site_api",
+  "scoreboard_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=20260805-20260810",
+  "fetched_at": "2026-08-08T18:17:15.912577+00:00"
+ },
+ "window": {
+  "start": "20260805",
+  "end": "20260810"
+ },
+ "partial": false,
+ "counts": {
+  "events_seen": 1,
+  "games_captured": 1,
+  "skipped": 0,
+  "fetch_failures": 0
+ },
+ "skipped": [],
+ "fetch_failures": [],
+ "games": [
+  {
+   "espn_event_id": "401873271",
+   "name": "Carolina Panthers at Arizona Cardinals",
+   "date": "2026-08-07T00:00Z",
+   "status": "Final",
+   "score": {
+    "ARI": "30",
+    "CAR": "33"
+   },
+   "player_lines": [
+    {
+     "team": "CAR",
+     "category": "passing",
+     "espn_athlete_id": "4428993",
+     "player_name": "Haynes King",
+     "stats": {
+      "C/ATT": "21/34",
+      "YDS": "180",
+      "AVG": "5.3",
+      "TD": "2",
+      "INT": "0",
+      "SACKS": "0-0",
+      "RTG": "95.2"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "passing",
+     "espn_athlete_id": "4240703",
+     "player_name": "Kenny Pickett",
+     "stats": {
+      "C/ATT": "8/11",
+      "YDS": "62",
+      "AVG": "5.6",
+      "TD": "0",
+      "INT": "0",
+      "SACKS": "1-5",
+      "RTG": "86.2"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "rushing",
+     "espn_athlete_id": "4613105",
+     "player_name": "Miles Davis",
+     "stats": {
+      "CAR": "4",
+      "YDS": "53",
+      "AVG": "13.3",
+      "TD": "0",
+      "LONG": "36"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "rushing",
+     "espn_athlete_id": "4428993",
+     "player_name": "Haynes King",
+     "stats": {
+      "CAR": "3",
+      "YDS": "39",
+      "AVG": "13.0",
+      "TD": "1",
+      "LONG": "26"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "rushing",
+     "espn_athlete_id": "4709392",
+     "player_name": "Anthony Tyus III",
+     "stats": {
+      "CAR": "8",
+      "YDS": "19",
+      "AVG": "2.4",
+      "TD": "0",
+      "LONG": "7"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "rushing",
+     "espn_athlete_id": "4239934",
+     "player_name": "AJ Dillon",
+     "stats": {
+      "CAR": "3",
+      "YDS": "18",
+      "AVG": "6.0",
+      "TD": "1",
+      "LONG": "13"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "rushing",
+     "espn_athlete_id": "4685350",
+     "player_name": "Trevor Etienne",
+     "stats": {
+      "CAR": "4",
+      "YDS": "12",
+      "AVG": "3.0",
+      "TD": "0",
+      "LONG": "7"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4708486",
+     "player_name": "Jimmy Horn Jr.",
+     "stats": {
+      "REC": "4",
+      "YDS": "44",
+      "AVG": "11.0",
+      "TD": "0",
+      "LONG": "17",
+      "TGTS": "7"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4567096",
+     "player_name": "John Metchie III",
+     "stats": {
+      "REC": "3",
+      "YDS": "38",
+      "AVG": "12.7",
+      "TD": "0",
+      "LONG": "19",
+      "TGTS": "6"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4876995",
+     "player_name": "Ja'seem Reed",
+     "stats": {
+      "REC": "2",
+      "YDS": "30",
+      "AVG": "15.0",
+      "TD": "1",
+      "LONG": "15",
+      "TGTS": "3"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4428796",
+     "player_name": "Casey Washington",
+     "stats": {
+      "REC": "3",
+      "YDS": "24",
+      "AVG": "8.0",
+      "TD": "0",
+      "LONG": "10",
+      "TGTS": "5"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4687509",
+     "player_name": "Caden Prieskorn",
+     "stats": {
+      "REC": "1",
+      "YDS": "21",
+      "AVG": "21.0",
+      "TD": "0",
+      "LONG": "21",
+      "TGTS": "1"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4239934",
+     "player_name": "AJ Dillon",
+     "stats": {
+      "REC": "1",
+      "YDS": "18",
+      "AVG": "18.0",
+      "TD": "0",
+      "LONG": "18",
+      "TGTS": "1"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4361988",
+     "player_name": "James Mitchell",
+     "stats": {
+      "REC": "3",
+      "YDS": "15",
+      "AVG": "5.0",
+      "TD": "0",
+      "LONG": "8",
+      "TGTS": "4"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4570636",
+     "player_name": "Malick Meiga",
+     "stats": {
+      "REC": "1",
+      "YDS": "13",
+      "AVG": "13.0",
+      "TD": "0",
+      "LONG": "13",
+      "TGTS": "2"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4431588",
+     "player_name": "Ja'Tavion Sanders",
+     "stats": {
+      "REC": "3",
+      "YDS": "13",
+      "AVG": "4.3",
+      "TD": "0",
+      "LONG": "6",
+      "TGTS": "3"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4613105",
+     "player_name": "Miles Davis",
+     "stats": {
+      "REC": "3",
+      "YDS": "9",
+      "AVG": "3.0",
+      "TD": "0",
+      "LONG": "8",
+      "TGTS": "3"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4034948",
+     "player_name": "Feleipe Franks",
+     "stats": {
+      "REC": "2",
+      "YDS": "8",
+      "AVG": "4.0",
+      "TD": "0",
+      "LONG": "4",
+      "TGTS": "2"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4709392",
+     "player_name": "Anthony Tyus III",
+     "stats": {
+      "REC": "1",
+      "YDS": "5",
+      "AVG": "5.0",
+      "TD": "1",
+      "LONG": "5",
+      "TGTS": "1"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4212909",
+     "player_name": "David Moore",
+     "stats": {
+      "REC": "1",
+      "YDS": "5",
+      "AVG": "5.0",
+      "TD": "0",
+      "LONG": "5",
+      "TGTS": "2"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4241588",
+     "player_name": "Elijah Cooks",
+     "stats": {
+      "REC": "0",
+      "YDS": "0",
+      "AVG": "0.0",
+      "TD": "0",
+      "LONG": "0",
+      "TGTS": "3"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "receiving",
+     "espn_athlete_id": "4685350",
+     "player_name": "Trevor Etienne",
+     "stats": {
+      "REC": "1",
+      "YDS": "-1",
+      "AVG": "-1.0",
+      "TD": "0",
+      "LONG": "-1",
+      "TGTS": "1"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "fumbles",
+     "espn_athlete_id": "4709392",
+     "player_name": "Anthony Tyus III",
+     "stats": {
+      "FUM": "1",
+      "LOST": "1",
+      "REC": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4566384",
+     "player_name": "Zakee Wheatley",
+     "stats": {
+      "TOT": "8",
+      "SOLO": "2",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4244607",
+     "player_name": "Akayleb Evans",
+     "stats": {
+      "TOT": "5",
+      "SOLO": "2",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4034496",
+     "player_name": "Cam Gill",
+     "stats": {
+      "TOT": "5",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4875592",
+     "player_name": "Jackson Kuwatch",
+     "stats": {
+      "TOT": "5",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4032200",
+     "player_name": "Robert Rochell",
+     "stats": {
+      "TOT": "4",
+      "SOLO": "3",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4594449",
+     "player_name": "DeVonta Smith",
+     "stats": {
+      "TOT": "4",
+      "SOLO": "3",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4256224",
+     "player_name": "Claudin Cherelus",
+     "stats": {
+      "TOT": "4",
+      "SOLO": "2",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "5151083",
+     "player_name": "Will Lee III",
+     "stats": {
+      "TOT": "4",
+      "SOLO": "2",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "1",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4429110",
+     "player_name": "Lathan Ransom",
+     "stats": {
+      "TOT": "4",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4880613",
+     "player_name": "Bam Martin-Scott",
+     "stats": {
+      "TOT": "4",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4431426",
+     "player_name": "Corey Thornton",
+     "stats": {
+      "TOT": "3",
+      "SOLO": "3",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4714157",
+     "player_name": "Thomas Incoom",
+     "stats": {
+      "TOT": "3",
+      "SOLO": "2",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4039170",
+     "player_name": "Elijah Garcia",
+     "stats": {
+      "TOT": "3",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "1",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4035462",
+     "player_name": "Isaiah Simmons",
+     "stats": {
+      "TOT": "3",
+      "SOLO": "0",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "1",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4683815",
+     "player_name": "Trevin Wallace",
+     "stats": {
+      "TOT": "3",
+      "SOLO": "0",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4367330",
+     "player_name": "Tyrek Funderburk",
+     "stats": {
+      "TOT": "2",
+      "SOLO": "2",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4687513",
+     "player_name": "Cam Jackson",
+     "stats": {
+      "TOT": "2",
+      "SOLO": "2",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4360773",
+     "player_name": "Nick Hampton",
+     "stats": {
+      "TOT": "2",
+      "SOLO": "1",
+      "SACKS": "1",
+      "TFL": "1",
+      "PD": "0",
+      "QB HTS": "1",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4426926",
+     "player_name": "Demani Richardson",
+     "stats": {
+      "TOT": "2",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "5279357",
+     "player_name": "Mapalo Mwansa",
+     "stats": {
+      "TOT": "2",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4697636",
+     "player_name": "Chau Smith-Wade",
+     "stats": {
+      "TOT": "2",
+      "SOLO": "0",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4427401",
+     "player_name": "Jared Harrison-Hunte",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "1",
+      "SACKS": "1",
+      "TFL": "1",
+      "PD": "0",
+      "QB HTS": "1",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4428125",
+     "player_name": "Maema Njongmeta",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4428796",
+     "player_name": "Casey Washington",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4702576",
+     "player_name": "Cam Miller",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4709392",
+     "player_name": "Anthony Tyus III",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4816330",
+     "player_name": "Isaiah Smith",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4875848",
+     "player_name": "Parker Petersen",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4431551",
+     "player_name": "Lee Hunter",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "0",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "defensive",
+     "espn_athlete_id": "4569135",
+     "player_name": "Kyon Barrs",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "0",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "kickReturns",
+     "espn_athlete_id": "4567096",
+     "player_name": "John Metchie III",
+     "stats": {
+      "NO": "1",
+      "YDS": "36",
+      "AVG": "36.0",
+      "LONG": "36",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "kickReturns",
+     "espn_athlete_id": "4709392",
+     "player_name": "Anthony Tyus III",
+     "stats": {
+      "NO": "1",
+      "YDS": "27",
+      "AVG": "27.0",
+      "LONG": "27",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "kickReturns",
+     "espn_athlete_id": "4876995",
+     "player_name": "Ja'seem Reed",
+     "stats": {
+      "NO": "1",
+      "YDS": "26",
+      "AVG": "26.0",
+      "LONG": "26",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "kickReturns",
+     "espn_athlete_id": "4708486",
+     "player_name": "Jimmy Horn Jr.",
+     "stats": {
+      "NO": "1",
+      "YDS": "25",
+      "AVG": "25.0",
+      "LONG": "25",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "kicking",
+     "espn_athlete_id": "4568263",
+     "player_name": "Ryan Fitzgerald",
+     "stats": {
+      "FG": "2/2",
+      "PCT": "100.0",
+      "LONG": "37",
+      "XP": "3/3",
+      "PTS": "9"
+     }
+    },
+    {
+     "team": "CAR",
+     "category": "punting",
+     "espn_athlete_id": "15928",
+     "player_name": "Sam Martin",
+     "stats": {
+      "NO": "2",
+      "YDS": "117",
+      "AVG": "58.5",
+      "TB": "0",
+      "In 20": "1",
+      "LONG": "61"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "passing",
+     "espn_athlete_id": "4430841",
+     "player_name": "Carson Beck",
+     "stats": {
+      "C/ATT": "15/19",
+      "YDS": "188",
+      "AVG": "9.9",
+      "TD": "1",
+      "INT": "0",
+      "SACKS": "1-2",
+      "RTG": "125.4"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "passing",
+     "espn_athlete_id": "4428512",
+     "player_name": "Kedon Slovis",
+     "stats": {
+      "C/ATT": "9/10",
+      "YDS": "106",
+      "AVG": "10.6",
+      "TD": "1",
+      "INT": "0",
+      "SACKS": "1-10",
+      "RTG": "144.2"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "rushing",
+     "espn_athlete_id": "4427728",
+     "player_name": "Bam Knight",
+     "stats": {
+      "CAR": "12",
+      "YDS": "60",
+      "AVG": "5.0",
+      "TD": "0",
+      "LONG": "15"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "rushing",
+     "espn_athlete_id": "4431431",
+     "player_name": "Corey Kiner",
+     "stats": {
+      "CAR": "14",
+      "YDS": "57",
+      "AVG": "4.1",
+      "TD": "1",
+      "LONG": "13"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "rushing",
+     "espn_athlete_id": "4569609",
+     "player_name": "Evan Hull",
+     "stats": {
+      "CAR": "6",
+      "YDS": "23",
+      "AVG": "3.8",
+      "TD": "0",
+      "LONG": "9"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "rushing",
+     "espn_athlete_id": "4430841",
+     "player_name": "Carson Beck",
+     "stats": {
+      "CAR": "2",
+      "YDS": "3",
+      "AVG": "1.5",
+      "TD": "0",
+      "LONG": "4"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "receiving",
+     "espn_athlete_id": "4692835",
+     "player_name": "Jalen Brooks",
+     "stats": {
+      "REC": "3",
+      "YDS": "99",
+      "AVG": "33.0",
+      "TD": "0",
+      "LONG": "49",
+      "TGTS": "4"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "receiving",
+     "espn_athlete_id": "4869132",
+     "player_name": "Reggie Virgil",
+     "stats": {
+      "REC": "5",
+      "YDS": "66",
+      "AVG": "13.2",
+      "TD": "0",
+      "LONG": "17",
+      "TGTS": "6"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "receiving",
+     "espn_athlete_id": "4699354",
+     "player_name": "Harrison Wallace III",
+     "stats": {
+      "REC": "2",
+      "YDS": "34",
+      "AVG": "17.0",
+      "TD": "0",
+      "LONG": "27",
+      "TGTS": "2"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "receiving",
+     "espn_athlete_id": "4428811",
+     "player_name": "Xavier Weaver",
+     "stats": {
+      "REC": "3",
+      "YDS": "31",
+      "AVG": "10.3",
+      "TD": "0",
+      "LONG": "19",
+      "TGTS": "5"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "receiving",
+     "espn_athlete_id": "4588298",
+     "player_name": "Jameson Geers",
+     "stats": {
+      "REC": "2",
+      "YDS": "20",
+      "AVG": "10.0",
+      "TD": "0",
+      "LONG": "16",
+      "TGTS": "2"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "receiving",
+     "espn_athlete_id": "4605858",
+     "player_name": "Rivaldo Fairweather",
+     "stats": {
+      "REC": "3",
+      "YDS": "19",
+      "AVG": "6.3",
+      "TD": "0",
+      "LONG": "8",
+      "TGTS": "3"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "receiving",
+     "espn_athlete_id": "4044144",
+     "player_name": "Kenny Yeboah",
+     "stats": {
+      "REC": "2",
+      "YDS": "10",
+      "AVG": "5.0",
+      "TD": "0",
+      "LONG": "6",
+      "TGTS": "2"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "receiving",
+     "espn_athlete_id": "4431431",
+     "player_name": "Corey Kiner",
+     "stats": {
+      "REC": "2",
+      "YDS": "9",
+      "AVG": "4.5",
+      "TD": "0",
+      "LONG": "8",
+      "TGTS": "2"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "receiving",
+     "espn_athlete_id": "4360739",
+     "player_name": "Simi Fehoko",
+     "stats": {
+      "REC": "1",
+      "YDS": "5",
+      "AVG": "5.0",
+      "TD": "1",
+      "LONG": "5",
+      "TGTS": "1"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "receiving",
+     "espn_athlete_id": "4432705",
+     "player_name": "Bryson Green",
+     "stats": {
+      "REC": "1",
+      "YDS": "1",
+      "AVG": "1.0",
+      "TD": "1",
+      "LONG": "1",
+      "TGTS": "1"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "fumbles",
+     "espn_athlete_id": "4427728",
+     "player_name": "Bam Knight",
+     "stats": {
+      "FUM": "1",
+      "LOST": "0",
+      "REC": "1"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "fumbles",
+     "espn_athlete_id": "4428811",
+     "player_name": "Xavier Weaver",
+     "stats": {
+      "FUM": "1",
+      "LOST": "0",
+      "REC": "1"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "fumbles",
+     "espn_athlete_id": "3915437",
+     "player_name": "Isaiah Oliver",
+     "stats": {
+      "FUM": "0",
+      "LOST": "0",
+      "REC": "1"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4429185",
+     "player_name": "Austin Keys",
+     "stats": {
+      "TOT": "11",
+      "SOLO": "7",
+      "SACKS": "0",
+      "TFL": "1",
+      "PD": "2",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "3915437",
+     "player_name": "Isaiah Oliver",
+     "stats": {
+      "TOT": "8",
+      "SOLO": "4",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "5099542",
+     "player_name": "Wydett Williams Jr.",
+     "stats": {
+      "TOT": "7",
+      "SOLO": "2",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4572261",
+     "player_name": "Elijah Culp",
+     "stats": {
+      "TOT": "5",
+      "SOLO": "5",
+      "SACKS": "0",
+      "TFL": "1",
+      "PD": "2",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "3051775",
+     "player_name": "Andrew Billings",
+     "stats": {
+      "TOT": "4",
+      "SOLO": "2",
+      "SACKS": "1",
+      "TFL": "2",
+      "PD": "0",
+      "QB HTS": "1",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4709695",
+     "player_name": "Karson Sharar",
+     "stats": {
+      "TOT": "4",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4360203",
+     "player_name": "Elijah Jones",
+     "stats": {
+      "TOT": "3",
+      "SOLO": "3",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4426923",
+     "player_name": "Kei'Trel Clark",
+     "stats": {
+      "TOT": "3",
+      "SOLO": "3",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4429111",
+     "player_name": "BJ Ojulari",
+     "stats": {
+      "TOT": "3",
+      "SOLO": "2",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4431147",
+     "player_name": "Cam Horsley",
+     "stats": {
+      "TOT": "3",
+      "SOLO": "0",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4431433",
+     "player_name": "Kalen King",
+     "stats": {
+      "TOT": "2",
+      "SOLO": "2",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4365457",
+     "player_name": "Brodric Martin-Rhodes",
+     "stats": {
+      "TOT": "2",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4428113",
+     "player_name": "Quinton Newsome",
+     "stats": {
+      "TOT": "2",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4685582",
+     "player_name": "Damonic Williams",
+     "stats": {
+      "TOT": "2",
+      "SOLO": "0",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4428633",
+     "player_name": "Dadrion Taylor-Demerson",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4430821",
+     "player_name": "Kitan Crawford",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "1",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4567219",
+     "player_name": "Owen Pappoe",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4869132",
+     "player_name": "Reggie Virgil",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "1",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4361272",
+     "player_name": "Eku Leota",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "0",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "1",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "defensive",
+     "espn_athlete_id": "4900789",
+     "player_name": "Cameron Robertson",
+     "stats": {
+      "TOT": "1",
+      "SOLO": "0",
+      "SACKS": "0",
+      "TFL": "0",
+      "PD": "0",
+      "QB HTS": "0",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "kickReturns",
+     "espn_athlete_id": "4699354",
+     "player_name": "Harrison Wallace III",
+     "stats": {
+      "NO": "2",
+      "YDS": "49",
+      "AVG": "24.5",
+      "LONG": "29",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "kickReturns",
+     "espn_athlete_id": "4428811",
+     "player_name": "Xavier Weaver",
+     "stats": {
+      "NO": "1",
+      "YDS": "25",
+      "AVG": "25.0",
+      "LONG": "25",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "puntReturns",
+     "espn_athlete_id": "4428811",
+     "player_name": "Xavier Weaver",
+     "stats": {
+      "NO": "1",
+      "YDS": "7",
+      "AVG": "7.0",
+      "LONG": "7",
+      "TD": "0"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "kicking",
+     "espn_athlete_id": "4363538",
+     "player_name": "Chad Ryland",
+     "stats": {
+      "FG": "3/3",
+      "PCT": "100.0",
+      "LONG": "43",
+      "XP": "3/3",
+      "PTS": "12"
+     }
+    },
+    {
+     "team": "ARI",
+     "category": "punting",
+     "espn_athlete_id": "4045180",
+     "player_name": "Blake Gillikin",
+     "stats": {
+      "NO": "1",
+      "YDS": "55",
+      "AVG": "55.0",
+      "TB": "0",
+      "In 20": "1",
+      "LONG": "55"
+     }
+    }
+   ]
+  }
+ ]
+}
