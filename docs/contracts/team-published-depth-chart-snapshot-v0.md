@@ -14,6 +14,8 @@ The 32-team discovery companion is governed by `schemas/team_published_depth_cha
 
 A qualifying source is published by the club on its official website or as a club-hosted article, media/game release, image, or PDF. A chart prepared by the club's media-relations or communications department qualifies as a team publication. If the team labels its chart `unofficial`, preserve that label exactly; it remains canonical for what the team published.
 
+The validator couples each `team_abbr` to its explicit official hostname. Both `canonical_source_url` and every receipt URL must satisfy that team-specific policy, and the canonical URL must have an exact receipt. Shared asset hosts are fail-closed exceptions: this pilot recognizes only the observed Arizona `static.clubs.nfl.com/image/upload/cardinals/` prefix for Arizona. A globally official hostname belonging to another team is not sufficient.
+
 The following are never fallback truth:
 
 - third-party projections;
@@ -48,7 +50,7 @@ Null is required when a source does not expose an effective/publication clock or
 
 Every normalized snapshot must point to the exact bytes that supported it. A receipt records URL, retrieval clock, MIME type, byte length, SHA-256, optional source validators (`ETag`/`Last-Modified`), archive status, and immutable repository path when storage is authorized.
 
-`stored_immutable` requires a non-null immutable path. Other receipt states require `immutable_receipt_path: null` and cannot support a verified-current snapshot.
+`stored_immutable` requires a non-null repository-relative path under `data/raw/depth_charts/`. Validation requires the file to exist and recomputes both byte length and SHA-256 from those bytes. Missing, escaping, symlinked, length-mismatched, or hash-mismatched evidence fails closed. Other receipt states require `immutable_receipt_path: null` and cannot support a verified-current snapshot.
 
 Technical access is not a redistribution license. Under `AGENTS.md`, an official source with no observed redistribution grant remains blocked from repository mirroring until the rights disposition is recorded. A URL plus hash is an observation receipt, not a substitute for retained immutable bytes.
 
@@ -63,11 +65,11 @@ Entries preserve:
 - jersey number when printed;
 - exact raw name and source text;
 - raw underline, bracket, `OR`, slash co-list, and wrap markers;
-- decoded marker meaning only when an official legend or explicit club statement supports it;
+- explicit empty `decoded_marker_meanings` and null `decoded_marker_legend_reference` fields;
 - canonical player ID or `null`;
 - explicit identity status and resolution method.
 
-An underline is not automatically decoded as `rookie`, and brackets are not automatically decoded as an injury designation. Preserve the mark; decode only official legend semantics. Unresolved entries stay in place with `player_id: null`.
+An underline is not automatically decoded as `rookie`, and brackets are not automatically decoded as an injury designation. Contract v0 prohibits marker decoding: `decoded_marker_meanings` must remain empty and `decoded_marker_legend_reference` must remain `null`. Any future decoded semantics require a separately reviewed contract that can independently bind exact legend content to retained official evidence. Unresolved entries stay in place with `player_id: null`.
 
 `display_column` is descriptive source layout. It must never be renamed or interpreted as actual `rank`, starter probability, or workload order.
 
@@ -80,13 +82,14 @@ The clocks have different meanings:
 
 Latest selection follows these rules:
 
-1. A byte-identical refetch records run health and does not create a new snapshot.
-2. Every changed qualifying source is a new candidate receipt.
-3. A candidate advances `latest` only after receipt, schema, structural-count, and review validation pass.
-4. `latest` is selected by the newest verified official effective date, then verified publication date—not retrieval time.
-5. An undated mutable page may be captured but cannot supersede a dated verified snapshot.
-6. A changed source that fails parsing is quarantined while the prior verified latest remains unchanged.
-7. A stale source cannot be made current by regenerating it.
+1. Contract v0 never infers monitor health from hash equality. An equal hash is only a stable observation and does not create or advance a snapshot. Any future health claim requires a separately governed run-record contract with distinct run identity and clocks.
+2. Every changed qualifying source is a new candidate receipt; a changed source whose parse fails is quarantined and cannot advance.
+3. A candidate advances `latest` only after full schema and semantic validation, nonempty source and normalized structural evidence, team-coupled canonical/receipt policy, review validation, and recomputation of every immutable receipt's byte length and SHA-256.
+4. Advancement is permitted only within the same contract/assertion/team/season stream and only when the retained source-hash set changed.
+5. `latest` is selected first by the newest verified `chart_as_of` date, then by the full timezone-aware `published_at` value—not retrieval time or a truncated publication date.
+6. Null `chart_as_of` is ineligible for advancement even when `published_at` exists; an undated mutable page may be captured but cannot supersede a dated verified snapshot.
+7. A changed source that fails parsing is quarantined while the prior verified latest remains unchanged.
+8. A stale source cannot be made current by regenerating it.
 
 An operational daily/event-triggered monitor and any all-32 rollout require separate approval.
 
@@ -116,6 +119,8 @@ The source registry contains exactly 32 team rows and supports:
 
 Unchecked candidate URLs are discovery hints, not confirmed availability. A registry row may point at an official team hostname while still declaring monitoring degraded.
 
+Normalized candidate enumeration is itself bounded. `data/candidate/depth_charts/normalized_candidate_manifest_2026-08-10.json` names the only authorized pilot teams, exact candidate directory, and sorted candidate paths. Validation derives the candidate count from agreement between that manifest and the directory; an unlisted file or out-of-scope team fails closed. The current empty list is evidence-backed by the immutable-receipt blocker, not a hard-coded validator result.
+
 ## Fail-closed behavior
 
 - Conflicting official surfaces are retained independently. If official currency cannot be established, emit `official_source_conflict` and retain the prior verified snapshot.
@@ -129,4 +134,3 @@ Unchecked candidate URLs are discovery hints, not confirmed availability. A regi
 ## Candidate and consumer boundary
 
 This contract authorizes contract validation and candidate evidence only. It does not activate TIBER-Fantasy, Forecast, FORGE, Teamstate, Role-and-opportunity-model, a product surface, a scheduler, a promotion, or a merge.
-
