@@ -99,6 +99,7 @@
       "$ref": "#/$defs/transcription"
     },
     "normalization_status": {
+      "description": "In v0, complete is lossless: semantic validation requires exact equality between source and normalized row counts and between source and normalized entry counts. Any lossy or unresolved reconciliation remains partial or quarantined.",
       "enum": ["complete", "partial", "quarantined"]
     },
     "verification_status": {
@@ -265,6 +266,7 @@
     "transcription": {
       "type": "object",
       "additionalProperties": false,
+      "$comment": "For normalization_status=complete, the semantic validator requires source_row_count == normalized_row_count and source_entry_count == normalized_entry_count.",
       "required": ["method", "version", "transcriber", "source_row_count", "normalized_row_count", "source_entry_count", "normalized_entry_count"],
       "properties": {
         "method": {
@@ -397,7 +399,38 @@
           "type": ["string", "null"],
           "minLength": 1
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "identity_status": {
+                "const": "resolved_exact"
+              }
+            },
+            "required": ["identity_status"]
+          },
+          "then": {
+            "properties": {
+              "player_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "identity_resolution_method": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "player_id": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
