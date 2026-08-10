@@ -46,6 +46,8 @@ Each snapshot carries:
 
 Null is required when a source does not expose an effective/publication clock or when identity is unresolved. Retrieval time must never fill a missing publication clock.
 
+`normalization_status: complete` is strictly lossless in v0. `source_row_count` must equal `normalized_row_count`, and `source_entry_count` must equal `normalized_entry_count`. A dropped, merged, or otherwise unreconciled source row or entry remains `partial` or `quarantined`; v0 has no exception structure for lossy reconciliation.
+
 ## Receipt rule
 
 Every normalized snapshot must point to the exact bytes that supported it. A receipt records URL, retrieval clock, MIME type, byte length, SHA-256, optional source validators (`ETag`/`Last-Modified`), archive status, and immutable repository path when storage is authorized.
@@ -69,7 +71,9 @@ Entries preserve:
 - canonical player ID or `null`;
 - explicit identity status and resolution method.
 
-An underline is not automatically decoded as `rookie`, and brackets are not automatically decoded as an injury designation. Contract v0 prohibits marker decoding: `decoded_marker_meanings` must remain empty and `decoded_marker_legend_reference` must remain `null`. Any future decoded semantics require a separately reviewed contract that can independently bind exact legend content to retained official evidence. Unresolved entries stay in place with `player_id: null`.
+An underline is not automatically decoded as `rookie`, and brackets are not automatically decoded as an injury designation. Contract v0 prohibits marker decoding: `decoded_marker_meanings` must remain empty and `decoded_marker_legend_reference` must remain `null`. Any future decoded semantics require a separately reviewed contract that can independently bind exact legend content to retained official evidence.
+
+Every identity state other than `resolved_exact`—including `ambiguous_multiple_matches`—requires `player_id: null`. `resolved_exact` requires both a non-null canonical `player_id` and a non-null explicit `identity_resolution_method`. Raw entries remain present regardless of resolution outcome.
 
 `display_column` is descriptive source layout. It must never be renamed or interpreted as actual `rank`, starter probability, or workload order.
 
@@ -84,7 +88,7 @@ Latest selection follows these rules:
 
 1. Contract v0 never infers monitor health from hash equality. An equal hash is only a stable observation and does not create or advance a snapshot. Any future health claim requires a separately governed run-record contract with distinct run identity and clocks.
 2. Every changed qualifying source is a new candidate receipt; a changed source whose parse fails is quarantined and cannot advance.
-3. A candidate advances `latest` only after full schema and semantic validation, nonempty source and normalized structural evidence, team-coupled canonical/receipt policy, review validation, and recomputation of every immutable receipt's byte length and SHA-256.
+3. A candidate advances `latest` only after full schema and semantic validation, nonempty and exactly reconciled source/normalized row and entry counts, team-coupled canonical/receipt policy, review validation, and recomputation of every immutable receipt's byte length and SHA-256.
 4. Advancement is permitted only within the same contract/assertion/team/season stream and only when the retained source-hash set changed.
 5. `latest` is selected first by the newest verified `chart_as_of` date, then by the full timezone-aware `published_at` value—not retrieval time or a truncated publication date.
 6. Null `chart_as_of` is ineligible for advancement even when `published_at` exists; an undated mutable page may be captured but cannot supersede a dated verified snapshot.
