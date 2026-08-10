@@ -2,7 +2,7 @@
 
 ## Decision
 
-Fantasy Football Calculator (FFC) is the strongest technical candidate for a narrow, source-specific 2026 PPR 12-team mock-draft ADP lane. It is not yet admissible for a governed TIBER-Data adapter.
+Fantasy Football Calculator (FFC) is the strongest technical candidate for a narrow, source-specific 2026 PPR 12-team mock-draft ADP lane. The endpoint's exclusion of dynasty, rookie, keeper, or other draft populations was not bound, so “redraft” remains the question being qualified rather than an observed source fact. FFC is not yet admissible for a governed TIBER-Data adapter.
 
 The official API page, last updated 2018-07-17, permits personal and commercial API use, requests attribution, and says the data updates daily. The newer Terms of Service, last updated 2025-10-13, restrict systematic retrieval, database compilation, automated extraction, aggregation, republication, public display, distribution, and commercial exploitation outside an applicable exception or express permission. The current `robots.txt` also disallows `/api/` for the general user agent. The API page may be a specific exception for ordinary application use, but it does not clearly authorize TIBER's proposed once-daily immutable archive, normalized historical database, public GitHub artifacts, or downstream redistribution.
 
@@ -19,21 +19,23 @@ This is a source-governance assessment, not legal advice. Observed source statem
 - Candidate source: FFC ADP REST API, `ppr`, 12 teams, 2026, all-player response.
 - This packet contains no player ADP rows or values. No market body was persisted, but the exact current endpoint was contacted twice; the second GET exceeded issue #251's one-probe ceiling. The deviation is disclosed below and no further source call is authorized.
 - No adapter, snapshot, history, scheduler, source purchase, credential, license acceptance, identity promotion, downstream binding, merge, or deployment is authorized here.
+- Issue #251 acceptance is not met and the issue must remain open. The source terminal above remains defensible, but the process nonconformance requires an explicit operator disposition before this audit PR can be considered for merge or any separate outreach can be authorized.
 
 ## Exact market definition
 
-If eventually admitted, the lane must be named and described as `ffc_mock_redraft_ppr_12_v0` (or equivalently specific language), not “the market,” “consensus ADP,” or managed-league ADP.
+The provisional lane name is `ffc_mock_ppr_12_candidate_v0`. It must not be called redraft until FFC confirms which draft populations the `/ppr` endpoint includes. If eventually admitted, it must remain source-specific and must not be described as “the market,” “consensus ADP,” or managed-league ADP.
 
 | Dimension | Contract |
 |---|---|
 | Provider/product | Fantasy Football Calculator ADP REST API |
 | Endpoint configuration | `ppr`, `teams=12`, `year=2026` |
+| Draft type | Unknown: the inspected evidence does not prove that `/ppr` excludes dynasty, rookie, keeper, or other mock populations |
 | Population | Human selections in FFC-hosted mock drafts |
 | Computer selections | Excluded by FFC before averaging |
 | Player population | All positions returned by the source; no position query was used |
 | Metric | Source-supplied average draft position and supporting source fields |
-| Generalizability | FFC mock-draft behavior only; not a universal redraft market |
-| Team-count confidence | The endpoint accepts and echoes 12, but the population/filter semantics require confirmation |
+| Generalizability | FFC mock-draft behavior only; not a universal or managed-league market |
+| Team-count confidence | The request specified 12; the exact response metadata value was not retained, and population/filter semantics require confirmation |
 
 The 12-team semantics remain unresolved because TIBER-Fantasy PR #304's same-day 10- and 12-team PPR prototypes reported the same source window and draft count and substantively identical source values apart from formatted pick notation. This is a definition warning, not evidence that the provider ignores team count.
 
@@ -45,10 +47,10 @@ All hashes below are SHA-256 over decoded response-body bytes after automatic HT
 |---|---|---:|---:|---|
 | [ADP REST API help](https://help.fantasyfootballcalculator.com/article/42-adp-rest-api) | Updated 2018-07-17; API use permission, attribution request, daily cadence | 2026-08-10T19:59:05.805Z–19:59:18.546Z | 15,464 | `4a4bbdc61edba9381fa2e03ae5f41eb319478ca976a0bd69f8ae10b4ffd79014` |
 | [ADP methodology](https://help.fantasyfootballcalculator.com/article/34-average-draft-position-adp-data) | Updated 2018-07-17; mock-draft aggregation, computer picks excluded | 2026-08-10T19:59:18.555Z–19:59:19.026Z | 15,300 | `878dfde5d6271a10b20663dbd3c9658782cdf916138b9ffc10aff997d8ccdfa9` |
-| [Terms page](https://fantasyfootballcalculator.com/terms-of-service) | Policy updated 2025-10-13; Termly UUID `2ef2a813-520e-416e-8542-126123f37364` | 2026-08-10T19:59:19.026Z–19:59:24.315Z | 39,610 | `51cd23d7062dee728100a1313002e3b85f6a738e16f57c1bf06be3c9839d6668` |
-| Embedded Terms policy content | Left Brain Sports LLC d/b/a FFC; content digest pinned | 2026-08-10T19:59:24.316Z–19:59:29.084Z | 179,092 JSON bytes | `299f9442dc18ebc6c48090fc7318b51cd410c98c21603ffbc9210992f13e22b9` |
-| [Privacy page](https://fantasyfootballcalculator.com/privacy-policy) | Policy updated 2025-10-13; no data-license effect | 2026-08-10T19:59:29.086Z–19:59:34.936Z | 39,606 | `fa36c70b7517d1abe252db68a9eeb0f437526b27c753e5d6763cfc4278a22d51` |
-| Embedded privacy policy content | Termly UUID `9a379394-6a14-42ba-9c4a-8110641bc62c`; no data-license effect | 2026-08-10T19:59:55.646Z–20:00:00.513Z | 224,654 JSON bytes | `eb3267eae283e0665865c2e4deb81708f329c323aa9dc165e36db7414ea2d9d4` |
+| [Terms page](https://fantasyfootballcalculator.com/terms-of-service) | Deterministic HTML embeds Termly UUID `2ef2a813-520e-416e-8542-126123f37364` | 2026-08-10T19:59:19.026Z–19:59:24.315Z | 39,610 | `51cd23d7062dee728100a1313002e3b85f6a738e16f57c1bf06be3c9839d6668` |
+| Embedded Terms policy content | Policy updated 2025-10-13; Left Brain Sports LLC d/b/a FFC; content digest pinned | 2026-08-10T19:59:24.316Z–19:59:29.084Z | 179,092 JSON bytes | `299f9442dc18ebc6c48090fc7318b51cd410c98c21603ffbc9210992f13e22b9` |
+| [Privacy page](https://fantasyfootballcalculator.com/privacy-policy) | Deterministic HTML embeds Termly UUID `9a379394-6a14-42ba-9c4a-8110641bc62c` | 2026-08-10T19:59:29.086Z–19:59:34.936Z | 39,606 | `fa36c70b7517d1abe252db68a9eeb0f437526b27c753e5d6763cfc4278a22d51` |
+| Embedded privacy policy content | Policy updated 2025-10-13; no data-license effect | 2026-08-10T19:59:55.646Z–20:00:00.513Z | 224,654 JSON bytes | `eb3267eae283e0665865c2e4deb81708f329c323aa9dc165e36db7414ea2d9d4` |
 | [robots.txt](https://fantasyfootballcalculator.com/robots.txt) | General user agent disallows `/api/`; crawler guidance, not a data license | 2026-08-10T20:00:00.522Z–20:00:05.919Z | 245 | `00008501967eca4348089f1f07a013cae145bdd7607a0e3e1d50e25e95fc7393` |
 
 The Terms embedded-content UTF-8 string additionally hashes to `b0e76d59e9cb1aea22acb7124e7044333ac77ee86990d41a92b27ef127d7eaf3`. The privacy embedded-content UTF-8 string hashes to `0c22c86371720024a20c8f90cc39cee852cca299295c672af5dc2d0b83d5ea4b`.
@@ -91,6 +93,7 @@ The second GET produced the following schema-only receipt:
 - The source publishes no formal JSON Schema observed in this audit.
 - Observed top-level keys: `status`, `meta`, `players`.
 - Observed metadata keys: `type`, `teams`, `rounds`, `total_drafts`, `start_date`, `end_date`.
+- The values for those six metadata fields were not retained. Therefore the exact response type, echoed team count, round count, sample size, and calculation-window dates are unavailable and not reproducibly pinned. They must not be reconstructed from PR #304 or obtained through another call in this slice.
 - Observed player-field names: `player_id`, `name`, `position`, `team`, `adp`, `adp_formatted`, `times_drafted`, `high`, `low`, `stdev`, `bye`.
 - Response `Content-Type` was `text/html; charset=utf-8` even though the body parsed as JSON.
 - Cache headers included `max-age=3600`; `Last-Modified` was `2026-08-10T19:47:07Z`.
@@ -102,7 +105,7 @@ The `Last-Modified` header is an HTTP representation/cache clock only. It is not
 
 | Clock | State |
 |---|---|
-| Market sample window | Source metadata exposes start/end date-like fields; timezone and inclusion semantics are undocumented |
+| Market sample window | Field names were observed, but values were not retained; exact window, timezone, and inclusion semantics are unavailable |
 | Generated at | Unavailable |
 | Source as-of | Unavailable beyond the sample-window fields |
 | Available at | Unavailable |
@@ -159,13 +162,13 @@ No alternative clears both the rights and exact-market-definition gate today.
 The alternatives were qualified only from their official public surfaces on 2026-08-10; no player payload was retained:
 
 - **MyFantasyLeague / First Pick Labs, Inc.** exposes an ADP export through its developer program. The documented filters include team count, a PPR flag, keeper/redraft/rookie, mock/non-mock, and named periods, and the API returns a last-updated value. However, the PPR flag does not distinguish half from full PPR, exact recent-period dates and broader roster/scoring controls are incomplete, and the API's caching guidance conflicts with newer site terms restricting reproduction, publication, distribution, caching, scraping, or extraction without written permission. Provider identity and any GSIS edge require a separate audit. Original dated daily history and revision behavior are undocumented.
-- **Sleeper / Blitz Studios, Inc. and affiliates** exposes read-only drafts, picks, and player data, but there is no official representative global draft-discovery or aggregate ADP endpoint. A sample built only from known users, leagues, or draft IDs would be incomplete and selection-biased. The 2026-07-24 Terms require separate authorization for the proposed systematic extraction and redistribution. Per-draft clocks do not cure the population defect.
+- **Sleeper / Blitz Studios, Inc. and affiliates** exposes read-only drafts, picks, and player data and documents a general request ceiling below 1,000 calls per minute, but there is no market-specific cadence or official representative global draft-discovery/aggregate ADP endpoint. A sample built only from known users, leagues, or draft IDs would be incomplete and selection-biased. The 2026-07-24 Terms require separate authorization for the proposed systematic extraction and redistribution. Per-draft clocks do not cure the population defect.
 - **Underdog Sports, LLC d/b/a Underdog Fantasy** has no public approved ADP feed observed in this audit, restricts automated access outside an approved client/API, and represents a best-ball contest market rather than the requested redraft mock population. No source key, dated history, or semantic clocks were available for qualification.
 - **SportsDataIO** advertises fantasy ADP fields, persistent provider IDs, and a licensed historical product. Production use and all retention/redistribution rights are contract-dependent. Public documentation does not bind source population, sample size, team count, full-PPR semantics, calculation window, availability, correction, or revision behavior. FFC also states that its ADP is syndicated through FantasyData, so this may be a licensed delivery of the same market rather than an independent comparator.
 
 ## Required rightsholder confirmation
 
-No message was sent during this audit. A future operator-authorized request should ask Left Brain Sports LLC / FFC to confirm in writing:
+No message was sent during this audit. The first required action is operator disposition of the probe-budget nonconformance. Only after a separate outreach authorization should a request ask Left Brain Sports LLC / FFC to confirm in writing:
 
 1. once-daily automated calls for each named market configuration;
 2. whether the API page is the intended exception to the 2025 Terms and `/api/` robots rule;
@@ -176,8 +179,10 @@ No message was sent during this audit. A future operator-authorized request shou
 7. numeric request ceiling, preferred user agent/contact, and update hour;
 8. `player_id` stability, reuse, and retirement rules;
 9. exact 10-/12-team population semantics;
-10. source generation, availability, correction, and revision clocks; and
-11. whether an authorized original dated prior-12-month export exists.
+10. whether `/ppr` contains only ordinary redraft, non-keeper, non-dynasty, non-rookie mock drafts;
+11. the returned metadata values and their exact source-window semantics;
+12. source generation, availability, correction, and revision clocks; and
+13. whether an authorized original dated prior-12-month export exists.
 
 Contact observed in the Terms: `support@fantasyfootballcalculator.com`. Sending this request is an external action and needs separate operator authorization.
 
