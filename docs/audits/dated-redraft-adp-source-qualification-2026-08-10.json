@@ -7,10 +7,13 @@
     "parent_issue": "Prometheus-Frameworks/TIBER-Data#235",
     "parent_draft_pr": "Prometheus-Frameworks/TIBER-Data#248",
     "implementation_authorized": false,
-    "merge_authorized": false,
+    "merge_authorized": true,
+    "merge_scope": "docs_only_audit_and_incident_record_no_source_admission",
     "issue_acceptance_met": false,
     "issue_closure_authorized": false,
-    "operator_incident_disposition_required": true
+    "operator_incident_disposition_required": false,
+    "outreach_draft_authorized": true,
+    "outreach_send_authorized": false
   },
   "evidence_cutoff": "2026-08-10T20:12:10Z",
   "player_rows_included": false,
@@ -580,7 +583,7 @@
     }
   ],
   "rightsholder_questions": {
-    "outreach_status": "not_authorized_not_sent",
+    "outreach_status": "draft_authorized_not_sent",
     "contact": "support@fantasyfootballcalculator.com",
     "questions": [
       "once-daily automated calls per named market",
@@ -603,15 +606,18 @@
     "primary_candidate": "fantasy_football_calculator_adp",
     "adapter_authorized": false,
     "reason": "best_technical_fit_but_rights_market_semantics_and_identity_not_bound_and_probe_execution_ceiling_was_exceeded",
-    "smallest_next_step": "obtain_explicit_operator_disposition_of_probe_budget_nonconformance",
-    "after_operator_disposition": "if_separately_authorized_send_rightsholder_request_then_post_a_separate_operator_adapter_decision"
+    "smallest_next_step": "prepare_rightsholder_permission_request_draft_for_operator_review",
+    "after_operator_review": "send_only_after_separate_explicit_operator_approval_then_record_provider_response"
   },
   "incident_disposition": {
-    "status": "pending_operator",
-    "required_decision": "whether_issue_251_may_accept_a_nonconforming_audit_record_or_must_be_closed_or_reworked_without_acceptance",
+    "status": "operator_disposition_recorded",
+    "recorded_at": "2026-08-10T23:34:13Z",
+    "decision": "merge_docs_only_audit_record_keep_issue_251_open_and_source_unadmitted",
+    "pr_merge_allowed": true,
     "source_admission_allowed": false,
     "issue_closure_allowed": false,
-    "outreach_allowed": false
+    "outreach_draft_allowed": true,
+    "outreach_send_allowed": false
   },
   "candidate_adapter_prerequisites": [
     "written_rightsholder_permission_for_intended_use_modes",
