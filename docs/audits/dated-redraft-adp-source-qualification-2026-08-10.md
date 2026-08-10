@@ -14,10 +14,10 @@ This is a source-governance assessment, not legal advice. Observed source statem
 
 - Authority: operator-approved D1 source qualification in TIBER-Data issue #251.
 - Parent readiness work: issue #235 and draft PR #248.
-- Evidence cutoff: `2026-08-10T20:00:10Z`.
+- Evidence cutoff: `2026-08-10T20:12:10Z`.
 - Pinned TIBER-Data base: `44296134a178f9d53fd7eda01a94548e76160d29`.
 - Candidate source: FFC ADP REST API, `ppr`, 12 teams, 2026, all-player response.
-- This packet contains no player ADP rows or values. The one authorized market probe was processed transiently for a body digest and schema keys only.
+- This packet contains no player ADP rows or values. No market body was persisted, but the exact current endpoint was contacted twice; the second GET exceeded issue #251's one-probe ceiling. The deviation is disclosed below and no further source call is authorized.
 - No adapter, snapshot, history, scheduler, source purchase, credential, license acceptance, identity promotion, downstream binding, merge, or deployment is authorized here.
 
 ## Exact market definition
@@ -47,10 +47,11 @@ All hashes below are SHA-256 over decoded response-body bytes after automatic HT
 | [ADP methodology](https://help.fantasyfootballcalculator.com/article/34-average-draft-position-adp-data) | Updated 2018-07-17; mock-draft aggregation, computer picks excluded | 2026-08-10T19:59:18.555Z–19:59:19.026Z | 15,300 | `878dfde5d6271a10b20663dbd3c9658782cdf916138b9ffc10aff997d8ccdfa9` |
 | [Terms page](https://fantasyfootballcalculator.com/terms-of-service) | Policy updated 2025-10-13; Termly UUID `2ef2a813-520e-416e-8542-126123f37364` | 2026-08-10T19:59:19.026Z–19:59:24.315Z | 39,610 | `51cd23d7062dee728100a1313002e3b85f6a738e16f57c1bf06be3c9839d6668` |
 | Embedded Terms policy content | Left Brain Sports LLC d/b/a FFC; content digest pinned | 2026-08-10T19:59:24.316Z–19:59:29.084Z | 179,092 JSON bytes | `299f9442dc18ebc6c48090fc7318b51cd410c98c21603ffbc9210992f13e22b9` |
-| [Privacy page](https://fantasyfootballcalculator.com/privacy-policy) | Policy updated 2025-10-13; no data-license effect | 2026-08-10T19:59:29.086Z–20:00:00.513Z | 39,606 page bytes | `fa36c70b7517d1abe252db68a9eeb0f437526b27c753e5d6763cfc4278a22d51` |
+| [Privacy page](https://fantasyfootballcalculator.com/privacy-policy) | Policy updated 2025-10-13; no data-license effect | 2026-08-10T19:59:29.086Z–19:59:34.936Z | 39,606 | `fa36c70b7517d1abe252db68a9eeb0f437526b27c753e5d6763cfc4278a22d51` |
+| Embedded privacy policy content | Termly UUID `9a379394-6a14-42ba-9c4a-8110641bc62c`; no data-license effect | 2026-08-10T19:59:55.646Z–20:00:00.513Z | 224,654 JSON bytes | `eb3267eae283e0665865c2e4deb81708f329c323aa9dc165e36db7414ea2d9d4` |
 | [robots.txt](https://fantasyfootballcalculator.com/robots.txt) | General user agent disallows `/api/`; crawler guidance, not a data license | 2026-08-10T20:00:00.522Z–20:00:05.919Z | 245 | `00008501967eca4348089f1f07a013cae145bdd7607a0e3e1d50e25e95fc7393` |
 
-The Terms embedded-content UTF-8 string additionally hashes to `b0e76d59e9cb1aea22acb7124e7044333ac77ee86990d41a92b27ef127d7eaf3`. The privacy embedded policy UUID is `9a379394-6a14-42ba-9c4a-8110641bc62c`; its decoded JSON hashes to `eb3267eae283e0665865c2e4deb81708f329c323aa9dc165e36db7414ea2d9d4`.
+The Terms embedded-content UTF-8 string additionally hashes to `b0e76d59e9cb1aea22acb7124e7044333ac77ee86990d41a92b27ef127d7eaf3`. The privacy embedded-content UTF-8 string hashes to `0c22c86371720024a20c8f90cc39cee852cca299295c672af5dc2d0b83d5ea4b`.
 
 ## Rights ledger
 
@@ -68,9 +69,20 @@ The Terms embedded-content UTF-8 string additionally hashes to `b0e76d59e9cb1aea
 
 TIBER's inference is deliberately narrower than either source document in isolation. The API page appears to authorize ordinary app use; the newer Terms and robots rule create enough uncertainty that immutable retention and public redistribution cannot be inferred.
 
-## Bounded metadata and schema probe
+## Probe execution and scope deviation
 
-One authorized probe was made to the exact 2026 PPR 12-team endpoint from `2026-08-10T20:00:05.920Z` through `20:00:06.362Z`.
+Two separate GET requests were made to the exact 2026 PPR 12-team endpoint. Issue #251 permitted at most one. The second request was therefore outside the execution ceiling even though both calls were bounded and neither body was persisted.
+
+1. From local tool invocation `2026-08-10T19:49:03.035713955Z` through completion `19:49:08.725994295Z`, `curl -D - -o /dev/null` made a full GET. The 49,006-byte representation was transferred, discarded to `/dev/null`, not parsed, not hashed, and not persisted. This was a header-metadata probe, not an HTTP HEAD request.
+2. From `2026-08-10T20:00:05.920Z` through `20:00:06.362Z`, a second GET transiently processed the response for byte length, digest, and schema keys. That call produced the receipt below.
+
+An official API-documentation example for the 2018 standard 12-team endpoint was also opened through the web tool while inspecting the documentation. Its player rows appeared only in transient tool output; no row was copied into a file or this packet. It was not the named current 2026 PPR endpoint, but is disclosed to avoid understating source access.
+
+The first request's server `Date` header was later than the locally recorded completion clock. Local invocation/completion bounds are therefore authoritative for the receipt; server `Date` is retained only as a response header and never used as a TIBER retrieval clock.
+
+## Schema-probe receipt
+
+The second GET produced the following schema-only receipt:
 
 - HTTP status: 200.
 - Decoded body size: 49,006 bytes.
@@ -97,7 +109,7 @@ The `Last-Modified` header is an HTTP representation/cache clock only. It is not
 | Retrieval | Fully observed and recorded above |
 | HTTP representation modified | Observed; not promoted to a semantic clock |
 | Semantic revision/correction | Unavailable |
-| Downstream claim cutoff | `2026-08-10T20:00:10Z` |
+| Downstream claim cutoff | `2026-08-10T20:12:10Z` |
 
 The API page says the data updates once per day and asks clients not to call frequently. No numeric quota, preferred user agent, update hour, correction policy, replay token, or revision clock was found. Even if rights are granted, the first adapter contract should be once daily at most until the provider supplies a more exact envelope.
 
@@ -185,4 +197,4 @@ A later candidate-adapter issue may be proposed only after all blocking items ar
 
 ## Prohibited next steps
 
-Until a later operator activation, do not build an adapter, call the market endpoint again, retain player rows, normalize values, reconstruct or backdate history, schedule retrievals, publish a snapshot, expose values in an API/UI, create an FFC identity crosswalk, accept a license, purchase a source, merge this draft, or bind any downstream model.
+Until a later operator activation, do not build an adapter, call the market endpoint again, retain player rows, normalize values, reconstruct or backdate history, schedule retrievals, publish a snapshot, expose values in an API/UI, create an FFC identity crosswalk, accept a license, purchase a source, merge this draft, or bind any downstream model. The extra GET cannot be undone; the control response is disclosure, immediate stop, and no source admission from this slice.
