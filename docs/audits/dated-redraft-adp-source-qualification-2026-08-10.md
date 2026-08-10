@@ -33,7 +33,8 @@ The provisional lane name is `ffc_mock_ppr_12_candidate_v0`. It must not be call
 | Population | Human selections in FFC-hosted mock drafts |
 | Computer selections | Excluded by FFC before averaging |
 | Player population | All positions returned by the source; no position query was used |
-| Metric | Source-supplied average draft position and supporting source fields |
+| Metric | Source-supplied mean draft position; FFC says computer selections are removed before averaging |
+| Calculation gaps | Weighting, draft eligibility, pick unit, outlier handling, minimum sample, and exact calculation-window semantics are unknown |
 | Generalizability | FFC mock-draft behavior only; not a universal or managed-league market |
 | Team-count confidence | The request specified 12; the exact response metadata value was not retained, and population/filter semantics require confirmation |
 
@@ -47,9 +48,9 @@ All hashes below are SHA-256 over decoded response-body bytes after automatic HT
 |---|---|---:|---:|---|
 | [ADP REST API help](https://help.fantasyfootballcalculator.com/article/42-adp-rest-api) | Updated 2018-07-17; API use permission, attribution request, daily cadence | 2026-08-10T19:59:05.805Z–19:59:18.546Z | 15,464 | `4a4bbdc61edba9381fa2e03ae5f41eb319478ca976a0bd69f8ae10b4ffd79014` |
 | [ADP methodology](https://help.fantasyfootballcalculator.com/article/34-average-draft-position-adp-data) | Updated 2018-07-17; mock-draft aggregation, computer picks excluded | 2026-08-10T19:59:18.555Z–19:59:19.026Z | 15,300 | `878dfde5d6271a10b20663dbd3c9658782cdf916138b9ffc10aff997d8ccdfa9` |
-| [Terms page](https://fantasyfootballcalculator.com/terms-of-service) | Deterministic HTML embeds Termly UUID `2ef2a813-520e-416e-8542-126123f37364` | 2026-08-10T19:59:19.026Z–19:59:24.315Z | 39,610 | `51cd23d7062dee728100a1313002e3b85f6a738e16f57c1bf06be3c9839d6668` |
+| [Terms page](https://fantasyfootballcalculator.com/terms-of-service) | Dynamic canonical HTML shell embeds Termly UUID `2ef2a813-520e-416e-8542-126123f37364`; digest is retrieval-specific | 2026-08-10T19:59:19.026Z–19:59:24.315Z | 39,610 | `51cd23d7062dee728100a1313002e3b85f6a738e16f57c1bf06be3c9839d6668` |
 | Embedded Terms policy content | Policy updated 2025-10-13; Left Brain Sports LLC d/b/a FFC; content digest pinned | 2026-08-10T19:59:24.316Z–19:59:29.084Z | 179,092 JSON bytes | `299f9442dc18ebc6c48090fc7318b51cd410c98c21603ffbc9210992f13e22b9` |
-| [Privacy page](https://fantasyfootballcalculator.com/privacy-policy) | Deterministic HTML embeds Termly UUID `9a379394-6a14-42ba-9c4a-8110641bc62c` | 2026-08-10T19:59:29.086Z–19:59:34.936Z | 39,606 | `fa36c70b7517d1abe252db68a9eeb0f437526b27c753e5d6763cfc4278a22d51` |
+| [Privacy page](https://fantasyfootballcalculator.com/privacy-policy) | Dynamic canonical HTML shell embeds Termly UUID `9a379394-6a14-42ba-9c4a-8110641bc62c`; digest is retrieval-specific | 2026-08-10T19:59:29.086Z–19:59:34.936Z | 39,606 | `fa36c70b7517d1abe252db68a9eeb0f437526b27c753e5d6763cfc4278a22d51` |
 | Embedded privacy policy content | Policy updated 2025-10-13; no data-license effect | 2026-08-10T19:59:55.646Z–20:00:00.513Z | 224,654 JSON bytes | `eb3267eae283e0665865c2e4deb81708f329c323aa9dc165e36db7414ea2d9d4` |
 | [robots.txt](https://fantasyfootballcalculator.com/robots.txt) | General user agent disallows `/api/`; crawler guidance, not a data license | 2026-08-10T20:00:00.522Z–20:00:05.919Z | 245 | `00008501967eca4348089f1f07a013cae145bdd7607a0e3e1d50e25e95fc7393` |
 
@@ -73,12 +74,14 @@ TIBER's inference is deliberately narrower than either source document in isolat
 
 ## Probe execution and scope deviation
 
-Two separate GET requests were made to the exact 2026 PPR 12-team endpoint. Issue #251 permitted at most one. The second request was therefore outside the execution ceiling even though both calls were bounded and neither body was persisted.
+Two separate GET requests were made to the exact 2026 PPR 12-team endpoint. Issue #251 permitted at most one. The second request was therefore outside the execution ceiling even though both calls were bounded and neither body was persisted. Including the historical documentation example, three FFC market-endpoint GETs occurred in total.
 
 1. From local tool invocation `2026-08-10T19:49:03.035713955Z` through completion `19:49:08.725994295Z`, `curl -D - -o /dev/null` made a full GET. The 49,006-byte representation was transferred, discarded to `/dev/null`, not parsed, not hashed, and not persisted. This was a header-metadata probe, not an HTTP HEAD request.
 2. From `2026-08-10T20:00:05.920Z` through `20:00:06.362Z`, a second GET transiently processed the response for byte length, digest, and schema keys. That call produced the receipt below.
 
-An official API-documentation example for the 2018 standard 12-team endpoint was also opened through the web tool while inspecting the documentation. Its player rows appeared only in transient tool output; no row was copied into a file or this packet. It was not the named current 2026 PPR endpoint, but is disclosed to avoid understating source access.
+An official API-documentation example for the 2018 standard 12-team endpoint was also opened through the web tool while inspecting the documentation. Its player rows appeared only in transient tool output; no row was copied into a file or this packet. It was not the named current 2026 PPR endpoint. Its local request bounds, HTTP status, byte length, and digest were not retained and are now unavailable; they must not be reconstructed or refetched.
+
+Because two current-market GETs occurred about eleven minutes apart and the example endpoint was also accessed, this audit cannot claim compliance with FFC's “updates once daily / do not call frequently” guidance. There is no further-call authority in this slice.
 
 The first request's server `Date` header was later than the locally recorded completion clock. Local invocation/completion bounds are therefore authoritative for the receipt; server `Date` is retained only as a response header and never used as a TIBER retrieval clock.
 
@@ -107,7 +110,7 @@ The `Last-Modified` header is an HTTP representation/cache clock only. It is not
 |---|---|
 | Market sample window | Field names were observed, but values were not retained; exact window, timezone, and inclusion semantics are unavailable |
 | Generated at | Unavailable |
-| Source as-of | Unavailable beyond the sample-window fields |
+| Source as-of | Unavailable; only sample-window field names were observed, not values |
 | Available at | Unavailable |
 | Retrieval | Fully observed and recorded above |
 | HTTP representation modified | Observed; not promoted to a semantic clock |
@@ -129,6 +132,7 @@ Current history status is `prospective_only` for a governed watch and only after
 - No FFC-to-GSIS edge or cross-platform identifier was observed.
 - Names, team, position, ADP, and absence from a snapshot are forbidden canonical joins.
 - Required player states remain distinct: ranked, explicitly unranked, missing from snapshot, and identity unresolved. Missing or unresolved rows cannot be called unranked.
+- Identity conflict is a separate visible state. A conflicted row must fail closed: no GSIS join and no ranked/unranked claim.
 
 Pinned adjacent Data evidence at main `44296134a178f9d53fd7eda01a94548e76160d29` is Sleeper-only:
 
@@ -148,6 +152,8 @@ TIBER-Fantasy PR #304 is pinned only as `schema_reference_only`:
 
 It demonstrates useful parameter and wrapper vocabulary, but not an admitted Data source. Same-day runs can overwrite date-grain filenames; `latest` overwrites by design; no raw source digest, immutable event ID, revision contract, rights pin, or governed FFC identity edge exists. Its committed player snapshots must not be copied into this packet or promoted through this decision.
 
+Material prototype findings are also retained in the machine packet: six committed snapshot files collapse to three unique same-day retrievals, and the PPR 10- and 12-team prototypes have the same source window/draft count and substantively identical source values apart from formatted pick notation. This supports a warning that team-count semantics need confirmation; it does not prove that FFC ignores team count.
+
 ## Alternatives matrix
 
 | Source | Fit | Rights/method state | Decision for this lane |
@@ -158,6 +164,8 @@ It demonstrates useful parameter and wrapper vocabulary, but not an admitted Dat
 | SportsDataIO/FantasyData | Potential licensed feed and persistent provider IDs | Contract-dependent rights; public methodology omits population, team count, window, and revision semantics; may syndicate FFC rather than add an independent market | Commercial/rightsholder follow-up |
 
 No alternative clears both the rights and exact-market-definition gate today.
+
+For every alternative, the machine packet explicitly records calculation method, scoring, team count, draft type, population, computer-selection policy, attribution/commercial posture, correction behavior, reproducibility, current/history availability, and identity path. Unobserved dimensions remain `unavailable` or `not_applicable`; none is silently inferred.
 
 The alternatives were qualified only from their official public surfaces on 2026-08-10; no player payload was retained:
 
