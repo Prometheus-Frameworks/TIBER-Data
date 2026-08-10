@@ -112,7 +112,7 @@ The `Last-Modified` header is an HTTP representation/cache clock only. It is not
 | Generated at | Unavailable |
 | Source as-of | Unavailable; only sample-window field names were observed, not values |
 | Available at | Unavailable |
-| Retrieval | Fully observed and recorded above |
+| Retrieval | Partial: both exact-current GET bounds are observed; the historical-example retrieval receipt is unavailable |
 | HTTP representation modified | Observed; not promoted to a semantic clock |
 | Semantic revision/correction | Unavailable |
 | Downstream claim cutoff | `2026-08-10T20:12:10Z` |
@@ -204,7 +204,7 @@ A later candidate-adapter issue may be proposed only after all blocking items ar
 4. append-only timestamped receipts with source-body digest and immutable observation ID;
 5. validator and negative fixtures for schema drift, wrong format/team/season, missing metadata, clock failure, and duplicate observations;
 6. source-local `ffc_player_id` preservation plus a separate reviewed FFC-to-GSIS candidate bridge;
-7. explicit missing/unranked/unresolved semantics;
+7. explicit missing/unranked/unresolved/conflicted semantics;
 8. prospective-only history until admitted dated evidence exists; and
 9. no `latest` advancement unless a fully validated immutable candidate is retained.
 
