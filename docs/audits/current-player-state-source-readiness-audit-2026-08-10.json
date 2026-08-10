@@ -1,5 +1,5 @@
 {
-  "artifact_version": "current_player_state_source_readiness_audit_v0",
+  "artifact_version": "current_player_state_source_readiness_audit_v1",
   "audit_date": "2026-08-10",
   "evidence_cutoff_date": "2026-08-10",
   "tracking_issue": {
@@ -19,7 +19,10 @@
     "ingestion_authorized": false,
     "candidate_rows_authorized": false,
     "promotion_authorized": false,
-    "consumer_activation_authorized": false
+    "consumer_activation_authorized": false,
+    "recommendations_authorized": false,
+    "official_web_automated_collection_authorized": false,
+    "external_source_contracting_authorized": false
   },
   "pinned_repository_refs": [
     {
@@ -71,49 +74,52 @@
   "official_web_observations": [
     {
       "id": "nfl_transactions",
-      "source_owner": "NFL Enterprises",
+      "source_owner": "NFL Enterprises, LLC",
       "url": "https://www.nfl.com/transactions/",
       "observed_on": "2026-08-10",
       "assertion_scope": "year_month_category_filtered_league_transaction_publication",
       "retained_bytes": false,
-      "rights_posture": "systematic_retrieval_or_database_compilation_prohibited_absent_express_written_consent"
+      "qualification": "manual_readiness_observation_only"
     },
     {
       "id": "nfl_injury_reports",
-      "source_owner": "NFL Enterprises",
+      "source_owner": "NFL Enterprises, LLC",
       "url": "https://www.nfl.com/injuries/",
       "historical_example_url": "https://www.nfl.com/injuries/league/2025/reg5",
       "observed_on": "2026-08-10",
       "assertion_scope": "season_week_game_team_player_practice_and_game_status_publication",
       "retained_bytes": false,
-      "rights_posture": "systematic_retrieval_or_database_compilation_prohibited_absent_express_written_consent"
+      "qualification": "manual_readiness_observation_only"
     },
     {
       "id": "nfl_gameday_inactives_article",
-      "source_owner": "NFL Enterprises",
+      "source_owner": "NFL Enterprises, LLC",
       "url": "https://www.nfl.com/news/week-18-saturday-inactives-cleveland-browns-at-baltimore-ravens-cincinnati-bengals-at-pittsburgh-steelers",
       "observed_on": "2026-08-10",
-      "assertion_scope": "article_scoped_game_team_inactive_lists_with_published_and_updated_clocks",
+      "assertion_scope": "article_scoped_game_team_inactive_lists",
       "stable_league_registry_proven": false,
-      "retained_bytes": false
+      "retained_bytes": false,
+      "qualification": "manual_readiness_observation_only"
     },
     {
       "id": "nfl_terms",
-      "source_owner": "NFL Enterprises",
+      "source_owner": "NFL Enterprises, LLC",
       "url": "https://www.nfl.com/legal/terms/",
       "observed_on": "2026-08-10",
       "source_revision": "updated_2024-05-16",
+      "permitted_use_key_phrase_verbatim": "individual non-commercial and informational purposes only",
+      "systematic_retrieval_consent_key_phrase_verbatim": "express prior written consent",
       "retained_bytes": false,
-      "material_rule": "systematic_retrieval_or_database_compilation_prohibited_absent_express_written_consent"
+      "rights_result": "rights_blocked_for_automated_tiber_lane"
     },
     {
       "id": "cardinals_roster",
       "source_owner": "Arizona Cardinals Football Club LLC",
       "url": "https://www.azcardinals.com/team/players-roster/",
       "observed_on": "2026-08-10",
-      "assertion_scope": "official_team_roster_page_and_source_group_labels",
+      "assertion_scope": "official_arizona_team_roster_page_and_source_group_labels",
       "retained_bytes": false,
-      "rights_posture": "systematic_retrieval_or_database_compilation_prohibited_absent_prior_written_consent"
+      "qualification": "manual_readiness_observation_only"
     },
     {
       "id": "cardinals_transactions",
@@ -122,7 +128,7 @@
       "observed_on": "2026-08-10",
       "assertion_scope": "team_authored_dated_transaction_statements",
       "retained_bytes": false,
-      "rights_posture": "systematic_retrieval_or_database_compilation_prohibited_absent_prior_written_consent"
+      "qualification": "manual_readiness_observation_only"
     },
     {
       "id": "cardinals_injury_report",
@@ -132,7 +138,7 @@
       "assertion_scope": "practice_status_and_game_status_publication_when_applicable",
       "current_page_state": "offseason_not_yet_published",
       "retained_bytes": false,
-      "rights_posture": "systematic_retrieval_or_database_compilation_prohibited_absent_prior_written_consent"
+      "qualification": "manual_readiness_observation_only"
     },
     {
       "id": "cardinals_terms",
@@ -140,8 +146,10 @@
       "url": "https://www.azcardinals.com/about-us/terms-conditions",
       "observed_on": "2026-08-10",
       "source_revision": "revised_2024-10-22",
+      "permitted_use_key_phrase_verbatim": "individual non-commercial and informational purposes only",
+      "systematic_retrieval_consent_key_phrase_verbatim": "express prior written consent",
       "retained_bytes": false,
-      "material_rule": "systematic_retrieval_or_database_compilation_prohibited_absent_prior_written_consent"
+      "rights_result": "rights_blocked_for_automated_tiber_lane"
     }
   ],
   "existing_tiber_inventory": [
@@ -163,7 +171,82 @@
         "2026-01-05T00:00:00Z",
         "2026-05-23T13:00:00Z"
       ],
-      "readiness": "partial_stale_not_current_roster_universe"
+      "readiness": "partial_stale_and_fixture_contaminated_not_current_roster_universe",
+      "source_ref_count": 27,
+      "source_breakdown": [
+        {
+          "source_name": "nflreadpy_load_rosters_weekly_2025",
+          "row_count": 19,
+          "ownership_status_counts": {
+            "active_roster": 19
+          },
+          "confidence_counts": {
+            "provisional": 19
+          },
+          "source_observed_at_range": [
+            "2026-01-05T00:00:00Z",
+            "2026-02-09T00:00:00Z"
+          ],
+          "last_verified_at_range": [
+            "2026-01-05T00:00:00Z",
+            "2026-02-09T00:00:00Z"
+          ],
+          "source_updated_at_population": {
+            "null": 19
+          },
+          "interpretation": "stale_2025_weekly_roster_observations_not_current_2026_membership"
+        },
+        {
+          "source_name": "fixture_demonstration_only",
+          "row_count": 1,
+          "player_id": "wr-tee-higgins",
+          "player_name": "Tee Higgins",
+          "ownership_status_counts": {
+            "active_roster": 1
+          },
+          "confidence_counts": {
+            "provisional": 1
+          },
+          "source_observed_at_range": [
+            "2026-05-23T13:00:00Z",
+            "2026-05-23T13:00:00Z"
+          ],
+          "last_verified_at_range": [
+            "2026-05-23T13:00:00Z",
+            "2026-05-23T13:00:00Z"
+          ],
+          "source_updated_at_population": {
+            "null": 1
+          },
+          "interpretation": "fixture_only_not_source_truth"
+        },
+        {
+          "source_name": "nfl_draft_results_2026_nbcsports_profootballtalk",
+          "row_count": 7,
+          "ownership_status_counts": {
+            "unsigned_draft_pick": 7
+          },
+          "confidence_counts": {
+            "source_verified": 7
+          },
+          "source_observed_at_range": [
+            "2026-04-25T00:00:00Z",
+            "2026-04-25T00:00:00Z"
+          ],
+          "last_verified_at_range": [
+            "2026-04-25T00:00:00Z",
+            "2026-04-25T00:00:00Z"
+          ],
+          "source_updated_at_population": {
+            "null": 7
+          },
+          "interpretation": "draft_result_facts_not_signed_roster_membership"
+        }
+      ],
+      "last_verified_at_range": [
+        "2026-01-05T00:00:00Z",
+        "2026-05-23T13:00:00Z"
+      ]
     },
     {
       "path": "data/processed/evidence/roster_player_team_map_2025.source_backed.json",
@@ -221,88 +304,394 @@
   ],
   "source_candidates": [
     {
-      "id": "official_nfl_web_publications",
+      "id": "nfl_transactions_page",
       "classification": "external_candidate",
-      "assertion_scope": [
-        "league_transactions",
-        "league_injury_reports",
-        "game_scoped_inactives"
-      ],
-      "readiness": "rights_blocked",
-      "blockers": [
-        "systematic_retrieval_prohibited_without_written_consent",
-        "no_admitted_api_or_feed",
-        "no_immutable_revision_contract",
-        "publication_and_correction_behavior_not_bound"
-      ]
+      "inspection_mode": "manual_readiness_observation_only_no_bytes_retained",
+      "candidate_build_authorized": false,
+      "source_owner": "NFL Enterprises, LLC",
+      "exact_url": "https://www.nfl.com/transactions/",
+      "assertion_scope": "league_transaction_publication_filtered_by_year_month_category",
+      "rights": {
+        "terms_url": "https://www.nfl.com/legal/terms/",
+        "terms_revision": "updated_2024-05-16",
+        "terms_entity": "NFL Enterprises, LLC",
+        "permitted_use_key_phrase_verbatim": "individual non-commercial and informational purposes only",
+        "systematic_retrieval_consent_key_phrase_verbatim": "express prior written consent",
+        "automated_collection_permission": "not_granted",
+        "retention_permission": "unbound",
+        "redistribution_permission": "unbound"
+      },
+      "identity_keys": {
+        "observed": "player_display_identity_present_on_surface",
+        "canonical_binding": "unprobed"
+      },
+      "team_keys": {
+        "observed": "transaction_team_labels_present_when_published",
+        "canonical_binding": "unprobed"
+      },
+      "clocks": {
+        "source_effective_or_as_of": "event_date_visible_but_machine_contract_unbound",
+        "published_at": "unavailable_on_index_observation",
+        "updated_at": "unavailable_on_index_observation",
+        "retrieved_at": "unavailable_no_source_bytes_retrieved",
+        "generated_at": "not_applicable_audit_only"
+      },
+      "cadence": "unpublished_or_unprobed",
+      "revision_behavior": "unbound",
+      "population_coverage": "unprobed_current_view_can_be_empty",
+      "missing_semantics": "empty_view_ambiguous_filter_offseason_no_events_or_failure",
+      "correction_lineage": "unbound_no_immutable_receipt_or_supersession_key",
+      "readiness": "rights_and_contract_blocked"
     },
     {
-      "id": "official_team_web_publications",
+      "id": "nfl_injury_reports_page",
       "classification": "external_candidate",
-      "assertion_scope": [
-        "team_roster_page",
-        "team_transaction_statements",
-        "team_injury_reports"
-      ],
-      "readiness": "rights_blocked",
-      "blockers": [
-        "arizona_terms_prohibit_systematic_retrieval_without_written_consent",
-        "all_32_team_terms_not_qualified",
-        "all_32_formats_and_clocks_not_qualified"
-      ]
+      "inspection_mode": "manual_readiness_observation_only_no_bytes_retained",
+      "candidate_build_authorized": false,
+      "source_owner": "NFL Enterprises, LLC",
+      "exact_url": "https://www.nfl.com/injuries/",
+      "historical_example_url": "https://www.nfl.com/injuries/league/2025/reg5",
+      "assertion_scope": "league_practice_participation_and_game_designation_publication",
+      "rights": {
+        "terms_url": "https://www.nfl.com/legal/terms/",
+        "terms_revision": "updated_2024-05-16",
+        "terms_entity": "NFL Enterprises, LLC",
+        "permitted_use_key_phrase_verbatim": "individual non-commercial and informational purposes only",
+        "systematic_retrieval_consent_key_phrase_verbatim": "express prior written consent",
+        "automated_collection_permission": "not_granted",
+        "retention_permission": "unbound",
+        "redistribution_permission": "unbound"
+      },
+      "identity_keys": {
+        "observed": "player_display_name_and_position",
+        "canonical_binding": "unprobed"
+      },
+      "team_keys": {
+        "observed": "team_grouping",
+        "canonical_binding": "unprobed"
+      },
+      "clocks": {
+        "source_effective_or_as_of": "practice_date_or_game_week_visible_but_machine_contract_unbound",
+        "published_at": "unavailable_in_inspected_interface",
+        "updated_at": "unavailable_in_inspected_interface",
+        "retrieved_at": "unavailable_no_source_bytes_retrieved",
+        "generated_at": "not_applicable_audit_only"
+      },
+      "cadence": "seasonal_report_schedule_unbound",
+      "revision_behavior": "unbound",
+      "population_coverage": "unprobed_not_yet_published_is_possible",
+      "missing_semantics": "not_listed_is_not_full_participation_healthy_or_active",
+      "correction_lineage": "unbound_no_report_iteration_or_supersession_contract",
+      "readiness": "rights_and_contract_blocked"
+    },
+    {
+      "id": "nfl_gameday_inactives_articles",
+      "classification": "external_candidate",
+      "inspection_mode": "manual_readiness_observation_only_no_bytes_retained",
+      "candidate_build_authorized": false,
+      "source_owner": "NFL Enterprises, LLC",
+      "exact_url": "https://www.nfl.com/news/week-18-saturday-inactives-cleveland-browns-at-baltimore-ravens-cincinnati-bengals-at-pittsburgh-steelers",
+      "assertion_scope": "article_scoped_official_inactive_lists_for_named_games",
+      "rights": {
+        "terms_url": "https://www.nfl.com/legal/terms/",
+        "terms_revision": "updated_2024-05-16",
+        "terms_entity": "NFL Enterprises, LLC",
+        "permitted_use_key_phrase_verbatim": "individual non-commercial and informational purposes only",
+        "systematic_retrieval_consent_key_phrase_verbatim": "express prior written consent",
+        "automated_collection_permission": "not_granted",
+        "retention_permission": "unbound",
+        "redistribution_permission": "unbound"
+      },
+      "identity_keys": {
+        "observed": "player_display_names",
+        "canonical_binding": "unprobed"
+      },
+      "team_keys": {
+        "observed": "article_team_labels",
+        "canonical_binding": "unprobed"
+      },
+      "clocks": {
+        "source_effective_or_as_of": "game_scope_and_kickoff_external_to_article_machine_contract_unbound",
+        "published_at": "article_clock_observed",
+        "updated_at": "article_updated_clock_observed",
+        "retrieved_at": "unavailable_no_source_bytes_retrieved",
+        "generated_at": "not_applicable_audit_only"
+      },
+      "cadence": "game_day_article_cadence_unbound",
+      "revision_behavior": "article_can_update_but_supersession_contract_unbound",
+      "population_coverage": "no_stable_all_game_registry_proven",
+      "missing_semantics": "absence_not_active_without_complete_roster_and_complete_official_list",
+      "correction_lineage": "unbound_no_registry_receipt_or_article_revision_chain",
+      "readiness": "rights_registry_and_contract_blocked"
+    },
+    {
+      "id": "cardinals_roster_page",
+      "classification": "external_candidate",
+      "inspection_mode": "manual_readiness_observation_only_no_bytes_retained",
+      "candidate_build_authorized": false,
+      "source_owner": "Arizona Cardinals Football Club LLC",
+      "exact_url": "https://www.azcardinals.com/team/players-roster/",
+      "assertion_scope": "Arizona_team_roster_page_and_source_group_labels",
+      "rights": {
+        "terms_url": "https://www.azcardinals.com/about-us/terms-conditions",
+        "terms_revision": "revised_2024-10-22",
+        "terms_entity": "Arizona Cardinals Football Club LLC",
+        "permitted_use_key_phrase_verbatim": "individual non-commercial and informational purposes only",
+        "systematic_retrieval_consent_key_phrase_verbatim": "express prior written consent",
+        "automated_collection_permission": "not_granted",
+        "retention_permission": "unbound",
+        "redistribution_permission": "unbound"
+      },
+      "identity_keys": {
+        "observed": "player_display_identity",
+        "canonical_binding": "unprobed"
+      },
+      "team_keys": {
+        "observed": "Arizona_Cardinals_fixed_page_scope",
+        "canonical_binding": "unbound"
+      },
+      "clocks": {
+        "source_effective_or_as_of": "unavailable_no_source_as_of_observed",
+        "published_at": "unavailable_in_inspected_interface",
+        "updated_at": "unavailable_in_inspected_interface",
+        "retrieved_at": "unavailable_no_source_bytes_retrieved",
+        "generated_at": "not_applicable_audit_only"
+      },
+      "cadence": "unpublished_or_unprobed",
+      "revision_behavior": "mutable_page_revision_behavior_unbound",
+      "population_coverage": "one_team_only_group_completeness_unprobed",
+      "missing_semantics": "missing_player_or_group_is_unknown_not_released",
+      "correction_lineage": "unbound_no_immutable_snapshot_or_supersession_key",
+      "readiness": "rights_clock_population_and_identity_blocked"
+    },
+    {
+      "id": "cardinals_transactions_page",
+      "classification": "external_candidate",
+      "inspection_mode": "manual_readiness_observation_only_no_bytes_retained",
+      "candidate_build_authorized": false,
+      "source_owner": "Arizona Cardinals Football Club LLC",
+      "exact_url": "https://www.azcardinals.com/team/transactions/2026",
+      "assertion_scope": "Arizona_team_authored_dated_transaction_statements",
+      "rights": {
+        "terms_url": "https://www.azcardinals.com/about-us/terms-conditions",
+        "terms_revision": "revised_2024-10-22",
+        "terms_entity": "Arizona Cardinals Football Club LLC",
+        "permitted_use_key_phrase_verbatim": "individual non-commercial and informational purposes only",
+        "systematic_retrieval_consent_key_phrase_verbatim": "express prior written consent",
+        "automated_collection_permission": "not_granted",
+        "retention_permission": "unbound",
+        "redistribution_permission": "unbound"
+      },
+      "identity_keys": {
+        "observed": "player_display_identity_in_statement",
+        "canonical_binding": "unprobed"
+      },
+      "team_keys": {
+        "observed": "Arizona_Cardinals_fixed_page_scope_and_named_counterparty_when_stated",
+        "canonical_binding": "unbound"
+      },
+      "clocks": {
+        "source_effective_or_as_of": "transaction_date_visible_but_time_semantics_unbound",
+        "published_at": "unavailable_in_inspected_interface",
+        "updated_at": "unavailable_in_inspected_interface",
+        "retrieved_at": "unavailable_no_source_bytes_retrieved",
+        "generated_at": "not_applicable_audit_only"
+      },
+      "cadence": "event_driven_but_publication_sla_unbound",
+      "revision_behavior": "mutable_page_revision_behavior_unbound",
+      "population_coverage": "one_team_only_event_completeness_unprobed",
+      "missing_semantics": "no_statement_is_not_no_transaction",
+      "correction_lineage": "unbound_no_event_revision_or_retraction_contract",
+      "readiness": "rights_clock_population_and_identity_blocked"
+    },
+    {
+      "id": "cardinals_injury_report_page",
+      "classification": "external_candidate",
+      "inspection_mode": "manual_readiness_observation_only_no_bytes_retained",
+      "candidate_build_authorized": false,
+      "source_owner": "Arizona Cardinals Football Club LLC",
+      "exact_url": "https://www.azcardinals.com/team/injury-report/",
+      "assertion_scope": "Arizona_practice_participation_and_game_designation_publication_when_applicable",
+      "rights": {
+        "terms_url": "https://www.azcardinals.com/about-us/terms-conditions",
+        "terms_revision": "revised_2024-10-22",
+        "terms_entity": "Arizona Cardinals Football Club LLC",
+        "permitted_use_key_phrase_verbatim": "individual non-commercial and informational purposes only",
+        "systematic_retrieval_consent_key_phrase_verbatim": "express prior written consent",
+        "automated_collection_permission": "not_granted",
+        "retention_permission": "unbound",
+        "redistribution_permission": "unbound"
+      },
+      "identity_keys": {
+        "observed": "player_display_identity_when_report_published",
+        "canonical_binding": "unprobed"
+      },
+      "team_keys": {
+        "observed": "Arizona_Cardinals_fixed_page_scope",
+        "canonical_binding": "unbound"
+      },
+      "clocks": {
+        "source_effective_or_as_of": "practice_date_or_game_scope_unavailable_in_offseason_observation",
+        "published_at": "unavailable_in_offseason_observation",
+        "updated_at": "unavailable_in_offseason_observation",
+        "retrieved_at": "unavailable_no_source_bytes_retrieved",
+        "generated_at": "not_applicable_audit_only"
+      },
+      "cadence": "seasonal_reports_not_yet_published_currently_publication_sla_unbound",
+      "revision_behavior": "report_iteration_and_revision_behavior_unbound",
+      "population_coverage": "one_team_only_current_offseason_population_unavailable",
+      "missing_semantics": "not_yet_published_is_not_no_injury_not_listed_is_not_healthy",
+      "correction_lineage": "unbound_no_report_iteration_or_supersession_contract",
+      "readiness": "rights_clock_population_and_identity_blocked"
     },
     {
       "id": "nflverse_rosters_ngs_shield",
       "classification": "external_candidate",
-      "assertion_scope": [
-        "weekly_ngs_roster_when_available",
-        "shield_season_roster_fallback",
-        "raw_roster_status_and_identity_fields"
-      ],
-      "cadence": "daily_0700_utc_per_pinned_workflow_and_schedule",
-      "rows_accessed_in_this_audit": false,
-      "readiness": "source_rights_contract_population_and_clock_followup",
-      "blockers": [
-        "ngs_and_shield_source_admission_unresolved",
-        "upstream_data_rights_not_admitted",
-        "source_fallback_lineage_must_be_row_visible",
-        "mutable_release_bytes_and_revision_clocks_unbound",
-        "raw_status_semantics_need_versioned_mapping",
-        "2026_population_identity_and_coverage_not_probed"
-      ]
+      "source_owner": "nflverse package over upstream NGS or Shield data",
+      "exact_reference": "nflverse/nflverse-rosters@644ead141e8c847da7771c513b980c21d9feba7b",
+      "assertion_scope": "weekly_NGS_roster_when_available_with_Shield_season_roster_fallback",
+      "inspection_mode": "loader_producer_dictionary_and_schedule_only_no_2026_rows_accessed",
+      "rights": {
+        "code_license": "MIT",
+        "upstream_data_license": "unbound",
+        "retention_permission": "unbound",
+        "redistribution_permission": "unbound"
+      },
+      "identity_keys": {
+        "documented": [
+          "gsis_id",
+          "provider_ids"
+        ],
+        "population_2026": "unprobed",
+        "canonical_binding": "unbound"
+      },
+      "team_keys": {
+        "documented": [
+          "team"
+        ],
+        "population_2026": "unprobed",
+        "canonical_binding": "unbound"
+      },
+      "clocks": {
+        "source_effective_or_as_of": "season_week_and_game_type_documented_but_2026_bytes_unprobed",
+        "published_at": "unavailable_or_unbound",
+        "updated_at": "unavailable_or_unbound",
+        "retrieved_at": "unavailable_no_2026_source_bytes_retrieved",
+        "generated_at": "producer_clock_unbound_at_row_level"
+      },
+      "cadence": "daily_0700_utc_loader_schedule",
+      "revision_behavior": "mutable_release_revision_and_replacement_behavior_unbound",
+      "population_coverage": "2026_rows_teams_groups_duplicates_and_fallback_population_unprobed",
+      "missing_semantics": "empty_NGS_can_trigger_Shield_fallback_so_empty_and_missing_require_row_visible_source_lineage",
+      "correction_lineage": "unbound_requires_byte_digest_receipt_append_only_supersession_and_row_source_family",
+      "readiness": "source_rights_contract_population_identity_and_clock_followup",
+      "candidate_build_authorized": false
     },
     {
       "id": "nflverse_injuries",
-      "classification": "benchmark_reference_only",
-      "assertion_scope": "historical_weekly_injury_and_practice_reports_through_2024",
-      "readiness": "rejected_for_current_use",
-      "blockers": [
-        "source_died_after_2024",
-        "no_2025_data",
-        "no_replacement_eta",
-        "therefore_no_2026_current_evidence"
-      ]
+      "classification": "rejected",
+      "source_owner": "nflverse historical injury producer over defunct upstream source",
+      "exact_reference": "nflverse/nflreadr@d072c08492067b578f27e562b6cc9c9e3b8589c3",
+      "assertion_scope": "historical_weekly_injury_and_practice_reports_through_2024_only",
+      "inspection_mode": "loader_schedule_and_producer_code_only_no_rows_accessed",
+      "rights": {
+        "code_license": "MIT",
+        "upstream_data_license": "unbound",
+        "current_source": "unavailable_after_2024"
+      },
+      "identity_keys": {
+        "historical_documentation": "unprobed_for_current_contract",
+        "current_2026": "unavailable"
+      },
+      "team_keys": {
+        "historical_documentation": "unprobed_for_current_contract",
+        "current_2026": "unavailable"
+      },
+      "clocks": {
+        "source_effective_or_as_of": "unavailable_current_2026",
+        "published_at": "unavailable_current_2026",
+        "updated_at": "unavailable_current_2026",
+        "retrieved_at": "unavailable_no_source_bytes_retrieved",
+        "generated_at": "unavailable_current_2026"
+      },
+      "cadence": "unavailable_current_2026_source_died_after_2024",
+      "revision_behavior": "unavailable_current_2026",
+      "population_coverage": "zero_current_2026_by_documented_source_end",
+      "missing_semantics": "absence_after_2024_is_source_unavailable_not_no_injury",
+      "correction_lineage": "unavailable_current_2026",
+      "readiness": "rejected_no_current_source",
+      "candidate_build_authorized": false
     },
     {
       "id": "nflverse_trades_lee_sharpe_pfr",
-      "classification": "benchmark_reference_only",
-      "assertion_scope": "historical_trades",
-      "readiness": "not_a_current_transaction_wire",
-      "blockers": [
-        "not_full_transaction_population",
-        "does_not_cover_signings_waivers_releases_reserve_or_practice_squad_changes",
-        "current_revision_and_effective_clock_contract_unbound"
-      ]
+      "classification": "rejected",
+      "source_owner": "nflverse loader over Lee Sharpe PFR historical trade dataset",
+      "exact_reference": "nflverse/nflreadr@d072c08492067b578f27e562b6cc9c9e3b8589c3",
+      "assertion_scope": "historical_trades_only_not_full_transaction_wire",
+      "inspection_mode": "loader_and_schedule_only_no_rows_accessed",
+      "rights": {
+        "code_license": "MIT",
+        "upstream_data_license": "unbound",
+        "retention_permission": "unbound",
+        "redistribution_permission": "unbound"
+      },
+      "identity_keys": {
+        "documented": "unprobed",
+        "canonical_binding": "unbound"
+      },
+      "team_keys": {
+        "documented": "unprobed",
+        "canonical_binding": "unbound"
+      },
+      "clocks": {
+        "source_effective_or_as_of": "historical_trade_date_field_expected_but_unprobed",
+        "published_at": "unavailable_or_unbound",
+        "updated_at": "unavailable_or_unbound",
+        "retrieved_at": "unavailable_no_source_bytes_retrieved",
+        "generated_at": "not_applicable_audit_only"
+      },
+      "cadence": "unprobed_and_not_current_wire",
+      "revision_behavior": "unbound",
+      "population_coverage": "trades_only_excludes_signings_waivers_releases_reserve_and_practice_squad_changes",
+      "missing_semantics": "missing_event_cannot_mean_no_transaction",
+      "correction_lineage": "unbound",
+      "readiness": "rejected_for_current_transaction_lane",
+      "candidate_build_authorized": false
     },
     {
       "id": "nflverse_player_master",
       "classification": "schema_reference_only",
-      "assertion_scope": "identity_and_provider_id_candidates",
-      "readiness": "identity_support_only",
-      "blockers": [
-        "presence_is_not_current_roster_membership",
-        "team_or_status_fields_are_not_admitted_current_state"
-      ]
+      "source_owner": "nflverse",
+      "exact_reference": "nflverse/nflreadpy@66bb305e634ba815466749249d07b5c6e9268db3",
+      "assertion_scope": "identity_and_provider_id_vocabulary_only",
+      "inspection_mode": "loader_interface_only_no_rows_accessed",
+      "rights": {
+        "code_license": "MIT",
+        "upstream_data_license": "unbound"
+      },
+      "identity_keys": {
+        "documented": "provider_identity_candidates",
+        "population": "unprobed",
+        "canonical_binding": "unbound"
+      },
+      "team_keys": {
+        "documented": "possible_team_or_status_fields_not_admitted_as_current",
+        "canonical_binding": "prohibited_for_current_state"
+      },
+      "clocks": {
+        "source_effective_or_as_of": "unprobed",
+        "published_at": "unprobed",
+        "updated_at": "unprobed",
+        "retrieved_at": "unavailable_no_source_bytes_retrieved",
+        "generated_at": "not_applicable_audit_only"
+      },
+      "cadence": "unprobed",
+      "revision_behavior": "unbound",
+      "population_coverage": "unprobed",
+      "missing_semantics": "player_master_presence_or_absence_is_not_roster_membership",
+      "correction_lineage": "unbound",
+      "readiness": "schema_reference_only_not_current_truth",
+      "candidate_build_authorized": false
     }
   ],
   "lanes": [
@@ -324,7 +713,18 @@
         "valid_window"
       ],
       "missing_rule": "missing_row_is_unknown",
-      "owner": "TIBER-Data"
+      "owner": "TIBER-Data",
+      "identity_contract": {
+        "canonical_target": "gsis_id",
+        "required_source_keys": [
+          "source_player_key",
+          "source_team_key",
+          "source_ref"
+        ],
+        "team_contract": "versioned_source_team_to_canonical_team_mapping",
+        "unresolved_behavior": "retain_source_row_with_resolution_status_unresolved; do_not_join_or_promote_as_canonical"
+      },
+      "unresolved_identity_behavior": "retain_source_row_with_resolution_status_unresolved; do_not_join_or_promote_as_canonical"
     },
     {
       "id": "ownership_state",
@@ -343,7 +743,17 @@
         "generated_at"
       ],
       "missing_rule": "event_alone_cannot_create_indefinite_state",
-      "owner": "TIBER-Data"
+      "owner": "TIBER-Data",
+      "identity_contract": {
+        "canonical_target": "gsis_id",
+        "required_source_keys": [
+          "supporting_observation_player_key",
+          "supporting_team_key"
+        ],
+        "team_contract": "canonical_team_required_when_team_bearing",
+        "unresolved_behavior": "do_not_create_or_extend_canonical_state_interval; preserve_supporting_record_separately"
+      },
+      "unresolved_identity_behavior": "do_not_create_or_extend_canonical_state_interval; preserve_supporting_record_separately"
     },
     {
       "id": "transaction_event",
@@ -363,7 +773,18 @@
         "detected_or_generated_at"
       ],
       "missing_rule": "preserve_duplicates_and_unresolved_effective_time",
-      "owner": "TIBER-Data"
+      "owner": "TIBER-Data",
+      "identity_contract": {
+        "canonical_target": "gsis_id_per_participant",
+        "required_source_keys": [
+          "raw_player_identity",
+          "raw_from_team_if_stated",
+          "raw_to_team_if_stated"
+        ],
+        "team_contract": "resolve_each_team_independently",
+        "unresolved_behavior": "preserve_raw_event_and_participant_resolution_failures; do_not_merge_events_or_mutate_ownership"
+      },
+      "unresolved_identity_behavior": "preserve_raw_event_and_participant_resolution_failures; do_not_merge_events_or_mutate_ownership"
     },
     {
       "id": "practice_participation",
@@ -383,7 +804,18 @@
         "generated_at"
       ],
       "missing_rule": "not_listed_is_not_full_participation",
-      "owner": "TIBER-Data"
+      "owner": "TIBER-Data",
+      "identity_contract": {
+        "canonical_target": "gsis_id",
+        "required_source_keys": [
+          "raw_player_identity",
+          "raw_team_identity",
+          "source_game_key"
+        ],
+        "team_contract": "canonical_team_and_game_mapping_required",
+        "unresolved_behavior": "preserve_source_observation_as_unresolved; no_availability_or_health_inference"
+      },
+      "unresolved_identity_behavior": "preserve_source_observation_as_unresolved; no_availability_or_health_inference"
     },
     {
       "id": "official_game_designation",
@@ -401,7 +833,18 @@
         "generated_at"
       ],
       "missing_rule": "blank_is_not_active",
-      "owner": "TIBER-Data"
+      "owner": "TIBER-Data",
+      "identity_contract": {
+        "canonical_target": "gsis_id",
+        "required_source_keys": [
+          "raw_player_identity",
+          "raw_team_identity",
+          "source_game_key"
+        ],
+        "team_contract": "canonical_team_and_game_mapping_required",
+        "unresolved_behavior": "preserve_source_observation_as_unresolved; no_active_or_inactive_inference"
+      },
+      "unresolved_identity_behavior": "preserve_source_observation_as_unresolved; no_active_or_inactive_inference"
     },
     {
       "id": "gameday_inactive",
@@ -420,7 +863,18 @@
         "generated_at"
       ],
       "missing_rule": "absence_supports_active_only_with_complete_roster_and_complete_official_list",
-      "owner": "TIBER-Data"
+      "owner": "TIBER-Data",
+      "identity_contract": {
+        "canonical_target": "gsis_id",
+        "required_source_keys": [
+          "raw_player_identity",
+          "raw_team_identity",
+          "source_game_key"
+        ],
+        "team_contract": "canonical_team_and_game_mapping_required",
+        "unresolved_behavior": "preserve_source_listing_as_unresolved; no_absence_based_active_inference"
+      },
+      "unresolved_identity_behavior": "preserve_source_listing_as_unresolved; no_absence_based_active_inference"
     },
     {
       "id": "reserve_ir_pup_nfi_state",
@@ -438,7 +892,18 @@
         "validity_interval"
       ],
       "missing_rule": "cannot_infer_from_injury_text_or_game_designation",
-      "owner": "TIBER-Data"
+      "owner": "TIBER-Data",
+      "identity_contract": {
+        "canonical_target": "gsis_id",
+        "required_source_keys": [
+          "raw_player_identity",
+          "raw_team_identity",
+          "raw_roster_state"
+        ],
+        "team_contract": "canonical_team_mapping_required_for_team_bound_state",
+        "unresolved_behavior": "preserve_raw_state_or_event; no_ownership_enum_collapse"
+      },
+      "unresolved_identity_behavior": "preserve_raw_state_or_event; no_ownership_enum_collapse"
     },
     {
       "id": "inferred_availability",
@@ -452,7 +917,16 @@
         "input_cutoffs"
       ],
       "missing_rule": "absent_in_this_audit",
-      "owner": "downstream_not_source_lane"
+      "owner": "downstream_not_source_lane",
+      "identity_contract": {
+        "canonical_target": "gsis_id",
+        "required_source_keys": [
+          "all_governed_input_identity_keys"
+        ],
+        "team_contract": "inherits_resolved_source_inputs",
+        "unresolved_behavior": "emit_no_derived_availability_for_unresolved_input_identity"
+      },
+      "unresolved_identity_behavior": "emit_no_derived_availability_for_unresolved_input_identity"
     },
     {
       "id": "forecast_injury_probability",
@@ -465,7 +939,16 @@
         "input_cutoff"
       ],
       "missing_rule": "absent_in_this_audit",
-      "owner": "TIBER-Forecast"
+      "owner": "TIBER-Forecast",
+      "identity_contract": {
+        "canonical_target": "gsis_id",
+        "required_source_keys": [
+          "all_approved_input_identity_keys"
+        ],
+        "team_contract": "inherits_validated_forecast_inputs",
+        "unresolved_behavior": "emit_no_player_forecast_for_unresolved_identity"
+      },
+      "unresolved_identity_behavior": "emit_no_player_forecast_for_unresolved_identity"
     },
     {
       "id": "conditional_replacement_role",
@@ -481,104 +964,132 @@
         "input_cutoff"
       ],
       "missing_rule": "absent_in_this_audit",
-      "owner": "Role-and-opportunity-model"
+      "owner": "Role-and-opportunity-model",
+      "identity_contract": {
+        "canonical_target": "gsis_id_for_subject_and_replacement",
+        "required_source_keys": [
+          "all_role_roster_injury_and_deployment_identity_keys"
+        ],
+        "team_contract": "canonical_team_and_scenario_scope_required",
+        "unresolved_behavior": "emit_no_replacement_assignment_or_inherited_share"
+      },
+      "unresolved_identity_behavior": "emit_no_replacement_assignment_or_inherited_share"
     }
   ],
   "roster_status_mapping": [
     {
       "raw_code": "ACT",
       "ownership_status": "active_roster",
-      "handling": "direct_membership_only_not_gameday_active"
+      "handling": "direct_membership_only_not_gameday_active",
+      "mapping_type": "direct"
     },
     {
       "raw_code": "DEV",
       "ownership_status": "practice_squad",
-      "handling": "direct_when_current"
+      "handling": "direct_when_current",
+      "mapping_type": "direct"
     },
     {
       "raw_code": "RET",
       "ownership_status": "retired",
-      "handling": "direct_when_current"
+      "handling": "direct_when_current",
+      "mapping_type": "direct"
     },
     {
       "raw_code": "SUS",
       "ownership_status": "suspended",
-      "handling": "direct_ownership_game_availability_separate"
+      "handling": "direct_ownership_game_availability_separate",
+      "mapping_type": "direct"
     },
     {
       "raw_code": "UFA",
       "ownership_status": "free_agent",
-      "handling": "approximate_preserve_release_event_and_require_current_state"
+      "handling": "approximate_preserve_release_event_and_require_current_state",
+      "mapping_type": "approximate_requires_current_state_evidence"
     },
     {
       "raw_code": "CUT",
       "ownership_status": "free_agent",
-      "handling": "approximate_event_not_timeless_state"
+      "handling": "approximate_event_not_timeless_state",
+      "mapping_type": "approximate_requires_current_state_evidence"
     },
     {
       "raw_code": "RFA",
       "ownership_status": null,
-      "handling": "no_safe_direct_map"
+      "handling": "no_safe_direct_map",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "PUP",
       "ownership_status": null,
-      "handling": "distinct_from_injured_reserve"
+      "handling": "distinct_from_injured_reserve",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "RES",
       "ownership_status": null,
-      "handling": "reserve_too_broad_requires_subtype"
+      "handling": "reserve_too_broad_requires_subtype",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "RSN",
       "ownership_status": null,
-      "handling": "nfi_reserve_distinct_from_ir"
+      "handling": "nfi_reserve_distinct_from_ir",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "INA",
       "ownership_status": null,
-      "handling": "not_automatically_game_specific_inactive"
+      "handling": "not_automatically_game_specific_inactive",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "EXE",
       "ownership_status": null,
-      "handling": "commissioners_exempt_no_governed_value"
+      "handling": "commissioners_exempt_no_governed_value",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "E14",
       "ownership_status": null,
-      "handling": "international_exempt_no_governed_value"
+      "handling": "international_exempt_no_governed_value",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "NWT",
       "ownership_status": null,
-      "handling": "rare_waived_tendency_unknown"
+      "handling": "rare_waived_tendency_unknown",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "RSR",
       "ownership_status": null,
-      "handling": "event_like_release_from_ir_current_state_unknown"
+      "handling": "event_like_release_from_ir_current_state_unknown",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "TRC",
       "ownership_status": null,
-      "handling": "practice_squad_release_event_if_semantics_proven"
+      "handling": "practice_squad_release_event_if_semantics_proven",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "TRD",
       "ownership_status": null,
-      "handling": "practice_squad_release_not_trade"
+      "handling": "practice_squad_release_not_trade",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "TRT",
       "ownership_status": null,
-      "handling": "practice_squad_release_event_if_semantics_proven"
+      "handling": "practice_squad_release_event_if_semantics_proven",
+      "mapping_type": "prohibited_no_direct_mapping"
     },
     {
       "raw_code": "TRL",
       "ownership_status": null,
-      "handling": "historical_undetermined_unknown"
+      "handling": "historical_undetermined_unknown",
+      "mapping_type": "prohibited_no_direct_mapping"
     }
   ],
   "report_non_mappings": [
@@ -763,15 +1274,47 @@
   },
   "blockers": [
     "official_web_systematic_retrieval_rights_blocked",
-    "nflverse_ngs_shield_source_and_rights_not_admitted",
-    "no_immutable_2026_roster_bytes",
+    "nflverse_ngs_shield_upstream_data_rights_not_admitted",
+    "no_immutable_2026_roster_bytes_or_receipt",
     "no_current_32_team_population_or_identity_coverage",
     "no_current_full_transaction_wire",
-    "nflverse_injury_source_dead_after_2024",
+    "nflverse_injury_source_unavailable_after_2024",
     "no_replacement_practice_or_injury_source",
     "no_stable_current_gameday_inactives_registry",
-    "effective_publication_revision_and_supersession_clocks_unbound",
-    "lane_contracts_and_validators_not_implemented"
+    "source_effective_publication_update_retrieval_generation_revision_and_supersession_contracts_unbound",
+    "lane_contracts_identity_resolution_and_validators_not_implemented"
   ],
-  "terminal_decision": "current_player_state_v0_requires_source_or_contract_followup"
+  "terminal_decision": "current_player_state_v0_requires_source_or_contract_followup",
+  "source_qualification_value_vocabulary": {
+    "unprobed": "the audit did not inspect row bytes or field population",
+    "unavailable": "the source or field does not exist for the current scope",
+    "unbound": "a field or behavior may exist but no governed contract binds it",
+    "not_applicable": "the concept does not apply to this audit-only observation"
+  },
+  "recommendations": [
+    {
+      "id": "nflverse_roster_single_release_candidate",
+      "authorized": false,
+      "scope": "one_full_league_roster_membership_snapshot_only",
+      "prerequisites": [
+        "operator_accepts_or_rejects_nflverse_ngs_shield_source_and_rights_envelope",
+        "exact_loader_producer_release_url_and_byte_digest_pinned",
+        "row_level_ngs_or_shield_fallback_lineage_required",
+        "raw_status_mapping_and_non_mapping_approved",
+        "all_32_team_identity_clock_missingness_correction_and_determinism_tests_required",
+        "transactions_injuries_game_designations_and_inactives_excluded",
+        "candidate_only_pending_independent_audit"
+      ]
+    },
+    {
+      "id": "official_web_permission_or_feed_procurement",
+      "authorized": false,
+      "scope": "seek_written_permission_or_a_licensed_feed_do_not_scrape_under_this_audit"
+    },
+    {
+      "id": "replacement_current_injury_source_qualification",
+      "authorized": false,
+      "scope": "new_audit_issue_required_before_access_or_ingestion"
+    }
+  ]
 }
