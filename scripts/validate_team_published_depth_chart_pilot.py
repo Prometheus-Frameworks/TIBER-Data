@@ -373,6 +373,8 @@ def validate_snapshot(payload: dict[str, Any], *, receipt_root: Path = ROOT) -> 
     if payload["normalization_status"] == "complete":
         source_row_count = payload["transcription"]["source_row_count"]
         source_entry_count = payload["transcription"]["source_entry_count"]
+        normalized_row_count = payload["transcription"]["normalized_row_count"]
+        normalized_entry_count = payload["transcription"]["normalized_entry_count"]
         if any(
             receipt["archive_status"] != "stored_immutable"
             for receipt in payload["source_receipts"]
@@ -386,13 +388,28 @@ def validate_snapshot(payload: dict[str, Any], *, receipt_root: Path = ROOT) -> 
             raise PilotValidationError("Complete candidate requires nonempty source-row evidence")
         if source_entry_count is None or source_entry_count <= 0:
             raise PilotValidationError("Complete candidate requires nonempty source-entry evidence")
+        if source_row_count != normalized_row_count:
+            raise PilotValidationError(
+                "Complete v0 candidate requires exact source/normalized row reconciliation"
+            )
+        if source_entry_count != normalized_entry_count:
+            raise PilotValidationError(
+                "Complete v0 candidate requires exact source/normalized entry reconciliation"
+            )
 
     for row in payload["rows"]:
         for entry in row["entries"]:
-            if entry["identity_status"].startswith("unresolved") and entry["player_id"] is not None:
-                raise PilotValidationError("Unresolved identity must retain player_id=null")
-            if entry["identity_status"] == "resolved_exact" and not entry["player_id"]:
-                raise PilotValidationError("Resolved identity requires a canonical player ID")
+            if entry["identity_status"] != "resolved_exact" and entry["player_id"] is not None:
+                raise PilotValidationError(
+                    "Unresolved or ambiguous identity must retain player_id=null"
+                )
+            if entry["identity_status"] == "resolved_exact":
+                if not entry["player_id"]:
+                    raise PilotValidationError("Resolved identity requires a canonical player ID")
+                if not entry["identity_resolution_method"]:
+                    raise PilotValidationError(
+                        "Resolved identity requires an explicit resolution method"
+                    )
             if entry["decoded_marker_meanings"]:
                 raise PilotValidationError("Marker decoding is prohibited in contract v0")
             if entry["decoded_marker_legend_reference"] is not None:
