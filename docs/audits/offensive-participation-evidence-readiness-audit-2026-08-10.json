@@ -1,0 +1,414 @@
+{
+  "artifact_version": "offensive_participation_evidence_readiness_audit_v0",
+  "audit_date": "2026-08-10",
+  "evidence_cutoff_date": "2026-08-10",
+  "tracking_issue": {
+    "repository": "Prometheus-Frameworks/TIBER-Data",
+    "number": 245,
+    "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/issues/245"
+  },
+  "task_classification": [
+    "provenance_source_audit",
+    "external_dataset_audit"
+  ],
+  "scope": {
+    "commits_external_data": false,
+    "admits_sources": false,
+    "authorizes_ingestion": false,
+    "authorizes_promotion": false,
+    "authorizes_runtime_activation": false
+  },
+  "pinned_repository_refs": [
+    {
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "commit": "44296134a178f9d53fd7eda01a94548e76160d29"
+    },
+    {
+      "repository": "nflverse/nflreadpy",
+      "commit": "66bb305e634ba815466749249d07b5c6e9268db3",
+      "version": "0.1.6",
+      "inspected_paths": [
+        "src/nflreadpy/load_snap_counts.py",
+        "src/nflreadpy/load_participation.py",
+        "pyproject.toml",
+        "LICENSE.md"
+      ]
+    },
+    {
+      "repository": "nflverse/nflreadr",
+      "commit": "d072c08492067b578f27e562b6cc9c9e3b8589c3",
+      "inspected_paths": [
+        "R/load_snap_counts.R",
+        "R/load_participation.R",
+        "data-raw/dictionary_participation.csv",
+        "DESCRIPTION"
+      ]
+    },
+    {
+      "repository": "nflverse/nflverse-ftn",
+      "commit": "6aef85fc2475120ce56b67ebedd623cf8e44a1d2",
+      "inspected_paths": [
+        "R/participation.R",
+        "exec/update_ftn_participation.R",
+        "DESCRIPTION",
+        "LICENSE"
+      ]
+    },
+    {
+      "repository": "nflverse/nflverse-pfr",
+      "commit": "0bb27918ed5d3f74d916f8fe232f2d15db53b1ad",
+      "inspected_paths": [
+        "README.md",
+        "DESCRIPTION"
+      ]
+    }
+  ],
+  "current_tiber_coverage": [
+    {
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "git_blob_sha": "f7b2918b978d842cd8753a7f3dedd3836934859b",
+      "byte_sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+      "population": {
+        "total_regular_season_player_season_rows": 3016,
+        "wr_rows": 1191,
+        "seasons": [
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "field_non_null_counts_for_wr": {
+        "routes_run": 0,
+        "route_participation": 0,
+        "snap_share": 0
+      },
+      "status": "source_backed_but_fields_unavailable"
+    },
+    {
+      "path": "data/processed/research/goblin_signal_candidates_2025.source_backed.json",
+      "git_blob_sha": "19eac6ee50f45e47db6ad4c0d58b000fe6d1c3c4",
+      "population_rows": 6326,
+      "field_non_null_counts": {
+        "routes_run": 0,
+        "route_participation": 0,
+        "snap_share": 0
+      },
+      "status": "source_backed_but_fields_unavailable"
+    },
+    {
+      "path": "exports/promoted/nfl/player_weekly_usage_v1.json",
+      "git_blob_sha": "3c18796bb7ac6938100f72bfe6e269d453fffcab",
+      "population_rows": 6,
+      "source_label": "offline_fixture",
+      "status": "fixture_only",
+      "production_claim_allowed": false
+    }
+  ],
+  "reused_frozen_receipts": [
+    {
+      "source_family": "nflverse_snap_counts_pfr",
+      "retrieval_date": "2026-08-04",
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/snap_counts/snap_counts_2025.csv",
+      "bytes": 2401193,
+      "sha256": "80b02a6e511aa20283551cae622b29ba4d0a6f006c489a2d91591fcad33792e7",
+      "reused_from": "docs/audits/idp-defensive-evidence-readiness-audit-2026-08-04.md",
+      "offense_specific_population_probe_performed_here": false,
+      "admission_effect": "none"
+    }
+  ],
+  "source_candidates": [
+    {
+      "id": "nflverse_snap_counts_pfr",
+      "classification": "external_candidate",
+      "admission_status": "provider_or_rights_and_contract_blocked",
+      "availability": "game_level_since_2012_per_loader",
+      "grain": "player_game",
+      "source_player_key": "pfr_player_id",
+      "candidate_fields": [
+        "game_id",
+        "pfr_game_id",
+        "season",
+        "game_type",
+        "week",
+        "team",
+        "opponent",
+        "offense_snaps",
+        "offense_pct"
+      ],
+      "rights": {
+        "loader_software_license": "MIT",
+        "upstream_source": "Pro Football Reference",
+        "upstream_data_retention_redistribution_authority": "unresolved"
+      },
+      "blockers": [
+        "upstream_data_rights_not_admitted",
+        "mutable_release_url",
+        "publication_revision_and_supersession_clocks_unavailable",
+        "offense_pct_denominator_unproven",
+        "offense_specific_pfr_to_gsis_bridge_not_measured",
+        "missing_rows_are_not_zero"
+      ],
+      "permitted_claims_now": []
+    },
+    {
+      "id": "nflverse_participation_ftn_ngs",
+      "classification": "external_candidate",
+      "admission_status": "license_admission_and_contract_blocked",
+      "availability": {
+        "start_season": 2016,
+        "source_2023_onward": "FTN",
+        "source_2022_and_earlier": "NFL NextGenStats",
+        "release_timing": "after_all_postseason_games_are_complete"
+      },
+      "grain": "play",
+      "source_player_key": "gsis_id_in_semicolon_delimited_offense_players",
+      "candidate_fields": [
+        "nflverse_game_id",
+        "play_id",
+        "possession_team",
+        "offense_players",
+        "offense_positions",
+        "n_offense"
+      ],
+      "rights": {
+        "data_license": "CC-BY-SA-4.0",
+        "required_attribution_2023_onward": "FTN Data via nflverse",
+        "required_attribution_2022_and_earlier": "NFL NextGenStats via nflverse",
+        "tiber_admission_decision": "unavailable"
+      },
+      "blockers": [
+        "no_participation_bytes_frozen_in_this_audit",
+        "license_obligations_not_admitted",
+        "completed_season_only_not_current_2026",
+        "pass_play_predicate_not_versioned",
+        "missingness_and_correction_policy_not_defined"
+      ],
+      "permitted_claims_now": []
+    },
+    {
+      "id": "true_route_provider",
+      "classification": "future_research_only",
+      "admission_status": "no_exact_source_or_contract",
+      "grain": "unknown",
+      "source_player_key": "unknown",
+      "blockers": [
+        "no_exact_provider_contract",
+        "no_source_bytes",
+        "no_schema",
+        "no_population",
+        "no_identity_bridge",
+        "no_clocks",
+        "no_retention_or_redistribution_terms"
+      ],
+      "permitted_claims_now": []
+    }
+  ],
+  "capabilities": [
+    {
+      "capability": "offense_snaps_raw",
+      "tiber_status": "absent",
+      "upstream_candidate": "nflverse_snap_counts_pfr",
+      "decision": "requires_source_or_rights_followup"
+    },
+    {
+      "capability": "offense_pct_raw",
+      "tiber_status": "absent",
+      "upstream_candidate": "nflverse_snap_counts_pfr",
+      "decision": "raw_observation_only_if_admitted"
+    },
+    {
+      "capability": "snap_share",
+      "tiber_status": "absent",
+      "upstream_candidate": null,
+      "decision": "unavailable_until_team_denominator_is_proven"
+    },
+    {
+      "capability": "play_level_offensive_on_field_participation",
+      "tiber_status": "absent",
+      "upstream_candidate": "nflverse_participation_ftn_ngs",
+      "decision": "historical_candidate_only"
+    },
+    {
+      "capability": "pass_play_participation_proxy",
+      "tiber_status": "absent",
+      "upstream_candidate": "nflverse_participation_ftn_ngs",
+      "decision": "requires_contract_and_validation"
+    },
+    {
+      "capability": "live_current_season_participation",
+      "tiber_status": "absent",
+      "upstream_candidate": null,
+      "decision": "unavailable"
+    },
+    {
+      "capability": "routes_run",
+      "tiber_status": "absent",
+      "upstream_candidate": null,
+      "decision": "unavailable"
+    },
+    {
+      "capability": "route_participation",
+      "tiber_status": "absent",
+      "upstream_candidate": null,
+      "decision": "unavailable"
+    },
+    {
+      "capability": "yprr",
+      "tiber_status": "absent",
+      "upstream_candidate": null,
+      "decision": "unavailable"
+    },
+    {
+      "capability": "tprr",
+      "tiber_status": "absent",
+      "upstream_candidate": null,
+      "decision": "unavailable"
+    }
+  ],
+  "naming_guardrails": {
+    "offense_snaps_raw_is_routes_run": false,
+    "offense_pct_raw_is_governed_snap_share": false,
+    "pass_play_participation_proxy_is_route_participation": false,
+    "on_field_presence_proves_route": false,
+    "missing_is_zero": false,
+    "not_yet_published_is_zero": false
+  },
+  "candidate_contract": {
+    "name": "offensive_participation_evidence_v0",
+    "authorized": false,
+    "grain": "player_game_source_observation",
+    "required_components": [
+      "canonical_and_source_identity_with_resolution_status",
+      "season_week_game_team_opponent_season_type",
+      "source_url_input_sha256_retrieval_and_occurrence_clocks",
+      "raw_source_counts_and_percentages",
+      "declared_denominators_and_rule_versions_for_any_derived_fields",
+      "field_level_supported_partial_unavailable_or_unresolved_status",
+      "license_and_attribution_receipt",
+      "correction_and_supersession_receipt"
+    ],
+    "forbidden_without_separate_source": [
+      "routes_run",
+      "route_participation",
+      "yprr",
+      "tprr",
+      "alignment"
+    ]
+  },
+  "required_tests": [
+    "digest_and_provenance_before_parse",
+    "mutable_or_post_cutoff_bytes_fail_closed",
+    "exact_identity_join_and_unresolved_preservation",
+    "no_name_or_fuzzy_fallback",
+    "missing_rows_never_zero_filled",
+    "raw_offense_pct_cannot_populate_snap_share_without_reconciliation",
+    "team_denominator_reconciliation",
+    "malformed_duplicate_or_blank_participation_ids",
+    "versioned_pass_play_predicate_edges",
+    "proxy_cannot_populate_true_route_fields",
+    "cc_by_sa_attribution_lineage",
+    "current_season_not_yet_published_state",
+    "append_only_source_correction_supersession",
+    "byte_determinism_under_reordered_inputs",
+    "zero_supported_rows_blocks"
+  ],
+  "case_study_trace": [
+    {
+      "player_name": "Roman Wilson",
+      "snap_evidence": "unavailable",
+      "pass_play_participation": "unavailable",
+      "true_routes": "unavailable",
+      "interpretation": "unknown"
+    },
+    {
+      "player_name": "Jordan Whittington",
+      "snap_evidence": "unavailable",
+      "pass_play_participation": "unavailable",
+      "true_routes": "unavailable",
+      "interpretation": "unknown"
+    },
+    {
+      "player_name": "Luke McCaffrey",
+      "snap_evidence": "unavailable",
+      "pass_play_participation": "unavailable",
+      "true_routes": "unavailable",
+      "interpretation": "unknown"
+    },
+    {
+      "player_name": "Jacob Cowing",
+      "snap_evidence": "unavailable",
+      "pass_play_participation": "unavailable",
+      "true_routes": "unavailable",
+      "interpretation": "unknown"
+    },
+    {
+      "player_name": "Devontez Walker",
+      "snap_evidence": "unavailable",
+      "pass_play_participation": "unavailable",
+      "true_routes": "unavailable",
+      "interpretation": "unknown"
+    },
+    {
+      "player_name": "Tyquan Thornton",
+      "snap_evidence": "unavailable",
+      "pass_play_participation": "unavailable",
+      "true_routes": "unavailable",
+      "interpretation": "unknown"
+    },
+    {
+      "player_name": "Ryan Flournoy",
+      "snap_evidence": "unavailable",
+      "pass_play_participation": "unavailable",
+      "true_routes": "unavailable",
+      "interpretation": "unknown"
+    }
+  ],
+  "ownership": {
+    "TIBER-Data": [
+      "source_qualification_and_admission",
+      "immutable_raw_receipts",
+      "identity_bridge",
+      "raw_counts_and_denominators",
+      "field_missingness",
+      "provenance_and_promotion"
+    ],
+    "Role-and-opportunity-model": [
+      "deployment_and_role_change_interpretation"
+    ],
+    "Signal-Validation-Model": [
+      "historical_hypothesis_and_no_leakage_validation"
+    ],
+    "TIBER-Fantasy": [
+      "supported_partial_unavailable_display"
+    ],
+    "TIBER-Teamstate": [
+      "team_level_environment_interpretation"
+    ],
+    "FORGE": [
+      "approved_downstream_consumption_only"
+    ]
+  },
+  "blockers": [
+    "snap_source_rights_not_admitted",
+    "participation_license_obligations_not_admitted",
+    "offense_specific_population_and_identity_probe_missing",
+    "snap_denominator_semantics_unproven",
+    "source_correction_clocks_unbound",
+    "participation_bytes_and_population_not_frozen",
+    "pass_play_predicate_not_versioned",
+    "no_live_2026_participation_source",
+    "no_true_route_source"
+  ],
+  "next_activation_requirements": [
+    "operator_accepts_or_rejects_data_ownership_and_exact_pfr_use_envelope",
+    "operator_accepts_or_rejects_cc_by_sa_participation_envelope",
+    "exact_urls_cadence_cutoff_receipts_and_correction_policy_bound",
+    "bounded_offense_population_identity_and_denominator_probes_authorized",
+    "first_slice_selected",
+    "candidate_contract_and_tests_approved",
+    "live_2026_claims_remain_blocked_without_separate_source"
+  ],
+  "terminal_decision": "offensive_participation_v0_requires_source_or_rights_followup"
+}
