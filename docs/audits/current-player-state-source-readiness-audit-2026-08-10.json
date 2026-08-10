@@ -138,7 +138,8 @@
       "assertion_scope": "practice_status_and_game_status_publication_when_applicable",
       "current_page_state": "offseason_not_yet_published",
       "retained_bytes": false,
-      "qualification": "manual_readiness_observation_only"
+      "qualification": "manual_readiness_observation_only",
+      "offseason_observation_url": "https://www.azcardinals.com/team/injury-report/offseason"
     },
     {
       "id": "cardinals_terms",
@@ -531,18 +532,19 @@
         "canonical_binding": "unbound"
       },
       "clocks": {
-        "source_effective_or_as_of": "practice_date_or_game_scope_unavailable_in_offseason_observation",
-        "published_at": "unavailable_in_offseason_observation",
-        "updated_at": "unavailable_in_offseason_observation",
+        "source_effective_or_as_of": "practice_date_or_game_scope_unavailable_in_pinned_offseason_observation",
+        "published_at": "unavailable_in_pinned_offseason_observation",
+        "updated_at": "unavailable_in_pinned_offseason_observation",
         "retrieved_at": "unavailable_no_source_bytes_retrieved",
         "generated_at": "not_applicable_audit_only"
       },
       "cadence": "seasonal_reports_not_yet_published_currently_publication_sla_unbound",
       "revision_behavior": "report_iteration_and_revision_behavior_unbound",
-      "population_coverage": "one_team_only_current_offseason_population_unavailable",
+      "population_coverage": "one_team_only_current_pinned_offseason_population_unavailable",
       "missing_semantics": "not_yet_published_is_not_no_injury_not_listed_is_not_healthy",
       "correction_lineage": "unbound_no_report_iteration_or_supersession_contract",
-      "readiness": "rights_clock_population_and_identity_blocked"
+      "readiness": "rights_clock_population_and_identity_blocked",
+      "offseason_observation_url": "https://www.azcardinals.com/team/injury-report/offseason"
     },
     {
       "id": "nflverse_rosters_ngs_shield",
@@ -597,7 +599,9 @@
       "rights": {
         "code_license": "MIT",
         "upstream_data_license": "unbound",
-        "current_source": "unavailable_after_2024"
+        "current_source": "unavailable_after_2024",
+        "retention_permission": "unbound_fail_closed",
+        "redistribution_permission": "unbound_fail_closed"
       },
       "identity_keys": {
         "historical_documentation": "unprobed_for_current_contract",
@@ -667,7 +671,9 @@
       "inspection_mode": "loader_interface_only_no_rows_accessed",
       "rights": {
         "code_license": "MIT",
-        "upstream_data_license": "unbound"
+        "upstream_data_license": "unbound",
+        "retention_permission": "unbound_fail_closed",
+        "redistribution_permission": "unbound_fail_closed"
       },
       "identity_keys": {
         "documented": "provider_identity_candidates",
