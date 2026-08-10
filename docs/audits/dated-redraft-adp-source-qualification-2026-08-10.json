@@ -312,7 +312,7 @@
     "generated_at": "unavailable",
     "source_as_of": "unavailable_only_sample_window_field_names_observed_not_values",
     "available_at": "unavailable",
-    "retrieved_at": "observed",
+    "retrieved_at": "partial_two_exact_current_get_bounds_observed_historical_example_receipt_unavailable",
     "http_representation_modified": "observed_not_semantic_clock",
     "semantic_revision": "unavailable",
     "downstream_claim_cutoff": "2026-08-10T20:12:10Z"
@@ -383,7 +383,10 @@
         "sample_window": "named_periods_without_fully_bound_dates",
         "generated_at": "partial",
         "available_at": "unavailable",
-        "revision": "unavailable"
+        "revision": "unavailable",
+        "source_as_of": "partial_last_updated_without_bound_sample_window",
+        "retrieval_precision": "date_only",
+        "claim_cutoff": "2026-08-10T20:12:10Z"
       },
       "history": "no_original_dated_daily_history_documented_prospective_only_after_rights_resolution",
       "identity": "mfl_player_id_available_cross_source_and_gsis_completeness_stability_unverified",
@@ -435,7 +438,10 @@
         "aggregate_window": "not_applicable",
         "generated_at": "not_applicable_without_aggregate",
         "available_at": "unavailable",
-        "revision": "unavailable"
+        "revision": "unavailable",
+        "source_as_of": "not_applicable_without_representative_aggregate",
+        "retrieval_precision": "date_only",
+        "claim_cutoff": "2026-08-10T20:12:10Z"
       },
       "history": "per_discovered_draft_only_not_representative_market_history",
       "identity": "sleeper_player_id_available_existing_data_bridge_is_bounded_and_not_officially_guaranteed",
@@ -486,7 +492,10 @@
         "sample_window": "unavailable",
         "generated_at": "unavailable",
         "available_at": "unavailable",
-        "revision": "unavailable"
+        "revision": "unavailable",
+        "source_as_of": "unavailable",
+        "retrieval_precision": "date_only",
+        "claim_cutoff": "2026-08-10T20:12:10Z"
       },
       "history": "official_public_adp_history_not_found",
       "identity": "official_public_source_key_and_gsis_mapping_unavailable",
@@ -536,7 +545,10 @@
         "sample_window": "unavailable",
         "generated_at": "unavailable",
         "available_at": "unavailable",
-        "revision": "unavailable"
+        "revision": "unavailable",
+        "source_as_of": "unavailable",
+        "retrieval_precision": "date_only",
+        "claim_cutoff": "2026-08-10T20:12:10Z"
       },
       "history": "licensed_vault_exists_but_exact_adp_grain_and_dated_coverage_unconfirmed",
       "identity": "persistent_provider_player_id_documented_but_gsis_bridge_requires_audit",
@@ -608,7 +620,7 @@
     "append_only_timestamped_digested_receipts",
     "schema_and_negative_fixture_validation",
     "separate_reviewed_ffc_to_gsis_candidate_bridge",
-    "explicit_missing_unranked_and_identity_unresolved_semantics",
+    "explicit_missing_unranked_identity_unresolved_and_identity_conflicted_semantics",
     "prospective_only_history_until_admitted_dated_evidence_exists",
     "validated_immutable_candidate_before_latest_advancement"
   ],
