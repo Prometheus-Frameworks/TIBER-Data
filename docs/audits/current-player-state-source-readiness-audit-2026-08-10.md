@@ -59,6 +59,7 @@ The ownership totals above were derived from the pinned machine artifact itself.
 - Arizona Cardinals roster: https://www.azcardinals.com/team/players-roster/
 - Arizona Cardinals 2026 transactions: https://www.azcardinals.com/team/transactions/2026
 - Arizona Cardinals injury report: https://www.azcardinals.com/team/injury-report/
+- Pinned Arizona Cardinals offseason observation: https://www.azcardinals.com/team/injury-report/offseason (observed “See You Next Season” and a statement that the first 2026 report will be released before the regular-season opener).
 
 No NFL.com Arizona roster URL was inspected or asserted. The roster observation is limited to the exact Arizona Cardinals URL above.
 
@@ -83,7 +84,7 @@ Every source row below explicitly records identity keys, team keys, five clocks,
 
 The nflverse injury source is classified rejected because the documented upstream ended after 2024 and therefore supplies no current 2026 injury evidence. The nflverse trades source is classified rejected for the current transaction lane because it is historical trades only, not a complete current transaction wire. Neither is an evaluation benchmark, so benchmark_reference_only would be misleading. nflverse player master remains schema_reference_only for identity vocabulary and cannot supply current membership.
 
-The MIT licenses on loader and producer code do not grant rights to the upstream data.
+The MIT licenses on loader and producer code do not grant rights to the upstream data. For nflverse injuries and nflverse player master, upstream-data retention and redistribution permissions are explicitly unbound and therefore fail closed.
 
 ## Lane contracts, identity, and unresolved behavior
 
