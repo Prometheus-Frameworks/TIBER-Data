@@ -1,310 +1,182 @@
 # Current player-state source readiness audit — 2026-08-10
 
-> **Status:** exact-ref source/readiness audit; not a contract, ingest, artifact, or promotion  
-> **Tracking issue:** TIBER-Data #246  
-> **TIBER-Data ref:** `44296134a178f9d53fd7eda01a94548e76160d29`  
-> **Evidence cutoff:** 2026-08-10
+> Status: corrected exact-ref source/readiness audit; not a contract, ingest, artifact, or promotion  
+> Tracking issue: TIBER-Data #246  
+> TIBER-Data ref: 44296134a178f9d53fd7eda01a94548e76160d29  
+> Evidence cutoff: 2026-08-10
 
 ## Answer first
 
-TIBER-Data does **not** have a governed, full-universe, current 2026 source for roster membership, ownership status, transactions, practice/injury reports, official game designations, or gameday inactives.
+TIBER-Data does not have a governed, full-universe, current 2026 source for roster membership, ownership status, transactions, practice participation, official game designations, or gameday inactives.
 
-The existing contracts are useful foundations, but the live evidence lanes must remain separate:
+The existing contracts and artifacts are foundations, not current truth. Roster membership, ownership state, transaction events, practice participation, game designations, gameday inactives, and reserve states must remain separate lanes. Downstream availability, injury forecasts, and conditional replacement roles must not be written back as source evidence.
 
-- a roster snapshot asserts team membership or a source roster category at an as-of time;
-- an ownership state is an interval-valued state supported by observations and events;
-- a transaction is an event;
-- practice participation and game designation are separate report observations;
-- a gameday inactive is game-specific;
-- injured reserve is a roster/status fact, not a synonym for an injury-report designation;
-- inferred availability, injury probability, and replacement-role inheritance are downstream interpretations.
+No audited source is ready for a candidate build. Official NFL and Arizona Cardinals surfaces are authoritative only for their narrow published assertions, while their current terms do not grant automated collection for a TIBER database. The nflverse roster path remains a possible later candidate only after source rights, immutable bytes, clocks, population, identity, and correction lineage are admitted. The nflverse injury and trades paths are rejected for current 2026 use.
 
-No audited source family is ready for a candidate build today. Official NFL and official-team web surfaces are authoritative for their narrow published assertions, but their current terms prohibit systematic retrieval or database compilation without express prior written consent. The nflverse roster lane is technically promising but mixes NGS/Shield source paths and has unresolved source-admission, rights, revision-clock, and status-semantic questions. nflverse documents that its injury source died after the 2024 season and that no 2025 data exists. Its trades dataset is historical PFR/Lee Sharpe trade history, not a full transaction wire.
+This audit authorizes no source access, collection, ingestion, candidate row, recommendation execution, promotion, or consumer activation.
 
-The audit requires source/rights and contract follow-up before any candidate build.
+## Task class and boundary
 
-No source access, ingestion, or candidate state row is authorized by this audit.
+This is a provenance/source audit plus an external-dataset audit under AGENTS.md. It inspected existing TIBER artifacts and pinned public code, dictionaries, schedules, official pages, and terms. No external dataset bytes or player rows were downloaded or committed. Mutable page observations were manual readiness observations only and are not source receipts.
 
-## Task classification and boundary
+Qualification terms used below:
 
-This is a **provenance/source audit** plus an **external dataset audit** under `AGENTS.md`.
+- unprobed: the audit did not inspect source row bytes or field population.
+- unavailable: the source or field does not exist for the current scope.
+- unbound: a field or behavior may exist, but no governed contract binds it.
+- not applicable: the concept does not apply to the audit-only observation.
 
-Allowed here:
+## Pinned evidence
 
-- inspect existing TIBER contracts, artifacts, builders, and audit records;
-- inspect exact public loader/producer code, dictionaries, schedules, and licenses at pinned refs;
-- manually inspect official public pages and their terms to qualify assertion scope and access posture;
-- define lane boundaries, clocks, missingness, conflicts, candidate decomposition, and the smallest next gate.
-
-Not established here:
-
-- permission to scrape, systematically retrieve, retain, mirror, or redistribute an official web surface;
-- an admitted 2026 roster or injury source;
-- a complete 32-team player universe;
-- a current player-state artifact;
-- a ranking, role-contingency claim, injury forecast, or consumer activation.
-
-No external dataset bytes or player rows were downloaded or committed. Mutable web-page observations were inspected only for readiness and rights analysis; they are not frozen source receipts or candidate inputs.
-
-## Pinned evidence ledger
-
-### Repository refs
-
-| Item | Exact ref | Inspected purpose |
+| Repository | Exact ref | Inspected purpose |
 | --- | --- | --- |
-| TIBER-Data | `44296134a178f9d53fd7eda01a94548e76160d29` | Current contracts, promoted/candidate artifacts, active-detection spec, roster map, ownership event fixture, and governance. |
-| nflreadpy | `66bb305e634ba815466749249d07b5c6e9268db3` (`0.1.6`) | `load_rosters`, `load_rosters_weekly`, `load_injuries`, `load_trades`, and `load_players` interfaces. |
-| nflreadr | `d072c08492067b578f27e562b6cc9c9e3b8589c3` | Roster/injury/trade loaders, data schedule, roster-status dictionary, and roster dictionary. |
-| nflverse-rosters | `644ead141e8c847da7771c513b980c21d9feba7b` | Roster source routing, injury producer, daily workflows, package source/license posture. |
+| Prometheus-Frameworks/TIBER-Data | 44296134a178f9d53fd7eda01a94548e76160d29 | current artifacts, contracts, and governance |
+| nflverse/nflreadpy | 66bb305e634ba815466749249d07b5c6e9268db3 | ["src/nflreadpy/load_rosters.py","src/nflreadpy/load_rosters_weekly.py","src/nflreadpy/load_injuries.py","src/nflreadpy/load_trades.py","src/nflreadpy/load_players.py","pyproject.toml","LICENSE.md"] |
+| nflverse/nflreadr | d072c08492067b578f27e562b6cc9c9e3b8589c3 | ["R/load_rosters.R","R/load_rosters_weekly.R","R/load_injuries.R","R/load_trades.R","vignettes/articles/nflverse_data_schedule.Rmd","data-raw/dictionary_roster_status.csv","data-raw/dictionary_rosters.csv","DESCRIPTION"] |
+| nflverse/nflverse-rosters | 644ead141e8c847da7771c513b980c21d9feba7b | ["R/rosters.R","exec/update-injuries.R",".github/workflows/update_rosters.yaml",".github/workflows/update_injuries.yaml","README.md","DESCRIPTION","LICENSE"] |
 
-### Official web observations
+## Corrected existing TIBER inventory
 
-Observed manually on 2026-08-10; no page bytes were retained:
-
-| Surface | Exact URL | Narrow assertion observed | Rights/access result |
+| Artifact | Exact blob | Machine-checked population and clocks | Safe interpretation |
 | --- | --- | --- | --- |
-| NFL league transactions | `https://www.nfl.com/transactions/` | Year/month/category-filtered transaction publication; an empty current view can occur. | NFL terms block systematic retrieval/database compilation absent express prior written consent. |
-| NFL league injury reports | `https://www.nfl.com/injuries/` | Season/week/game/player practice and game-status publication; current offseason/week-zero can be empty or not yet published. | Same NFL terms blocker. |
-| Historical NFL injury-report example | `https://www.nfl.com/injuries/league/2025/reg5` | Player, position, injury text, practice status, and game status grouped by game/team. | Schema/reference observation only; not an admitted feed. |
-| NFL gameday-inactives example | `https://www.nfl.com/news/week-18-saturday-inactives-cleveland-browns-at-baltimore-ravens-cincinnati-bengals-at-pittsburgh-steelers` | Article-level published/updated clocks and game/team inactive lists. | No stable all-game registry or ingestion permission established. |
-| NFL terms | `https://www.nfl.com/legal/terms/` | Updated 2024-05-16; individual informational use only; systematic retrieval/compilation prohibited without express written consent. | Rights blocked for an automated TIBER lane. |
-| Cardinals roster | `https://www.azcardinals.com/team/players-roster/` | Official team roster page with source group headings such as Active and player display facts. | Cardinals terms independently block systematic retrieval/compilation without prior written consent. |
-| Cardinals transactions | `https://www.azcardinals.com/team/transactions/2026` | Team-authored dated transaction statements. | Event evidence only; rights blocked for automated collection. |
-| Cardinals injury report | `https://www.azcardinals.com/team/injury-report/` | Practice-status and game-status vocabularies; offseason page says reports begin before the regular-season opener. | Not-yet-published is distinct from no injury; rights blocked for automated collection. |
-| Cardinals terms | `https://www.azcardinals.com/about-us/terms-conditions` | Revised 2024-10-22; individual non-commercial use only and systematic retrieval/compilation prohibited absent written consent. | Rights blocked for an automated TIBER lane. |
+| exports/promoted/player_ownership/player_ownership_latest.json | 08ade3596a912df4a84cfa2872f5c9e4ad7bb3bb | Generated 2026-05-24T14:10:55Z; 27 rows total. Source breakdown is 19 nflreadpy weekly-roster active rows observed/verified 2026-01-05 through 2026-02-09; 1 Tee Higgins fixture-only active row observed/verified 2026-05-23T13:00:00Z; and 7 unsigned-draft-pick rows observed/verified 2026-04-25. All 27 source_updated_at values are null. | The 19 weekly rows are stale partial observations; the Tee row is a fixture; the seven draft rows are not signed-roster facts. The file is not a current roster universe. |
+| data/processed/evidence/roster_player_team_map_2025.source_backed.json | af2d5ecc7095bc2a27cbaaad482a6e5952adb51a | 14,348 player-week rows, 971 players, 2025 weeks 1–22; all 14,348 active_roster_status values are unknown. | Historical team membership only. |
+| exports/promoted/player_ownership/events/player_ownership_events_2026.jsonl | b2c23975a555411e9719e45e066468130be1ca70 | One provisional Tee Higgins team-change event with source fixture_demonstration_only. | Contract fixture only, not current transaction truth. |
+| docs/specs/active-player-detection-v0-source-boundary.json | 02b9cc890d6c856bfce78dd2c35054f925d4c92e | Spec only. | Not a schema, dataset, validator, or implementation-ready contract. |
+| schemas/player_ownership_v0.schema.json | a460476259116056d6fa3c970429b12d7b773d73 | Shape and vocabulary only. | Does not supply observations. |
+| schemas/player_ownership_change_event_v0.schema.json | c2e6f82b16550c0042b57ca1a5840dd264512dd5 | Event shape only. | Does not supply transactions. |
+| docs/contracts/roster-snapshot-v0.md | 8b1ed2d7e2402da63793c6a76d924ef32248c6c8 | Contract scaffold with illustrative examples. | No current roster truth. |
+| exports/candidates/population_census/bounded_2026_population_census_v0.json | 07cdc8fd6c855642091e96b4feb6382c4493b3b9 | 658 rows: 610 2025 stat-bearing players plus 48 rookies. | Bounded candidate population, not a complete current active-roster universe. |
 
-Official publication makes a statement authoritative within its scope. It does not, by itself, grant retention, redistribution, or automated collection rights.
+The ownership totals above were derived from the pinned machine artifact itself. The previous prose incorrectly grouped the Tee fixture with the 19 weekly-roster observations; that error is corrected here and in the JSON companion.
 
-## Existing TIBER inventory
+## Exact official-page and terms observations
 
-| Item at pinned Data ref | Exact blob | Real population/freshness | Safe interpretation |
+- NFL transactions: https://www.nfl.com/transactions/
+- NFL injuries: https://www.nfl.com/injuries/
+- Historical NFL injury-report schema example: https://www.nfl.com/injuries/league/2025/reg5
+- NFL gameday-inactives article example: https://www.nfl.com/news/week-18-saturday-inactives-cleveland-browns-at-baltimore-ravens-cincinnati-bengals-at-pittsburgh-steelers
+- Arizona Cardinals roster: https://www.azcardinals.com/team/players-roster/
+- Arizona Cardinals 2026 transactions: https://www.azcardinals.com/team/transactions/2026
+- Arizona Cardinals injury report: https://www.azcardinals.com/team/injury-report/
+
+No NFL.com Arizona roster URL was inspected or asserted. The roster observation is limited to the exact Arizona Cardinals URL above.
+
+The NFL terms page at https://www.nfl.com/legal/terms/ names NFL Enterprises, LLC as the service operator and is marked updated May 16, 2024. Its material use phrases are “individual non-commercial and informational purposes only” and “express prior written consent.” The Arizona terms page at https://www.azcardinals.com/about-us/terms-conditions names Arizona Cardinals Football Club LLC and is marked revised October 22, 2024; it uses the same material phrases. In both cases, systematic retrieval for a collection, database, or directory is outside the observed permission. This is a rights blocker, not legal advice.
+
+## Complete source qualification matrix
+
+Every source row below explicitly records identity keys, team keys, five clocks, cadence, revision behavior, population, missing semantics, and correction lineage. A documented field is not a governed binding; values remain unprobed, unavailable, or unbound where this audit did not establish them.
+
+| Source | Class / scope | Identity and team keys | Clocks: effective; published; updated; retrieved; generated | Cadence / revisions | Population / missing semantics / correction lineage | Readiness |
+| --- | --- | --- | --- | --- | --- | --- |
+| nfl_transactions_page | external_candidate / league_transaction_publication_filtered_by_year_month_category | identity={"observed":"player_display_identity_present_on_surface","canonical_binding":"unprobed"}; team={"observed":"transaction_team_labels_present_when_published","canonical_binding":"unprobed"} | event_date_visible_but_machine_contract_unbound; unavailable_on_index_observation; unavailable_on_index_observation; unavailable_no_source_bytes_retrieved; not_applicable_audit_only | unpublished_or_unprobed / unbound | population=unprobed_current_view_can_be_empty; missing=empty_view_ambiguous_filter_offseason_no_events_or_failure; correction=unbound_no_immutable_receipt_or_supersession_key | rights_and_contract_blocked; authorized=false |
+| nfl_injury_reports_page | external_candidate / league_practice_participation_and_game_designation_publication | identity={"observed":"player_display_name_and_position","canonical_binding":"unprobed"}; team={"observed":"team_grouping","canonical_binding":"unprobed"} | practice_date_or_game_week_visible_but_machine_contract_unbound; unavailable_in_inspected_interface; unavailable_in_inspected_interface; unavailable_no_source_bytes_retrieved; not_applicable_audit_only | seasonal_report_schedule_unbound / unbound | population=unprobed_not_yet_published_is_possible; missing=not_listed_is_not_full_participation_healthy_or_active; correction=unbound_no_report_iteration_or_supersession_contract | rights_and_contract_blocked; authorized=false |
+| nfl_gameday_inactives_articles | external_candidate / article_scoped_official_inactive_lists_for_named_games | identity={"observed":"player_display_names","canonical_binding":"unprobed"}; team={"observed":"article_team_labels","canonical_binding":"unprobed"} | game_scope_and_kickoff_external_to_article_machine_contract_unbound; article_clock_observed; article_updated_clock_observed; unavailable_no_source_bytes_retrieved; not_applicable_audit_only | game_day_article_cadence_unbound / article_can_update_but_supersession_contract_unbound | population=no_stable_all_game_registry_proven; missing=absence_not_active_without_complete_roster_and_complete_official_list; correction=unbound_no_registry_receipt_or_article_revision_chain | rights_registry_and_contract_blocked; authorized=false |
+| cardinals_roster_page | external_candidate / Arizona_team_roster_page_and_source_group_labels | identity={"observed":"player_display_identity","canonical_binding":"unprobed"}; team={"observed":"Arizona_Cardinals_fixed_page_scope","canonical_binding":"unbound"} | unavailable_no_source_as_of_observed; unavailable_in_inspected_interface; unavailable_in_inspected_interface; unavailable_no_source_bytes_retrieved; not_applicable_audit_only | unpublished_or_unprobed / mutable_page_revision_behavior_unbound | population=one_team_only_group_completeness_unprobed; missing=missing_player_or_group_is_unknown_not_released; correction=unbound_no_immutable_snapshot_or_supersession_key | rights_clock_population_and_identity_blocked; authorized=false |
+| cardinals_transactions_page | external_candidate / Arizona_team_authored_dated_transaction_statements | identity={"observed":"player_display_identity_in_statement","canonical_binding":"unprobed"}; team={"observed":"Arizona_Cardinals_fixed_page_scope_and_named_counterparty_when_stated","canonical_binding":"unbound"} | transaction_date_visible_but_time_semantics_unbound; unavailable_in_inspected_interface; unavailable_in_inspected_interface; unavailable_no_source_bytes_retrieved; not_applicable_audit_only | event_driven_but_publication_sla_unbound / mutable_page_revision_behavior_unbound | population=one_team_only_event_completeness_unprobed; missing=no_statement_is_not_no_transaction; correction=unbound_no_event_revision_or_retraction_contract | rights_clock_population_and_identity_blocked; authorized=false |
+| cardinals_injury_report_page | external_candidate / Arizona_practice_participation_and_game_designation_publication_when_applicable | identity={"observed":"player_display_identity_when_report_published","canonical_binding":"unprobed"}; team={"observed":"Arizona_Cardinals_fixed_page_scope","canonical_binding":"unbound"} | practice_date_or_game_scope_unavailable_in_offseason_observation; unavailable_in_offseason_observation; unavailable_in_offseason_observation; unavailable_no_source_bytes_retrieved; not_applicable_audit_only | seasonal_reports_not_yet_published_currently_publication_sla_unbound / report_iteration_and_revision_behavior_unbound | population=one_team_only_current_offseason_population_unavailable; missing=not_yet_published_is_not_no_injury_not_listed_is_not_healthy; correction=unbound_no_report_iteration_or_supersession_contract | rights_clock_population_and_identity_blocked; authorized=false |
+| nflverse_rosters_ngs_shield | external_candidate / weekly_NGS_roster_when_available_with_Shield_season_roster_fallback | identity={"documented":["gsis_id","provider_ids"],"population_2026":"unprobed","canonical_binding":"unbound"}; team={"documented":["team"],"population_2026":"unprobed","canonical_binding":"unbound"} | season_week_and_game_type_documented_but_2026_bytes_unprobed; unavailable_or_unbound; unavailable_or_unbound; unavailable_no_2026_source_bytes_retrieved; producer_clock_unbound_at_row_level | daily_0700_utc_loader_schedule / mutable_release_revision_and_replacement_behavior_unbound | population=2026_rows_teams_groups_duplicates_and_fallback_population_unprobed; missing=empty_NGS_can_trigger_Shield_fallback_so_empty_and_missing_require_row_visible_source_lineage; correction=unbound_requires_byte_digest_receipt_append_only_supersession_and_row_source_family | source_rights_contract_population_identity_and_clock_followup; authorized=false |
+| nflverse_injuries | rejected / historical_weekly_injury_and_practice_reports_through_2024_only | identity={"historical_documentation":"unprobed_for_current_contract","current_2026":"unavailable"}; team={"historical_documentation":"unprobed_for_current_contract","current_2026":"unavailable"} | unavailable_current_2026; unavailable_current_2026; unavailable_current_2026; unavailable_no_source_bytes_retrieved; unavailable_current_2026 | unavailable_current_2026_source_died_after_2024 / unavailable_current_2026 | population=zero_current_2026_by_documented_source_end; missing=absence_after_2024_is_source_unavailable_not_no_injury; correction=unavailable_current_2026 | rejected_no_current_source; authorized=false |
+| nflverse_trades_lee_sharpe_pfr | rejected / historical_trades_only_not_full_transaction_wire | identity={"documented":"unprobed","canonical_binding":"unbound"}; team={"documented":"unprobed","canonical_binding":"unbound"} | historical_trade_date_field_expected_but_unprobed; unavailable_or_unbound; unavailable_or_unbound; unavailable_no_source_bytes_retrieved; not_applicable_audit_only | unprobed_and_not_current_wire / unbound | population=trades_only_excludes_signings_waivers_releases_reserve_and_practice_squad_changes; missing=missing_event_cannot_mean_no_transaction; correction=unbound | rejected_for_current_transaction_lane; authorized=false |
+| nflverse_player_master | schema_reference_only / identity_and_provider_id_vocabulary_only | identity={"documented":"provider_identity_candidates","population":"unprobed","canonical_binding":"unbound"}; team={"documented":"possible_team_or_status_fields_not_admitted_as_current","canonical_binding":"prohibited_for_current_state"} | unprobed; unprobed; unprobed; unavailable_no_source_bytes_retrieved; not_applicable_audit_only | unprobed / unbound | population=unprobed; missing=player_master_presence_or_absence_is_not_roster_membership; correction=unbound | schema_reference_only_not_current_truth; authorized=false |
+
+The nflverse injury source is classified rejected because the documented upstream ended after 2024 and therefore supplies no current 2026 injury evidence. The nflverse trades source is classified rejected for the current transaction lane because it is historical trades only, not a complete current transaction wire. Neither is an evaluation benchmark, so benchmark_reference_only would be misleading. nflverse player master remains schema_reference_only for identity vocabulary and cannot supply current membership.
+
+The MIT licenses on loader and producer code do not grant rights to the upstream data.
+
+## Lane contracts, identity, and unresolved behavior
+
+| Lane | Grain and clocks | Identity contract | Unresolved behavior |
 | --- | --- | --- | --- |
-| `exports/promoted/player_ownership/player_ownership_latest.json` | `08ade3596a912df4a84cfa2872f5c9e4ad7bb3bb` | Generated 2026-05-24; 27 players. Twenty are provisional `active_roster` rows sourced from 2025 weekly-roster observations last verified 2026-01-05 through 2026-02-09. Seven are source-verified `unsigned_draft_pick` rows, not signed-roster facts. | Status vocabulary and stale/partial observations only; not a current or complete roster. |
-| `data/processed/evidence/roster_player_team_map_2025.source_backed.json` | `af2d5ecc7095bc2a27cbaaad482a6e5952adb51a` | 14,348 player-week rows, 971 players, 2025 weeks 1–22; every `active_roster_status` is `unknown`. | Historical roster membership only; not active/inactive, IR, practice squad, or 2026 state. |
-| `exports/promoted/player_ownership/events/player_ownership_events_2026.jsonl` | `b2c23975a555411e9719e45e066468130be1ca70` | One provisional `fixture_demonstration_only` Tee Higgins team-change row. | Contract fixture only, despite its promoted directory; no current transaction truth. |
-| `docs/specs/active-player-detection-v0-source-boundary.json` | `02b9cc890d6c856bfce78dd2c35054f925d4c92e` | Spec-only, explicitly not a schema, dataset, validator, or implementation-ready contract. | Provenance/enum foundation only. |
-| `schemas/player_ownership_v0.schema.json` | `a460476259116056d6fa3c970429b12d7b773d73` | Governed ownership-state vocabulary and source-reference shape. | Validates shape; does not supply observations. |
-| `schemas/player_ownership_change_event_v0.schema.json` | `c2e6f82b16550c0042b57ca1a5840dd264512dd5` | Governed event vocabulary and shape. | Validates event shape; does not supply transactions. |
-| `docs/contracts/roster-snapshot-v0.md` | `8b1ed2d7e2402da63793c6a76d924ef32248c6c8` | Time-bounded roster contract scaffold; example rows are illustrative/unverified. | Suitable contract foundation; no current roster truth. |
-| `exports/candidates/population_census/bounded_2026_population_census_v0.json` | `07cdc8fd6c855642091e96b4feb6382c4493b3b9` | Candidate-only bounded census: 610 2025 stat-bearing players plus 48 rookies. | Not a complete/current active roster universe; unseen zero-playing-time veterans can be absent. |
+| roster_membership_snapshot | grain=player_team_source_snapshot; clocks=["source_effective_or_as_of_if_exposed","published_or_updated_if_exposed","retrieved_at","generated_at","valid_window"] | target=gsis_id; source_keys=["source_player_key","source_team_key","source_ref"]; team=versioned_source_team_to_canonical_team_mapping | retain_source_row_with_resolution_status_unresolved; do_not_join_or_promote_as_canonical |
+| ownership_state | grain=player_state_interval; clocks=["valid_from","valid_to","last_verified_at","retrieved_at","generated_at"] | target=gsis_id; source_keys=["supporting_observation_player_key","supporting_team_key"]; team=canonical_team_required_when_team_bearing | do_not_create_or_extend_canonical_state_interval; preserve_supporting_record_separately |
+| transaction_event | grain=one_source_assertion_about_one_event; clocks=["effective_at_or_date","published_at","updated_at","retrieved_at","detected_or_generated_at"] | target=gsis_id_per_participant; source_keys=["raw_player_identity","raw_from_team_if_stated","raw_to_team_if_stated"]; team=resolve_each_team_independently | preserve_raw_event_and_participant_resolution_failures; do_not_merge_events_or_mutate_ownership |
+| practice_participation | grain=player_team_game_practice_date_report_iteration; clocks=["practice_date","published_at","updated_at","retrieved_at","generated_at"] | target=gsis_id; source_keys=["raw_player_identity","raw_team_identity","source_game_key"]; team=canonical_team_and_game_mapping_required | preserve_source_observation_as_unresolved; no_availability_or_health_inference |
+| official_game_designation | grain=player_team_game_report_iteration; clocks=["published_at","updated_at","retrieved_at","generated_at"] | target=gsis_id; source_keys=["raw_player_identity","raw_team_identity","source_game_key"]; team=canonical_team_and_game_mapping_required | preserve_source_observation_as_unresolved; no_active_or_inactive_inference |
+| gameday_inactive | grain=player_team_game_official_publication; clocks=["kickoff","published_at","updated_at","retrieved_at","generated_at"] | target=gsis_id; source_keys=["raw_player_identity","raw_team_identity","source_game_key"]; team=canonical_team_and_game_mapping_required | preserve_source_listing_as_unresolved; no_absence_based_active_inference |
+| reserve_ir_pup_nfi_state | grain=player_roster_state_interval_and_or_transaction_event; clocks=["effective_at","published_at","updated_at","retrieved_at","generated_at","validity_interval"] | target=gsis_id; source_keys=["raw_player_identity","raw_team_identity","raw_roster_state"]; team=canonical_team_mapping_required_for_team_bound_state | preserve_raw_state_or_event; no_ownership_enum_collapse |
+| inferred_availability | grain=derived_interpretation; clocks=["inference_as_of","input_cutoffs"] | target=gsis_id; source_keys=["all_governed_input_identity_keys"]; team=inherits_resolved_source_inputs | emit_no_derived_availability_for_unresolved_input_identity |
+| forecast_injury_probability | grain=future_distribution; clocks=["forecast_origin","input_cutoff"] | target=gsis_id; source_keys=["all_approved_input_identity_keys"]; team=inherits_validated_forecast_inputs | emit_no_player_forecast_for_unresolved_identity |
+| conditional_replacement_role | grain=scenario_role_interpretation; clocks=["scenario_origin","input_cutoff"] | target=gsis_id_for_subject_and_replacement; source_keys=["all_role_roster_injury_and_deployment_identity_keys"]; team=canonical_team_and_scenario_scope_required | emit_no_replacement_assignment_or_inherited_share |
 
-Issue #186 and PR #187 remain a contract foundation. They do not turn any row current, and their single proposed `active_status` axis must not be used to collapse the distinct lanes audited here.
+Across all source lanes, raw source identity and team strings remain visible. Name-only matching may not silently create a canonical player, merge two events, extend an ownership interval, or emit an availability, forecast, or replacement-role result. Candidate and promotion gates require explicit identity-resolution counts and visible unresolved rows.
 
-## Source and rights matrix
+## nflverse roster-status compatibility
 
-The classification column uses the closed `AGENTS.md` external-source vocabulary.
-
-| Source family | Classification | Assertion scope | Current readiness |
+| Raw code | Mapping type | Ownership value | Required handling |
 | --- | --- | --- | --- |
-| NFL.com roster/transaction/injury/inactive publications | `external_candidate` | Official NFL publication within the page's stated league/game/report scope. | `rights_blocked`: public access exists, but systematic retrieval/compilation is prohibited absent written consent; no immutable API or correction contract identified. |
-| Official-team roster/transaction/injury publications | `external_candidate` | Official club assertion for that team/page/report. | `rights_blocked`: Arizona's terms independently prohibit systematic retrieval/compilation; all 32 team terms and page formats would require qualification. |
-| nflverse 2016+ weekly/season roster releases | `external_candidate` | NGS weekly roster observations when available; Shield season-roster fallback; source status and identity fields. | Requires source/rights admission, exact 2026 byte receipt, fallback/source-family lineage, status semantics, revision clocks, and population audit. No 2026 rows were accessed here. |
-| nflverse injury releases | `benchmark_reference_only` | Historical weekly injury/practice reports through 2024. | Rejected for current use: nflreadr documents that the source died after 2024, no 2025 data exists, and no replacement ETA is known. |
-| nflverse trades / Lee Sharpe / PFR | `benchmark_reference_only` | Historical trades. | Not a complete current transaction wire; excludes signings, waivers, releases, reserve-list changes, and many status events. |
-| nflverse player master | `schema_reference_only` | Identity and provider-ID candidates. | Identity support only; player-master presence/team/status is not current roster truth. |
+| ACT | direct | active_roster | direct_membership_only_not_gameday_active |
+| DEV | direct | practice_squad | direct_when_current |
+| RET | direct | retired | direct_when_current |
+| SUS | direct | suspended | direct_ownership_game_availability_separate |
+| UFA | approximate_requires_current_state_evidence | free_agent | approximate_preserve_release_event_and_require_current_state |
+| CUT | approximate_requires_current_state_evidence | free_agent | approximate_event_not_timeless_state |
+| RFA | prohibited_no_direct_mapping | null | no_safe_direct_map |
+| PUP | prohibited_no_direct_mapping | null | distinct_from_injured_reserve |
+| RES | prohibited_no_direct_mapping | null | reserve_too_broad_requires_subtype |
+| RSN | prohibited_no_direct_mapping | null | nfi_reserve_distinct_from_ir |
+| INA | prohibited_no_direct_mapping | null | not_automatically_game_specific_inactive |
+| EXE | prohibited_no_direct_mapping | null | commissioners_exempt_no_governed_value |
+| E14 | prohibited_no_direct_mapping | null | international_exempt_no_governed_value |
+| NWT | prohibited_no_direct_mapping | null | rare_waived_tendency_unknown |
+| RSR | prohibited_no_direct_mapping | null | event_like_release_from_ir_current_state_unknown |
+| TRC | prohibited_no_direct_mapping | null | practice_squad_release_event_if_semantics_proven |
+| TRD | prohibited_no_direct_mapping | null | practice_squad_release_not_trade |
+| TRT | prohibited_no_direct_mapping | null | practice_squad_release_event_if_semantics_proven |
+| TRL | prohibited_no_direct_mapping | null | historical_undetermined_unknown |
 
-The MIT licenses on loader/producer code do not automatically authorize the upstream data.
+Direct means compatible only with the ownership-membership lane at a proven source as-of time. Approximate mappings require both the event and a current state observation. Prohibited means preserve the raw source status and emit no ownership enum. In particular, TRD is a practice-squad release code in the pinned dictionary, not a trade.
 
-## nflverse roster source trace
+Practice DNP/LP/FP values cannot populate ownership, reserve, gameday-inactive, or forecast fields. Out/Doubtful/Questionable cannot populate roster membership or gameday inactive. A blank or not-listed report state cannot mean active or healthy. Transaction events cannot create indefinite ownership without a later state observation.
 
-At the pinned `nflverse-rosters` ref:
+## Coverage, clocks, and corrections required before any candidate
 
-- seasons 2016+ first attempt weekly NGS roster data;
-- if the NGS weekly result is empty, the producer falls back to a Shield season roster;
-- roster rows can include `status`, `status_description_abbr`, `gsis_id`, team, position, week/game type, and provider IDs;
-- a daily workflow runs at 07:00 UTC;
-- the nflreadr schedule likewise says roster data updates daily at 07:00 UTC.
+A current-facing source must prove all 32 franchises and every enabled lane through a versioned registry. Each entry needs exact URL or release, owner, terms revision, format, expected cadence, seasonal window, expected groups, retrieval and semantic status, last source update, byte digest, identity counts, unresolved rows, and explicit not_applicable, not_yet_published, source_unavailable, parse_failed, partial, stale, and conflict states.
 
-The source trace is useful but not sufficient for governance:
+All five clocks must be represented without substitution: source effective/as-of, published, updated, retrieved, and generated. A fresh retrieval or generation time cannot make old source evidence current. Mutable releases require immutable byte digests, append-only receipts, correction detection, and supersession links. Conflicting official assertions remain separate until their scoped clocks establish supersession.
 
-- NGS and Shield are different source assertions and cannot be silently coalesced under one source label;
-- an empty NGS result may cause season-level fallback, so weekly completeness must be explicit;
-- loader cadence is not a row-level publication/effective/correction clock;
-- mutable release URLs require byte digests, retrieval receipts, and append-only supersession;
-- raw status values need versioned mapping and non-mapping behavior;
-- a current roster page or release can revise history, so current bytes cannot silently rewrite an earlier as-of state.
+## Fail-closed behavior
 
-## Lane-by-lane contract boundary
-
-| Lane | Required grain | Minimum source fields | Required clocks | Missing/conflict behavior |
-| --- | --- | --- | --- | --- |
-| Roster membership snapshot | player × team × source snapshot | source player ID/name, team, position, source roster group/code, source URL/ref | source effective/as-of if exposed, published/updated if exposed, retrieved, generated, valid window | Missing row is unknown; incomplete team/section coverage makes snapshot partial. |
-| Ownership state | player × state interval | ownership enum, team, supporting observations/events, basis | `valid_from`, `valid_to`, last verified, retrieved/generated | May be derived only from governed evidence; event alone cannot create an indefinite state. |
-| Transaction event | one source assertion about one event | raw event text/type, player(s), from/to team where stated, source event date/time, source ref | effective date/time, published/updated, retrieved, detected/generated | Preserve duplicate official receipts; unresolved effective time/conflict remains explicit. |
-| Practice participation | player × team × game × practice date × report iteration | injury/body-part text, DNP/LP/FP, team/game, report version | practice date, report published/updated, retrieved/generated | Not listed is not FP; later report supersedes only the same report scope. |
-| Official game designation | player × team × game × report iteration | Out/Doubtful/Questionable or explicit blank/not-listed state | game, report published/updated, retrieved/generated | Blank is not active; keep each edition and supersession. |
-| Gameday inactive | player × team × game × official publication | inactive listing, emergency-third-QB marker if stated, game/team | game kickoff, published/updated, retrieved/generated | Absence can support active only after complete roster and complete official inactive list are both proven; otherwise unknown. |
-| Reserve/IR/PUP/NFI status | player × roster-state interval and/or transaction event | exact raw source category and supporting event | effective, published/updated, retrieved/generated, validity interval | Do not infer from body-part or game designation. |
-| Inferred availability | downstream interpretation, not a Data source lane | governed inputs plus declared deterministic rule | inference as-of and input cutoffs | Must be labeled derived; absent here. |
-| Forecast injury probability | future distribution | approved historical/current inputs | forecast origin/cutoff | Forecast-owned; absent here. |
-| Conditional replacement role | scenario/role interpretation | roster, injury, deployment, depth/role evidence | scenario origin/cutoff | Role-and-opportunity-owned; absent here. |
-
-## Status compatibility and non-mappings
-
-### nflverse roster-status codes
-
-| Raw code | Source dictionary meaning | `player_ownership_v0` compatibility | Required handling |
-| --- | --- | --- | --- |
-| `ACT` | On active roster | `active_roster` | Direct for ownership membership only; does not prove gameday active. |
-| `DEV` | Practice squad | `practice_squad` | Direct when source/as-of is current. |
-| `RET` | Retired list | `retired` | Direct when current/source-backed. |
-| `SUS` | Suspended | `suspended` | Direct ownership status; game availability remains separate. |
-| `UFA` | Released / unrestricted free agent | approximate `free_agent` | Preserve release event; resulting current state requires current observation. |
-| `CUT` | Cut from roster | approximate `free_agent` | Release is an event; do not create timeless free-agent state without as-of evidence. |
-| `RFA` | Rarely used; tends to indicate cut restricted free agent | no safe direct map | Preserve raw code; ownership `unknown` pending semantics/current evidence. |
-| `PUP` | Physically Unable to Perform list | no exact governed value | Do not map to `injured_reserve`; preserve distinct raw roster state. |
-| `RES` | Reserve list | no safe direct map | Reserve is too broad; require exact subtype. |
-| `RSN` | Tends to indicate non-football injured reserve | no exact governed value | Preserve as NFI/reserve observation; do not collapse to IR. |
-| `INA` | Under contract but not on active roster, inactive | no direct ownership or gameday map | Preserve raw status; it is not automatically a game-specific inactive. |
-| `EXE` | Commissioner's exempt list | no exact governed value | Preserve raw state; ownership `unknown` or future enum extension. |
-| `E14` | Exempt international player | no exact governed value | Preserve raw state; do not call active roster without source proof. |
-| `NWT` | Rare/waived tendency | no safe direct map | Unknown. |
-| `RSR` | Released from injured-reserve list tendency | event-like, no direct map | Preserve event observation; current state unknown. |
-| `TRC`, `TRD`, `TRT` | Released from practice squad | event-like, no direct map | Do not interpret `TRD` as “traded”; emit a release event only if exact semantics/effective clock are proven. |
-| `TRL` | Historical/undetermined | no map | Unknown. |
-
-### Report and event vocabularies
-
-| Observation | Lane | Must not populate |
-| --- | --- | --- |
-| DNP / LP / FP | practice participation | ownership, IR, gameday inactive, forecast probability |
-| Out / Doubtful / Questionable | official game designation | roster membership, IR, gameday inactive |
-| not listed / blank | report coverage state | active, healthy, zero injury |
-| official gameday inactive list | gameday status for one game | released, IR, practice squad, future-game status |
-| signing / waiver / release / trade / reserve placement | transaction event | indefinite current ownership without a state observation |
-| injured reserve / PUP / NFI | roster/reserve state | generic “injured,” game designation, replacement share |
-
-The proposed `active_status` vocabulary from #186 is therefore a compatibility view, not an adequate source record. `active`, `inactive`, `ir`, `practice_squad`, `released`, and `traded` mix gameday, roster, ownership, and event semantics. A future implementation should preserve the separate fields above and derive any compatibility view explicitly, with unsupported cases left `unknown`.
-
-## 32-team and current-universe requirements
-
-A future current-facing lane cannot claim league coverage until it proves:
-
-1. a versioned registry for all 32 franchises and each enabled lane;
-2. exact official/source URLs, source owner, terms URL/revision, page/feed format, expected cadence, and active-season window;
-3. source sections/groups expected for each roster page (active, reserve, practice squad, exempt, or explicitly unavailable);
-4. per-team retrieval/parse/semantic status, last successful observation, last source update, and last content digest;
-5. identity resolution counts by canonical GSIS ID and visible unresolved rows;
-6. no missing franchise, team relocation/abbreviation ambiguity, or silently skipped source format;
-7. an explicit universe statement: observed source rows only, not “all NFL players” unless the source coverage proves it;
-8. separate `not_applicable`, `not_yet_published`, `source_unavailable`, `parse_failed`, `partial`, `stale`, and `conflict_unresolved` states;
-9. completeness checks against source-declared row/group totals when available;
-10. a bounded source-as-of time. A fresh retrieval of an old page is still stale.
-
-The 658-row bounded 2026 census cannot fill roster gaps. Players with zero prior stats or no promoted identity can be missing from it.
-
-## Missing, stale, and conflicting evidence
-
-Fail-closed rules:
-
-- Missing status is `unknown`, never active or inactive.
-- Missing player row is not evidence the player is out of the league.
-- An empty official page may mean offseason, not-yet-published, filter mismatch, or source failure.
+- Missing status is unknown, never active or inactive.
+- A missing player row is not evidence that the player is out of the league.
+- An empty page may mean offseason, not yet published, filter mismatch, or failure.
 - Roster membership does not prove gameday participation.
-- A transaction is an event, not a timeless ownership state.
-- A stale snapshot cannot become current through a new retrieval or generation time.
-- Injury-report absence does not mean healthy.
-- Depth-chart presence/absence cannot populate roster, injury, or gameday status.
-- Conflicting official assertions remain as separate receipts until effective/publication clocks establish supersession.
-- Source priority alone cannot erase a conflict; compare assertion lane, effective time, publication/update time, scope, and completeness.
-- Fixture, candidate, manually curated, or downstream-model rows never become source truth.
-- No injury-contingency workload or target share can be emitted.
+- An injury-report absence does not mean healthy.
+- A transaction is an event, not a timeless state.
+- A fixture, manual row, candidate, or model output never becomes source truth.
+- Depth-chart presence or absence cannot populate roster, injury, or gameday status.
+- No injury-contingency workload or share is emitted by this audit.
 
-## Source registry and monitoring design
+## Candidate decomposition and ownership
 
-A future source registry needs, per source and lane:
+Future source artifacts remain separate: roster membership snapshot, ownership state, transaction event, practice report observation, game designation observation, gameday inactive observation, and only then an explicit compatibility view if still required.
 
-- registry version, source owner, team/league scope, exact URL/template, terms URL and observed revision;
-- external-source classification and admission decision;
-- access method, authentication requirement, robots/terms posture, permitted retention/redistribution;
-- expected format and parser version;
-- expected publication window/cadence and seasonal applicability;
-- source effective/published/updated/retrieval/generated clocks;
-- last success, last semantic success, last digest, consecutive failures, and stale threshold;
-- coverage sections and population expectation;
-- correction/supersession method;
-- alert states for access denial, terms change, format drift, stale source, empty-unexpected, partial coverage, identity failure, and conflict.
+TIBER-Data owns observed state, identity, clocks, provenance, conflicts, and promotion. Team-state interpretation belongs downstream. Conditional replacement roles belong to Role-and-opportunity-model. Future injury distributions belong to TIBER-Forecast. FORGE may consume approved outputs but is not a source-of-truth owner. Age-Curve intelligence may contribute separately validated lifecycle context, never current roster or injury truth.
 
-Monitoring cannot poll a rights-blocked source. A registry entry may remain `blocked` or `manual_reference_only` until authority changes.
+## Unauthorized next steps
 
-## Candidate artifact decomposition
+All recommendations below have authorized=false in the machine companion:
 
-Do not force these lanes into one record or enum. A later program should consider separate artifacts:
+- A single immutable 2026 nflverse full-league roster-membership release may be audited later only after upstream rights, exact bytes, row-level NGS/Shield lineage, identity, clocks, missingness, correction, and determinism gates are approved.
+- Official web work requires written permission or a licensed feed; this audit does not authorize scraping.
+- A replacement current practice/injury source requires a new audit issue before any access or ingestion.
 
-1. `current_roster_membership_snapshot_v0` — source roster membership/group observations only;
-2. `player_ownership_state_v1` — interval state derived from governed observations/events, preserving `unknown`;
-3. `player_transaction_event_v0` — append-only event assertions with effective/publication clocks;
-4. `official_practice_report_observation_v0` — practice participation and injury text;
-5. `official_game_designation_observation_v0` — Out/Doubtful/Questionable reports;
-6. `official_gameday_inactive_observation_v0` — game-specific official inactive publications;
-7. a separate compatibility view only if consumers still require `active_player_detection_v0`.
+## Current blockers
 
-Artifact names are recommendations, not authorized contracts.
-
-## Smallest independently buildable next slice
-
-The smallest honest next slice is **one full-league roster-membership snapshot from one admitted, immutable 2026 nflverse roster release**, not a combined “current state” table.
-
-Before activation, an operator must:
-
-1. accept or reject the nflverse NGS/Shield roster source and exact retention/redistribution envelope;
-2. pin the exact loader/producer refs and one exact 2026 release URL/byte digest;
-3. require row-level source-family/fallback lineage so NGS weekly and Shield season observations cannot be confused;
-4. approve the raw-status mapping/non-mapping table and preserve unresolved statuses;
-5. require 32-team coverage, identity, clock, missingness, correction, and determinism tests;
-6. keep transactions, injuries, game designations, and inactives out of that slice;
-7. keep the output candidate-only pending independent audit.
-
-If the nflverse source cannot be admitted, the next action is source/rights procurement—not scraping NFL or team sites.
-
-## Consumer and repository ownership
-
-- **TIBER-Data:** observed roster, transaction, practice report, game designation, inactive, reserve-state, identity, clocks, provenance, conflicts, and promotion.
-- **TIBER-Teamstate:** later team-level interpretation.
-- **Role-and-opportunity-model:** conditional replacement hierarchy and inherited role/opportunity.
-- **TIBER-Forecast:** future injury/availability distributions after governed inputs and validation.
-- **TIBER-Fantasy:** supported/partial/unavailable display.
-- **FORGE:** downstream grading/consumption only.
-
-No new repository is needed or authorized. Raw age/DOB remains a TIBER-Data identity fact; Age-Curve Intelligence is relevant only to separately validated lifecycle context, not these current-state sources.
-
-## True, missing, and prohibited
-
-True at the audited refs:
-
-- TIBER has useful state/event/roster contract scaffolds;
-- current promoted ownership is 27-row partial/stale evidence, not a roster universe;
-- the 2025 roster map is historical membership with all active status unknown;
-- official pages expose narrow source assertions but current terms block systematic retrieval;
-- nflverse roster production uses NGS with Shield fallback and a daily cadence;
-- nflverse current injury data is unavailable after its source died;
-- no current 2026 gameday or practice-report lane is governed.
-
-Still missing:
-
-- an admitted current roster source and immutable 2026 bytes;
-- current 32-team population and identity coverage;
-- official-source automated-use/retention/redistribution authority;
-- a current transaction wire;
-- a replacement injury/practice-report source;
-- stable inactives registry;
-- full effective/publication/revision/supersession clocks;
-- separately versioned lane contracts and validators.
-
-Prohibited:
-
-- treating stale/partial rows as current;
-- scraping rights-blocked web pages;
-- treating missing as inactive or healthy;
-- collapsing events, roster state, reports, and gameday status;
-- using depth charts as roster/injury truth;
-- emitting role inheritance, injury probability, rankings, or advice;
-- promotion, consumer wiring, merge, or deployment from this audit.
+- official_web_systematic_retrieval_rights_blocked
+- nflverse_ngs_shield_upstream_data_rights_not_admitted
+- no_immutable_2026_roster_bytes_or_receipt
+- no_current_32_team_population_or_identity_coverage
+- no_current_full_transaction_wire
+- nflverse_injury_source_unavailable_after_2024
+- no_replacement_practice_or_injury_source
+- no_stable_current_gameday_inactives_registry
+- source_effective_publication_update_retrieval_generation_revision_and_supersession_contracts_unbound
+- lane_contracts_identity_resolution_and_validators_not_implemented
 
 ## Terminal decision
 
-```text
 current_player_state_v0_requires_source_or_contract_followup
-```
 
-This decision permits only a later operator choice on source/rights follow-up or the separately scoped roster-membership candidate slice described above. It does not authorize source access or implementation.
+Independent audit is required before merge consideration. This draft remains documentation-only and authorizes no implementation or promotion.
