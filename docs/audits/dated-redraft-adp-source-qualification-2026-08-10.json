@@ -238,29 +238,145 @@
   "alternatives_matrix": [
     {
       "source_key": "myfantasyleague_adp",
+      "owner": "First Pick Labs, Inc.",
+      "product": "MyFantasyLeague Developers Program ADP export API",
       "official_urls": ["https://api.myfantasyleague.com/2026/api_info", "https://api.myfantasyleague.com/2026/api_info?STATE=details&TYPE=adp", "https://home.myfantasyleague.com/terms.html"],
       "source_status": "requires_rightsholder_clarification",
+      "access": {
+        "authentication": "public_developer_api",
+        "rate_guidance": "caching_encouraged_numeric_limit_not_observed",
+        "retrieval_clock": "2026-08-10_date_only"
+      },
+      "market_definition": {
+        "population": "drafts_hosted_by_myfantasyleague",
+        "available_filters": ["team_count", "ppr_flag", "keeper_redraft_rookie", "mock_non_mock", "named_period"],
+        "limitations": ["ppr_does_not_distinguish_half_from_full", "recent_period_exact_dates_undefined", "superflex_best_ball_and_roster_controls_incomplete"]
+      },
+      "clocks": {
+        "last_updated": "source_returned",
+        "sample_window": "named_periods_without_fully_bound_dates",
+        "generated_at": "partial",
+        "available_at": "unavailable",
+        "revision": "unavailable"
+      },
+      "history": "no_original_dated_daily_history_documented_prospective_only_after_rights_resolution",
+      "identity": "mfl_player_id_available_cross_source_and_gsis_completeness_stability_unverified",
+      "permissions": {
+        "api_call": "explicitly_allowed",
+        "raw_response_retention": "requires_written_permission_due_to_terms_conflict",
+        "normalized_exact_value_storage": "requires_written_permission_due_to_terms_conflict",
+        "public_repository": "requires_written_permission",
+        "public_api_or_ui": "requires_written_permission",
+        "redistribution": "requires_written_permission"
+      },
       "market_fit": "moderate",
       "blocking_reason": "api_caching_guidance_conflicts_with_newer_terms_and_ppr_period_semantics_are_inexact"
     },
     {
       "source_key": "sleeper_public_draft_api",
+      "owner": "Blitz Studios, Inc. and affiliates",
+      "product": "Sleeper read-only drafts, picks, and player API",
       "official_urls": ["https://docs.sleeper.com/", "https://support.sleeper.com/en/articles/5486620-general-terms-of-use"],
       "source_status": "rejected",
+      "access": {
+        "authentication": "public_read_only_endpoints",
+        "rate_guidance": "official_docs_apply_no_market_specific_numeric_envelope_recorded",
+        "retrieval_clock": "2026-08-10_date_only"
+      },
+      "market_definition": {
+        "population": "only_drafts_discoverable_through_known_users_leagues_or_draft_ids",
+        "available_filters": ["per_draft_season", "settings", "scoring", "draft_type", "timestamps"],
+        "limitations": ["no_global_draft_discovery", "no_official_aggregate_adp", "selection_biased_sample"]
+      },
+      "clocks": {
+        "per_draft_start": "available",
+        "pick_order": "available",
+        "aggregate_window": "not_applicable",
+        "generated_at": "not_applicable_without_aggregate",
+        "available_at": "unavailable",
+        "revision": "unavailable"
+      },
+      "history": "per_discovered_draft_only_not_representative_market_history",
+      "identity": "sleeper_player_id_available_existing_data_bridge_is_bounded_and_not_officially_guaranteed",
+      "permissions": {
+        "api_call": "allowed_with_conditions",
+        "systematic_market_collection": "requires_written_permission",
+        "raw_response_retention": "unknown_for_proposed_lane",
+        "normalized_exact_value_storage": "requires_written_permission",
+        "public_repository": "requires_written_permission",
+        "public_api_or_ui": "requires_written_permission",
+        "redistribution": "requires_written_permission"
+      },
       "market_fit": "low",
       "blocking_reason": "no_representative_global_discovery_or_aggregate_and_systematic_extraction_requires_authorization"
     },
     {
       "source_key": "underdog_fantasy_adp",
+      "owner": "Underdog Sports, LLC doing business as Underdog Fantasy",
+      "product": "Underdog Fantasy contest and best-ball drafts",
       "official_urls": ["https://legal.underdogsports.com/", "https://underdogfantasy.pactsafe.io/versions/69b97ee8240ac4b2dc9c1d92.pdf"],
       "source_status": "unavailable",
+      "access": {
+        "authentication": "no_public_approved_adp_feed_observed",
+        "automated_access": "restricted_outside_approved_app_api_or_client",
+        "retrieval_clock": "2026-08-10_date_only"
+      },
+      "market_definition": {
+        "population": "best_ball_and_contest_drafts",
+        "available_filters": [],
+        "limitations": ["wrong_market_type_for_requested_redraft_lane", "no_official_public_schema"]
+      },
+      "clocks": {
+        "sample_window": "unavailable",
+        "generated_at": "unavailable",
+        "available_at": "unavailable",
+        "revision": "unavailable"
+      },
+      "history": "official_public_adp_history_not_found",
+      "identity": "official_public_source_key_and_gsis_mapping_unavailable",
+      "permissions": {
+        "api_call": "not_applicable_without_approved_feed",
+        "raw_response_retention": "not_applicable_without_approved_feed",
+        "normalized_exact_value_storage": "not_applicable_without_approved_feed",
+        "public_repository": "not_applicable_without_approved_feed",
+        "public_api_or_ui": "not_applicable_without_approved_feed",
+        "redistribution": "not_applicable_without_approved_feed"
+      },
       "market_fit": "wrong_market_type",
       "blocking_reason": "no_public_approved_feed_and_best_ball_contest_market_not_managed_redraft"
     },
     {
       "source_key": "sportsdataio_fantasy_adp",
+      "owner": "SportsDataIO_legal_entity_not_bound_from_inspected_public_pages",
+      "product": "SportsDataIO NFL Fantasy Sports API and historical Vault",
       "official_urls": ["https://sportsdata.io/fantasy-sports-api", "https://sportsdata.io/developers/data-dictionary/nfl", "https://sportsdata.io/vault"],
       "source_status": "requires_rightsholder_clarification",
+      "access": {
+        "authentication": "commercial_license_required_for_production",
+        "trial": "evaluation_access_available",
+        "retrieval_clock": "2026-08-10_date_only"
+      },
+      "market_definition": {
+        "published_fields": ["AverageDraftPosition", "AverageDraftPositionPPR", "AverageDraftPosition2QB", "AverageDraftPositionDynasty"],
+        "population": "unavailable",
+        "limitations": ["sample_size_unavailable", "team_count_unavailable", "full_ppr_semantics_unavailable", "calculation_window_unavailable", "possible_ffc_syndication_overlap"]
+      },
+      "clocks": {
+        "sample_window": "unavailable",
+        "generated_at": "unavailable",
+        "available_at": "unavailable",
+        "revision": "unavailable"
+      },
+      "history": "licensed_vault_exists_but_exact_adp_grain_and_dated_coverage_unconfirmed",
+      "identity": "persistent_provider_player_id_documented_but_gsis_bridge_requires_audit",
+      "permissions": {
+        "api_call": "commercial_contract_dependent",
+        "raw_response_retention": "contract_dependent",
+        "normalized_exact_value_storage": "contract_dependent",
+        "public_repository": "contract_dependent",
+        "public_api_or_ui": "contract_dependent",
+        "redistribution": "contract_dependent"
+      },
       "market_fit": "unknown_pending_methodology",
       "blocking_reason": "contract_dependent_rights_missing_population_team_count_window_revision_semantics_and_possible_ffc_source_overlap"
     }
