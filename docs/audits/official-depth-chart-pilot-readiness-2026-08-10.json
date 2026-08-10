@@ -23,6 +23,7 @@
   },
   "source_observation_receipts_path": "data/candidate/depth_charts/source_observation_receipts_2026-08-10.json",
   "source_registry_path": "data/candidate/depth_charts/official_source_registry_v0.json",
+  "normalized_candidate_manifest_path": "data/candidate/depth_charts/normalized_candidate_manifest_2026-08-10.json",
   "format_probe_results": [
     {
       "team_abbr": "ARI",
@@ -129,10 +130,14 @@
     "required_followup": "Obtain and record a rights/retention disposition or approve a non-mirroring receipt architecture that still satisfies immutable auditability."
   },
   "freshness_and_lineage_disposition": {
-    "latest_selection_clock": "newest_verified_official_effective_or_publication_date",
+    "latest_selection_clock": "chart_as_of_date_then_full_timezone_aware_published_at",
     "retrieval_time_can_select_latest": false,
     "undated_mutable_page_can_supersede_dated_snapshot": false,
-    "identical_hash_behavior": "run_receipt_only_no_snapshot_change",
+    "null_chart_as_of_can_advance": false,
+    "same_probe_hash_behavior": "hash_equality_only_no_snapshot_and_no_independent_monitor_health_claim",
+    "distinct_run_health_behavior": "not_implemented_in_v0_requires_separate_governed_run_record_contract",
+    "latest_stream_key": "contract_version_assertion_scope_team_abbr_season",
+    "unchanged_retained_hash_set_can_advance": false,
     "changed_parse_failure_behavior": "quarantine_candidate_retain_prior_verified_latest",
     "real_arizona_successor_available": false,
     "real_supersession_proof_complete": false
@@ -147,7 +152,7 @@
   "acceptance_matrix": [
     {
       "criterion": "Official-team allowlist and third-party rejection",
-      "status": "implemented_and_tested"
+      "status": "implemented_team_coupled_and_tested"
     },
     {
       "criterion": "Snapshot contract/schema",
@@ -155,7 +160,7 @@
     },
     {
       "criterion": "Original immutable receipt mandatory",
-      "status": "contract_encoded_but_source_rights_blocked"
+      "status": "path_presence_byte_length_and_sha256_enforced_but_source_rights_blocked"
     },
     {
       "criterion": "Arizona exact candidate snapshot",
@@ -163,7 +168,7 @@
     },
     {
       "criterion": "Structural markers survive normalization",
-      "status": "contract_encoded_probe_counts_recorded_candidate_pending"
+      "status": "raw_markers_required_marker_decoding_and_legend_binding_prohibited_in_v0"
     },
     {
       "criterion": "Unresolved identity retained",
@@ -175,7 +180,7 @@
     },
     {
       "criterion": "Publication clock distinct from monitoring clock",
-      "status": "implemented_and_tested"
+      "status": "chart_date_then_full_timezone_aware_publication_tiebreak_implemented_and_tested"
     },
     {
       "criterion": "Changed parse failure retains prior latest",
@@ -204,7 +209,7 @@
   ],
   "handoff": {
     "active_task": "TIBER-Data issue 231 bounded D0 official-depth-chart pilot",
-    "what_is_now_true": "Strict candidate contracts, a 32-team registry, six exact hash-pinned source observations, four format probes, a missing-state probe, and deterministic validator behavior exist.",
+    "what_is_now_true": "Strict candidate contracts, a team-coupled 32-team registry, six exact same-probe hash observations, four format probes, a missing-state probe, an explicit empty normalized-candidate manifest, and fail-closed validator behavior exist.",
     "what_is_still_missing": "Rights-cleared immutable receipt storage, Arizona and three-format normalized candidate snapshots, independent transcription review, a later Arizona snapshot, promotion design, scheduler, and downstream activation.",
     "what_must_not_be_assumed": "No current depth-chart player hierarchy is admitted; no chart proves actual usage, availability, roster survival, injury status, or fantasy volume.",
     "audit_trigger_status": "audit_completed_builder_output_and_source_receipt_review_still_required_before_any_future_merge"
