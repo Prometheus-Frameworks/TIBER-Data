@@ -18,8 +18,9 @@ This is a source-governance assessment, not legal advice. Observed source statem
 - Pinned TIBER-Data base: `44296134a178f9d53fd7eda01a94548e76160d29`.
 - Candidate source: FFC ADP REST API, `ppr`, 12 teams, 2026, all-player response.
 - This packet contains no player ADP rows or values. No market body was persisted, but the exact current endpoint was contacted twice; the second GET exceeded issue #251's one-probe ceiling. The deviation is disclosed below and no further source call is authorized.
-- No adapter, snapshot, history, scheduler, source purchase, credential, license acceptance, identity promotion, downstream binding, merge, or deployment is authorized here.
-- Issue #251 acceptance is not met and the issue must remain open. The source terminal above remains defensible, but the process nonconformance requires an explicit operator disposition before this audit PR can be considered for merge or any separate outreach can be authorized.
+- Operator disposition recorded `2026-08-10T23:34:13Z`: merge of this docs-only audit/incident record is authorized. Issue #251 remains open, its acceptance remains false, and no source admission follows from the merge.
+- Drafting a rightsholder permission request for operator review is authorized. Sending it is not authorized.
+- No adapter, snapshot, history, scheduler, source purchase, credential, license acceptance, identity promotion, downstream binding, issue closure, source admission, or deployment is authorized here.
 
 ## Exact market definition
 
@@ -176,7 +177,7 @@ The alternatives were qualified only from their official public surfaces on 2026
 
 ## Required rightsholder confirmation
 
-No message was sent during this audit. The first required action is operator disposition of the probe-budget nonconformance. Only after a separate outreach authorization should a request ask Left Brain Sports LLC / FFC to confirm in writing:
+No message was sent during this audit. The operator has accepted the nonconformance as a docs-only incident record and authorized drafting a permission request. Sending that request still requires separate approval. The draft should ask Left Brain Sports LLC / FFC to confirm in writing:
 
 1. once-daily automated calls for each named market configuration;
 2. whether the API page is the intended exception to the 2025 Terms and `/api/` robots rule;
@@ -210,4 +211,4 @@ A later candidate-adapter issue may be proposed only after all blocking items ar
 
 ## Prohibited next steps
 
-Until a later operator activation, do not build an adapter, call the market endpoint again, retain player rows, normalize values, reconstruct or backdate history, schedule retrievals, publish a snapshot, expose values in an API/UI, create an FFC identity crosswalk, accept a license, purchase a source, merge this draft, or bind any downstream model. The extra GET cannot be undone; the control response is disclosure, immediate stop, and no source admission from this slice.
+Until a later operator activation, do not build an adapter, call the market endpoint again, retain player rows, normalize values, reconstruct or backdate history, schedule retrievals, publish a snapshot, expose values in an API/UI, create an FFC identity crosswalk, accept a license, purchase a source, send the permission email, close #251, or bind any downstream model. The extra GET cannot be undone; the control response is disclosure, immediate stop, and no source admission from this slice.
