@@ -28,6 +28,7 @@ Explicitly outside authority: live API access, scraping, credentials, purchase, 
 - Base commit: 44296134a178f9d53fd7eda01a94548e76160d29
 - AGENTS.md blob: 7fdc142c1a621ed254ca752f89474fff918a4bd1
 - TRUTH_SOURCES.md blob: 27eec691b8e8535024a1bef1d342d67c83785e1c
+- Bucky Irving canonical identity evidence: exports/promoted/nfl/player_season_coverage_v0.json, blob f7b2918b978d842cd8753a7f3dedd3836934859b, GSIS 00-0039361
 
 At branch creation, the only open Data PR returned by the collision inventory was draft PR #247 on branch codex/issue-245-offensive-participation-readiness. It changes a different paired audit. It does not overlap either issue-235 path. No issue-235 branch already existed.
 
@@ -116,7 +117,7 @@ This is a requested configuration, not yet an exact governed market object. In p
 
 ## Prototype inventory: what it proves and what it does not
 
-PR #304 contains six JSON files but only three unique payload blobs. Each latest alias is byte-identical at the pinned commit to its corresponding dated file. All three unique snapshots were retrieved on 2026-08-07.
+PR #304 changed eight files total: six snapshot JSON files, one README, and one fetch script. The six snapshot files contain three unique payload blobs because each latest alias is byte-identical at the pinned commit to its corresponding dated file. The three persisted retrievals occurred at 02:11:50.897, 13:58:25.891, and 13:58:31.704 UTC on the single retrieval date 2026-08-07.
 
 | Source label | Requested teams | Sample window | Source-reported drafts | Rows |
 |---|---:|---|---:|---:|
@@ -124,7 +125,7 @@ PR #304 contains six JSON files but only three unique payload blobs. Each latest
 | PPR | 10 | 2026-07-31..2026-08-07 | 4,929 | 256 |
 | PPR | 12 | 2026-07-31..2026-08-07 | 4,929 | 256 |
 
-This proves one committed retrieval event and a candidate vocabulary. It does not prove six historical observations, daily history, source cadence, current source time, different underlying 10-team and 12-team populations, lawful retention, or a governed source lane.
+This proves three persisted retrievals on one retrieval date and a candidate vocabulary. It does not prove six historical observations, daily history, source cadence, current source time, different underlying 10-team and 12-team populations, lawful retention, or a governed source lane.
 
 The latest files are overwritten by the prototype script. A mutable latest alias can be a convenience pointer in a future system, but it cannot be the immutable historical object or the thing whose prior bytes are silently replaced.
 
@@ -190,7 +191,7 @@ These are design requirements only. No schema file or source row is created here
 
 ## Identity contract
 
-GSIS is canonical join authority. Bucky Irving's canonical trace ID is 00-0039361.
+GSIS is canonical join authority. Bucky Irving's canonical trace ID 00-0039361 is pinned to TIBER-Data exports/promoted/nfl/player_season_coverage_v0.json at blob f7b2918b978d842cd8753a7f3dedd3836934859b. That artifact is canonical identity evidence for this trace, not market evidence.
 
 The FFC prototype carries provider IDs, but there is no governed FFC-to-GSIS edge. Player names, teams, positions, approximate values, and provider IDs from unrelated sources cannot authorize a match. Bucky's presence in the prototype does not make the row claim-ready, and this audit deliberately does not republish its market value.
 
@@ -375,7 +376,7 @@ What must not be assumed:
 - daily refresh is permitted or source-supported; or
 - any current ADP, ADP-dip, or fantasy-value claim is supported.
 
-Audit-trigger status: independent audit required before merge. This authoring self-check is not independent review.
+Audit-trigger status: independent audit completed with three corrections requested and applied; post-fix reviewer verification remains pending.
 
 ## Validation
 
@@ -384,7 +385,7 @@ Audit-trigger status: independent audit required before merge. This authoring se
 - Human and machine artifacts use the same evidence cutoff, ownership boundary, prohibited scope, blockers, and outcome.
 - Branch contents are documentation-only.
 - No external source/network request was made for source evidence.
-- Independent review remains pending.
+- The three independent-review findings are addressed; post-fix reviewer verification remains pending.
 
 ## Terminal decision
 
