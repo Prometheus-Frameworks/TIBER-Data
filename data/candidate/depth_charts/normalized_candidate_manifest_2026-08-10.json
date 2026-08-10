@@ -1,0 +1,10 @@
+{
+  "artifact_type": "official_depth_chart_normalized_candidate_manifest",
+  "artifact_version": "official_depth_chart_normalized_candidate_manifest_v0",
+  "issue": "Prometheus-Frameworks/TIBER-Data#231",
+  "snapshot_contract_version": "team_published_depth_chart_snapshot_v0",
+  "bounded_teams": ["ARI", "WAS", "PIT", "CAR"],
+  "candidate_root": "data/candidate/depth_charts/normalized",
+  "candidate_snapshot_paths": [],
+  "empty_reason": "No normalized candidate is admissible while every bounded source receipt lacks rights-cleared immutable bytes."
+}
