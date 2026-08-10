@@ -18,7 +18,13 @@
       "agents_path": "AGENTS.md",
       "agents_blob_sha1": "7fdc142c1a621ed254ca752f89474fff918a4bd1",
       "truth_sources_path": "TRUTH_SOURCES.md",
-      "truth_sources_blob_sha1": "27eec691b8e8535024a1bef1d342d67c83785e1c"
+      "truth_sources_blob_sha1": "27eec691b8e8535024a1bef1d342d67c83785e1c",
+      "bucky_identity_evidence": {
+        "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+        "git_blob_sha1": "f7b2918b978d842cd8753a7f3dedd3836934859b",
+        "canonical_gsis_id": "00-0039361",
+        "evidence_role": "canonical identity pin only; not market evidence"
+      }
     },
     "ffc_prototype": {
       "repository": "Prometheus-Frameworks/TIBER-Fantasy",
@@ -197,10 +203,17 @@
     ]
   },
   "prototype_inventory": {
-    "committed_files": 6,
+    "pull_request_changed_files": 8,
+    "committed_snapshot_json_files": 6,
     "unique_payload_blobs": 3,
+    "persisted_retrievals": 3,
     "retrieval_dates": [
       "2026-08-07"
+    ],
+    "retrieval_timestamps": [
+      "2026-08-07T02:11:50.897Z",
+      "2026-08-07T13:58:25.891Z",
+      "2026-08-07T13:58:31.704Z"
     ],
     "lanes": [
       {
@@ -235,7 +248,7 @@
       }
     ],
     "latest_alias_behavior": "Each latest file has the same blob as its corresponding dated file at the inspected commit. The script overwrites latest aliases, so only dated immutable objects could be eligible in a future lane.",
-    "evidence_limit": "Prototype presence proves shape and one retrieval event only; it does not prove source admission, historical continuity, source cadence, or current truth."
+    "evidence_limit": "Prototype presence proves three persisted retrievals on one retrieval date and a candidate vocabulary only; it does not prove source admission, historical continuity, source cadence, or current truth."
   },
   "market_measure_registry": [
     {
@@ -353,7 +366,14 @@
         "relevance": "normalized-name candidate proposal is not governed join authority and is not authorized here"
       }
     ],
-    "duplicate_conflict_behavior": "Duplicate provider IDs, provider-ID reuse, conflicting GSIS edges, or unresolved mappings fail closed or require explicit operator review."
+    "duplicate_conflict_behavior": "Duplicate provider IDs, provider-ID reuse, conflicting GSIS edges, or unresolved mappings fail closed or require explicit operator review.",
+    "canonical_identity_evidence": {
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "base_commit": "44296134a178f9d53fd7eda01a94548e76160d29",
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "git_blob_sha1": "f7b2918b978d842cd8753a7f3dedd3836934859b",
+      "canonical_gsis_id": "00-0039361"
+    }
   },
   "clocks": {
     "preserve_separately": [
@@ -490,7 +510,11 @@
       "unaveraged disagreement",
       "claim-ready W4 receipt"
     ],
-    "interpretation_boundary": "The Data trace can report observations and missingness; it cannot label a dip, value, buy, or opportunity."
+    "interpretation_boundary": "The Data trace can report observations and missingness; it cannot label a dip, value, buy, or opportunity.",
+    "canonical_identity_evidence": {
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "git_blob_sha1": "f7b2918b978d842cd8753a7f3dedd3836934859b"
+    }
   },
   "negative_tests_for_later_builder": [
     {
@@ -637,7 +661,7 @@
       "daily refresh is allowed or source-supported",
       "any current ADP or ADP-dip claim is supported"
     ],
-    "audit_trigger_status": "independent audit required before merge; this self-check is not independent review"
+    "audit_trigger_status": "independent audit completed with three corrections requested; corrections applied; post-fix reviewer verification pending"
   },
   "validation": {
     "machine_json_parse": "passed_before_commit",
@@ -645,7 +669,7 @@
     "exact_ref_check": "passed_for_committed repository evidence",
     "external_network_or_source_access": "not_performed",
     "implementation_or_data_artifact_changes": "none",
-    "independent_review": "pending"
+    "independent_review": "three findings addressed; post-fix reviewer verification pending"
   },
   "terminal_decision": "dated_redraft_adp_v0_requires_source_or_ownership_work"
 }
