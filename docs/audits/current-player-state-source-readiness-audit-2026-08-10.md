@@ -21,11 +21,7 @@ The existing contracts are useful foundations, but the live evidence lanes must 
 
 No audited source family is ready for a candidate build today. Official NFL and official-team web surfaces are authoritative for their narrow published assertions, but their current terms prohibit systematic retrieval or database compilation without express prior written consent. The nflverse roster lane is technically promising but mixes NGS/Shield source paths and has unresolved source-admission, rights, revision-clock, and status-semantic questions. nflverse documents that its injury source died after the 2024 season and that no 2025 data exists. Its trades dataset is historical PFR/Lee Sharpe trade history, not a full transaction wire.
 
-Terminal decision:
-
-```text
-current_player_state_v0_requires_source_or_contract_followup
-```
+The audit requires source/rights and contract follow-up before any candidate build.
 
 No source access, ingestion, or candidate state row is authorized by this audit.
 
