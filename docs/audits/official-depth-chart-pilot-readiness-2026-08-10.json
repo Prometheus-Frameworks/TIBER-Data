@@ -145,6 +145,8 @@
   "identity_disposition": {
     "unresolved_entries_may_be_retained": true,
     "unresolved_entries_may_be_dropped": false,
+    "unresolved_or_ambiguous_player_id_must_be_null": true,
+    "resolved_exact_requires_player_id_and_resolution_method": true,
     "display_name_match_is_canonical_identity": false,
     "identity_builder_implemented": false,
     "reason": "No player-identity join was required to establish source/format readiness and no candidate snapshot was admitted."
@@ -157,6 +159,10 @@
     {
       "criterion": "Snapshot contract/schema",
       "status": "implemented_and_tested"
+    },
+    {
+      "criterion": "Complete normalization is exact lossless row and entry reconciliation",
+      "status": "implemented_and_adversarially_tested"
     },
     {
       "criterion": "Original immutable receipt mandatory",
@@ -172,7 +178,7 @@
     },
     {
       "criterion": "Unresolved identity retained",
-      "status": "contract_encoded_and_tested"
+      "status": "all_unresolved_and_ambiguous_states_require_null_id_resolved_exact_requires_id_and_method_tested"
     },
     {
       "criterion": "32-team source registry",
@@ -209,7 +215,7 @@
   ],
   "handoff": {
     "active_task": "TIBER-Data issue 231 bounded D0 official-depth-chart pilot",
-    "what_is_now_true": "Strict candidate contracts, a team-coupled 32-team registry, six exact same-probe hash observations, four format probes, a missing-state probe, an explicit empty normalized-candidate manifest, and fail-closed validator behavior exist.",
+    "what_is_now_true": "Strict candidate contracts, exact lossless complete-status reconciliation, exhaustive identity ID/method rules, a team-coupled 32-team registry, six exact same-probe hash observations, four format probes, a missing-state probe, an explicit empty normalized-candidate manifest, and fail-closed validator behavior exist.",
     "what_is_still_missing": "Rights-cleared immutable receipt storage, Arizona and three-format normalized candidate snapshots, independent transcription review, a later Arizona snapshot, promotion design, scheduler, and downstream activation.",
     "what_must_not_be_assumed": "No current depth-chart player hierarchy is admitted; no chart proves actual usage, availability, roster survival, injury status, or fantasy volume.",
     "audit_trigger_status": "audit_completed_builder_output_and_source_receipt_review_still_required_before_any_future_merge"
