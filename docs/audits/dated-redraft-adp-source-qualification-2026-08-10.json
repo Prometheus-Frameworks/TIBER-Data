@@ -43,8 +43,10 @@
   "probe_execution": {
     "authorized_exact_endpoint_probe_maximum": 1,
     "actual_exact_endpoint_get_count": 2,
+    "actual_market_endpoint_get_count_total": 3,
     "budget_status": "exceeded_by_one",
     "scope_compliant": false,
+    "provider_cadence_compliance": "cannot_be_claimed_two_current_gets_about_eleven_minutes_apart_plus_historical_example_get",
     "control_response": "audit_process_nonconformance_disclosed_no_further_ffc_market_requests_no_market_artifact_admitted_no_local_market_row_file_created",
     "first_exact_endpoint_get": {
       "url": "https://fantasyfootballcalculator.com/api/v1/adp/ppr?teams=12&year=2026",
@@ -59,6 +61,8 @@
       "body_parsed": false,
       "body_hashed": false,
       "body_persisted": false,
+      "proxy_http_status": 200,
+      "origin_http_status": 200,
       "http_representation_last_modified": "2026-08-10T19:47:07Z",
       "response_date_header": "2026-08-10T19:49:11Z",
       "clock_note": "local_invocation_and_completion_bound_retrieval_server_date_is_not_tiber_retrieval_clock"
@@ -75,9 +79,14 @@
       "url": "https://fantasyfootballcalculator.com/api/v1/adp/standard?teams=12&year=2018",
       "method": "GET_via_official_documentation_link",
       "named_current_endpoint": false,
+      "retrieval_bounds": "unavailable_not_retained",
+      "http_status": "unavailable_not_retained",
+      "body_byte_length": null,
+      "body_sha256": null,
       "player_rows_visible_in_transient_tool_output": true,
       "player_rows_persisted": false,
-      "player_rows_included_in_packet": false
+      "player_rows_included_in_packet": false,
+      "refetch_authorized": false
     }
   },
   "source_product": {
@@ -97,6 +106,17 @@
       "draft_population": "human selections in FFC-hosted mock drafts",
       "computer_selections": "excluded_before_averaging",
       "position_filter": "all_source_returned_positions",
+      "metric": {
+        "name": "source_supplied_mean_draft_position",
+        "observed_calculation": "computer_selections_excluded_before_averaging",
+        "weighting": "unknown",
+        "unit": "unknown_not_contractually_bound",
+        "draft_eligibility_rules": "unknown",
+        "outlier_handling": "unknown",
+        "minimum_sample": "unknown",
+        "calculation_window_values": "unavailable_not_retained",
+        "calculation_window_semantics": "unknown"
+      },
       "generalizability": "source_specific_ffc_mock_draft_behavior_only_not_universal_or_managed_league_market",
       "forbidden_claims": ["universal_market", "consensus_adp", "managed_league_redraft_market"],
       "team_count_semantics": "request_specified_12_response_meta_value_not_retained_population_effect_requires_confirmation"
@@ -145,6 +165,7 @@
       "embedded_termly_policy_uuid": "2ef2a813-520e-416e-8542-126123f37364",
       "decoded_page_byte_length": 39610,
       "decoded_page_sha256": "51cd23d7062dee728100a1313002e3b85f6a738e16f57c1bf06be3c9839d6668",
+      "digest_classification": "retrieval_specific_dynamic_html_shell_not_stable_policy_identity",
       "observed": {
         "embedded_policy_source": "termly"
       }
@@ -180,6 +201,7 @@
       "embedded_termly_policy_uuid": "9a379394-6a14-42ba-9c4a-8110641bc62c",
       "decoded_page_byte_length": 39606,
       "decoded_page_sha256": "fa36c70b7517d1abe252db68a9eeb0f437526b27c753e5d6763cfc4278a22d51",
+      "digest_classification": "retrieval_specific_dynamic_html_shell_not_stable_policy_identity",
       "license_effect": "none"
     },
     {
@@ -268,10 +290,27 @@
     },
     "content_type_assessment": "body_parsed_as_json_despite_text_html_declaration"
   },
+  "tiber_fantasy_pr304_assessment": {
+    "status": "schema_reference_only",
+    "committed_snapshot_file_count": 6,
+    "unique_same_day_retrieval_count": 3,
+    "ppr_10_vs_12_observation": "same_source_window_same_total_drafts_and_substantively_identical_source_values_except_formatted_pick_notation",
+    "team_count_inference": "warning_requires_provider_confirmation_not_proof_team_count_is_ignored",
+    "dated_filename_grain": "utc_calendar_date_same_day_rerun_overwrites",
+    "latest_behavior": "overwrites_by_design",
+    "missing_controls": [
+      "raw_source_body_digest",
+      "immutable_observation_id",
+      "semantic_revision_contract",
+      "source_rights_pin",
+      "governed_ffc_to_gsis_identity_edge"
+    ],
+    "player_values_republished_in_this_packet": false
+  },
   "clock_assessment": {
     "market_sample_window": "field_names_observed_values_not_retained_exact_window_timezone_and_inclusion_semantics_unavailable",
     "generated_at": "unavailable",
-    "source_as_of": "unavailable_beyond_sample_window",
+    "source_as_of": "unavailable_only_sample_window_field_names_observed_not_values",
     "available_at": "unavailable",
     "retrieved_at": "observed",
     "http_representation_modified": "observed_not_semantic_clock",
@@ -286,6 +325,7 @@
     "correction_policy": null,
     "revision_clock": null,
     "candidate_maximum_cadence_if_approved": "once_daily"
+    ,"audit_request_cadence_compliance": "cannot_be_claimed"
   },
   "history_assessment": {
     "documented_annual_history_start_year": 2007,
@@ -304,7 +344,8 @@
     "cross_platform_id_present": false,
     "ffc_to_gsis_edge": "unavailable",
     "forbidden_fallbacks": ["name", "team", "position", "adp", "snapshot_absence"],
-    "observation_states": ["ranked", "explicitly_unranked", "missing_from_snapshot", "identity_unresolved"],
+    "observation_states": ["ranked", "explicitly_unranked", "missing_from_snapshot", "identity_unresolved", "identity_conflicted"],
+    "identity_conflict_handling": "fail_closed_no_gsis_join_no_ranked_or_unranked_claim",
     "adjacent_sleeper_only_work": {
       "main_commit": "44296134a178f9d53fd7eda01a94548e76160d29",
       "candidate_path": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
@@ -355,7 +396,22 @@
         "redistribution": "requires_written_permission"
       },
       "market_fit": "moderate",
-      "blocking_reason": "api_caching_guidance_conflicts_with_newer_terms_and_ppr_period_semantics_are_inexact"
+      "blocking_reason": "api_caching_guidance_conflicts_with_newer_terms_and_ppr_period_semantics_are_inexact",
+      "qualification_dimensions": {
+        "calculation_method": "unavailable_not_documented",
+        "scoring_format": "ppr_boolean_available_half_vs_full_unresolved",
+        "team_count": "configurable",
+        "draft_type": "keeper_redraft_rookie_and_mock_filters_available_other_settings_incomplete",
+        "population": "drafts_hosted_by_myfantasyleague",
+        "computer_selection_policy": "unavailable",
+        "attribution": "unavailable",
+        "commercial_posture": "api_program_available_but_site_terms_conflict",
+        "correction_behavior": "unavailable",
+        "reproducibility": "partial_last_updated_available_period_semantics_unbound",
+        "current_availability": "available_through_api_subject_to_terms",
+        "historical_availability": "original_dated_daily_history_unavailable",
+        "identity_path": "mfl_player_id_to_gsis_requires_completeness_and_stability_audit"
+      }
     },
     {
       "source_key": "sleeper_public_draft_api",
@@ -393,7 +449,22 @@
         "redistribution": "requires_written_permission"
       },
       "market_fit": "low",
-      "blocking_reason": "no_representative_global_discovery_or_aggregate_and_systematic_extraction_requires_authorization"
+      "blocking_reason": "no_representative_global_discovery_or_aggregate_and_systematic_extraction_requires_authorization",
+      "qualification_dimensions": {
+        "calculation_method": "not_applicable_no_official_aggregate",
+        "scoring_format": "available_per_discovered_draft",
+        "team_count": "available_per_discovered_draft",
+        "draft_type": "available_per_discovered_draft",
+        "population": "known_user_league_or_draft_id_discovery_only_selection_biased",
+        "computer_selection_policy": "unavailable",
+        "attribution": "unavailable_for_proposed_market_lane",
+        "commercial_posture": "systematic_extraction_and_redistribution_require_written_authorization",
+        "correction_behavior": "unavailable",
+        "reproducibility": "individual_known_drafts_partial_no_representative_market_reproduction",
+        "current_availability": "per_draft_api_available_for_known_identifiers",
+        "historical_availability": "per_discovered_draft_only_not_representative",
+        "identity_path": "sleeper_player_id_bounded_data_bridge_not_officially_guaranteed"
+      }
     },
     {
       "source_key": "underdog_fantasy_adp",
@@ -428,7 +499,22 @@
         "redistribution": "not_applicable_without_approved_feed"
       },
       "market_fit": "wrong_market_type",
-      "blocking_reason": "no_public_approved_feed_and_best_ball_contest_market_not_managed_redraft"
+      "blocking_reason": "no_public_approved_feed_and_best_ball_contest_market_not_managed_redraft",
+      "qualification_dimensions": {
+        "calculation_method": "unavailable",
+        "scoring_format": "best_ball_contest_not_requested_redraft",
+        "team_count": "unavailable",
+        "draft_type": "best_ball_and_contest",
+        "population": "underdog_platform_contest_drafts",
+        "computer_selection_policy": "unavailable",
+        "attribution": "unavailable",
+        "commercial_posture": "approved_feed_or_client_required",
+        "correction_behavior": "unavailable",
+        "reproducibility": "unavailable_without_approved_feed",
+        "current_availability": "unavailable_as_official_public_feed",
+        "historical_availability": "unavailable",
+        "identity_path": "unavailable"
+      }
     },
     {
       "source_key": "sportsdataio_fantasy_adp",
@@ -463,7 +549,22 @@
         "redistribution": "contract_dependent"
       },
       "market_fit": "unknown_pending_methodology",
-      "blocking_reason": "contract_dependent_rights_missing_population_team_count_window_revision_semantics_and_possible_ffc_source_overlap"
+      "blocking_reason": "contract_dependent_rights_missing_population_team_count_window_revision_semantics_and_possible_ffc_source_overlap",
+      "qualification_dimensions": {
+        "calculation_method": "unavailable_in_public_docs",
+        "scoring_format": "ppr_field_published_full_ppr_semantics_unavailable",
+        "team_count": "unavailable",
+        "draft_type": "redraft_2qb_dynasty_fields_named_population_filters_unavailable",
+        "population": "unavailable_and_may_syndicate_ffc",
+        "computer_selection_policy": "unavailable",
+        "attribution": "contract_dependent",
+        "commercial_posture": "production_license_required",
+        "correction_behavior": "unavailable",
+        "reproducibility": "blocked_without_contract_methodology_and_clock_contract",
+        "current_availability": "licensed_product_not_publicly_probed",
+        "historical_availability": "vault_product_exists_exact_adp_grain_unconfirmed",
+        "identity_path": "persistent_provider_player_id_documented_gsis_bridge_requires_audit"
+      }
     }
   ],
   "rightsholder_questions": {
