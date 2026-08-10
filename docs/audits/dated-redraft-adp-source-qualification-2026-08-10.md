@@ -144,6 +144,13 @@ It demonstrates useful parameter and wrapper vocabulary, but not an admitted Dat
 
 No alternative clears both the rights and exact-market-definition gate today.
 
+The alternatives were qualified only from their official public surfaces on 2026-08-10; no player payload was retained:
+
+- **MyFantasyLeague / First Pick Labs, Inc.** exposes an ADP export through its developer program. The documented filters include team count, a PPR flag, keeper/redraft/rookie, mock/non-mock, and named periods, and the API returns a last-updated value. However, the PPR flag does not distinguish half from full PPR, exact recent-period dates and broader roster/scoring controls are incomplete, and the API's caching guidance conflicts with newer site terms restricting reproduction, publication, distribution, caching, scraping, or extraction without written permission. Provider identity and any GSIS edge require a separate audit. Original dated daily history and revision behavior are undocumented.
+- **Sleeper / Blitz Studios, Inc. and affiliates** exposes read-only drafts, picks, and player data, but there is no official representative global draft-discovery or aggregate ADP endpoint. A sample built only from known users, leagues, or draft IDs would be incomplete and selection-biased. The 2026-07-24 Terms require separate authorization for the proposed systematic extraction and redistribution. Per-draft clocks do not cure the population defect.
+- **Underdog Sports, LLC d/b/a Underdog Fantasy** has no public approved ADP feed observed in this audit, restricts automated access outside an approved client/API, and represents a best-ball contest market rather than the requested redraft mock population. No source key, dated history, or semantic clocks were available for qualification.
+- **SportsDataIO** advertises fantasy ADP fields, persistent provider IDs, and a licensed historical product. Production use and all retention/redistribution rights are contract-dependent. Public documentation does not bind source population, sample size, team count, full-PPR semantics, calculation window, availability, correction, or revision behavior. FFC also states that its ADP is syndicated through FantasyData, so this may be a licensed delivery of the same market rather than an independent comparator.
+
 ## Required rightsholder confirmation
 
 No message was sent during this audit. A future operator-authorized request should ask Left Brain Sports LLC / FFC to confirm in writing:
@@ -179,4 +186,3 @@ A later candidate-adapter issue may be proposed only after all blocking items ar
 ## Prohibited next steps
 
 Until a later operator activation, do not build an adapter, call the market endpoint again, retain player rows, normalize values, reconstruct or backdate history, schedule retrievals, publish a snapshot, expose values in an API/UI, create an FFC identity crosswalk, accept a license, purchase a source, merge this draft, or bind any downstream model.
-
