@@ -232,8 +232,30 @@ def test_snapshot_schema_rejects_dropped_identity_state(tmp_path: Path) -> None:
 def test_snapshot_validator_rejects_unresolved_identity_with_fake_id(tmp_path: Path) -> None:
     snapshot = _snapshot_fixture(tmp_path)
     snapshot["rows"][0]["entries"][0]["player_id"] = "invented-id"
-    with pytest.raises(validator.PilotValidationError):
+    with pytest.raises((ValidationError, validator.PilotValidationError)):
         validator.validate_snapshot(snapshot, receipt_root=tmp_path)
+
+
+def test_snapshot_rejects_ambiguous_identity_with_chosen_id(tmp_path: Path) -> None:
+    snapshot = _snapshot_fixture(tmp_path)
+    entry = snapshot["rows"][0]["entries"][0]
+    entry["identity_status"] = "ambiguous_multiple_matches"
+    entry["player_id"] = "chosen-despite-ambiguity"
+    entry["identity_resolution_method"] = "test-only alias candidates"
+    with pytest.raises((ValidationError, validator.PilotValidationError)):
+        validator.validate_snapshot(snapshot, receipt_root=tmp_path)
+    assert not validator.candidate_can_advance(snapshot, receipt_root=tmp_path)
+
+
+def test_snapshot_rejects_resolved_identity_without_explicit_method(tmp_path: Path) -> None:
+    snapshot = _snapshot_fixture(tmp_path)
+    entry = snapshot["rows"][0]["entries"][0]
+    entry["identity_status"] = "resolved_exact"
+    entry["player_id"] = "canonical-test-player"
+    entry["identity_resolution_method"] = None
+    with pytest.raises((ValidationError, validator.PilotValidationError)):
+        validator.validate_snapshot(snapshot, receipt_root=tmp_path)
+    assert not validator.candidate_can_advance(snapshot, receipt_root=tmp_path)
 
 
 def test_v0_rejects_decoded_marker_meaning_without_binding(tmp_path: Path) -> None:
@@ -312,6 +334,54 @@ def test_complete_candidate_rejects_zero_source_counts(tmp_path: Path) -> None:
     with pytest.raises(validator.PilotValidationError):
         validator.validate_snapshot(snapshot, receipt_root=tmp_path)
     assert not validator.candidate_can_advance(snapshot, receipt_root=tmp_path)
+
+
+def test_complete_candidate_rejects_dropped_source_row_and_cannot_advance(
+    tmp_path: Path,
+) -> None:
+    prior = _snapshot_fixture(tmp_path)
+    prior["snapshot_id"] = "prior"
+    dropped = _snapshot_fixture(
+        tmp_path,
+        date="2026-08-10",
+        source_bytes=b"dropped-row candidate bytes\n",
+        receipt_name="dropped-row.html",
+    )
+    dropped["snapshot_id"] = "dropped-row"
+    dropped["transcription"]["source_row_count"] = 2
+    with pytest.raises(validator.PilotValidationError):
+        validator.validate_snapshot(dropped, receipt_root=tmp_path)
+    assert not validator.candidate_can_advance(dropped, receipt_root=tmp_path)
+    assert _advance(prior, dropped, tmp_path)["snapshot_id"] == "prior"
+
+
+def test_complete_candidate_rejects_dropped_source_entry_and_cannot_advance(
+    tmp_path: Path,
+) -> None:
+    prior = _snapshot_fixture(tmp_path)
+    prior["snapshot_id"] = "prior"
+    dropped = _snapshot_fixture(
+        tmp_path,
+        date="2026-08-10",
+        source_bytes=b"dropped-entry candidate bytes\n",
+        receipt_name="dropped-entry.html",
+    )
+    dropped["snapshot_id"] = "dropped-entry"
+    dropped["transcription"]["source_entry_count"] = 2
+    with pytest.raises(validator.PilotValidationError):
+        validator.validate_snapshot(dropped, receipt_root=tmp_path)
+    assert not validator.candidate_can_advance(dropped, receipt_root=tmp_path)
+    assert _advance(prior, dropped, tmp_path)["snapshot_id"] == "prior"
+
+
+def test_lossy_reconciliation_must_remain_partial_and_cannot_advance(tmp_path: Path) -> None:
+    partial = _snapshot_fixture(tmp_path)
+    partial["normalization_status"] = "partial"
+    partial["verification_status"] = "candidate_unreviewed"
+    partial["reviewed_at"] = None
+    partial["transcription"]["source_entry_count"] = 2
+    validator.validate_snapshot(partial, receipt_root=tmp_path)
+    assert not validator.candidate_can_advance(partial, receipt_root=tmp_path)
 
 
 def test_complete_candidate_cannot_rely_on_hash_only_receipt(tmp_path: Path) -> None:
