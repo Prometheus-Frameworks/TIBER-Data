@@ -90,7 +90,7 @@ The contract and validator encode these rules:
 
 1. Effective/publication time and monitoring time are separate.
 2. Contract v0 never infers monitor health from hash equality. Same-probe equality is a stable observation only and cannot create or advance a snapshot; any future health claim needs a separate governed run-record contract.
-3. Changed sources become candidates and cannot advance latest until full schema, semantic, structural, host-policy, and immutable-byte validation passes; changed parse failures are quarantined.
+3. Changed sources become candidates and cannot advance latest until full schema, semantic, exact source/normalized count reconciliation, host-policy, and immutable-byte validation passes; changed parse failures are quarantined.
 4. Advancement is limited to the same contract/assertion/team/season stream and requires a changed retained source-hash set.
 5. Latest is selected first by verified `chart_as_of`, then the full timezone-aware `published_at`, never retrieval time.
 6. Null `chart_as_of` cannot advance even when a publication clock exists.
@@ -114,10 +114,12 @@ Implemented and testable now:
 - strict snapshot and registry schemas;
 - exact hash-pinned observation ledger;
 - exact immutable-receipt path, byte-length, and SHA-256 checks for any advancing candidate;
+- exact lossless row and entry reconciliation for `complete`; lossy candidates remain partial/quarantined;
 - an explicit bounded normalized-candidate manifest whose directory and listed paths must agree;
 - 32-team registry;
 - distinct source/monitor clocks;
 - unresolved identity retention;
+- null IDs for every unresolved/ambiguous identity state and explicit ID plus method for `resolved_exact`;
 - raw marker retention with all marker decoding prohibited in v0;
 - deterministic diff order;
 - hash-based stable-observation handling and changed-parse quarantine without health inference or automatic advancement;
@@ -137,7 +139,7 @@ Still blocked:
 
 - Active task: bounded D0 official-depth-chart pilot for issue #231.
 - Files touched: snapshot/registry schemas, contract documentation, candidate registry, bounded normalized-candidate manifest, source-observation ledger, paired readiness audit, validator, and tests.
-- What is now true: source/format feasibility and exact observed hashes are pinned; source/team policy, immutable-byte checks, clock ordering, marker-legend requirements, candidate enumeration, and failure semantics are executable.
+- What is now true: source/format feasibility and exact observed hashes are pinned; source/team policy, immutable-byte checks, lossless complete-status reconciliation, identity-state consistency, clock ordering, raw-only marker policy, candidate enumeration, and failure semantics are executable.
 - What is still missing: immutable source retention and normalized player snapshots, plus real successor evidence.
 - What must not be assumed: TIBER does not yet possess governed current depth-chart player hierarchy, and no publication proves actual deployment, availability, injury status, roster survival, or fantasy volume.
 - Audit status: source/rights audit completed; any later receipt mirror, candidate snapshot, contract acceptance, or promotion still requires independent review.
