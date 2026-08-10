@@ -7,7 +7,10 @@
     "parent_issue": "Prometheus-Frameworks/TIBER-Data#235",
     "parent_draft_pr": "Prometheus-Frameworks/TIBER-Data#248",
     "implementation_authorized": false,
-    "merge_authorized": false
+    "merge_authorized": false,
+    "issue_acceptance_met": false,
+    "issue_closure_authorized": false,
+    "operator_incident_disposition_required": true
   },
   "evidence_cutoff": "2026-08-10T20:12:10Z",
   "player_rows_included": false,
@@ -82,18 +85,21 @@
     "brand": "Fantasy Football Calculator",
     "rightsholder_observed_in_terms": "Left Brain Sports LLC doing business as Fantasy Football Calculator",
     "product": "ADP REST API",
-    "candidate_lane_name": "ffc_mock_redraft_ppr_12_v0",
+    "candidate_lane_name": "ffc_mock_ppr_12_candidate_v0",
     "source_status": "requires_rightsholder_clarification",
     "market_definition": {
       "format": "ppr",
       "teams": 12,
       "season": 2026,
+      "draft_type": "unknown_not_source_bound",
+      "redraft_label_status": "inference_not_contract",
+      "draft_type_unresolved_populations": ["dynasty", "rookie", "keeper", "other_mock_settings"],
       "draft_population": "human selections in FFC-hosted mock drafts",
       "computer_selections": "excluded_before_averaging",
       "position_filter": "all_source_returned_positions",
-      "generalizability": "source_specific_ffc_mock_draft_behavior_only",
+      "generalizability": "source_specific_ffc_mock_draft_behavior_only_not_universal_or_managed_league_market",
       "forbidden_claims": ["universal_market", "consensus_adp", "managed_league_redraft_market"],
-      "team_count_semantics": "endpoint_accepts_and_echoes_12_but_population_effect_requires_confirmation"
+      "team_count_semantics": "request_specified_12_response_meta_value_not_retained_population_effect_requires_confirmation"
     }
   },
   "official_evidence_receipts": [
@@ -136,13 +142,11 @@
       "retrieval_started_at": "2026-08-10T19:59:19.026Z",
       "retrieval_completed_at": "2026-08-10T19:59:24.315Z",
       "http_status": 200,
-      "policy_last_updated": "2025-10-13",
-      "termly_policy_uuid": "2ef2a813-520e-416e-8542-126123f37364",
+      "embedded_termly_policy_uuid": "2ef2a813-520e-416e-8542-126123f37364",
       "decoded_page_byte_length": 39610,
       "decoded_page_sha256": "51cd23d7062dee728100a1313002e3b85f6a738e16f57c1bf06be3c9839d6668",
       "observed": {
-        "embedded_policy_source": "termly",
-        "rightsholder": "Left Brain Sports LLC doing business as Fantasy Football Calculator"
+        "embedded_policy_source": "termly"
       }
     },
     {
@@ -151,6 +155,9 @@
       "retrieval_started_at": "2026-08-10T19:59:24.316Z",
       "retrieval_completed_at": "2026-08-10T19:59:29.084Z",
       "http_status": 200,
+      "termly_policy_uuid": "2ef2a813-520e-416e-8542-126123f37364",
+      "policy_last_updated": "2025-10-13",
+      "rightsholder": "Left Brain Sports LLC doing business as Fantasy Football Calculator",
       "embedded_policy_decoded_json_byte_length": 179092,
       "embedded_policy_decoded_json_sha256": "299f9442dc18ebc6c48090fc7318b51cd410c98c21603ffbc9210992f13e22b9",
       "embedded_policy_content_utf8_byte_length": 144115,
@@ -170,8 +177,7 @@
       "retrieval_started_at": "2026-08-10T19:59:29.086Z",
       "retrieval_completed_at": "2026-08-10T19:59:34.936Z",
       "http_status": 200,
-      "policy_last_updated": "2025-10-13",
-      "termly_policy_uuid": "9a379394-6a14-42ba-9c4a-8110641bc62c",
+      "embedded_termly_policy_uuid": "9a379394-6a14-42ba-9c4a-8110641bc62c",
       "decoded_page_byte_length": 39606,
       "decoded_page_sha256": "fa36c70b7517d1abe252db68a9eeb0f437526b27c753e5d6763cfc4278a22d51",
       "license_effect": "none"
@@ -182,6 +188,8 @@
       "retrieval_started_at": "2026-08-10T19:59:55.646Z",
       "retrieval_completed_at": "2026-08-10T20:00:00.513Z",
       "http_status": 200,
+      "termly_policy_uuid": "9a379394-6a14-42ba-9c4a-8110641bc62c",
+      "policy_last_updated": "2025-10-13",
       "embedded_policy_decoded_json_byte_length": 224654,
       "embedded_policy_decoded_json_sha256": "eb3267eae283e0665865c2e4deb81708f329c323aa9dc165e36db7414ea2d9d4",
       "embedded_policy_content_utf8_byte_length": 160532,
@@ -236,6 +244,17 @@
     "formal_vendor_schema_published": false,
     "observed_top_level_fields": ["status", "meta", "players"],
     "observed_meta_fields": ["type", "teams", "rounds", "total_drafts", "start_date", "end_date"],
+    "meta_values_retained": false,
+    "meta_values": {
+      "type": "unavailable_not_retained",
+      "teams": "unavailable_not_retained",
+      "rounds": "unavailable_not_retained",
+      "total_drafts": "unavailable_not_retained",
+      "start_date": "unavailable_not_retained",
+      "end_date": "unavailable_not_retained"
+    },
+    "calculation_window_receipt_status": "unavailable_not_retained_do_not_refetch",
+    "population_receipt_reproducible": false,
     "observed_player_field_names": ["player_id", "name", "position", "team", "adp", "adp_formatted", "times_drafted", "high", "low", "stdev", "bye"],
     "headers": {
       "content_type": "text/html; charset=utf-8",
@@ -250,7 +269,7 @@
     "content_type_assessment": "body_parsed_as_json_despite_text_html_declaration"
   },
   "clock_assessment": {
-    "market_sample_window": "meta_start_date_and_end_date_available_but_timezone_and_inclusion_semantics_unknown",
+    "market_sample_window": "field_names_observed_values_not_retained_exact_window_timezone_and_inclusion_semantics_unavailable",
     "generated_at": "unavailable",
     "source_as_of": "unavailable_beyond_sample_window",
     "available_at": "unavailable",
@@ -346,7 +365,7 @@
       "source_status": "rejected",
       "access": {
         "authentication": "public_read_only_endpoints",
-        "rate_guidance": "official_docs_apply_no_market_specific_numeric_envelope_recorded",
+        "rate_guidance": "official_general_limit_below_1000_calls_per_minute_no_market_specific_cadence",
         "retrieval_clock": "2026-08-10_date_only"
       },
       "market_definition": {
@@ -461,6 +480,8 @@
       "numeric request ceiling and preferred user-agent/contact",
       "player_id stability and reuse",
       "team-count semantics",
+      "whether ppr isolates ordinary non_keeper non_dynasty non_rookie redraft mocks",
+      "returned metadata values and exact calculation-window semantics",
       "generation availability correction and revision clocks",
       "authorized original dated prior-twelve-month export"
     ]
@@ -469,7 +490,15 @@
     "primary_candidate": "fantasy_football_calculator_adp",
     "adapter_authorized": false,
     "reason": "best_technical_fit_but_rights_market_semantics_and_identity_not_bound_and_probe_execution_ceiling_was_exceeded",
-    "smallest_next_step": "obtain_written_rightsholder_confirmation_then_post_a_separate_operator_adapter_decision"
+    "smallest_next_step": "obtain_explicit_operator_disposition_of_probe_budget_nonconformance",
+    "after_operator_disposition": "if_separately_authorized_send_rightsholder_request_then_post_a_separate_operator_adapter_decision"
+  },
+  "incident_disposition": {
+    "status": "pending_operator",
+    "required_decision": "whether_issue_251_may_accept_a_nonconforming_audit_record_or_must_be_closed_or_reworked_without_acceptance",
+    "source_admission_allowed": false,
+    "issue_closure_allowed": false,
+    "outreach_allowed": false
   },
   "candidate_adapter_prerequisites": [
     "written_rightsholder_permission_for_intended_use_modes",
