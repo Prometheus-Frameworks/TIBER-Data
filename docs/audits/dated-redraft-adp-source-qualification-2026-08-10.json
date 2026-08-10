@@ -1,0 +1,648 @@
+{
+  "packet_id": "dated_redraft_adp_source_qualification_2026_08_10",
+  "schema_version": "tiber.data.source_qualification.v1",
+  "authority": {
+    "issue": "Prometheus-Frameworks/TIBER-Data#251",
+    "authorization": "operator_approved_d1_source_qualification_only",
+    "parent_issue": "Prometheus-Frameworks/TIBER-Data#235",
+    "parent_draft_pr": "Prometheus-Frameworks/TIBER-Data#248",
+    "implementation_authorized": false,
+    "merge_authorized": true,
+    "merge_scope": "docs_only_audit_and_incident_record_no_source_admission",
+    "issue_acceptance_met": false,
+    "issue_closure_authorized": false,
+    "operator_incident_disposition_required": false,
+    "outreach_draft_authorized": true,
+    "outreach_send_authorized": false
+  },
+  "evidence_cutoff": "2026-08-10T20:12:10Z",
+  "player_rows_included": false,
+  "player_payload_persisted": false,
+  "player_rows_transiently_exposed_in_tool_output": true,
+  "pinned_repository_refs": {
+    "tiber_data": {
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "main_commit": "44296134a178f9d53fd7eda01a94548e76160d29"
+    },
+    "tiber_fantasy_pr304": {
+      "repository": "Prometheus-Frameworks/TIBER-Fantasy",
+      "pull_request": 304,
+      "head_sha": "39eee962aa754781e4c3f8a9939d96f42a355293",
+      "merge_commit_sha": "93e26825fb4dbafec722083a2704a0cc59f5aac5",
+      "script_path": "scripts/fetch_adp_snapshot.mjs",
+      "script_git_blob_sha1": "e31234596e951a64f7b22714b158ae3161f09745",
+      "readme_path": "data/adp/README.md",
+      "readme_git_blob_sha1": "7406c03e730286895bb0833a9f2a74889ddd4d4f",
+      "status": "schema_reference_only"
+    }
+  },
+  "capture_method": {
+    "transport": "Node.js fetch with redirects enabled and 30-second timeout",
+    "digest_algorithm": "sha256",
+    "digest_scope": "decoded response-body bytes after automatic HTTP content decoding",
+    "market_body_handling": "first exact-endpoint GET body transferred then discarded to /dev/null; second exact-endpoint GET transiently processed for byte length, digest, and schema keys; no player row or value persisted or included in this packet",
+    "headers_omitted": ["set-cookie", "nel", "report-to"]
+  },
+  "probe_execution": {
+    "authorized_exact_endpoint_probe_maximum": 1,
+    "actual_exact_endpoint_get_count": 2,
+    "actual_market_endpoint_get_count_total": 3,
+    "budget_status": "exceeded_by_one",
+    "scope_compliant": false,
+    "provider_cadence_compliance": "cannot_be_claimed_two_current_gets_about_eleven_minutes_apart_plus_historical_example_get",
+    "control_response": "audit_process_nonconformance_disclosed_no_further_ffc_market_requests_no_market_artifact_admitted_no_local_market_row_file_created",
+    "first_exact_endpoint_get": {
+      "url": "https://fantasyfootballcalculator.com/api/v1/adp/ppr?teams=12&year=2026",
+      "method": "GET",
+      "tool_invocation_recorded_at_utc": "2026-08-10T19:49:03.035713955Z",
+      "tool_completion_recorded_at_utc": "2026-08-10T19:49:08.725994295Z",
+      "network_start_separately_instrumented": false,
+      "network_completion_separately_instrumented": false,
+      "body_transferred": true,
+      "declared_content_length_bytes": 49006,
+      "body_sink": "/dev/null",
+      "body_parsed": false,
+      "body_hashed": false,
+      "body_persisted": false,
+      "proxy_http_status": 200,
+      "origin_http_status": 200,
+      "http_representation_last_modified": "2026-08-10T19:47:07Z",
+      "response_date_header": "2026-08-10T19:49:11Z",
+      "clock_note": "local_invocation_and_completion_bound_retrieval_server_date_is_not_tiber_retrieval_clock"
+    },
+    "second_exact_endpoint_get": {
+      "receipt": "metadata_probe_receipt",
+      "body_transferred": true,
+      "body_parsed_for_schema_only": true,
+      "body_hashed": true,
+      "body_persisted": false,
+      "classification": "excess_second_touch_under_issue_251"
+    },
+    "documentation_example_fetch": {
+      "url": "https://fantasyfootballcalculator.com/api/v1/adp/standard?teams=12&year=2018",
+      "method": "GET_via_official_documentation_link",
+      "named_current_endpoint": false,
+      "retrieval_bounds": "unavailable_not_retained",
+      "http_status": "unavailable_not_retained",
+      "body_byte_length": null,
+      "body_sha256": null,
+      "player_rows_visible_in_transient_tool_output": true,
+      "player_rows_persisted": false,
+      "player_rows_included_in_packet": false,
+      "refetch_authorized": false
+    }
+  },
+  "source_product": {
+    "source_key": "fantasy_football_calculator_adp",
+    "brand": "Fantasy Football Calculator",
+    "rightsholder_observed_in_terms": "Left Brain Sports LLC doing business as Fantasy Football Calculator",
+    "product": "ADP REST API",
+    "candidate_lane_name": "ffc_mock_ppr_12_candidate_v0",
+    "source_status": "requires_rightsholder_clarification",
+    "market_definition": {
+      "format": "ppr",
+      "teams": 12,
+      "season": 2026,
+      "draft_type": "unknown_not_source_bound",
+      "redraft_label_status": "inference_not_contract",
+      "draft_type_unresolved_populations": ["dynasty", "rookie", "keeper", "other_mock_settings"],
+      "draft_population": "human selections in FFC-hosted mock drafts",
+      "computer_selections": "excluded_before_averaging",
+      "position_filter": "all_source_returned_positions",
+      "metric": {
+        "name": "source_supplied_mean_draft_position",
+        "observed_calculation": "computer_selections_excluded_before_averaging",
+        "weighting": "unknown",
+        "unit": "unknown_not_contractually_bound",
+        "draft_eligibility_rules": "unknown",
+        "outlier_handling": "unknown",
+        "minimum_sample": "unknown",
+        "calculation_window_values": "unavailable_not_retained",
+        "calculation_window_semantics": "unknown"
+      },
+      "generalizability": "source_specific_ffc_mock_draft_behavior_only_not_universal_or_managed_league_market",
+      "forbidden_claims": ["universal_market", "consensus_adp", "managed_league_redraft_market"],
+      "team_count_semantics": "request_specified_12_response_meta_value_not_retained_population_effect_requires_confirmation"
+    }
+  },
+  "official_evidence_receipts": [
+    {
+      "id": "api_help",
+      "url": "https://help.fantasyfootballcalculator.com/article/42-adp-rest-api",
+      "retrieval_started_at": "2026-08-10T19:59:05.805Z",
+      "retrieval_completed_at": "2026-08-10T19:59:18.546Z",
+      "http_status": 200,
+      "page_last_updated": "2018-07-17",
+      "decoded_body_byte_length": 15464,
+      "decoded_body_sha256": "4a4bbdc61edba9381fa2e03ae5f41eb319478ca976a0bd69f8ae10b4ffd79014",
+      "observed": {
+        "personal_use": "permitted",
+        "commercial_use": "permitted",
+        "attribution": "link_or_mention_requested",
+        "cadence": "updates_once_daily_do_not_call_frequently",
+        "numeric_rate_limit": null
+      }
+    },
+    {
+      "id": "methodology",
+      "url": "https://help.fantasyfootballcalculator.com/article/34-average-draft-position-adp-data",
+      "retrieval_started_at": "2026-08-10T19:59:18.555Z",
+      "retrieval_completed_at": "2026-08-10T19:59:19.026Z",
+      "http_status": 200,
+      "page_last_updated": "2018-07-17",
+      "decoded_body_byte_length": 15300,
+      "decoded_body_sha256": "878dfde5d6271a10b20663dbd3c9658782cdf916138b9ffc10aff997d8ccdfa9",
+      "observed": {
+        "origin": "aggregate_ffc_mock_draft_selections",
+        "computer_selections": "excluded",
+        "documented_history_start_year": 2007,
+        "documented_daily_point_in_time_endpoint": null
+      }
+    },
+    {
+      "id": "terms_page",
+      "url": "https://fantasyfootballcalculator.com/terms-of-service",
+      "retrieval_started_at": "2026-08-10T19:59:19.026Z",
+      "retrieval_completed_at": "2026-08-10T19:59:24.315Z",
+      "http_status": 200,
+      "embedded_termly_policy_uuid": "2ef2a813-520e-416e-8542-126123f37364",
+      "decoded_page_byte_length": 39610,
+      "decoded_page_sha256": "51cd23d7062dee728100a1313002e3b85f6a738e16f57c1bf06be3c9839d6668",
+      "digest_classification": "retrieval_specific_dynamic_html_shell_not_stable_policy_identity",
+      "observed": {
+        "embedded_policy_source": "termly"
+      }
+    },
+    {
+      "id": "terms_termly_json",
+      "url": "https://app.termly.io/api/v1/consumer/policies/2ef2a813-520e-416e-8542-126123f37364/content",
+      "retrieval_started_at": "2026-08-10T19:59:24.316Z",
+      "retrieval_completed_at": "2026-08-10T19:59:29.084Z",
+      "http_status": 200,
+      "termly_policy_uuid": "2ef2a813-520e-416e-8542-126123f37364",
+      "policy_last_updated": "2025-10-13",
+      "rightsholder": "Left Brain Sports LLC doing business as Fantasy Football Calculator",
+      "embedded_policy_decoded_json_byte_length": 179092,
+      "embedded_policy_decoded_json_sha256": "299f9442dc18ebc6c48090fc7318b51cd410c98c21603ffbc9210992f13e22b9",
+      "embedded_policy_content_utf8_byte_length": 144115,
+      "embedded_policy_content_utf8_sha256": "b0e76d59e9cb1aea22acb7124e7044333ac77ee86990d41a92b27ef127d7eaf3",
+      "etag": "W/\"299f9442dc18ebc6c48090fc7318b51c\"",
+      "observed": {
+        "supplemental_documents_incorporated": true,
+        "systematic_database_retrieval": "requires_written_permission",
+        "automated_extraction": "restricted",
+        "aggregation_republication_public_display_distribution": "not_authorized_outside_applicable_exception_or_permission",
+        "contact": "support@fantasyfootballcalculator.com"
+      }
+    },
+    {
+      "id": "privacy_page",
+      "url": "https://fantasyfootballcalculator.com/privacy-policy",
+      "retrieval_started_at": "2026-08-10T19:59:29.086Z",
+      "retrieval_completed_at": "2026-08-10T19:59:34.936Z",
+      "http_status": 200,
+      "embedded_termly_policy_uuid": "9a379394-6a14-42ba-9c4a-8110641bc62c",
+      "decoded_page_byte_length": 39606,
+      "decoded_page_sha256": "fa36c70b7517d1abe252db68a9eeb0f437526b27c753e5d6763cfc4278a22d51",
+      "digest_classification": "retrieval_specific_dynamic_html_shell_not_stable_policy_identity",
+      "license_effect": "none"
+    },
+    {
+      "id": "privacy_termly_json",
+      "url": "https://app.termly.io/api/v1/consumer/policies/9a379394-6a14-42ba-9c4a-8110641bc62c/content",
+      "retrieval_started_at": "2026-08-10T19:59:55.646Z",
+      "retrieval_completed_at": "2026-08-10T20:00:00.513Z",
+      "http_status": 200,
+      "termly_policy_uuid": "9a379394-6a14-42ba-9c4a-8110641bc62c",
+      "policy_last_updated": "2025-10-13",
+      "embedded_policy_decoded_json_byte_length": 224654,
+      "embedded_policy_decoded_json_sha256": "eb3267eae283e0665865c2e4deb81708f329c323aa9dc165e36db7414ea2d9d4",
+      "embedded_policy_content_utf8_byte_length": 160532,
+      "embedded_policy_content_utf8_sha256": "0c22c86371720024a20c8f90cc39cee852cca299295c672af5dc2d0b83d5ea4b",
+      "etag": "W/\"eb3267eae283e0665865c2e4deb81708\"",
+      "license_effect": "none"
+    },
+    {
+      "id": "robots",
+      "url": "https://fantasyfootballcalculator.com/robots.txt",
+      "retrieval_started_at": "2026-08-10T20:00:00.522Z",
+      "retrieval_completed_at": "2026-08-10T20:00:05.919Z",
+      "http_status": 200,
+      "decoded_body_byte_length": 245,
+      "decoded_body_sha256": "00008501967eca4348089f1f07a013cae145bdd7607a0e3e1d50e25e95fc7393",
+      "observed": {"user_agent": "*", "disallow": ["/api/"]},
+      "interpretation": "crawler_guidance_not_data_license_but_operational_conflict_requires_clarification"
+    }
+  ],
+  "rights_ledger": {
+    "legal_certainty": "not_legal_advice",
+    "api_call": {
+      "permission_status": "allowed_with_conditions",
+      "observed_boundary": "older_api_page_permits_personal_and_commercial_application_use_with_attribution",
+      "activation": "do_not_activate_scheduled_calls_until_written_clarification"
+    },
+    "raw_response_retention": {"permission_status": "requires_written_permission"},
+    "normalized_exact_value_storage": {"permission_status": "requires_written_permission"},
+    "internal_analysis": {
+      "permission_status": "allowed_with_conditions",
+      "boundary": "occasional_ephemeral_non_persistent_attributed_analysis"
+    },
+    "historical_backfill": {"permission_status": "requires_written_permission"},
+    "public_repository": {"permission_status": "requires_written_permission"},
+    "public_api": {"permission_status": "requires_written_permission"},
+    "public_ui_display": {
+      "permission_status": "requires_written_permission",
+      "note": "ordinary attributed app display appears contemplated but governed persistent-history use remains unresolved"
+    },
+    "redistribution": {"permission_status": "requires_written_permission"},
+    "governance_inference": "specific_api_permission_does_not_establish_immutable_archival_or_public_redistribution_rights"
+  },
+  "metadata_probe_receipt": {
+    "url": "https://fantasyfootballcalculator.com/api/v1/adp/ppr?teams=12&year=2026",
+    "retrieval_started_at": "2026-08-10T20:00:05.920Z",
+    "retrieval_completed_at": "2026-08-10T20:00:06.362Z",
+    "http_status": 200,
+    "decoded_body_byte_length": 49006,
+    "decoded_body_sha256": "75b5784c2af5c2b71176375a1837fb795fedb86800b649459ef719f7fe626af8",
+    "player_rows_printed": false,
+    "player_rows_persisted": false,
+    "formal_vendor_schema_published": false,
+    "observed_top_level_fields": ["status", "meta", "players"],
+    "observed_meta_fields": ["type", "teams", "rounds", "total_drafts", "start_date", "end_date"],
+    "meta_values_retained": false,
+    "meta_values": {
+      "type": "unavailable_not_retained",
+      "teams": "unavailable_not_retained",
+      "rounds": "unavailable_not_retained",
+      "total_drafts": "unavailable_not_retained",
+      "start_date": "unavailable_not_retained",
+      "end_date": "unavailable_not_retained"
+    },
+    "calculation_window_receipt_status": "unavailable_not_retained_do_not_refetch",
+    "population_receipt_reproducible": false,
+    "observed_player_field_names": ["player_id", "name", "position", "team", "adp", "adp_formatted", "times_drafted", "high", "low", "stdev", "bye"],
+    "headers": {
+      "content_type": "text/html; charset=utf-8",
+      "cache_control": "max-age=3600",
+      "last_modified": "2026-08-10T19:47:07Z",
+      "etag_present": false,
+      "semantic_revision_id_present": false,
+      "generated_at_present": false,
+      "rate_limit_headers_present": false,
+      "retry_after_present": false
+    },
+    "content_type_assessment": "body_parsed_as_json_despite_text_html_declaration"
+  },
+  "tiber_fantasy_pr304_assessment": {
+    "status": "schema_reference_only",
+    "committed_snapshot_file_count": 6,
+    "unique_same_day_retrieval_count": 3,
+    "ppr_10_vs_12_observation": "same_source_window_same_total_drafts_and_substantively_identical_source_values_except_formatted_pick_notation",
+    "team_count_inference": "warning_requires_provider_confirmation_not_proof_team_count_is_ignored",
+    "dated_filename_grain": "utc_calendar_date_same_day_rerun_overwrites",
+    "latest_behavior": "overwrites_by_design",
+    "missing_controls": [
+      "raw_source_body_digest",
+      "immutable_observation_id",
+      "semantic_revision_contract",
+      "source_rights_pin",
+      "governed_ffc_to_gsis_identity_edge"
+    ],
+    "player_values_republished_in_this_packet": false
+  },
+  "clock_assessment": {
+    "market_sample_window": "field_names_observed_values_not_retained_exact_window_timezone_and_inclusion_semantics_unavailable",
+    "generated_at": "unavailable",
+    "source_as_of": "unavailable_only_sample_window_field_names_observed_not_values",
+    "available_at": "unavailable",
+    "retrieved_at": "partial_two_exact_current_get_bounds_observed_historical_example_receipt_unavailable",
+    "http_representation_modified": "observed_not_semantic_clock",
+    "semantic_revision": "unavailable",
+    "downstream_claim_cutoff": "2026-08-10T20:12:10Z"
+  },
+  "cadence_and_revision": {
+    "documented_cadence": "once_daily",
+    "numeric_request_ceiling": null,
+    "preferred_user_agent": null,
+    "update_hour": null,
+    "correction_policy": null,
+    "revision_clock": null,
+    "candidate_maximum_cadence_if_approved": "once_daily"
+    ,"audit_request_cadence_compliance": "cannot_be_claimed"
+  },
+  "history_assessment": {
+    "documented_annual_history_start_year": 2007,
+    "original_dated_daily_history": "unavailable_or_not_documented",
+    "prior_season_aggregate_retrievable_today": true,
+    "prior_season_aggregate_is_point_in_time": false,
+    "trailing_twelve_month_watch": "unavailable_today",
+    "future_state_if_rights_confirmed": "prospective_only_then_partial_until_sufficient_observations_exist",
+    "backdating_allowed": false
+  },
+  "identity_assessment": {
+    "canonical_id": "gsis_player_id",
+    "source_id": "ffc_player_id",
+    "observed_source_field": "player_id",
+    "source_id_stability_guarantee": null,
+    "cross_platform_id_present": false,
+    "ffc_to_gsis_edge": "unavailable",
+    "forbidden_fallbacks": ["name", "team", "position", "adp", "snapshot_absence"],
+    "observation_states": ["ranked", "explicitly_unranked", "missing_from_snapshot", "identity_unresolved", "identity_conflicted"],
+    "identity_conflict_handling": "fail_closed_no_gsis_join_no_ranked_or_unranked_claim",
+    "adjacent_sleeper_only_work": {
+      "main_commit": "44296134a178f9d53fd7eda01a94548e76160d29",
+      "candidate_path": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "candidate_git_blob_sha1": "ed340fc0d55f37b0f2143608d9aa02762e26e301",
+      "candidate_sha256": "45a69f2176104249d3ea416ccdd71dadd8196c6f5dfe3f1bf4e303580ecf47cd",
+      "candidate_count": 1106,
+      "review_count": 24,
+      "promoted_path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v2.json",
+      "promoted_git_blob_sha1": "feb570db234a1e47883be80a4e186e61dac2e048",
+      "promoted_sha256": "e6c6f8720352f1b94bf0a60fc5c6a2af7995b2b86b87ef9170b18ef3fcc96f9c",
+      "promoted_count": 68,
+      "supported_providers": ["sleeper"],
+      "relevance": "no_ffc_to_gsis_edge"
+    }
+  },
+  "alternatives_matrix": [
+    {
+      "source_key": "myfantasyleague_adp",
+      "owner": "First Pick Labs, Inc.",
+      "product": "MyFantasyLeague Developers Program ADP export API",
+      "official_urls": ["https://api.myfantasyleague.com/2026/api_info", "https://api.myfantasyleague.com/2026/api_info?STATE=details&TYPE=adp", "https://home.myfantasyleague.com/terms.html"],
+      "source_status": "requires_rightsholder_clarification",
+      "access": {
+        "authentication": "public_developer_api",
+        "rate_guidance": "caching_encouraged_numeric_limit_not_observed",
+        "retrieval_clock": "2026-08-10_date_only"
+      },
+      "market_definition": {
+        "population": "drafts_hosted_by_myfantasyleague",
+        "available_filters": ["team_count", "ppr_flag", "keeper_redraft_rookie", "mock_non_mock", "named_period"],
+        "limitations": ["ppr_does_not_distinguish_half_from_full", "recent_period_exact_dates_undefined", "superflex_best_ball_and_roster_controls_incomplete"]
+      },
+      "clocks": {
+        "last_updated": "source_returned",
+        "sample_window": "named_periods_without_fully_bound_dates",
+        "generated_at": "partial",
+        "available_at": "unavailable",
+        "revision": "unavailable",
+        "source_as_of": "partial_last_updated_without_bound_sample_window",
+        "retrieval_precision": "date_only",
+        "claim_cutoff": "2026-08-10T20:12:10Z"
+      },
+      "history": "no_original_dated_daily_history_documented_prospective_only_after_rights_resolution",
+      "identity": "mfl_player_id_available_cross_source_and_gsis_completeness_stability_unverified",
+      "permissions": {
+        "api_call": "explicitly_allowed",
+        "raw_response_retention": "requires_written_permission_due_to_terms_conflict",
+        "normalized_exact_value_storage": "requires_written_permission_due_to_terms_conflict",
+        "public_repository": "requires_written_permission",
+        "public_api_or_ui": "requires_written_permission",
+        "redistribution": "requires_written_permission"
+      },
+      "market_fit": "moderate",
+      "blocking_reason": "api_caching_guidance_conflicts_with_newer_terms_and_ppr_period_semantics_are_inexact",
+      "qualification_dimensions": {
+        "calculation_method": "unavailable_not_documented",
+        "scoring_format": "ppr_boolean_available_half_vs_full_unresolved",
+        "team_count": "configurable",
+        "draft_type": "keeper_redraft_rookie_and_mock_filters_available_other_settings_incomplete",
+        "population": "drafts_hosted_by_myfantasyleague",
+        "computer_selection_policy": "unavailable",
+        "attribution": "unavailable",
+        "commercial_posture": "api_program_available_but_site_terms_conflict",
+        "correction_behavior": "unavailable",
+        "reproducibility": "partial_last_updated_available_period_semantics_unbound",
+        "current_availability": "available_through_api_subject_to_terms",
+        "historical_availability": "original_dated_daily_history_unavailable",
+        "identity_path": "mfl_player_id_to_gsis_requires_completeness_and_stability_audit"
+      }
+    },
+    {
+      "source_key": "sleeper_public_draft_api",
+      "owner": "Blitz Studios, Inc. and affiliates",
+      "product": "Sleeper read-only drafts, picks, and player API",
+      "official_urls": ["https://docs.sleeper.com/", "https://support.sleeper.com/en/articles/5486620-general-terms-of-use"],
+      "source_status": "rejected",
+      "access": {
+        "authentication": "public_read_only_endpoints",
+        "rate_guidance": "official_general_limit_below_1000_calls_per_minute_no_market_specific_cadence",
+        "retrieval_clock": "2026-08-10_date_only"
+      },
+      "market_definition": {
+        "population": "only_drafts_discoverable_through_known_users_leagues_or_draft_ids",
+        "available_filters": ["per_draft_season", "settings", "scoring", "draft_type", "timestamps"],
+        "limitations": ["no_global_draft_discovery", "no_official_aggregate_adp", "selection_biased_sample"]
+      },
+      "clocks": {
+        "per_draft_start": "available",
+        "pick_order": "available",
+        "aggregate_window": "not_applicable",
+        "generated_at": "not_applicable_without_aggregate",
+        "available_at": "unavailable",
+        "revision": "unavailable",
+        "source_as_of": "not_applicable_without_representative_aggregate",
+        "retrieval_precision": "date_only",
+        "claim_cutoff": "2026-08-10T20:12:10Z"
+      },
+      "history": "per_discovered_draft_only_not_representative_market_history",
+      "identity": "sleeper_player_id_available_existing_data_bridge_is_bounded_and_not_officially_guaranteed",
+      "permissions": {
+        "api_call": "allowed_with_conditions",
+        "systematic_market_collection": "requires_written_permission",
+        "raw_response_retention": "unknown_for_proposed_lane",
+        "normalized_exact_value_storage": "requires_written_permission",
+        "public_repository": "requires_written_permission",
+        "public_api_or_ui": "requires_written_permission",
+        "redistribution": "requires_written_permission"
+      },
+      "market_fit": "low",
+      "blocking_reason": "no_representative_global_discovery_or_aggregate_and_systematic_extraction_requires_authorization",
+      "qualification_dimensions": {
+        "calculation_method": "not_applicable_no_official_aggregate",
+        "scoring_format": "available_per_discovered_draft",
+        "team_count": "available_per_discovered_draft",
+        "draft_type": "available_per_discovered_draft",
+        "population": "known_user_league_or_draft_id_discovery_only_selection_biased",
+        "computer_selection_policy": "unavailable",
+        "attribution": "unavailable_for_proposed_market_lane",
+        "commercial_posture": "systematic_extraction_and_redistribution_require_written_authorization",
+        "correction_behavior": "unavailable",
+        "reproducibility": "individual_known_drafts_partial_no_representative_market_reproduction",
+        "current_availability": "per_draft_api_available_for_known_identifiers",
+        "historical_availability": "per_discovered_draft_only_not_representative",
+        "identity_path": "sleeper_player_id_bounded_data_bridge_not_officially_guaranteed"
+      }
+    },
+    {
+      "source_key": "underdog_fantasy_adp",
+      "owner": "Underdog Sports, LLC doing business as Underdog Fantasy",
+      "product": "Underdog Fantasy contest and best-ball drafts",
+      "official_urls": ["https://legal.underdogsports.com/", "https://underdogfantasy.pactsafe.io/versions/69b97ee8240ac4b2dc9c1d92.pdf"],
+      "source_status": "unavailable",
+      "access": {
+        "authentication": "no_public_approved_adp_feed_observed",
+        "automated_access": "restricted_outside_approved_app_api_or_client",
+        "retrieval_clock": "2026-08-10_date_only"
+      },
+      "market_definition": {
+        "population": "best_ball_and_contest_drafts",
+        "available_filters": [],
+        "limitations": ["wrong_market_type_for_requested_redraft_lane", "no_official_public_schema"]
+      },
+      "clocks": {
+        "sample_window": "unavailable",
+        "generated_at": "unavailable",
+        "available_at": "unavailable",
+        "revision": "unavailable",
+        "source_as_of": "unavailable",
+        "retrieval_precision": "date_only",
+        "claim_cutoff": "2026-08-10T20:12:10Z"
+      },
+      "history": "official_public_adp_history_not_found",
+      "identity": "official_public_source_key_and_gsis_mapping_unavailable",
+      "permissions": {
+        "api_call": "not_applicable_without_approved_feed",
+        "raw_response_retention": "not_applicable_without_approved_feed",
+        "normalized_exact_value_storage": "not_applicable_without_approved_feed",
+        "public_repository": "not_applicable_without_approved_feed",
+        "public_api_or_ui": "not_applicable_without_approved_feed",
+        "redistribution": "not_applicable_without_approved_feed"
+      },
+      "market_fit": "wrong_market_type",
+      "blocking_reason": "no_public_approved_feed_and_best_ball_contest_market_not_managed_redraft",
+      "qualification_dimensions": {
+        "calculation_method": "unavailable",
+        "scoring_format": "best_ball_contest_not_requested_redraft",
+        "team_count": "unavailable",
+        "draft_type": "best_ball_and_contest",
+        "population": "underdog_platform_contest_drafts",
+        "computer_selection_policy": "unavailable",
+        "attribution": "unavailable",
+        "commercial_posture": "approved_feed_or_client_required",
+        "correction_behavior": "unavailable",
+        "reproducibility": "unavailable_without_approved_feed",
+        "current_availability": "unavailable_as_official_public_feed",
+        "historical_availability": "unavailable",
+        "identity_path": "unavailable"
+      }
+    },
+    {
+      "source_key": "sportsdataio_fantasy_adp",
+      "owner": "SportsDataIO_legal_entity_not_bound_from_inspected_public_pages",
+      "product": "SportsDataIO NFL Fantasy Sports API and historical Vault",
+      "official_urls": ["https://sportsdata.io/fantasy-sports-api", "https://sportsdata.io/developers/data-dictionary/nfl", "https://sportsdata.io/vault"],
+      "source_status": "requires_rightsholder_clarification",
+      "access": {
+        "authentication": "commercial_license_required_for_production",
+        "trial": "evaluation_access_available",
+        "retrieval_clock": "2026-08-10_date_only"
+      },
+      "market_definition": {
+        "published_fields": ["AverageDraftPosition", "AverageDraftPositionPPR", "AverageDraftPosition2QB", "AverageDraftPositionDynasty"],
+        "population": "unavailable",
+        "limitations": ["sample_size_unavailable", "team_count_unavailable", "full_ppr_semantics_unavailable", "calculation_window_unavailable", "possible_ffc_syndication_overlap"]
+      },
+      "clocks": {
+        "sample_window": "unavailable",
+        "generated_at": "unavailable",
+        "available_at": "unavailable",
+        "revision": "unavailable",
+        "source_as_of": "unavailable",
+        "retrieval_precision": "date_only",
+        "claim_cutoff": "2026-08-10T20:12:10Z"
+      },
+      "history": "licensed_vault_exists_but_exact_adp_grain_and_dated_coverage_unconfirmed",
+      "identity": "persistent_provider_player_id_documented_but_gsis_bridge_requires_audit",
+      "permissions": {
+        "api_call": "commercial_contract_dependent",
+        "raw_response_retention": "contract_dependent",
+        "normalized_exact_value_storage": "contract_dependent",
+        "public_repository": "contract_dependent",
+        "public_api_or_ui": "contract_dependent",
+        "redistribution": "contract_dependent"
+      },
+      "market_fit": "unknown_pending_methodology",
+      "blocking_reason": "contract_dependent_rights_missing_population_team_count_window_revision_semantics_and_possible_ffc_source_overlap",
+      "qualification_dimensions": {
+        "calculation_method": "unavailable_in_public_docs",
+        "scoring_format": "ppr_field_published_full_ppr_semantics_unavailable",
+        "team_count": "unavailable",
+        "draft_type": "redraft_2qb_dynasty_fields_named_population_filters_unavailable",
+        "population": "unavailable_and_may_syndicate_ffc",
+        "computer_selection_policy": "unavailable",
+        "attribution": "contract_dependent",
+        "commercial_posture": "production_license_required",
+        "correction_behavior": "unavailable",
+        "reproducibility": "blocked_without_contract_methodology_and_clock_contract",
+        "current_availability": "licensed_product_not_publicly_probed",
+        "historical_availability": "vault_product_exists_exact_adp_grain_unconfirmed",
+        "identity_path": "persistent_provider_player_id_documented_gsis_bridge_requires_audit"
+      }
+    }
+  ],
+  "rightsholder_questions": {
+    "outreach_status": "draft_authorized_not_sent",
+    "contact": "support@fantasyfootballcalculator.com",
+    "questions": [
+      "once-daily automated calls per named market",
+      "API page exception to 2025 Terms and robots rule",
+      "immutable raw retention",
+      "normalized exact-value and historical storage",
+      "public GitHub publication",
+      "public UI and API display plus attribution wording",
+      "raw or normalized redistribution",
+      "numeric request ceiling and preferred user-agent/contact",
+      "player_id stability and reuse",
+      "team-count semantics",
+      "whether ppr isolates ordinary non_keeper non_dynasty non_rookie redraft mocks",
+      "returned metadata values and exact calculation-window semantics",
+      "generation availability correction and revision clocks",
+      "authorized original dated prior-twelve-month export"
+    ]
+  },
+  "recommendation": {
+    "primary_candidate": "fantasy_football_calculator_adp",
+    "adapter_authorized": false,
+    "reason": "best_technical_fit_but_rights_market_semantics_and_identity_not_bound_and_probe_execution_ceiling_was_exceeded",
+    "smallest_next_step": "prepare_rightsholder_permission_request_draft_for_operator_review",
+    "after_operator_review": "send_only_after_separate_explicit_operator_approval_then_record_provider_response"
+  },
+  "incident_disposition": {
+    "status": "operator_disposition_recorded",
+    "recorded_at": "2026-08-10T23:34:13Z",
+    "decision": "merge_docs_only_audit_record_keep_issue_251_open_and_source_unadmitted",
+    "pr_merge_allowed": true,
+    "source_admission_allowed": false,
+    "issue_closure_allowed": false,
+    "outreach_draft_allowed": true,
+    "outreach_send_allowed": false
+  },
+  "candidate_adapter_prerequisites": [
+    "written_rightsholder_permission_for_intended_use_modes",
+    "exact_source_specific_market_and_population_contract",
+    "confirmed_cadence_attribution_and_revision_behavior",
+    "append_only_timestamped_digested_receipts",
+    "schema_and_negative_fixture_validation",
+    "separate_reviewed_ffc_to_gsis_candidate_bridge",
+    "explicit_missing_unranked_identity_unresolved_and_identity_conflicted_semantics",
+    "prospective_only_history_until_admitted_dated_evidence_exists",
+    "validated_immutable_candidate_before_latest_advancement"
+  ],
+  "prohibited_next_steps": [
+    "build_adapter",
+    "call_market_endpoint_again",
+    "retain_player_rows",
+    "normalize_exact_values",
+    "reconstruct_or_backdate_history",
+    "schedule_retrievals",
+    "publish_snapshot",
+    "expose_market_values",
+    "create_ffc_identity_crosswalk",
+    "accept_or_purchase_license",
+    "merge_without_operator_approval",
+    "bind_downstream_model"
+  ],
+  "terminal_decision": "dated_redraft_adp_source_v0_requires_rightsholder_or_definition_followup"
+}
