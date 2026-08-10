@@ -87,8 +87,8 @@
       "status": "source_backed_but_fields_unavailable"
     },
     {
-      "path": "data/processed/research/goblin_signal_candidates_2025.source_backed.json",
-      "git_blob_sha": "19eac6ee50f45e47db6ad4c0d58b000fe6d1c3c4",
+      "path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
+      "git_blob_sha": "df638e8c1c6b3c3aeadf597f1a637ce12402955a",
       "population_rows": 6326,
       "field_non_null_counts": {
         "routes_run": 0,
@@ -170,7 +170,8 @@
         "possession_team",
         "offense_players",
         "offense_positions",
-        "n_offense"
+        "n_offense",
+        "route"
       ],
       "rights": {
         "data_license": "CC-BY-SA-4.0",
@@ -183,26 +184,33 @@
         "license_obligations_not_admitted",
         "completed_season_only_not_current_2026",
         "pass_play_predicate_not_versioned",
-        "missingness_and_correction_policy_not_defined"
+        "missingness_and_correction_policy_not_defined",
+        "primary_receiver_route_field_is_not_an_all_player_route_ledger"
       ],
-      "permitted_claims_now": []
+      "permitted_claims_now": [],
+      "field_semantics": {
+        "route": "primary_receiver_route_label_for_the_play_only",
+        "offense_players": "semicolon_delimited_gsis_ids_for_offensive_players_on_field"
+      }
     },
     {
-      "id": "true_route_provider",
-      "classification": "future_research_only",
-      "admission_status": "no_exact_source_or_contract",
-      "grain": "unknown",
-      "source_player_key": "unknown",
+      "id": "fantasy_points_data_manual_reference",
+      "classification": "schema_reference_only",
+      "admission_status": "provider_terms_definitions_and_data_not_inspected",
+      "grain": "unverified",
+      "source_player_key": "unverified",
       "blockers": [
-        "no_exact_provider_contract",
+        "no_provider_agreement_or_terms_inspected",
+        "no_metric_definitions_inspected",
         "no_source_bytes",
         "no_schema",
         "no_population",
         "no_identity_bridge",
         "no_clocks",
-        "no_retention_or_redistribution_terms"
+        "no_retention_or_redistribution_posture"
       ],
-      "permitted_claims_now": []
+      "permitted_claims_now": [],
+      "named_in": "Prometheus-Frameworks/TIBER-Data#71"
     }
   ],
   "capabilities": [
@@ -273,7 +281,9 @@
     "pass_play_participation_proxy_is_route_participation": false,
     "on_field_presence_proves_route": false,
     "missing_is_zero": false,
-    "not_yet_published_is_zero": false
+    "not_yet_published_is_zero": false,
+    "primary_receiver_route_label_is_all_player_route_ledger": false,
+    "primary_receiver_route_label_supports_yprr_or_tprr": false
   },
   "candidate_contract": {
     "name": "offensive_participation_evidence_v0",
