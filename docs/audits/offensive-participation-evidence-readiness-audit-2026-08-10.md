@@ -64,7 +64,7 @@ The loader package's MIT license governs its software, not automatically the ups
 | Artifact at the pinned Data ref | Exact repository blob | Observed bounded result |
 | --- | --- | --- |
 | `exports/promoted/nfl/player_season_coverage_v0.json` | `f7b2918b978d842cd8753a7f3dedd3836934859b`; byte SHA-256 `d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac` | 3,016 REG player-season rows for 2021–2025; 1,191 WR rows; `routes_run`, `route_participation`, and `snap_share` have 0 non-null WR values. |
-| `data/processed/research/goblin_signal_candidates_2025.source_backed.json` | `19eac6ee50f45e47db6ad4c0d58b000fe6d1c3c4` | 6,326 source-backed player-week rows; target-share evidence exists, but route/snap fields have 0 non-null values. |
+| `data/processed/evidence/player_weekly_usage_2025.source_backed.json` | `df638e8c1c6b3c3aeadf597f1a637ce12402955a` | 6,326 source-backed player-week rows; target-share evidence exists, but route/snap fields have 0 non-null values. |
 | `exports/promoted/nfl/player_weekly_usage_v1.json` | `3c18796bb7ac6938100f72bfe6e269d453fffcab` | Only 6 rows, all labeled `offline_fixture`; no production claim is allowed. |
 | `docs/data/receiving-role-integrity-route-participation-proxy.md` | `b0e2680a76692f21ed733a31c408eb01ae5870df` | Existing semantic scaffold correctly distinguishes a pass-play proxy from true routes. |
 | `src/research/receivingRoleIntegrityProxyReadiness.ts` | `99d9613141b61eae274b00fd39dc722729cc4af1` | Candidate schema/readiness vocabulary only; no admitted player truth. |
@@ -139,7 +139,7 @@ The pinned nflreadr source says:
 - the data is CC-BY-SA 4.0;
 - required attribution is **FTN Data via nflverse** for 2023 onward and **NFL NextGenStats via nflverse** for 2022 and earlier.
 
-The pinned dictionary exposes play-grain `nflverse_game_id`, `play_id`, `possession_team`, `offense_players`, `offense_positions`, and `n_offense`. The pinned FTN producer shows that `offense_players` is a semicolon-delimited list of GSIS IDs for players whose team equals the possession team on that play.
+The pinned dictionary exposes play-grain `nflverse_game_id`, `play_id`, `possession_team`, `offense_players`, `offense_positions`, `n_offense`, and `route`. The pinned FTN producer shows that `offense_players` is a semicolon-delimited list of GSIS IDs for players whose team equals the possession team on that play. The dictionary defines `route` only for the primary receiver on the play; it is not an all-player route ledger and cannot count every player's routes.
 
 This is materially stronger identity evidence than the snap lane, but it still does not prove a route. A WR can be on the field for a pass play without running a route; sacks, scrambles, spikes, penalties, and nullified plays require an explicit eligibility policy.
 
@@ -153,13 +153,15 @@ Blocking facts:
 
 Classification: `external_candidate` for historical pass-play participation only; not current-facing and not routes.
 
-### 3. True route providers
+### 3. Named true-route provider reference
 
-Issue #71 records that true routes/YPRR/TPRR were not available from the admitted weekly source and that a proprietary/manual provider was considered. No exact provider agreement, source bytes, schema, population, clocks, identity bridge, or retention/redistribution terms were inspected under #245.
+Issue #71 specifically names Fantasy Points Data as a manual/provider reference for route-related claims. Under #245, no Fantasy Points Data agreement, terms, definitions, source bytes, schema, population, clocks, identity bridge, or retention/redistribution posture was inspected.
 
-Classification: `future_research_only`. No true-route field may be populated from the two candidates above.
+Classification: `schema_reference_only`. The named provider establishes the kind of evidence a future contract would need; it supplies no admissible row or current claim here. No true-route field may be populated from the two candidates above.
 
 ## Metric dictionary and naming guardrails
+
+The participation source's play-level `route` label describes only the primary receiver's route. It cannot be summed into all-player `routes_run` or used as the denominator for route participation, YPRR, or TPRR without a separately admitted all-player route source.
 
 | Field | Allowed meaning | Required evidence | Must not mean |
 | --- | --- | --- | --- |
