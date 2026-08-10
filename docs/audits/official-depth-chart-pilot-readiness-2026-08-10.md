@@ -4,7 +4,7 @@
 
 TIBER-Data can now encode the source boundary, snapshot shape, 32-team discovery registry, clock separation, deterministic diff, and fail-closed latest-selection behavior. It cannot honestly commit the requested official source mirrors or normalized player snapshots yet.
 
-The blocker is source-side redistribution authority, not HTTP access or parser feasibility. Six official pages/assets were retrieved twice and were byte-identical. None exposed a redistribution license, and the club pages assert an all-rights-reserved posture. `AGENTS.md` therefore prevents copying the full HTML/JPEG bytes into this public repository. Operator authorization to do the technical pilot is not a rights grant from those publishers.
+The blocker is source-side redistribution authority, not HTTP access or parser feasibility. Six official pages/assets each produced two matching SHA-256 values inside the same bounded one-off probe. The comparison clocks were not retained, so those pairs establish only same-probe hash stability—not an independent monitor run, operational health, or source currency. None exposed a redistribution license, and the club pages assert an all-rights-reserved posture. `AGENTS.md` therefore prevents copying the full HTML/JPEG bytes into this public repository. Operator authorization to do the technical pilot is not a rights grant from those publishers.
 
 This change stops before a player snapshot, promotion, scheduler, or downstream binding. The paired JSON contains the sole machine-readable completion decision.
 
@@ -17,6 +17,7 @@ Allowed in this change:
 - strict candidate contracts and validators;
 - a 32-team source-discovery registry with honest unchecked/degraded states;
 - URL/byte-count/SHA-256 observation receipts;
+- an explicit bounded manifest for normalized candidate paths, currently empty;
 - deterministic failure and diff tests;
 - source-format inventories derived from temporary read-only probes.
 
@@ -43,16 +44,16 @@ The existing `roster_snapshot_v0` contract deliberately excludes depth-chart int
 
 All source bytes were held only in temporary workspace storage for inspection and hashing. No source body or image is committed by this change.
 
-| Team/source | Official URL | Effective/published clock | Bytes | SHA-256 | Refetch |
+| Team/source | Official URL | Effective/published clock | Bytes | SHA-256 | Same-probe comparison |
 | --- | --- | --- | ---: | --- | --- |
-| ARI article | [dated club article](https://www.azcardinals.com/news/the-first-depth-chart-of-the-season-2026) | chart 2026-08-02; published `2026-08-02T17:51:47.537Z` | 268,465 | `f3ba44dfd0f3f9151e427755c8fbcdd080bf23d7e06abf666603439ec86a94f2` | byte-identical |
-| ARI chart | [original club-hosted JPEG](https://static.clubs.nfl.com/image/upload/cardinals/nicejzo6wgijyzgsmx28.jpg) | chart 2026-08-02; `Last-Modified: Sun, 02 Aug 2026 17:33:03 GMT` | 252,517 | `4c286b62db844bac44505a963f1cdd37e2f3e742066047df0d759b43255a786c` | byte-identical |
-| WAS article/table | [dated club article](https://www.commanders.com/news/commanders-release-2026-unofficial-depth-chart) | published `2026-08-10T11:44:05.879Z` | 288,393 | `93097b8bf7012ee22d9f6f1b3c25f0147ea8984849a4a5d3fefad47dae54a2f1` | byte-identical |
-| PIT page/table | [official mutable page](https://www.steelers.com/team/depth-chart/) | unavailable | 262,250 | `e6144ebe349c276b980b4b9198bb5906adb54c9277672a1ff6e100baef306167` | byte-identical |
-| CAR page/table | [official mutable page](https://www.panthers.com/team/depth-chart) | unavailable | 253,176 | `00056e459650a686981d8dee4ffcaf49ef91af0659b909653331f5246515e6af` | byte-identical |
-| BUF missing-state page | [official mutable page](https://www.buffalobills.com/team/depth-chart) | no chart published | 237,214 | `bf15815a2c13a324d3975f7da29ef3b631960debd59b31d01a5d1aa6c823601c` | byte-identical |
+| ARI article | [dated club article](https://www.azcardinals.com/news/the-first-depth-chart-of-the-season-2026) | chart 2026-08-02; published `2026-08-02T17:51:47.537Z` | 268,465 | `f3ba44dfd0f3f9151e427755c8fbcdd080bf23d7e06abf666603439ec86a94f2` | SHA-256 matched; no independent-run claim |
+| ARI chart | [original club-hosted JPEG](https://static.clubs.nfl.com/image/upload/cardinals/nicejzo6wgijyzgsmx28.jpg) | chart 2026-08-02; `Last-Modified: Sun, 02 Aug 2026 17:33:03 GMT` | 252,517 | `4c286b62db844bac44505a963f1cdd37e2f3e742066047df0d759b43255a786c` | SHA-256 matched; no independent-run claim |
+| WAS article/table | [dated club article](https://www.commanders.com/news/commanders-release-2026-unofficial-depth-chart) | published `2026-08-10T11:44:05.879Z` | 288,393 | `93097b8bf7012ee22d9f6f1b3c25f0147ea8984849a4a5d3fefad47dae54a2f1` | SHA-256 matched; no independent-run claim |
+| PIT page/table | [official mutable page](https://www.steelers.com/team/depth-chart/) | unavailable | 262,250 | `e6144ebe349c276b980b4b9198bb5906adb54c9277672a1ff6e100baef306167` | SHA-256 matched; no independent-run claim |
+| CAR page/table | [official mutable page](https://www.panthers.com/team/depth-chart) | unavailable | 253,176 | `00056e459650a686981d8dee4ffcaf49ef91af0659b909653331f5246515e6af` | SHA-256 matched; no independent-run claim |
+| BUF missing-state page | [official mutable page](https://www.buffalobills.com/team/depth-chart) | no chart published | 237,214 | `bf15815a2c13a324d3975f7da29ef3b631960debd59b31d01a5d1aa6c823601c` | SHA-256 matched; no independent-run claim |
 
-The full machine-readable observation ledger is `data/candidate/depth_charts/source_observation_receipts_2026-08-10.json`.
+The full machine-readable observation ledger is `data/candidate/depth_charts/source_observation_receipts_2026-08-10.json`. Its comparison scope explicitly denies an independent monitor-run claim.
 
 ## Format probes
 
@@ -65,7 +66,7 @@ The format exercise used a dependency-free HTML table probe and manual visual in
 | PIT | undated mutable 5-column HTML tables | 30 (12/12/6) | 92 | 58 empty cells and no source effective clock |
 | CAR | undated mutable 6-column HTML tables | 28 (11/11/6) | 89 | 79 empty cells and no source effective clock |
 
-Arizona's manual source inventory found the expected non-rectangular layout and marker classes, but it has not received an independent second transcription. The source image does not expose a marker legend. Underlines and brackets therefore remain raw markers; they must not be decoded from convention alone.
+Arizona's manual source inventory found the expected non-rectangular layout and marker classes, but it has not received an independent second transcription. The source image does not expose a marker legend. Underlines and brackets therefore remain raw markers. Contract v0 prohibits all decoded marker meanings and legend bindings; a future version would need independently bound exact official legend evidence.
 
 Washington proves that `OR` can be appended to one table cell while its co-listed alternative appears in the next display column, and that slash co-lists can share one cell. Pittsburgh and Carolina prove that empty display cells and column counts vary even within first-party club HTML.
 
@@ -88,12 +89,13 @@ A follow-up must either obtain/record a rights and retention disposition or auth
 The contract and validator encode these rules:
 
 1. Effective/publication time and monitoring time are separate.
-2. Byte-identical checks do not create snapshots.
-3. Changed sources become candidates and cannot advance latest until validation passes.
-4. Latest is selected by verified official effective/publication date, never retrieval time.
-5. An undated mutable page cannot supersede a dated verified snapshot.
-6. Changed-source parse failure retains the prior verified latest.
-7. Conflicting official surfaces remain separate until official currency is resolved.
+2. Contract v0 never infers monitor health from hash equality. Same-probe equality is a stable observation only and cannot create or advance a snapshot; any future health claim needs a separate governed run-record contract.
+3. Changed sources become candidates and cannot advance latest until full schema, semantic, structural, host-policy, and immutable-byte validation passes; changed parse failures are quarantined.
+4. Advancement is limited to the same contract/assertion/team/season stream and requires a changed retained source-hash set.
+5. Latest is selected first by verified `chart_as_of`, then the full timezone-aware `published_at`, never retrieval time.
+6. Null `chart_as_of` cannot advance even when a publication clock exists.
+7. Changed-source parse failure retains the prior verified latest.
+8. Conflicting official surfaces remain separate until official currency is resolved.
 
 No later Arizona chart existed at the audit cutoff, so real successor lineage is not proven. The deterministic diff routine is tested with explicit test-only records; that is code-path validation, not substitute source evidence.
 
@@ -108,13 +110,17 @@ The registry is discovery/coverage metadata, not a runtime monitor and not evide
 Implemented and testable now:
 
 - official-host allowlist and third-party rejection;
+- canonical and receipt host policy coupled to the snapshot team;
 - strict snapshot and registry schemas;
 - exact hash-pinned observation ledger;
+- exact immutable-receipt path, byte-length, and SHA-256 checks for any advancing candidate;
+- an explicit bounded normalized-candidate manifest whose directory and listed paths must agree;
 - 32-team registry;
 - distinct source/monitor clocks;
 - unresolved identity retention;
+- raw marker retention with all marker decoding prohibited in v0;
 - deterministic diff order;
-- no-op identical receipt handling;
+- hash-based stable-observation handling and changed-parse quarantine without health inference or automatic advancement;
 - fail-closed latest retention on missing date or parse failure;
 - no promoted output or downstream binding.
 
@@ -130,9 +136,8 @@ Still blocked:
 ## Handoff
 
 - Active task: bounded D0 official-depth-chart pilot for issue #231.
-- Files touched: snapshot/registry schemas, contract documentation, candidate registry, source-observation ledger, paired readiness audit, validator, and tests.
-- What is now true: source/format feasibility and exact observed bytes are pinned; contract and failure semantics are executable.
+- Files touched: snapshot/registry schemas, contract documentation, candidate registry, bounded normalized-candidate manifest, source-observation ledger, paired readiness audit, validator, and tests.
+- What is now true: source/format feasibility and exact observed hashes are pinned; source/team policy, immutable-byte checks, clock ordering, marker-legend requirements, candidate enumeration, and failure semantics are executable.
 - What is still missing: immutable source retention and normalized player snapshots, plus real successor evidence.
 - What must not be assumed: TIBER does not yet possess governed current depth-chart player hierarchy, and no publication proves actual deployment, availability, injury status, roster survival, or fantasy volume.
 - Audit status: source/rights audit completed; any later receipt mirror, candidate snapshot, contract acceptance, or promotion still requires independent review.
-
