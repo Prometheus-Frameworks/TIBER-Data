@@ -1,0 +1,677 @@
+{
+  "audit_id": "dated-redraft-adp-source-readiness-audit-2026-08-10",
+  "audit_date": "2026-08-10",
+  "evidence_cutoff": "2026-08-10T00:00:00Z",
+  "tracking_issue": "Prometheus-Frameworks/TIBER-Data#235",
+  "activation_comment": "https://github.com/Prometheus-Frameworks/TIBER-Data/issues/235#issuecomment-5241761961",
+  "task_classes": [
+    "provenance_source_audit",
+    "external_dataset_audit",
+    "contract_design_only"
+  ],
+  "scope_statement": "Read-only ownership, source-rights, market-definition, clock, history, identity, contract, validation, and downstream-boundary readiness. No external source access or implementation.",
+  "pinned_refs": {
+    "tiber_data": {
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "base_branch": "main",
+      "base_commit": "44296134a178f9d53fd7eda01a94548e76160d29",
+      "agents_path": "AGENTS.md",
+      "agents_blob_sha1": "7fdc142c1a621ed254ca752f89474fff918a4bd1",
+      "truth_sources_path": "TRUTH_SOURCES.md",
+      "truth_sources_blob_sha1": "27eec691b8e8535024a1bef1d342d67c83785e1c",
+      "bucky_identity_evidence": {
+        "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+        "git_blob_sha1": "f7b2918b978d842cd8753a7f3dedd3836934859b",
+        "canonical_gsis_id": "00-0039361",
+        "evidence_role": "canonical identity pin only; not market evidence"
+      }
+    },
+    "ffc_prototype": {
+      "repository": "Prometheus-Frameworks/TIBER-Fantasy",
+      "pull_request": 304,
+      "pull_request_state": "merged",
+      "base_commit": "5e983b0d7315b817aa99ffc1016304d04f2d6bd0",
+      "head_commit": "39eee962aa754781e4c3f8a9939d96f42a355293",
+      "merge_commit": "93e26825fb4dbafec722083a2704a0cc59f5aac5",
+      "files": [
+        {
+          "path": "data/adp/README.md",
+          "git_blob_sha1": "7406c03e730286895bb0833a9f2a74889ddd4d4f"
+        },
+        {
+          "path": "scripts/fetch_adp_snapshot.mjs",
+          "git_blob_sha1": "e31234596e951a64f7b22714b158ae3161f09745"
+        },
+        {
+          "path": "data/adp/adp_snapshot_2026_half-ppr_10tm_2026-08-07.json",
+          "git_blob_sha1": "c0201a44cf27d4958cea091fb9b14919967b571b"
+        },
+        {
+          "path": "data/adp/adp_snapshot_2026_ppr_10tm_2026-08-07.json",
+          "git_blob_sha1": "ff362cfa071dc0180999c6be43de96a8c315515c"
+        },
+        {
+          "path": "data/adp/adp_snapshot_2026_ppr_12tm_2026-08-07.json",
+          "git_blob_sha1": "792ffe7b2419df1925e0daebc6f0a575f34d4b73"
+        },
+        {
+          "path": "data/adp/adp_snapshot_latest_half-ppr_10tm.json",
+          "git_blob_sha1": "c0201a44cf27d4958cea091fb9b14919967b571b"
+        },
+        {
+          "path": "data/adp/adp_snapshot_latest_ppr_10tm.json",
+          "git_blob_sha1": "ff362cfa071dc0180999c6be43de96a8c315515c"
+        },
+        {
+          "path": "data/adp/adp_snapshot_latest_ppr_12tm.json",
+          "git_blob_sha1": "792ffe7b2419df1925e0daebc6f0a575f34d4b73"
+        }
+      ]
+    }
+  },
+  "collision_check": {
+    "checked_on": "2026-08-10",
+    "open_pull_requests": [
+      {
+        "repository": "Prometheus-Frameworks/TIBER-Data",
+        "number": 247,
+        "branch": "codex/issue-245-offensive-participation-readiness",
+        "files_scope": "different docs/audits pair",
+        "overlap": false
+      }
+    ],
+    "issue_241_is_adjacent_not_authority": true,
+    "branch_name_collision": false,
+    "finding": "No open pull request or branch collided with the two issue-235 audit paths at branch creation."
+  },
+  "authority_boundary": {
+    "authorized": [
+      "accept TIBER-Data as the proposed D0 source-truth owner",
+      "inspect already-committed TIBER-Fantasy PR 304 artifacts as prototype evidence only",
+      "design the readiness contract and failure behavior",
+      "publish paired audit documents to a draft pull request"
+    ],
+    "prohibited": [
+      "external source access or live API calls",
+      "scraping, credentials, subscription, purchase, or license acceptance",
+      "download, retention, mirroring, backfill, adapter, scheduler, database, or snapshot generation",
+      "name-only or fuzzy identity promotion",
+      "candidate or promoted market artifacts",
+      "consensus construction, strategy interpretation, ranking, advice, UI, or downstream activation",
+      "merge or deployment"
+    ],
+    "external_source_access_performed": false,
+    "external_rows_copied_into_this_audit": false
+  },
+  "ownership": {
+    "accepted_for_d0": true,
+    "source_truth_owner": "TIBER-Data",
+    "rationale": "A dated source-specific market observation is an external fact with identity, provenance, rights, clocks, missingness, validation, and immutable-history requirements.",
+    "boundaries": {
+      "TIBER-Data": "source admission, exact market contract, provider identity, clocks, immutable snapshots, validation, and any later promotion",
+      "TIBER-Strategy": "market interpretation, Board Geometry, tier and cohort policy",
+      "TIBER-Research": "bounded empirical work consuming admitted snapshots",
+      "TIBER-Fantasy/Observatory": "truthful display and claim-assessment states",
+      "TIBER-Ops/operator": "source-rights admission, activation, promotion, and downstream authority"
+    }
+  },
+  "source_rights_matrix": [
+    {
+      "source_id": "fantasy_football_calculator_api_v1_adp_observed_prototype",
+      "source_owner": "Fantasy Football Calculator",
+      "product": "API v1 ADP endpoint; exact source-native product name and documentation reference not preserved",
+      "evidence_mode": "already-committed TIBER-Fantasy PR 304 prototype only; endpoint was not called by this audit",
+      "observed_access_method": "prototype code performs an unauthenticated HTTP GET",
+      "metric_definition": "response field is named adp, but aggregation method and exact semantic definition are unverified",
+      "source_population": "unverified; managed redraft, mock, best-ball, contest, and other population distinctions are not established",
+      "source_identifiers": "provider player_id present; no governed FFC-to-GSIS bridge",
+      "clocks": {
+        "calculation_window": "present in prototype metadata",
+        "source_as_of": "unknown",
+        "source_generated_at": "unknown",
+        "source_available_at": "unknown",
+        "retrieval_at": "present as fetched_at",
+        "source_revision": "unknown"
+      },
+      "history": "three unique same-day prototype snapshots; no lawful trailing-12-month lane established",
+      "cadence": "source publication cadence unknown; README's intended daily retrieval is a TIBER proposal, not source schedule evidence",
+      "rights": {
+        "automated_access": "unknown",
+        "retention": "unknown",
+        "exact_value_storage": "unknown",
+        "reproducibility": "unknown",
+        "redistribution": "unknown",
+        "display": "unknown",
+        "attribution": "unknown",
+        "rate_limits": "unknown",
+        "credentials_or_license": "unknown"
+      },
+      "issue_source_status": "unknown",
+      "agents_external_source_classification": "schema_reference_only",
+      "admitted": false,
+      "blockers": [
+        "source documentation and metric semantics not pinned",
+        "terms for automated access, retention, exact-value storage, display, and redistribution not reviewed",
+        "market population and draft type unknown",
+        "team-count semantics unresolved",
+        "source publication/revision clocks unavailable",
+        "no trailing-12-month historical lane",
+        "no exact provider-ID-to-GSIS bridge"
+      ]
+    }
+  ],
+  "first_source_finding": {
+    "recommended_source": null,
+    "finding": "The FFC lane is the only source-shaped prototype inspected, but it is not eligible for activation or admission.",
+    "reason": "Rights, metric definition, population, draft type, source clocks, history, and canonical identity remain unresolved.",
+    "smallest_required_followup": "A separately authorized source-and-rights review must bind one exact provider product and document its terms, definitions, population, IDs, clocks, cadence, history, immutable-reference support, and operator-approved use envelope before any adapter activation."
+  },
+  "exact_market_lane_audited": {
+    "evidence_path": "data/adp/adp_snapshot_2026_ppr_12tm_2026-08-07.json",
+    "evidence_blob_sha1": "792ffe7b2419df1925e0daebc6f0a575f34d4b73",
+    "source": "Fantasy Football Calculator",
+    "requested_source_path": "/api/v1/adp/ppr?teams=12&year=2026",
+    "season": 2026,
+    "scoring_source_label": "PPR",
+    "reception_points": null,
+    "requested_team_count": 12,
+    "source_meta_team_count": 12,
+    "team_count_population_semantics": "unverified",
+    "draft_type": "unknown",
+    "population_scope": "unknown",
+    "roster_or_contest_context": "unknown",
+    "source_measure_name": "adp",
+    "governed_measure_id": null,
+    "source_measure_definition": "unknown",
+    "sample_window_start": "2026-07-31",
+    "sample_window_end": "2026-08-07",
+    "source_reported_total_drafts": 4929,
+    "source_as_of": null,
+    "source_generated_at": null,
+    "source_available_at": null,
+    "retrieval_at": "2026-08-07T13:58:25.891Z",
+    "source_revision_id": null,
+    "player_count": 256,
+    "eligibility": "ineligible",
+    "ineligibility_reasons": [
+      "rights state unknown",
+      "exact ADP calculation undefined",
+      "draft population/type unknown",
+      "team-count semantics unverified",
+      "source clocks/revision unavailable",
+      "identity bridge unavailable"
+    ]
+  },
+  "prototype_inventory": {
+    "pull_request_changed_files": 8,
+    "committed_snapshot_json_files": 6,
+    "unique_payload_blobs": 3,
+    "persisted_retrievals": 3,
+    "retrieval_dates": [
+      "2026-08-07"
+    ],
+    "retrieval_timestamps": [
+      "2026-08-07T02:11:50.897Z",
+      "2026-08-07T13:58:25.891Z",
+      "2026-08-07T13:58:31.704Z"
+    ],
+    "lanes": [
+      {
+        "scoring_label": "Half-PPR",
+        "requested_teams": 10,
+        "sample_window": [
+          "2026-08-01",
+          "2026-08-06"
+        ],
+        "total_drafts": 1731,
+        "player_count": 211
+      },
+      {
+        "scoring_label": "PPR",
+        "requested_teams": 10,
+        "sample_window": [
+          "2026-07-31",
+          "2026-08-07"
+        ],
+        "total_drafts": 4929,
+        "player_count": 256
+      },
+      {
+        "scoring_label": "PPR",
+        "requested_teams": 12,
+        "sample_window": [
+          "2026-07-31",
+          "2026-08-07"
+        ],
+        "total_drafts": 4929,
+        "player_count": 256
+      }
+    ],
+    "latest_alias_behavior": "Each latest file has the same blob as its corresponding dated file at the inspected commit. The script overwrites latest aliases, so only dated immutable objects could be eligible in a future lane.",
+    "evidence_limit": "Prototype presence proves three persisted retrievals on one retrieval date and a candidate vocabulary only; it does not prove source admission, historical continuity, source cadence, or current truth."
+  },
+  "market_measure_registry": [
+    {
+      "concept": "adp",
+      "rule": "May populate a governed ADP value only after the source defines the calculation and draft population. A field label alone is insufficient."
+    },
+    {
+      "concept": "median_pick",
+      "rule": "Separate measure ID; never relabel as ADP unless the source explicitly defines its ADP that way."
+    },
+    {
+      "concept": "overall_rank",
+      "rule": "Separate provider ranking; not ADP."
+    },
+    {
+      "concept": "position_rank",
+      "rule": "Separate provider ranking; not ADP."
+    },
+    {
+      "concept": "expert_rank",
+      "rule": "Opinion/ranking object; not ADP."
+    },
+    {
+      "concept": "provider_consensus",
+      "rule": "Source-specific product whose components and method remain disclosed; not TIBER consensus and not 'the market'."
+    },
+    {
+      "concept": "tiber_consensus",
+      "rule": "Out of scope and unavailable without a separately approved versioned methodology."
+    }
+  ],
+  "candidate_contract_sketch": {
+    "contract_id": "dated_redraft_adp_snapshot_v0",
+    "snapshot_grain": "one source product x one exact market configuration x one NFL season x one source calculation window x one source/as-of time",
+    "required_snapshot_fields": [
+      "schema_version",
+      "snapshot_id",
+      "season",
+      "source_owner",
+      "source_product",
+      "platform",
+      "market_measure_id",
+      "source_native_measure_name",
+      "metric_definition_ref",
+      "scoring_format",
+      "reception_points",
+      "league_team_count",
+      "draft_type",
+      "population_scope",
+      "roster_or_contest_context",
+      "calculation_window_start",
+      "calculation_window_end",
+      "source_as_of",
+      "source_generated_at",
+      "source_available_at",
+      "retrieved_at",
+      "artifact_generated_at",
+      "downstream_claim_cutoff",
+      "source_revision_id",
+      "immutable_source_ref",
+      "payload_digest",
+      "source_access_rights_state",
+      "cadence_policy_id",
+      "row_count",
+      "validation_status",
+      "warnings",
+      "gaps",
+      "definition_version",
+      "supersedes_snapshot_id",
+      "supersession_reason",
+      "correction_observed_at",
+      "changed_field_summary"
+    ],
+    "required_player_fields": [
+      "snapshot_id",
+      "canonical_gsis_id",
+      "provider_player_id",
+      "player_name_context",
+      "team_context",
+      "position_context",
+      "market_measure_id",
+      "adp_value_if_defined",
+      "overall_rank_if_supplied",
+      "position_rank_if_supplied",
+      "sample_size_if_supplied",
+      "sample_size_availability_state",
+      "player_observation_status",
+      "unresolved_identity_reason",
+      "source_row_ref",
+      "warnings"
+    ],
+    "invariants": [
+      "one row belongs to exactly one immutable snapshot",
+      "null or unknown never becomes a plausible default",
+      "provider rank, expert rank, median pick, and ADP never share an ambiguous field",
+      "every value remains source-product and configuration specific",
+      "unresolved identity remains visible and name-only fallback is forbidden",
+      "corrections append and supersede; they never overwrite prior dated snapshots"
+    ]
+  },
+  "identity": {
+    "canonical_join_authority": "GSIS",
+    "bucky_irving_gsis_id": "00-0039361",
+    "ffc_provider_id_presence_in_prototype": true,
+    "governed_ffc_to_gsis_mapping": false,
+    "provider_id_rule": "Provider IDs remain source-specific and require an exact source-backed bridge.",
+    "names_teams_positions_rule": "Display and audit context only; never join authority.",
+    "adjacent_work": [
+      {
+        "reference": "Prometheus-Frameworks/TIBER-Data#213",
+        "status": "parked",
+        "relevance": "Sleeper-to-GSIS only; does not solve FFC identity"
+      },
+      {
+        "reference": "Prometheus-Frameworks/TIBER-Data#241",
+        "status": "proposal",
+        "relevance": "normalized-name candidate proposal is not governed join authority and is not authorized here"
+      }
+    ],
+    "duplicate_conflict_behavior": "Duplicate provider IDs, provider-ID reuse, conflicting GSIS edges, or unresolved mappings fail closed or require explicit operator review.",
+    "canonical_identity_evidence": {
+      "repository": "Prometheus-Frameworks/TIBER-Data",
+      "base_commit": "44296134a178f9d53fd7eda01a94548e76160d29",
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "git_blob_sha1": "f7b2918b978d842cd8753a7f3dedd3836934859b",
+      "canonical_gsis_id": "00-0039361"
+    }
+  },
+  "clocks": {
+    "preserve_separately": [
+      "calculation_window_start",
+      "calculation_window_end",
+      "source_as_of",
+      "source_generated_at",
+      "source_available_at",
+      "retrieved_at",
+      "artifact_generated_at",
+      "downstream_claim_cutoff"
+    ],
+    "rules": [
+      "retrieval time never substitutes for source as-of or source-available time",
+      "repository commit time is provenance, not a market clock",
+      "a source window end date is not automatically a source as-of timestamp",
+      "future-dated or stale snapshots are ineligible for a cutoff"
+    ],
+    "prototype_gap": "Only calculation-window dates and retrieval time are present; source as-of, generation, availability, and revision clocks are missing."
+  },
+  "current_selector": {
+    "expression": "latest eligible immutable source snapshot on or before the claim cutoff for the exact requested source product and market configuration",
+    "eligibility_requires": [
+      "admitted rights state",
+      "defined metric and population",
+      "exact scoring/team-count/draft-type match",
+      "source as-of at or before cutoff",
+      "non-stale source-specific cadence state",
+      "valid digest and schema",
+      "resolved anchor identity",
+      "non-fixture status"
+    ],
+    "tie_break": "source revision order if documented, then immutable snapshot_id lexical order; unresolved same-clock conflicts remain unavailable",
+    "prototype_result_at_cutoff": "unavailable"
+  },
+  "trailing_12_month_history": {
+    "claim_cutoff": "2026-08-10T00:00:00Z",
+    "window_start": "2025-08-10T00:00:00Z",
+    "window_end": "2026-08-10T00:00:00Z",
+    "rules": [
+      "preserve each admitted immutable snapshot independently",
+      "same source product and exact market configuration only",
+      "no source splicing, forward fill, interpolation, or invented historical as-of",
+      "return partial when lawful comparable observations cover only part of the window",
+      "distinguish corrections from market movement",
+      "disclose expected and observed cadence gaps"
+    ],
+    "prototype_coverage": "one retrieval date with three unique configurations; no trailing-12-month history",
+    "history_ready": false
+  },
+  "cadence_and_supersession": {
+    "cadence_policy_id": null,
+    "cadence_finding": "No exact cadence can be adopted because no source is admitted and the source publication schedule is unknown. PR 304's intended daily retrieval is not source-cadence evidence.",
+    "later_policy_must_bind": [
+      "known source publication schedule",
+      "operator-approved retrieval schedule",
+      "expected-snapshot rule",
+      "allowable delay",
+      "missed-snapshot behavior",
+      "off-season behavior",
+      "event-triggered behavior",
+      "definition-change behavior"
+    ],
+    "supersession_rule": "append-only with supersedes_snapshot_id, reason, correction_observed_at, corrected source revision, and changed-field summary",
+    "mutable_latest_alias_eligible": false
+  },
+  "consensus_and_conflict": {
+    "rules": [
+      "keep every platform, product, configuration, and clock in a separate lane",
+      "never average incompatible sources or configurations",
+      "preserve and disclose provider-consensus composition when available",
+      "unknown consensus composition remains unknown",
+      "show material disagreement; do not select the most favorable number",
+      "a future TIBER consensus requires separate methodology and operator approval"
+    ]
+  },
+  "peer_selector": {
+    "selector_id": "same_position_nearest_adp_v0",
+    "anchor": {
+      "canonical_gsis_id": "00-0039361",
+      "position": "RB"
+    },
+    "source_scope": "one exact admitted snapshot only",
+    "selection": "three eligible same-position rows immediately above and three immediately below the anchor by numeric governed ADP",
+    "tie_break": [
+      "numeric ADP ascending",
+      "provider_player_id lexical ascending"
+    ],
+    "receipt_fields": [
+      "selector_id",
+      "snapshot_id",
+      "snapshot_digest",
+      "anchor_gsis_id",
+      "anchor_provider_id",
+      "position",
+      "requested_count_each_side",
+      "selected_provider_ids",
+      "selected_gsis_ids",
+      "exclusions_with_reasons",
+      "tie_break",
+      "selector_version"
+    ],
+    "failure_behavior": "unavailable if the anchor identity or governed measure is unresolved; partial only when an otherwise eligible snapshot has fewer than three valid peers on a side, with exclusions disclosed",
+    "prohibited": [
+      "cross-platform fill",
+      "historical/current mixing",
+      "favorable comparator selection",
+      "silent selector changes"
+    ]
+  },
+  "bucky_golden_trace": {
+    "canonical_player": "Bucky Irving",
+    "canonical_gsis_id": "00-0039361",
+    "requested_market": "2026 full-PPR redraft, exact source-supported team count and draft type",
+    "prototype_row_present": true,
+    "prototype_market_values_republished": false,
+    "execution_status": "blocked",
+    "blockers": [
+      "no admitted exact market configuration",
+      "no governed FFC-to-GSIS edge",
+      "no source-rights approval",
+      "no source as-of/revision clock",
+      "no lawful trailing-12-month history"
+    ],
+    "required_future_outputs": [
+      "current eligible source-specific observation",
+      "comparable trailing-window snapshots",
+      "nearest comparable prior-year observation if present",
+      "cadence gaps",
+      "definition/configuration changes",
+      "identity and sample-size limitations",
+      "same-snapshot same-position peers",
+      "separate platform lanes",
+      "unaveraged disagreement",
+      "claim-ready W4 receipt"
+    ],
+    "interpretation_boundary": "The Data trace can report observations and missingness; it cannot label a dip, value, buy, or opportunity.",
+    "canonical_identity_evidence": {
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "git_blob_sha1": "f7b2918b978d842cd8753a7f3dedd3836934859b"
+    }
+  },
+  "negative_tests_for_later_builder": [
+    {
+      "case": "expert_rank_labeled_adp",
+      "expected": "reject"
+    },
+    {
+      "case": "median_pick_labeled_adp_without_source_definition",
+      "expected": "reject"
+    },
+    {
+      "case": "best_ball_returned_for_managed_redraft",
+      "expected": "reject"
+    },
+    {
+      "case": "half_ppr_returned_for_full_ppr",
+      "expected": "reject"
+    },
+    {
+      "case": "ten_team_returned_for_twelve_team",
+      "expected": "reject"
+    },
+    {
+      "case": "unknown_draft_population_treated_as_managed_redraft",
+      "expected": "unavailable"
+    },
+    {
+      "case": "platforms_or_products_silently_averaged",
+      "expected": "reject"
+    },
+    {
+      "case": "unknown_consensus_composition_hidden",
+      "expected": "reject"
+    },
+    {
+      "case": "future_snapshot_selected_for_earlier_cutoff",
+      "expected": "reject"
+    },
+    {
+      "case": "retrieval_time_substituted_for_source_as_of",
+      "expected": "reject"
+    },
+    {
+      "case": "missing_history_forward_filled_or_interpolated",
+      "expected": "reject"
+    },
+    {
+      "case": "source_correction_overwrites_prior_snapshot",
+      "expected": "reject"
+    },
+    {
+      "case": "unresolved_identity_falls_back_to_name_team_or_position",
+      "expected": "reject"
+    },
+    {
+      "case": "duplicate_or_reused_provider_id_is_silently_accepted",
+      "expected": "reject"
+    },
+    {
+      "case": "definition_drift_treated_as_comparable",
+      "expected": "reject"
+    },
+    {
+      "case": "row_or_snapshot_digest_does_not_reconcile",
+      "expected": "reject"
+    },
+    {
+      "case": "fixture_manual_or_schema_reference_supports_current_claim",
+      "expected": "reject"
+    },
+    {
+      "case": "mutable_latest_alias_used_as_immutable_history",
+      "expected": "reject"
+    },
+    {
+      "case": "missing_sample_size_inferred",
+      "expected": "unknown"
+    },
+    {
+      "case": "bucky_or_peer_selection_crosses_snapshot_or_platform",
+      "expected": "reject"
+    },
+    {
+      "case": "rights_state_unknown_but_snapshot_is_admitted",
+      "expected": "reject"
+    }
+  ],
+  "proposed_future_paths": {
+    "status": "design_only_not_authorized",
+    "schema": "schemas/dated_redraft_adp_snapshot_v0.schema.json",
+    "builder": "scripts/build_dated_redraft_adp_snapshot_v0.py",
+    "validator": "scripts/validate_dated_redraft_adp_snapshot_v0.py",
+    "candidate_snapshot_pattern": "exports/candidates/market/dated_redraft_adp_snapshot_v0/{source_id}/{snapshot_id}.json",
+    "validation_receipt_pattern": "exports/candidates/market/dated_redraft_adp_snapshot_v0/{source_id}/{snapshot_id}.validation.json",
+    "promotion_pattern": "exports/promoted/market/dated_redraft_adp_snapshot_v0/{source_id}/{snapshot_id}.json",
+    "note": "Path adoption, implementation, execution, and promotion each require later explicit authority and repository-convention review."
+  },
+  "downstream_boundaries": {
+    "source_admission_does_not_authorize": [
+      "Research question execution",
+      "Strategy interpretation or Board Geometry changes",
+      "Fantasy/Observatory integration",
+      "Claim Lens advice",
+      "FORGE or Forecast consumption",
+      "ranking, recommendation, merge, or deployment"
+    ],
+    "truthful_consumer_states": [
+      "available",
+      "partial",
+      "unavailable",
+      "conflicted",
+      "stale"
+    ]
+  },
+  "handoff": {
+    "active_task": "Issue 235 D0 governed redraft ADP source-readiness packet",
+    "files_touched": [
+      "docs/audits/dated-redraft-adp-source-readiness-audit-2026-08-10.md",
+      "docs/audits/dated-redraft-adp-source-readiness-audit-2026-08-10.json"
+    ],
+    "what_is_now_true": [
+      "TIBER-Data is accepted as D0 source-truth owner for source-specific dated market facts",
+      "PR 304 is pinned and classified as prototype/schema evidence only",
+      "the inspected FFC configuration is contract-ineligible and no source is admitted",
+      "the candidate contract, selectors, failure states, validation matrix, and repo boundaries are explicit"
+    ],
+    "what_is_missing": [
+      "operator-approved source and rights envelope",
+      "pinned source documentation and metric definition",
+      "exact market population and draft type",
+      "source generation/availability/as-of/revision clocks",
+      "lawful trailing-12-month history",
+      "source publication cadence",
+      "exact FFC-to-GSIS identity bridge",
+      "later implementation, independent audit, candidate acceptance, and promotion authority"
+    ],
+    "what_must_not_be_assumed": [
+      "the six prototype files are six historical observations",
+      "the FFC field name proves governed ADP semantics",
+      "PPR means a confirmed reception-points contract",
+      "teams=12 proves a distinct 12-team draft population",
+      "fetched_at proves current source time",
+      "provider IDs or names resolve to GSIS",
+      "daily refresh is allowed or source-supported",
+      "any current ADP or ADP-dip claim is supported"
+    ],
+    "audit_trigger_status": "independent audit completed with three corrections requested; corrections applied; post-fix reviewer verification pending"
+  },
+  "validation": {
+    "machine_json_parse": "passed_before_commit",
+    "human_machine_scope_match": "required_and_checked_during_pr_review",
+    "exact_ref_check": "passed_for_committed repository evidence",
+    "external_network_or_source_access": "not_performed",
+    "implementation_or_data_artifact_changes": "none",
+    "independent_review": "three findings addressed; post-fix reviewer verification pending"
+  },
+  "terminal_decision": "dated_redraft_adp_v0_requires_source_or_ownership_work"
+}
