@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber-data.local/schemas/team_published_depth_chart_source_registry_v0.schema.json",
+  "title": "team_published_depth_chart_source_registry_v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "contract_version", "season", "assertion_scope", "generated_at", "teams"],
+  "properties": {
+    "artifact_type": {
+      "const": "team_published_depth_chart_source_registry"
+    },
+    "contract_version": {
+      "const": "team_published_depth_chart_source_registry_v0"
+    },
+    "season": {
+      "const": 2026
+    },
+    "assertion_scope": {
+      "const": "official_team_source_discovery_and_candidate_coverage"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "teams": {
+      "type": "array",
+      "minItems": 32,
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/team"
+      }
+    }
+  },
+  "$defs": {
+    "team": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "team_id",
+        "team_abbr",
+        "team_name",
+        "official_team_home_url",
+        "official_depth_chart_page_candidate",
+        "official_media_release_discovery_rule",
+        "supported_source_formats",
+        "last_checked_at",
+        "last_qualifying_effective_date",
+        "latest_verified_snapshot_id",
+        "latest_verified_snapshot_sha256",
+        "monitor_status",
+        "coverage_state",
+        "coverage_reason"
+      ],
+      "properties": {
+        "team_id": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,3}$"
+        },
+        "team_abbr": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,3}$"
+        },
+        "team_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "official_team_home_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "official_depth_chart_page_candidate": {
+          "type": ["string", "null"],
+          "format": "uri"
+        },
+        "official_media_release_discovery_rule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supported_source_formats": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["dated_club_article", "club_hosted_image", "club_html_table", "club_pdf_or_game_release", "not_yet_qualified"]
+          }
+        },
+        "last_checked_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "last_qualifying_effective_date": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "latest_verified_snapshot_id": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "latest_verified_snapshot_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "monitor_status": {
+          "enum": ["not_checked_in_bounded_pilot", "manual_probe_healthy", "manual_probe_blocked", "scheduler_not_authorized"]
+        },
+        "coverage_state": {
+          "enum": [
+            "not_yet_published",
+            "official_source_discovered",
+            "captured_candidate",
+            "verified_current",
+            "superseded",
+            "parse_blocked",
+            "official_source_conflict",
+            "monitoring_degraded",
+            "official_source_unavailable"
+          ]
+        },
+        "coverage_reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,436 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber-data.local/schemas/team_published_depth_chart_snapshot_v0.schema.json",
+  "title": "team_published_depth_chart_snapshot_v0",
+  "description": "Candidate-only, source-linked representation of what an NFL team published as its depth chart as of a bounded date. This contract does not assert actual deployment, availability, roster survival, or projected workload.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "contract_version",
+    "snapshot_id",
+    "assertion_scope",
+    "team_id",
+    "team_abbr",
+    "season",
+    "phase",
+    "chart_as_of",
+    "published_at",
+    "observed_at",
+    "publisher",
+    "publishing_department",
+    "source_assertion_label_raw",
+    "canonical_source_url",
+    "source_receipts",
+    "transcription",
+    "normalization_status",
+    "verification_status",
+    "previous_snapshot_id",
+    "supersedes_snapshot_id",
+    "validation_warnings",
+    "reviewed_at",
+    "rows"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "team_published_depth_chart_snapshot"
+    },
+    "contract_version": {
+      "const": "team_published_depth_chart_snapshot_v0"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]+$"
+    },
+    "assertion_scope": {
+      "const": "team_published_depth_chart_as_of"
+    },
+    "team_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "team_abbr": {
+      "type": "string",
+      "pattern": "^[A-Z]{2,3}$"
+    },
+    "season": {
+      "type": "integer",
+      "minimum": 1920
+    },
+    "phase": {
+      "enum": ["offseason", "preseason", "regular_season", "postseason", "unknown"]
+    },
+    "chart_as_of": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "published_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "publisher": {
+      "type": "string",
+      "minLength": 1
+    },
+    "publishing_department": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "source_assertion_label_raw": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "canonical_source_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "source_receipts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/source_receipt"
+      }
+    },
+    "transcription": {
+      "$ref": "#/$defs/transcription"
+    },
+    "normalization_status": {
+      "description": "In v0, complete is lossless: semantic validation requires exact equality between source and normalized row counts and between source and normalized entry counts. Any lossy or unresolved reconciliation remains partial or quarantined.",
+      "enum": ["complete", "partial", "quarantined"]
+    },
+    "verification_status": {
+      "enum": [
+        "candidate_unreviewed",
+        "candidate_structurally_validated",
+        "candidate_undated_source",
+        "blocked_receipt_unavailable",
+        "blocked_rights_unresolved"
+      ]
+    },
+    "previous_snapshot_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "supersedes_snapshot_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "validation_warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "reviewed_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verification_status": {
+            "const": "candidate_structurally_validated"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "normalization_status": {
+            "const": "complete"
+          },
+          "reviewed_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "verification_status": {
+            "enum": ["blocked_receipt_unavailable", "blocked_rights_unresolved"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "normalization_status": {
+            "const": "quarantined"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "source_receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receipt_id",
+        "role",
+        "source_url",
+        "observed_at",
+        "mime_type",
+        "byte_length",
+        "sha256",
+        "etag",
+        "last_modified",
+        "archive_status",
+        "immutable_receipt_path"
+      ],
+      "properties": {
+        "receipt_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]+$"
+        },
+        "role": {
+          "enum": ["publication", "original_chart_asset", "mutable_depth_chart_page", "official_game_release"]
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "mime_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "byte_length": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "etag": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "last_modified": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "archive_status": {
+          "enum": ["stored_immutable", "remote_hash_pinned", "blocked_rights_unresolved", "unavailable"]
+        },
+        "immutable_receipt_path": {
+          "type": ["string", "null"],
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "archive_status": {
+                "const": "stored_immutable"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "immutable_receipt_path": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "immutable_receipt_path": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "transcription": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "For normalization_status=complete, the semantic validator requires source_row_count == normalized_row_count and source_entry_count == normalized_entry_count.",
+      "required": ["method", "version", "transcriber", "source_row_count", "normalized_row_count", "source_entry_count", "normalized_entry_count"],
+      "properties": {
+        "method": {
+          "enum": ["manual_visual", "official_html_table", "official_pdf_table", "unknown"]
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "transcriber": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_row_count": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "normalized_row_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_entry_count": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "normalized_entry_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "row_instance_id", "source_position_label_raw", "normalized_position", "source_row_reference", "entries"],
+      "properties": {
+        "unit": {
+          "enum": ["offense", "defense", "specialists"]
+        },
+        "row_instance_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]+$"
+        },
+        "source_position_label_raw": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalized_position": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "source_row_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/entry"
+          }
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "display_column",
+        "display_order_within_column",
+        "alternative_group_id",
+        "jersey_number",
+        "raw_player_name",
+        "raw_source_text",
+        "raw_markers",
+        "decoded_marker_meanings",
+        "decoded_marker_legend_reference",
+        "player_id",
+        "identity_status",
+        "identity_resolution_method"
+      ],
+      "properties": {
+        "display_column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "display_order_within_column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "alternative_group_id": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "jersey_number": {
+          "type": ["integer", "string", "null"],
+          "minimum": 0,
+          "minLength": 1
+        },
+        "raw_player_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "raw_source_text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "raw_markers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["underlined", "bracketed", "or_token", "slash_colisted", "wrapped"]
+          }
+        },
+        "decoded_marker_meanings": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "decoded_marker_legend_reference": {
+          "type": "null"
+        },
+        "player_id": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "identity_status": {
+          "enum": ["resolved_exact", "unresolved_not_attempted", "unresolved_no_match", "ambiguous_multiple_matches"]
+        },
+        "identity_resolution_method": {
+          "type": ["string", "null"],
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "identity_status": {
+                "const": "resolved_exact"
+              }
+            },
+            "required": ["identity_status"]
+          },
+          "then": {
+            "properties": {
+              "player_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "identity_resolution_method": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "player_id": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

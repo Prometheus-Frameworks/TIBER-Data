@@ -1,0 +1,224 @@
+{
+  "audit_type": "official_depth_chart_pilot_readiness",
+  "audit_version": "official_depth_chart_pilot_readiness_v0",
+  "issue": "Prometheus-Frameworks/TIBER-Data#231",
+  "base_commit": "44296134a178f9d53fd7eda01a94548e76160d29",
+  "audit_date": "2026-08-10",
+  "task_classes": [
+    "contract_task",
+    "data_artifact_task",
+    "provenance_source_audit_task",
+    "external_dataset_audit_task"
+  ],
+  "answer_first": "The contract, registry, source allowlist, freshness rules, and deterministic failure behavior can be implemented now. The player snapshot and immutable source mirror must remain unbuilt because no source-side redistribution grant was observed for the official HTML/JPEG receipts, and no later Arizona publication exists to prove real supersession.",
+  "bounded_scope": {
+    "source_truth": "official_team_publication_only",
+    "season": 2026,
+    "pilot_teams": ["ARI", "WAS", "PIT", "CAR"],
+    "missing_state_probe_team": "BUF",
+    "promoted_outputs_changed": false,
+    "downstream_bindings_changed": false,
+    "scheduler_authorized": false,
+    "all_32_ingestion_authorized": false
+  },
+  "source_observation_receipts_path": "data/candidate/depth_charts/source_observation_receipts_2026-08-10.json",
+  "source_registry_path": "data/candidate/depth_charts/official_source_registry_v0.json",
+  "normalized_candidate_manifest_path": "data/candidate/depth_charts/normalized_candidate_manifest_2026-08-10.json",
+  "format_probe_results": [
+    {
+      "team_abbr": "ARI",
+      "source_format": "dated_club_article_plus_club_hosted_jpeg",
+      "chart_as_of": "2026-08-02",
+      "source_row_count": 29,
+      "source_entry_count": 100,
+      "unit_row_counts": {
+        "offense": 11,
+        "defense": 12,
+        "specialists": 6
+      },
+      "structural_features": {
+        "or_groups": 3,
+        "underlined_entries": 13,
+        "bracketed_entries": 3,
+        "wrapped_entries": 3,
+        "duplicate_position_rows_preserved": true
+      },
+      "count_method": "manual_visual_inventory_against_original_1600x900_jpeg",
+      "normalization_output_committed": false,
+      "blocker": "Original receipt cannot be stored in the public repository without a source-side redistribution grant; an independent second transcription is also pending."
+    },
+    {
+      "team_abbr": "WAS",
+      "source_format": "dated_club_article_with_html_tables",
+      "chart_as_of": "2026-08-10",
+      "source_row_count": 30,
+      "source_entry_count": 103,
+      "unit_row_counts": {
+        "offense": 12,
+        "defense": 12,
+        "specialists": 6
+      },
+      "structural_features": {
+        "or_tokens": 7,
+        "bracketed_cells": 1,
+        "slash_colisted_splits": 4,
+        "empty_display_cells": 21
+      },
+      "count_method": "dependency_free_html_table_probe",
+      "normalization_output_committed": false,
+      "blocker": "Hash-pinned source bytes are not rights-cleared for repository mirroring."
+    },
+    {
+      "team_abbr": "PIT",
+      "source_format": "undated_mutable_club_html_table_five_columns",
+      "chart_as_of": null,
+      "source_row_count": 30,
+      "source_entry_count": 92,
+      "unit_row_counts": {
+        "offense": 12,
+        "defense": 12,
+        "specialists": 6
+      },
+      "structural_features": {
+        "or_tokens": 0,
+        "bracketed_cells": 0,
+        "slash_colisted_splits": 0,
+        "empty_display_cells": 58
+      },
+      "count_method": "dependency_free_html_table_probe",
+      "normalization_output_committed": false,
+      "blocker": "The mutable page exposes no publication/effective clock and source bytes are not rights-cleared for mirroring."
+    },
+    {
+      "team_abbr": "CAR",
+      "source_format": "undated_mutable_club_html_table_six_columns",
+      "chart_as_of": null,
+      "source_row_count": 28,
+      "source_entry_count": 89,
+      "unit_row_counts": {
+        "offense": 11,
+        "defense": 11,
+        "specialists": 6
+      },
+      "structural_features": {
+        "or_tokens": 0,
+        "bracketed_cells": 0,
+        "slash_colisted_splits": 0,
+        "empty_display_cells": 79
+      },
+      "count_method": "dependency_free_html_table_probe",
+      "normalization_output_committed": false,
+      "blocker": "The mutable page exposes no publication/effective clock and source bytes are not rights-cleared for mirroring."
+    }
+  ],
+  "missing_state_probe": {
+    "team_abbr": "BUF",
+    "official_url": "https://www.buffalobills.com/team/depth-chart",
+    "observed_state": "not_yet_published",
+    "source_statement_summary": "The official page says the 2026 chart will be announced later.",
+    "third_party_fallback_used": false
+  },
+  "rights_disposition": {
+    "source_lineage": "first_party_official_team_publications",
+    "access_mode": "public_http",
+    "license_observed": null,
+    "redistribution_permission_observed": false,
+    "repo_rule": "No declared license means no redistribution rights.",
+    "technical_capture_vs_rights": "Operator authorization permits bounded technical work but is not a redistribution grant from the source rightsholders.",
+    "full_html_or_image_mirror_committed": false,
+    "classification": "external_candidate",
+    "required_followup": "Obtain and record a rights/retention disposition or approve a non-mirroring receipt architecture that still satisfies immutable auditability."
+  },
+  "freshness_and_lineage_disposition": {
+    "latest_selection_clock": "chart_as_of_date_then_full_timezone_aware_published_at",
+    "retrieval_time_can_select_latest": false,
+    "undated_mutable_page_can_supersede_dated_snapshot": false,
+    "null_chart_as_of_can_advance": false,
+    "same_probe_hash_behavior": "hash_equality_only_no_snapshot_and_no_independent_monitor_health_claim",
+    "distinct_run_health_behavior": "not_implemented_in_v0_requires_separate_governed_run_record_contract",
+    "latest_stream_key": "contract_version_assertion_scope_team_abbr_season",
+    "unchanged_retained_hash_set_can_advance": false,
+    "changed_parse_failure_behavior": "quarantine_candidate_retain_prior_verified_latest",
+    "real_arizona_successor_available": false,
+    "real_supersession_proof_complete": false
+  },
+  "identity_disposition": {
+    "unresolved_entries_may_be_retained": true,
+    "unresolved_entries_may_be_dropped": false,
+    "unresolved_or_ambiguous_player_id_must_be_null": true,
+    "resolved_exact_requires_player_id_and_resolution_method": true,
+    "display_name_match_is_canonical_identity": false,
+    "identity_builder_implemented": false,
+    "reason": "No player-identity join was required to establish source/format readiness and no candidate snapshot was admitted."
+  },
+  "acceptance_matrix": [
+    {
+      "criterion": "Official-team allowlist and third-party rejection",
+      "status": "implemented_team_coupled_and_tested"
+    },
+    {
+      "criterion": "Snapshot contract/schema",
+      "status": "implemented_and_tested"
+    },
+    {
+      "criterion": "Complete normalization is exact lossless row and entry reconciliation",
+      "status": "implemented_and_adversarially_tested"
+    },
+    {
+      "criterion": "Original immutable receipt mandatory",
+      "status": "path_presence_byte_length_and_sha256_enforced_but_source_rights_blocked"
+    },
+    {
+      "criterion": "Arizona exact candidate snapshot",
+      "status": "blocked_before_commit"
+    },
+    {
+      "criterion": "Structural markers survive normalization",
+      "status": "raw_markers_required_marker_decoding_and_legend_binding_prohibited_in_v0"
+    },
+    {
+      "criterion": "Unresolved identity retained",
+      "status": "all_unresolved_and_ambiguous_states_require_null_id_resolved_exact_requires_id_and_method_tested"
+    },
+    {
+      "criterion": "32-team source registry",
+      "status": "implemented_candidate_only"
+    },
+    {
+      "criterion": "Publication clock distinct from monitoring clock",
+      "status": "chart_date_then_full_timezone_aware_publication_tiebreak_implemented_and_tested"
+    },
+    {
+      "criterion": "Changed parse failure retains prior latest",
+      "status": "implemented_and_tested"
+    },
+    {
+      "criterion": "No third-party fallback",
+      "status": "implemented_and_tested"
+    },
+    {
+      "criterion": "Promotion checksum gate",
+      "status": "not_implemented_promotion_out_of_scope"
+    },
+    {
+      "criterion": "Real Arizona successor and deterministic diff",
+      "status": "deterministic_diff_implemented_real_successor_missing"
+    },
+    {
+      "criterion": "Three additional official formats",
+      "status": "source_probed_normalized_candidates_blocked"
+    },
+    {
+      "criterion": "No downstream activation",
+      "status": "pass"
+    }
+  ],
+  "handoff": {
+    "active_task": "TIBER-Data issue 231 bounded D0 official-depth-chart pilot",
+    "what_is_now_true": "Strict candidate contracts, exact lossless complete-status reconciliation, exhaustive identity ID/method rules, a team-coupled 32-team registry, six exact same-probe hash observations, four format probes, a missing-state probe, an explicit empty normalized-candidate manifest, and fail-closed validator behavior exist.",
+    "what_is_still_missing": "Rights-cleared immutable receipt storage, Arizona and three-format normalized candidate snapshots, independent transcription review, a later Arizona snapshot, promotion design, scheduler, and downstream activation.",
+    "what_must_not_be_assumed": "No current depth-chart player hierarchy is admitted; no chart proves actual usage, availability, roster survival, injury status, or fantasy volume.",
+    "audit_trigger_status": "audit_completed_builder_output_and_source_receipt_review_still_required_before_any_future_merge"
+  },
+  "terminal_decision": "official_depth_chart_pilot_requires_source_or_parser_followup"
+}
