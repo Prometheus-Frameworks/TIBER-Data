@@ -102,6 +102,17 @@ OFFICIAL_HOSTS = frozenset({*TEAM_OFFICIAL_HOST.values(), "static.clubs.nfl.com"
 IMMUTABLE_RECEIPT_ROOT = Path("data/raw/depth_charts")
 NORMALIZED_CANDIDATE_ROOT = Path("data/candidate/depth_charts/normalized")
 BOUNDED_PILOT_TEAMS = ("ARI", "WAS", "PIT", "CAR")
+# Formats the pilot contracts declare and therefore must actually enforce.
+REQUIRED_SCHEMA_FORMATS = ("date", "date-time")
+# Coverage states that assert snapshot evidence exists, so it must be recorded.
+EVIDENCE_REQUIRING_COVERAGE_STATES = frozenset(
+    {"captured_candidate", "verified_current", "superseded"}
+)
+# Monitor statuses that assert no probe was performed, so no clock is expected.
+# Any other status claims an observation and must carry its observation clock.
+CLOCK_EXEMPT_MONITOR_STATUSES = frozenset(
+    {"not_checked_in_bounded_pilot", "scheduler_not_authorized"}
+)
 
 
 class PilotValidationError(RuntimeError):
@@ -121,8 +132,25 @@ def canonical_sha256(payload: Any) -> str:
     return sha256(canonical_json_bytes(payload)).hexdigest()
 
 
+def pilot_format_checker() -> FormatChecker:
+    """Fail closed when a declared format would be silently unenforced.
+
+    ``jsonschema`` only registers ``date-time`` when its format extras are
+    installed, so a missing dependency would otherwise downgrade timestamp
+    validation to an unchecked string.
+    """
+    checker = FormatChecker()
+    missing = [name for name in REQUIRED_SCHEMA_FORMATS if name not in checker.checkers]
+    if missing:
+        raise PilotValidationError(
+            f"Schema format enforcement unavailable for {', '.join(missing)}; "
+            "install jsonschema[format]"
+        )
+    return checker
+
+
 def schema_validator(path: Path) -> Draft202012Validator:
-    return Draft202012Validator(load_json(path), format_checker=FormatChecker())
+    return Draft202012Validator(load_json(path), format_checker=pilot_format_checker())
 
 
 def normalized_hostname(url: str) -> str:
@@ -187,6 +215,20 @@ def validate_registry(payload: dict[str, Any]) -> None:
                 )
         if team["coverage_state"] == "not_yet_published" and team["last_checked_at"] is None:
             raise PilotValidationError("not_yet_published requires an observation clock")
+        if (
+            team["monitor_status"] not in CLOCK_EXEMPT_MONITOR_STATUSES
+            and team["last_checked_at"] is None
+        ):
+            raise PilotValidationError(
+                f"Monitor status {team['monitor_status']} requires an observation clock"
+            )
+        if (
+            team["coverage_state"] in EVIDENCE_REQUIRING_COVERAGE_STATES
+            and team["latest_verified_snapshot_id"] is None
+        ):
+            raise PilotValidationError(
+                f"Coverage state {team['coverage_state']} requires snapshot evidence"
+            )
         if team["latest_verified_snapshot_id"] is not None:
             required = (
                 team["last_qualifying_effective_date"],
@@ -448,7 +490,12 @@ def candidate_can_advance(snapshot: dict[str, Any], *, receipt_root: Path = ROOT
         return False
     if snapshot.get("verification_status") != "candidate_structurally_validated":
         return False
-    if snapshot_evidence_key(snapshot) is None:
+    try:
+        if snapshot_evidence_key(snapshot) is None:
+            return False
+    except (TypeError, ValueError, PilotValidationError):
+        # An unparseable chronology is an invalid candidate, not a crash: the
+        # caller must still fall back to prior-snapshot retention.
         return False
     receipts = snapshot.get("source_receipts", [])
     return bool(receipts) and all(

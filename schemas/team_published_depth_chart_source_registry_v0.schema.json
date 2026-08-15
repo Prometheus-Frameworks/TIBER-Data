@@ -119,7 +119,57 @@
           "type": "string",
           "minLength": 1
         }
-      }
+      },
+      "allOf": [
+        {
+          "$comment": "Coverage states that assert snapshot evidence must record it.",
+          "if": {
+            "required": ["coverage_state"],
+            "properties": {
+              "coverage_state": {
+                "enum": ["captured_candidate", "verified_current", "superseded"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "latest_verified_snapshot_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "latest_verified_snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "last_qualifying_effective_date": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        {
+          "$comment": "Any monitor status that claims an observation needs its clock.",
+          "if": {
+            "required": ["monitor_status"],
+            "properties": {
+              "monitor_status": {
+                "not": {
+                  "enum": ["not_checked_in_bounded_pilot", "scheduler_not_authorized"]
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "last_checked_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
