@@ -728,9 +728,7 @@ def _without_schema_layer(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(validator, "schema_validator", lambda path: _AcceptAll())
 
 
-@pytest.mark.parametrize(
-    "coverage_state", ["captured_candidate", "verified_current", "superseded"]
-)
+@pytest.mark.parametrize("coverage_state", ["verified_current", "superseded"])
 def test_registry_schema_rejects_evidence_free_currency_claim(coverage_state: str) -> None:
     registry = _registry_with(
         "ARI", coverage_state=coverage_state, **EVIDENCE_FREE_CURRENCY_CLAIM
@@ -739,9 +737,7 @@ def test_registry_schema_rejects_evidence_free_currency_claim(coverage_state: st
         validator.schema_validator(validator.REGISTRY_SCHEMA).validate(registry)
 
 
-@pytest.mark.parametrize(
-    "coverage_state", ["captured_candidate", "verified_current", "superseded"]
-)
+@pytest.mark.parametrize("coverage_state", ["verified_current", "superseded"])
 def test_validator_rejects_evidence_free_currency_claim(
     monkeypatch: pytest.MonkeyPatch, coverage_state: str
 ) -> None:
@@ -751,6 +747,16 @@ def test_validator_rejects_evidence_free_currency_claim(
     )
     with pytest.raises(validator.PilotValidationError):
         validator.validate_registry(registry)
+
+
+def test_captured_candidate_does_not_claim_verified_latest_evidence() -> None:
+    """A pre-verification state must not be forced into the verified-latest fields."""
+    registry = _registry_with(
+        "ARI", coverage_state="captured_candidate", **EVIDENCE_FREE_CURRENCY_CLAIM
+    )
+    validator.schema_validator(validator.REGISTRY_SCHEMA).validate(registry)
+    validator.validate_registry(registry)
+    assert "captured_candidate" not in validator.EVIDENCE_REQUIRING_COVERAGE_STATES
 
 
 def test_partial_snapshot_evidence_cannot_satisfy_a_currency_claim(

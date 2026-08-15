@@ -122,12 +122,12 @@
       },
       "allOf": [
         {
-          "$comment": "Coverage states that assert snapshot evidence must record it.",
+          "$comment": "States asserting a verified latest snapshot must record its evidence. captured_candidate is excluded as a pre-verification state.",
           "if": {
             "required": ["coverage_state"],
             "properties": {
               "coverage_state": {
-                "enum": ["captured_candidate", "verified_current", "superseded"]
+                "enum": ["verified_current", "superseded"]
               }
             }
           },

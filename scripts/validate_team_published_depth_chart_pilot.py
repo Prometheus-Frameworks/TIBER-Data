@@ -104,10 +104,11 @@ NORMALIZED_CANDIDATE_ROOT = Path("data/candidate/depth_charts/normalized")
 BOUNDED_PILOT_TEAMS = ("ARI", "WAS", "PIT", "CAR")
 # Formats the pilot contracts declare and therefore must actually enforce.
 REQUIRED_SCHEMA_FORMATS = ("date", "date-time")
-# Coverage states that assert snapshot evidence exists, so it must be recorded.
-EVIDENCE_REQUIRING_COVERAGE_STATES = frozenset(
-    {"captured_candidate", "verified_current", "superseded"}
-)
+# Coverage states that assert a verified latest snapshot, so its evidence must
+# be recorded. captured_candidate is deliberately excluded: it is a
+# pre-verification state, and the registry's only evidence fields are the
+# verified-latest triplet, which a candidate must not claim.
+EVIDENCE_REQUIRING_COVERAGE_STATES = frozenset({"verified_current", "superseded"})
 # Monitor statuses that assert no probe was performed, so no clock is expected.
 # Any other status claims an observation and must carry its observation clock.
 CLOCK_EXEMPT_MONITOR_STATUSES = frozenset(
