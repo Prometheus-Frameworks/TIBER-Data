@@ -698,3 +698,181 @@ def test_audit_records_exact_format_probe_counts_without_candidate_claim() -> No
         89,
     )
     assert all(not result["normalization_output_committed"] for result in by_team.values())
+
+
+REGISTRY_PATH = "data/candidate/depth_charts/official_source_registry_v0.json"
+
+EVIDENCE_FREE_CURRENCY_CLAIM = {
+    "latest_verified_snapshot_id": None,
+    "latest_verified_snapshot_sha256": None,
+    "last_qualifying_effective_date": None,
+}
+
+
+def _registry_with(team_id: str, **overrides: object) -> dict:
+    registry = _load(REGISTRY_PATH)
+    for team in registry["teams"]:
+        if team["team_id"] == team_id:
+            team.update(overrides)
+            return registry
+    raise AssertionError(f"Unknown registry team: {team_id}")
+
+
+def _without_schema_layer(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Isolate the Python invariants so the schema cannot mask a missing check."""
+
+    class _AcceptAll:
+        def validate(self, payload: dict) -> None:
+            return None
+
+    monkeypatch.setattr(validator, "schema_validator", lambda path: _AcceptAll())
+
+
+@pytest.mark.parametrize("coverage_state", ["verified_current", "superseded"])
+def test_registry_schema_rejects_evidence_free_currency_claim(coverage_state: str) -> None:
+    registry = _registry_with(
+        "ARI", coverage_state=coverage_state, **EVIDENCE_FREE_CURRENCY_CLAIM
+    )
+    with pytest.raises(ValidationError):
+        validator.schema_validator(validator.REGISTRY_SCHEMA).validate(registry)
+
+
+@pytest.mark.parametrize("coverage_state", ["verified_current", "superseded"])
+def test_validator_rejects_evidence_free_currency_claim(
+    monkeypatch: pytest.MonkeyPatch, coverage_state: str
+) -> None:
+    _without_schema_layer(monkeypatch)
+    registry = _registry_with(
+        "ARI", coverage_state=coverage_state, **EVIDENCE_FREE_CURRENCY_CLAIM
+    )
+    with pytest.raises(validator.PilotValidationError):
+        validator.validate_registry(registry)
+
+
+def test_captured_candidate_does_not_claim_verified_latest_evidence() -> None:
+    """A pre-verification state must not be forced into the verified-latest fields."""
+    registry = _registry_with(
+        "ARI", coverage_state="captured_candidate", **EVIDENCE_FREE_CURRENCY_CLAIM
+    )
+    validator.schema_validator(validator.REGISTRY_SCHEMA).validate(registry)
+    validator.validate_registry(registry)
+    assert "captured_candidate" not in validator.EVIDENCE_REQUIRING_COVERAGE_STATES
+
+
+def test_partial_snapshot_evidence_cannot_satisfy_a_currency_claim(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _without_schema_layer(monkeypatch)
+    registry = _registry_with(
+        "ARI",
+        coverage_state="verified_current",
+        latest_verified_snapshot_id="ari-2026-08-02",
+        latest_verified_snapshot_sha256=None,
+        last_qualifying_effective_date=None,
+    )
+    with pytest.raises(validator.PilotValidationError):
+        validator.validate_registry(registry)
+
+
+@pytest.mark.parametrize("monitor_status", ["manual_probe_healthy", "manual_probe_blocked"])
+def test_registry_schema_rejects_observed_status_without_clock(monitor_status: str) -> None:
+    registry = _registry_with(
+        "ARI",
+        monitor_status=monitor_status,
+        coverage_state="official_source_discovered",
+        last_checked_at=None,
+    )
+    with pytest.raises(ValidationError):
+        validator.schema_validator(validator.REGISTRY_SCHEMA).validate(registry)
+
+
+@pytest.mark.parametrize("monitor_status", ["manual_probe_healthy", "manual_probe_blocked"])
+def test_validator_rejects_observed_status_without_clock(
+    monkeypatch: pytest.MonkeyPatch, monitor_status: str
+) -> None:
+    _without_schema_layer(monkeypatch)
+    registry = _registry_with(
+        "ARI",
+        monitor_status=monitor_status,
+        coverage_state="official_source_discovered",
+        last_checked_at=None,
+    )
+    with pytest.raises(validator.PilotValidationError):
+        validator.validate_registry(registry)
+
+
+def test_never_probed_teams_stay_clock_exempt() -> None:
+    registry = _registry_with(
+        "BAL",
+        monitor_status="not_checked_in_bounded_pilot",
+        coverage_state="monitoring_degraded",
+        last_checked_at=None,
+    )
+    validator.validate_registry(registry)
+
+
+def test_declared_datetime_formats_are_actually_enforced() -> None:
+    checker = validator.pilot_format_checker()
+    for declared_format in validator.REQUIRED_SCHEMA_FORMATS:
+        assert declared_format in checker.checkers
+
+
+@pytest.mark.parametrize(
+    "malformed",
+    ["2026-08-10T12:00:00", "not-a-timestamp", "2026-13-45T99:99:99Z", "2026-08-10"],
+)
+def test_malformed_observation_clock_is_rejected_at_schema_time(malformed: str) -> None:
+    registry = _registry_with("ARI", last_checked_at=malformed)
+    with pytest.raises(ValidationError):
+        validator.schema_validator(validator.REGISTRY_SCHEMA).validate(registry)
+    with pytest.raises(ValidationError):
+        validator.validate_registry(registry)
+
+
+@pytest.mark.parametrize(
+    "malformed", ["2026-08-02T17:51:47", "not-a-timestamp", "2026-13-45T99:99:99Z"]
+)
+def test_malformed_publication_clock_is_rejected_at_schema_time(
+    tmp_path: Path, malformed: str
+) -> None:
+    snapshot = _snapshot_fixture(tmp_path, published_at=malformed)
+    with pytest.raises(ValidationError):
+        validator.validate_snapshot(snapshot, receipt_root=tmp_path)
+
+
+@pytest.mark.parametrize(
+    "malformed", ["2026-08-02T17:51:47", "not-a-timestamp", "2026-13-45T99:99:99Z"]
+)
+def test_malformed_publication_clock_retains_prior_instead_of_raising(
+    tmp_path: Path, malformed: str
+) -> None:
+    prior = _snapshot_fixture(tmp_path)
+    prior["snapshot_id"] = "prior"
+    candidate = _snapshot_fixture(
+        tmp_path,
+        date="2026-08-10",
+        published_at=malformed,
+        source_bytes=b"malformed clock bytes\n",
+        receipt_name="malformed-clock.html",
+    )
+    candidate["snapshot_id"] = "candidate"
+    assert validator.candidate_can_advance(candidate, receipt_root=tmp_path) is False
+    assert _advance(prior, candidate, tmp_path)["snapshot_id"] == "prior"
+
+
+def test_schema_valid_but_unparseable_clock_still_retains_prior(tmp_path: Path) -> None:
+    """Lowercase RFC3339 stays schema-valid, so retention must not depend on the parser."""
+    lowercase_rfc3339 = "2026-08-10t17:51:47z"
+    assert validator.pilot_format_checker().conforms(lowercase_rfc3339, "date-time")
+    prior = _snapshot_fixture(tmp_path)
+    prior["snapshot_id"] = "prior"
+    candidate = _snapshot_fixture(
+        tmp_path,
+        date="2026-08-10",
+        published_at=lowercase_rfc3339,
+        source_bytes=b"lowercase clock bytes\n",
+        receipt_name="lowercase-clock.html",
+    )
+    candidate["snapshot_id"] = "candidate"
+    assert validator.candidate_can_advance(candidate, receipt_root=tmp_path) is False
+    assert _advance(prior, candidate, tmp_path)["snapshot_id"] == "prior"
