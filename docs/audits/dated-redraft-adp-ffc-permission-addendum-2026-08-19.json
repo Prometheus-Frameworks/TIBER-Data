@@ -19,19 +19,23 @@
     "response_summary": {
       "storage_of_adp_observations": "permitted",
       "display_of_adp_observations": "permitted",
-      "specific_conditions": "none_stated_beyond_respectful_usage",
+      "automated_access": "not_separately_granted",
+      "specific_conditions": "none_stated_beyond_respectful_usage_for_the_permission_expressly_given",
       "numeric_rate_limit": "not_specified",
       "retention_limit": "not_specified",
-      "redistribution_prohibition": "not_specified",
+      "public_repository_or_redistribution_rights": "not_separately_granted",
       "required_attribution_format": "not_specified",
       "abuse_control": "ip_bans_may_be_used_for_egregious_use"
     }
   },
   "governance_interpretation": {
-    "rights_posture": "direct_permission_received_for_requested_low_frequency_storage_display_scope",
-    "automation_interpretation": "bounded_inference_from_responsive_exchange",
-    "operational_constraint": "respectful_usage",
+    "rights_posture": "storage_and_display_permitted_automation_and_public_redistribution_unresolved",
+    "automation_interpretation": "unresolved_not_separately_granted",
+    "public_redistribution_interpretation": "unresolved_not_separately_granted",
+    "operational_constraint_if_access_is_later_authorized": "respectful_usage",
     "do_not_infer": [
+      "automation_permission_from_responsive_silence",
+      "public_redistribution_permission_from_display_permission",
       "unlimited_request_rate",
       "numeric_rate_limit",
       "unlimited_raw_mirroring",
@@ -46,13 +50,16 @@
     "FFC expects respectful usage and may IP-ban egregious use"
   ],
   "still_missing": [
+    "affirmative automated API-access permission under the current Terms and robots posture",
+    "affirmative public repository or API redistribution permission if exact source values would be published",
     "exact FFC ppr endpoint population semantics",
     "source-native clock and calculation-window semantics",
     "governed FFC provider-id to GSIS identity path",
     "operator-approved cadence and request budget",
-    "adapter validator snapshot promotion scheduler and downstream activation"
+    "implemented versioned ADP snapshot contract schema and validator",
+    "adapter immutable snapshot promotion scheduler and downstream activation"
   ],
-  "recommended_operational_policy": [
+  "recommended_operational_policy_if_access_is_later_authorized": [
     "low_frequency",
     "cache_where_practical",
     "no_burst_polling",
@@ -60,10 +67,14 @@
     "append_only_tiber_snapshots",
     "stop_and_review_on_429_blocking_terms_change_or_owner_request"
   ],
+  "contract_state": {
+    "dated_redraft_adp_snapshot_v0": "proposed_contract_sketch_not_implemented"
+  },
   "authority_boundary": {
     "evidence_record_only": true,
     "adapter_authorized": false,
-    "live_retrieval_authorized": false,
+    "automated_or_live_retrieval_authorized": false,
+    "public_redistribution_authorized": false,
     "historical_backfill_authorized": false,
     "scheduler_authorized": false,
     "promotion_authorized": false,
