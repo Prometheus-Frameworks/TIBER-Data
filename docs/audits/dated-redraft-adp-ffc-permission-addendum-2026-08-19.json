@@ -1,0 +1,89 @@
+{
+  "schema_version": "tiber_data_source_permission_addendum_v0",
+  "source": {
+    "owner": "Fantasy Football Calculator",
+    "product": "ADP API",
+    "contact_sender": "Brooke Mennella",
+    "contact_address": "support@fantasyfootballcalculator.com"
+  },
+  "evidence": {
+    "channel": "direct_rightsholder_email",
+    "received_at": "2026-08-19",
+    "subject": "Re: Permission request: FFC ADP API use in open-source TIBER Fantasy",
+    "request_scope": [
+      "low_frequency_automated_requests",
+      "store_adp_observations",
+      "display_attributed_historical_adp_observations",
+      "identify_rate_attribution_retention_redistribution_conditions"
+    ],
+    "response_summary": {
+      "storage_of_adp_observations": "permitted",
+      "display_of_adp_observations": "permitted",
+      "automated_access": "not_separately_granted",
+      "specific_conditions": "none_stated_beyond_respectful_usage_for_the_permission_expressly_given",
+      "numeric_rate_limit": "not_specified",
+      "retention_limit": "not_specified",
+      "public_repository_or_redistribution_rights": "not_separately_granted",
+      "required_attribution_format": "not_specified",
+      "abuse_control": "ip_bans_may_be_used_for_egregious_use"
+    }
+  },
+  "governance_interpretation": {
+    "rights_posture": "storage_and_display_permitted_automation_and_public_redistribution_unresolved",
+    "automation_interpretation": "unresolved_not_separately_granted",
+    "public_redistribution_interpretation": "unresolved_not_separately_granted",
+    "operational_constraint_if_access_is_later_authorized": "respectful_usage",
+    "do_not_infer": [
+      "automation_permission_from_responsive_silence",
+      "public_redistribution_permission_from_display_permission",
+      "unlimited_request_rate",
+      "numeric_rate_limit",
+      "unlimited_raw_mirroring",
+      "source_population_semantics_not_established_by_email"
+    ]
+  },
+  "now_true": [
+    "direct written permission exists to store FFC ADP observations",
+    "direct written permission exists to display FFC ADP observations",
+    "no specific retention condition was stated in the reply",
+    "no numeric rate limit was stated in the reply",
+    "FFC expects respectful usage and may IP-ban egregious use"
+  ],
+  "still_missing": [
+    "affirmative automated API-access permission under the current Terms and robots posture",
+    "affirmative public repository or API redistribution permission if exact source values would be published",
+    "exact FFC ppr endpoint population semantics",
+    "source-native clock and calculation-window semantics",
+    "governed FFC provider-id to GSIS identity path",
+    "operator-approved cadence and request budget",
+    "implemented versioned ADP snapshot contract schema and validator",
+    "adapter immutable snapshot promotion scheduler and downstream activation"
+  ],
+  "recommended_operational_policy_if_access_is_later_authorized": [
+    "low_frequency",
+    "cache_where_practical",
+    "no_burst_polling",
+    "attribute_fantasy_football_calculator",
+    "append_only_tiber_snapshots",
+    "stop_and_review_on_429_blocking_terms_change_or_owner_request"
+  ],
+  "contract_state": {
+    "dated_redraft_adp_snapshot_v0": "proposed_contract_sketch_not_implemented"
+  },
+  "authority_boundary": {
+    "evidence_record_only": true,
+    "adapter_authorized": false,
+    "automated_or_live_retrieval_authorized": false,
+    "public_redistribution_authorized": false,
+    "historical_backfill_authorized": false,
+    "scheduler_authorized": false,
+    "promotion_authorized": false,
+    "downstream_consumer_authorized": false
+  },
+  "related": {
+    "issue": 251,
+    "qualification_pr": 252,
+    "contract_issue": 235,
+    "mfl_successor_issue": 257
+  }
+}
