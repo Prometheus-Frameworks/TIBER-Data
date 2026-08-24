@@ -990,6 +990,100 @@ describe('round four: missingness and declarations were self-declaring', () => {
   });
 });
 
+describe('round five: rights_blocked must name the blocked action', () => {
+  const P4 = () => mutable('positive', 'p4_rights_blocked_missing_component.json');
+
+  function openManualP4(
+    permissions: Partial<RbContactEvasionObservation['source']['permissions']>,
+  ): RbContactEvasionObservationsV0 {
+    const artifact = P4();
+    const observation = artifact.observations[0];
+    observation.source.access_class = 'open_and_ingestible';
+    observation.source.acquisition_method = 'manual_citation';
+    observation.source.permissions = {
+      attribution: 'not_required',
+      retention_and_reproduction: 'permitted',
+      redistribution_and_display: 'permitted',
+      automated_access: 'permitted',
+      ...permissions,
+    };
+    return artifact;
+  }
+
+  it('the valid P4 gated/not-acquired case is preserved', () => {
+    expect(evaluate(P4()).violations).toEqual([]);
+  });
+
+  it('H1: an automation restriction alone cannot excuse a manually acquirable measurement', () => {
+    const artifact = openManualP4({ automated_access: 'prohibited' });
+    expect(evaluate(artifact).reason_codes).toEqual(['MISSINGNESS_REASON_UNSUPPORTED']);
+  });
+
+  it('H2: a redistribution restriction governs downstream use, not absence', () => {
+    const artifact = openManualP4({ redistribution_and_display: 'prohibited' });
+    expect(evaluate(artifact).reason_codes).toEqual(['MISSINGNESS_REASON_UNSUPPORTED']);
+  });
+
+  it('a non-permitted retention disposition supports the claim on its own', () => {
+    for (const retention of ['prohibited', 'unknown'] as const) {
+      const artifact = openManualP4({ retention_and_reproduction: retention });
+      expect(evaluate(artifact).violations).toEqual([]);
+    }
+  });
+
+  it('a restricted access class supports the claim on its own', () => {
+    const artifact = openManualP4({});
+    artifact.observations[0].source.access_class = 'licensed_or_gated';
+    expect(evaluate(artifact).violations).toEqual([]);
+  });
+});
+
+describe('cross-product: access class x acquisition method x permission variant for rights_blocked', () => {
+  const accessClasses = rbContactEvasionSourceAccessClassSchema.options;
+  const acquisitions = ['manual_citation', 'not_acquired'] as const;
+  const permissionVariants = [
+    ['all_permitted', {}],
+    ['retention_prohibited', { retention_and_reproduction: 'prohibited' }],
+    ['retention_unknown', { retention_and_reproduction: 'unknown' }],
+    ['redistribution_prohibited', { redistribution_and_display: 'prohibited' }],
+    ['automation_prohibited', { automated_access: 'prohibited' }],
+  ] as const;
+  const restricted = new Set(['licensed_or_gated', 'reference_only', 'unavailable', 'unknown']);
+
+  for (const accessClass of accessClasses) {
+    for (const acquisition of acquisitions) {
+      for (const [variantName, variant] of permissionVariants) {
+        const retention =
+          (variant as { retention_and_reproduction?: string }).retention_and_reproduction ??
+          'permitted';
+        const supported = restricted.has(accessClass) || retention !== 'permitted';
+        it(`${accessClass} / ${acquisition} / ${variantName} -> ${
+          supported ? 'valid' : 'MISSINGNESS_REASON_UNSUPPORTED'
+        }`, () => {
+          const artifact = mutable('positive', 'p4_rights_blocked_missing_component.json');
+          const observation = artifact.observations[0];
+          observation.source.access_class = accessClass;
+          observation.source.acquisition_method = acquisition;
+          observation.source.permissions = {
+            attribution: 'not_required',
+            retention_and_reproduction: 'permitted',
+            redistribution_and_display: 'permitted',
+            automated_access: 'permitted',
+            ...variant,
+          };
+          const report = evaluate(artifact);
+          expect(report.shape_valid).toBe(true);
+          if (supported) {
+            expect(report.violations).toEqual([]);
+          } else {
+            expect(report.reason_codes).toEqual(['MISSINGNESS_REASON_UNSUPPORTED']);
+          }
+        });
+      }
+    }
+  }
+});
+
 describe('cross-product: material kind x evidence class', () => {
   const materials = ['measured_observation', 'derived_publication', 'editorial_opinion'] as const;
   const evidences: RbContactEvasionEvidenceClass[] = [

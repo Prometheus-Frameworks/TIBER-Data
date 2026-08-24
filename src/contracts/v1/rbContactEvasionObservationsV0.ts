@@ -1343,16 +1343,32 @@ function checkMissingnessShape(
   }
 
   if (reason === 'rights_blocked') {
+    // Rights follow the action the claim is about. A rights-blocked
+    // measurement is one this artifact could not ACQUIRE or could not RETAIN,
+    // so exactly two declared states can support the claim:
+    //
+    // - a restricted access class, which blocks acquisition at the source
+    //   boundary; or
+    // - a retention/reproduction disposition that is not "permitted", which
+    //   blocks retaining the value even where acquisition is open.
+    //
+    // An automation restriction cannot support it: nothing in this vocabulary
+    // can declare that acquisition DEPENDED on automation (a missing row's
+    // acquisition_method records what happened — typically "not_acquired" —
+    // never the counterfactual), and a declared automated acquisition with
+    // automation prohibited is already rejected as incoherent, so the fields
+    // cannot prove an automation-blocked action; the claim fails closed
+    // rather than leaning on an unprovable one. A redistribution/display
+    // restriction governs downstream use and says nothing about why a
+    // measurement is absent. Restrictions are not interchangeable.
     const blockingState =
       RB_CONTACT_EVASION_RESTRICTED_ACCESS_CLASSES.has(source.access_class) ||
-      permissions.retention_and_reproduction !== 'permitted' ||
-      permissions.redistribution_and_display !== 'permitted' ||
-      permissions.automated_access !== 'permitted';
+      permissions.retention_and_reproduction !== 'permitted';
     if (!blockingState) {
       push({
         reason_code: 'MISSINGNESS_REASON_UNSUPPORTED',
         path: `${measurementPath}.missingness_reason`,
-        detail: `missingness_reason "rights_blocked" is claimed against access_class "${source.access_class}" with every permission disposition "permitted"; nothing in the declared source state blocks anything`,
+        detail: `missingness_reason "rights_blocked" is claimed against access_class "${source.access_class}" with retention_and_reproduction "permitted"; neither acquisition nor retention is blocked, and restrictions on other actions (redistribution/display, automation) do not explain a missing measurement`,
       });
     }
   }
