@@ -6,7 +6,7 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "n03-touch-denominator-declared-rushing",
+      "observation_id": "n18-snapshot-without-digest",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -43,33 +43,33 @@
         "artifact_generated_at": "artifact_build_clock"
       },
       "metric": {
-        "metric_id": "forced_missed_tackles_per_touch",
-        "source_native_metric_name": "forced missed tackles per touch",
+        "metric_id": "forced_missed_tackles_per_rush_attempt",
+        "source_native_metric_name": "forced missed tackles per rushing attempt",
         "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
         "definition_version": "synthetic-def-2024.1",
-        "unit": "forced_missed_tackles_per_touch",
+        "unit": "forced_missed_tackles_per_rush_attempt",
         "value_kind": "rate",
         "directionality": "higher_is_more_of_mechanism",
         "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
         "inclusion_exclusion_rules": [
-          "rushing attempts and receptions"
+          "rushing attempts only; kneel-downs and aborted plays excluded"
         ],
         "combined_component_disclosure": null
       },
       "measurement": {
         "status": "observed",
         "missingness_reason": null,
-        "value": 0.271,
+        "value": 0.305,
         "numerator": {
           "metric_id": "forced_missed_tackles_count",
-          "value": 68
+          "value": 62
         },
         "denominator": {
-          "metric_id": "touches",
-          "value": 251,
-          "opportunity_type": "touch"
+          "metric_id": "rush_attempts",
+          "value": 203,
+          "opportunity_type": "rush_attempt"
         },
-        "eligible_opportunities": 251
+        "eligible_opportunities": 203
       },
       "cohort_scope": null,
       "transform": null,
@@ -95,12 +95,12 @@
         },
         "content_digest": null,
         "promotable": false,
-        "provenance_mode": "fixture",
+        "provenance_mode": "snapshot",
         "superseded_by_snapshot_id": null
       },
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "negative fixture: receiving opportunity folded into a row declared as rushing, with no disclosure"
+        "negative fixture: a snapshot with no content digest"
       ]
     }
   ]

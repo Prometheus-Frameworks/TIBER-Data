@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tiber-data.local/schemas/rb_contact_evasion_observations_v0.schema.json",
   "title": "rb_contact_evasion_observations_v0 (contract, no artifact)",
-  "description": "Shape gate for the RB contact-evasion source-observation contract (TIBER-Data #234, Slice A). This is a CONTRACT ONLY: no builder, no candidate or promoted artifact, and no admitted source exists under it. One row is one canonical player x one exact football window x one metric definition x one source snapshot x one denominator definition. The schema is a SHAPE gate: closed vocabularies, required clocks, and unknown-field rejection. Cross-field contract rules (rate denominators, definition drift, clock substitution, cohort scope, mechanism/metric binding, incompatible transform inputs, fixture-provenance position) are enforced by src/contracts/v1/rbContactEvasionObservationsV0.ts and are NOT expressible here. There is deliberately no score, composite, grade, ranking, percentile, tier, rating, neutral default, fantasy field, or 'elite' judgment anywhere in this schema, and none may be added.",
+  "description": "Shape gate for the RB contact-evasion source-observation contract (TIBER-Data #234, Slice A). This is a CONTRACT ONLY: no builder, no candidate or promoted artifact, and no admitted source exists under it. One row is one canonical player x one exact football window x one metric definition x one source snapshot x one denominator definition. SEMANTIC AUTHORITY LIVES IN src/contracts/v1/rbContactEvasionObservationsV0.ts, NOT IN THE PAYLOAD: the code-owned metric dictionary fixes each metric's mechanism, value kind, unit, directionality, and expected numerator/denominator, and the code-owned minimum-sample rule fixes the governing threshold. A row restates some of those facts for inspectability and is rejected when it disagrees. The schema is a SHAPE gate: closed vocabularies, all seven clocks with declared origins, and unknown-field rejection. Cross-field contract rules (rate arithmetic and component identity, definition drift, clock substitution and availability, cohort scope, mechanism/metric binding, source-permission compatibility, artifact-level identity and grain uniqueness, incompatible transform inputs, fixture-provenance position) are enforced by the contract layer and are NOT expressible here. There is deliberately no score, composite, grade, ranking, percentile, tier, rating, neutral default, fantasy field, or 'elite' judgment anywhere in this schema, and none may be added.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,19 +14,39 @@
     "observations"
   ],
   "properties": {
-    "artifact_id": { "const": "rb_contact_evasion_observations_v0" },
-    "schema_version": { "const": "rb_contact_evasion_observations_v0.1.0" },
-    "artifact_position": { "$ref": "#/$defs/artifactPosition" },
-    "generated_at": { "type": "string", "format": "date-time" },
-    "contract_ref": { "type": "string", "minLength": 1 },
+    "artifact_id": {
+      "const": "rb_contact_evasion_observations_v0"
+    },
+    "schema_version": {
+      "const": "rb_contact_evasion_observations_v0.2.0"
+    },
+    "artifact_position": {
+      "$ref": "#/$defs/artifactPosition"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "contract_ref": {
+      "type": "string",
+      "minLength": 1
+    },
     "observations": {
       "type": "array",
-      "items": { "$ref": "#/$defs/observation" }
+      "items": {
+        "$ref": "#/$defs/observation"
+      }
     }
   },
   "$defs": {
-    "nonEmptyString": { "type": "string", "minLength": 1 },
-    "isoDatetime": { "type": "string", "format": "date-time" },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "isoDatetime": {
+      "type": "string",
+      "format": "date-time"
+    },
     "mechanismId": {
       "description": "Closed mechanism universe. 'elusiveness' is not a member: it is a human umbrella term that decomposes into these five separately-observed mechanisms. Evidence for one never satisfies another.",
       "enum": [
@@ -38,7 +58,12 @@
       ]
     },
     "evidenceClass": {
-      "enum": ["direct", "normalized", "derived", "external_opinion"]
+      "enum": [
+        "direct",
+        "normalized",
+        "derived",
+        "external_opinion"
+      ]
     },
     "sourceAccessClass": {
       "enum": [
@@ -50,26 +75,80 @@
         "unknown"
       ]
     },
-    "provenanceMode": { "enum": ["live", "snapshot", "fixture"] },
-    "artifactPosition": { "enum": ["fixture_only", "candidate", "promoted"] },
+    "provenanceMode": {
+      "enum": [
+        "live",
+        "snapshot",
+        "fixture"
+      ]
+    },
+    "artifactPosition": {
+      "enum": [
+        "fixture_only",
+        "candidate",
+        "promoted"
+      ]
+    },
     "sourceMaterialKind": {
-      "enum": ["measured_observation", "derived_publication", "editorial_opinion"]
+      "enum": [
+        "measured_observation",
+        "derived_publication",
+        "editorial_opinion"
+      ]
     },
     "opportunityClass": {
-      "enum": ["rushing", "receiving", "combined_rushing_receiving", "athletic_testing"]
+      "enum": [
+        "rushing",
+        "receiving",
+        "combined_rushing_receiving",
+        "athletic_testing"
+      ]
     },
     "opportunityType": {
-      "enum": ["rush_attempt", "reception", "target", "touch", "contact_event", "testing_trial"]
+      "enum": [
+        "rush_attempt",
+        "reception",
+        "target",
+        "touch",
+        "contact_event",
+        "testing_trial"
+      ]
     },
-    "seasonType": { "enum": ["PRE", "REG", "POST"] },
+    "seasonType": {
+      "enum": [
+        "PRE",
+        "REG",
+        "POST"
+      ]
+    },
     "windowCompleteness": {
-      "enum": ["single_week", "multi_week", "partial_season", "full_season"]
+      "enum": [
+        "single_week",
+        "multi_week",
+        "partial_season",
+        "full_season"
+      ]
     },
-    "valueKind": { "enum": ["rate", "count", "duration_seconds", "speed_mph"] },
+    "valueKind": {
+      "enum": [
+        "rate",
+        "count",
+        "duration_seconds",
+        "speed_mph"
+      ]
+    },
     "directionality": {
-      "enum": ["higher_is_more_of_mechanism", "lower_is_more_of_mechanism"]
+      "enum": [
+        "higher_is_more_of_mechanism",
+        "lower_is_more_of_mechanism"
+      ]
     },
-    "measurementStatus": { "enum": ["observed", "missing"] },
+    "measurementStatus": {
+      "enum": [
+        "observed",
+        "missing"
+      ]
+    },
     "missingnessReason": {
       "enum": [
         "rights_blocked",
@@ -79,8 +158,20 @@
         "definition_incompatible"
       ]
     },
-    "identityResolution": { "enum": ["canonical_gsis_id", "unresolved"] },
-    "position": { "enum": ["QB", "RB", "WR", "TE"] },
+    "identityResolution": {
+      "enum": [
+        "canonical_gsis_id",
+        "unresolved"
+      ]
+    },
+    "position": {
+      "enum": [
+        "QB",
+        "RB",
+        "WR",
+        "TE"
+      ]
+    },
     "identity": {
       "description": "Canonical identity. gsis_id is nullable only so an unresolved row can be expressed and then rejected by the contract layer; a name, team, position, or provider id never authorizes identity.",
       "type": "object",
@@ -92,10 +183,30 @@
         "display_name_non_authoritative"
       ],
       "properties": {
-        "gsis_id": { "type": ["string", "null"], "minLength": 1 },
-        "identity_resolution": { "$ref": "#/$defs/identityResolution" },
-        "provider_player_id": { "type": ["string", "null"], "minLength": 1 },
-        "display_name_non_authoritative": { "type": ["string", "null"], "minLength": 1 }
+        "gsis_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "identity_resolution": {
+          "$ref": "#/$defs/identityResolution"
+        },
+        "provider_player_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "display_name_non_authoritative": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
       }
     },
     "scope": {
@@ -111,17 +222,38 @@
         "opportunity_class"
       ],
       "properties": {
-        "position_at_window": { "$ref": "#/$defs/position" },
-        "season": { "type": "integer", "minimum": 1900 },
-        "season_type": { "$ref": "#/$defs/seasonType" },
-        "week": { "type": ["integer", "null"], "minimum": 1, "maximum": 22 },
-        "games_included": { "type": "integer", "minimum": 0 },
-        "window_completeness": { "$ref": "#/$defs/windowCompleteness" },
-        "opportunity_class": { "$ref": "#/$defs/opportunityClass" }
+        "position_at_window": {
+          "$ref": "#/$defs/position"
+        },
+        "season": {
+          "type": "integer",
+          "minimum": 1900
+        },
+        "season_type": {
+          "$ref": "#/$defs/seasonType"
+        },
+        "week": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 22
+        },
+        "games_included": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "window_completeness": {
+          "$ref": "#/$defs/windowCompleteness"
+        },
+        "opportunity_class": {
+          "$ref": "#/$defs/opportunityClass"
+        }
       }
     },
     "clocks": {
-      "description": "All seven clocks, each with its own meaning. Retrieval time never substitutes for a football window or a source-generation clock; that substitution is caught by the contract layer, not here.",
+      "description": "All seven clocks, each with its own meaning. The three source clocks are nullable so an unavailable source clock stays null with a declared origin rather than being backfilled. Origins are declared in clockProvenanceMap; substitution and availability contradictions are caught by the contract layer, not here.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -134,25 +266,68 @@
         "artifact_generated_at"
       ],
       "properties": {
-        "window_start": { "$ref": "#/$defs/isoDatetime" },
-        "window_end": { "$ref": "#/$defs/isoDatetime" },
-        "source_observed_at": {
-          "oneOf": [{ "$ref": "#/$defs/isoDatetime" }, { "type": "null" }]
+        "window_start": {
+          "$ref": "#/$defs/isoDatetime"
         },
-        "source_generated_at": { "$ref": "#/$defs/isoDatetime" },
-        "source_available_at": { "$ref": "#/$defs/isoDatetime" },
-        "retrieved_at": { "$ref": "#/$defs/isoDatetime" },
-        "artifact_generated_at": { "$ref": "#/$defs/isoDatetime" }
+        "window_end": {
+          "$ref": "#/$defs/isoDatetime"
+        },
+        "source_observed_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/isoDatetime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_generated_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/isoDatetime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_available_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/isoDatetime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retrieved_at": {
+          "$ref": "#/$defs/isoDatetime"
+        },
+        "artifact_generated_at": {
+          "$ref": "#/$defs/isoDatetime"
+        }
       }
     },
     "combinedComponentDisclosure": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["rushing_component_metric_id", "receiving_component_metric_id", "disclosure"],
+      "required": [
+        "rushing_component_metric_id",
+        "receiving_component_metric_id",
+        "disclosure"
+      ],
       "properties": {
-        "rushing_component_metric_id": { "$ref": "#/$defs/nonEmptyString" },
-        "receiving_component_metric_id": { "$ref": "#/$defs/nonEmptyString" },
-        "disclosure": { "$ref": "#/$defs/nonEmptyString" }
+        "rushing_component_metric_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "receiving_component_metric_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "disclosure": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
       }
     },
     "metric": {
@@ -166,45 +341,88 @@
         "unit",
         "value_kind",
         "directionality",
-        "minimum_eligible_opportunities",
+        "minimum_sample_rule_id",
         "inclusion_exclusion_rules",
         "combined_component_disclosure"
       ],
       "properties": {
-        "metric_id": { "$ref": "#/$defs/nonEmptyString" },
-        "source_native_metric_name": { "$ref": "#/$defs/nonEmptyString" },
-        "definition_ref": { "$ref": "#/$defs/nonEmptyString" },
-        "definition_version": { "$ref": "#/$defs/nonEmptyString" },
-        "unit": { "$ref": "#/$defs/nonEmptyString" },
-        "value_kind": { "$ref": "#/$defs/valueKind" },
-        "directionality": { "$ref": "#/$defs/directionality" },
-        "minimum_eligible_opportunities": { "type": "integer", "minimum": 0 },
+        "metric_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source_native_metric_name": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "definition_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "definition_version": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "unit": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "value_kind": {
+          "$ref": "#/$defs/valueKind"
+        },
+        "directionality": {
+          "$ref": "#/$defs/directionality"
+        },
         "inclusion_exclusion_rules": {
           "type": "array",
-          "items": { "$ref": "#/$defs/nonEmptyString" }
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
         },
         "combined_component_disclosure": {
-          "oneOf": [{ "$ref": "#/$defs/combinedComponentDisclosure" }, { "type": "null" }]
+          "oneOf": [
+            {
+              "$ref": "#/$defs/combinedComponentDisclosure"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minimum_sample_rule_id": {
+          "$ref": "#/$defs/nonEmptyString"
         }
-      }
+      },
+      "description": "Per-row metric declaration. value_kind, unit, and directionality are restated for inspectability but are NOT authoritative -- they must equal the code-owned descriptor. minimum_sample_rule_id names the governing rule; a row cannot state a threshold, only which rule binds it."
     },
     "numerator": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["metric_id", "value"],
+      "required": [
+        "metric_id",
+        "value"
+      ],
       "properties": {
-        "metric_id": { "$ref": "#/$defs/nonEmptyString" },
-        "value": { "type": "number" }
+        "metric_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "value": {
+          "type": "number"
+        }
       }
     },
     "denominator": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["metric_id", "value", "opportunity_type"],
+      "required": [
+        "metric_id",
+        "value",
+        "opportunity_type"
+      ],
       "properties": {
-        "metric_id": { "$ref": "#/$defs/nonEmptyString" },
-        "value": { "type": "number" },
-        "opportunity_type": { "$ref": "#/$defs/opportunityType" }
+        "metric_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "value": {
+          "type": "number"
+        },
+        "opportunity_type": {
+          "$ref": "#/$defs/opportunityType"
+        }
       }
     },
     "measurement": {
@@ -219,18 +437,56 @@
         "eligible_opportunities"
       ],
       "properties": {
-        "status": { "$ref": "#/$defs/measurementStatus" },
-        "missingness_reason": {
-          "oneOf": [{ "$ref": "#/$defs/missingnessReason" }, { "type": "null" }]
+        "status": {
+          "$ref": "#/$defs/measurementStatus"
         },
-        "value": { "type": ["number", "null"] },
-        "numerator": { "oneOf": [{ "$ref": "#/$defs/numerator" }, { "type": "null" }] },
-        "denominator": { "oneOf": [{ "$ref": "#/$defs/denominator" }, { "type": "null" }] },
-        "eligible_opportunities": { "type": ["integer", "null"], "minimum": 0 }
+        "missingness_reason": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/missingnessReason"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "numerator": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/numerator"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "denominator": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/denominator"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "eligible_opportunities": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
       }
     },
     "cohortScope": {
-      "description": "Cohort MEMBERSHIP INPUTS only. It carries no percentile, rank, threshold, score, or grade, and none may be added: that boundary is TIBER-Ops #15 and is unresolved.",
+      "description": "Cohort MEMBERSHIP INPUTS only. No percentile, rank, threshold, score, or grade, and none may be added (that boundary is TIBER-Ops #15, unresolved). It states no minimum either: the minimum-sample bar is code-owned.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -238,28 +494,48 @@
         "season",
         "season_type",
         "window_completeness",
-        "minimum_eligible_opportunities",
         "window_completeness_disclosure"
       ],
       "properties": {
-        "position": { "$ref": "#/$defs/position" },
-        "season": { "type": "integer", "minimum": 1900 },
-        "season_type": { "$ref": "#/$defs/seasonType" },
-        "window_completeness": { "$ref": "#/$defs/windowCompleteness" },
-        "minimum_eligible_opportunities": { "type": "integer", "minimum": 0 },
-        "window_completeness_disclosure": { "type": ["string", "null"], "minLength": 1 }
+        "position": {
+          "$ref": "#/$defs/position"
+        },
+        "season": {
+          "type": "integer",
+          "minimum": 1900
+        },
+        "season_type": {
+          "$ref": "#/$defs/seasonType"
+        },
+        "window_completeness": {
+          "$ref": "#/$defs/windowCompleteness"
+        },
+        "window_completeness_disclosure": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
       }
     },
     "transform": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["transform_version", "input_metric_ids"],
+      "required": [
+        "transform_version",
+        "input_metric_ids"
+      ],
       "properties": {
-        "transform_version": { "$ref": "#/$defs/nonEmptyString" },
+        "transform_version": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
         "input_metric_ids": {
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/nonEmptyString" }
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
         }
       }
     },
@@ -275,25 +551,66 @@
         "material_kind",
         "supported_opportunity_types",
         "rights_review_ref",
+        "permissions",
+        "content_digest",
         "promotable",
         "provenance_mode",
         "superseded_by_snapshot_id"
       ],
       "properties": {
-        "owner": { "$ref": "#/$defs/nonEmptyString" },
-        "product": { "$ref": "#/$defs/nonEmptyString" },
-        "snapshot_id": { "$ref": "#/$defs/nonEmptyString" },
-        "access_class": { "$ref": "#/$defs/sourceAccessClass" },
-        "acquisition_method": { "$ref": "#/$defs/nonEmptyString" },
-        "material_kind": { "$ref": "#/$defs/sourceMaterialKind" },
+        "owner": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "product": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "access_class": {
+          "$ref": "#/$defs/sourceAccessClass"
+        },
+        "acquisition_method": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "material_kind": {
+          "$ref": "#/$defs/sourceMaterialKind"
+        },
         "supported_opportunity_types": {
           "type": "array",
-          "items": { "$ref": "#/$defs/opportunityType" }
+          "items": {
+            "$ref": "#/$defs/opportunityType"
+          }
         },
-        "rights_review_ref": { "$ref": "#/$defs/nonEmptyString" },
-        "promotable": { "type": "boolean" },
-        "provenance_mode": { "$ref": "#/$defs/provenanceMode" },
-        "superseded_by_snapshot_id": { "type": ["string", "null"], "minLength": 1 }
+        "rights_review_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "promotable": {
+          "type": "boolean"
+        },
+        "provenance_mode": {
+          "$ref": "#/$defs/provenanceMode"
+        },
+        "superseded_by_snapshot_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "permissions": {
+          "$ref": "#/$defs/sourcePermissions"
+        },
+        "content_digest": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/contentDigest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
       }
     },
     "observation": {
@@ -307,6 +624,7 @@
         "identity",
         "scope",
         "clocks",
+        "clock_provenance",
         "metric",
         "measurement",
         "cohort_scope",
@@ -315,18 +633,163 @@
         "warnings"
       ],
       "properties": {
-        "observation_id": { "$ref": "#/$defs/nonEmptyString" },
-        "mechanism_id": { "$ref": "#/$defs/mechanismId" },
-        "evidence_class": { "$ref": "#/$defs/evidenceClass" },
-        "identity": { "$ref": "#/$defs/identity" },
-        "scope": { "$ref": "#/$defs/scope" },
-        "clocks": { "$ref": "#/$defs/clocks" },
-        "metric": { "$ref": "#/$defs/metric" },
-        "measurement": { "$ref": "#/$defs/measurement" },
-        "cohort_scope": { "oneOf": [{ "$ref": "#/$defs/cohortScope" }, { "type": "null" }] },
-        "transform": { "oneOf": [{ "$ref": "#/$defs/transform" }, { "type": "null" }] },
-        "source": { "$ref": "#/$defs/source" },
-        "warnings": { "type": "array", "items": { "$ref": "#/$defs/nonEmptyString" } }
+        "observation_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "mechanism_id": {
+          "$ref": "#/$defs/mechanismId"
+        },
+        "evidence_class": {
+          "$ref": "#/$defs/evidenceClass"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "scope": {
+          "$ref": "#/$defs/scope"
+        },
+        "clocks": {
+          "$ref": "#/$defs/clocks"
+        },
+        "metric": {
+          "$ref": "#/$defs/metric"
+        },
+        "measurement": {
+          "$ref": "#/$defs/measurement"
+        },
+        "cohort_scope": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/cohortScope"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "transform": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/transform"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "clock_provenance": {
+          "$ref": "#/$defs/clockProvenanceMap"
+        }
+      }
+    },
+    "clockProvenance": {
+      "description": "Which clock a timestamp actually came from. Declared origin replaces the earlier timestamp-equality heuristic, which was unsound in both directions: it rejected a legitimately coincident instant and let an invented sub-second offset launder a substituted retrieval clock.",
+      "enum": [
+        "football_window",
+        "source_supplied",
+        "not_supplied_by_source",
+        "retrieval_clock",
+        "artifact_build_clock"
+      ]
+    },
+    "permissionDisposition": {
+      "enum": [
+        "permitted",
+        "prohibited",
+        "unknown"
+      ]
+    },
+    "attributionDisposition": {
+      "enum": [
+        "required",
+        "not_required",
+        "unknown"
+      ]
+    },
+    "clockProvenanceMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "window_start",
+        "window_end",
+        "source_observed_at",
+        "source_generated_at",
+        "source_available_at",
+        "retrieved_at",
+        "artifact_generated_at"
+      ],
+      "properties": {
+        "window_start": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "window_end": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "source_observed_at": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "source_generated_at": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "source_available_at": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "retrieved_at": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "artifact_generated_at": {
+          "$ref": "#/$defs/clockProvenance"
+        }
+      }
+    },
+    "contentDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "properties": {
+        "algorithm": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "value": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "sourcePermissions": {
+      "description": "Rights dispositions stated separately per #234's source-and-rights audit. Every disposition is required; 'unknown' is a real answer that fails closed and is never read as permission.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attribution",
+        "retention_and_reproduction",
+        "redistribution_and_display",
+        "automated_access"
+      ],
+      "properties": {
+        "attribution": {
+          "$ref": "#/$defs/attributionDisposition"
+        },
+        "retention_and_reproduction": {
+          "$ref": "#/$defs/permissionDisposition"
+        },
+        "redistribution_and_display": {
+          "$ref": "#/$defs/permissionDisposition"
+        },
+        "automated_access": {
+          "$ref": "#/$defs/permissionDisposition"
+        }
       }
     }
   }

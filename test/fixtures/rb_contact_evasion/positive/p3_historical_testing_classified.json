@@ -1,6 +1,6 @@
 {
   "artifact_id": "rb_contact_evasion_observations_v0",
-  "schema_version": "rb_contact_evasion_observations_v0.1.0",
+  "schema_version": "rb_contact_evasion_observations_v0.2.0",
   "artifact_position": "fixture_only",
   "generated_at": "2026-08-24T00:00:00+00:00",
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
@@ -33,6 +33,15 @@
         "retrieved_at": "2024-03-04T15:30:00+00:00",
         "artifact_generated_at": "2026-08-24T00:00:00+00:00"
       },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
       "metric": {
         "metric_id": "forty_yard_dash_seconds",
         "source_native_metric_name": "40-yard dash (electronic)",
@@ -41,7 +50,7 @@
         "unit": "seconds",
         "value_kind": "duration_seconds",
         "directionality": "lower_is_more_of_mechanism",
-        "minimum_eligible_opportunities": 1,
+        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
         "inclusion_exclusion_rules": [
           "single pre-draft testing trial"
         ],
@@ -71,6 +80,13 @@
           "testing_trial"
         ],
         "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "required",
+          "retention_and_reproduction": "permitted",
+          "redistribution_and_display": "permitted",
+          "automated_access": "permitted"
+        },
+        "content_digest": null,
         "promotable": false,
         "provenance_mode": "fixture",
         "superseded_by_snapshot_id": null

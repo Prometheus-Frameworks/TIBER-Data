@@ -5,14 +5,19 @@ import { z } from 'zod';
  * contact-evasion mechanism lane (TIBER-Data #234, Slice A).
  *
  * This module is a **contract and validation surface only**. It does not build,
- * ingest, promote, normalize, rank, or score anything. It defines the shape a
- * candidate artifact would have to satisfy, and the machine-readable reason
- * codes by which a non-conforming artifact is rejected.
+ * ingest, promote, normalize, rank, or score anything.
+ *
+ * Design rule, after the first exact-head review: **semantic authority lives in
+ * this file, not in the payload.** A row does not get to define what its metric
+ * means, what its minimum-sample bar is, or which clock a timestamp came from.
+ * The contract owns those facts in code-owned descriptors and rules; the payload
+ * may only *agree* with them, and disagreement is a rejection with a stable
+ * machine-readable reason code.
  *
  * Deliberate absences (see `docs/contracts/rb-contact-evasion-observations-v0.md`):
- * there is no score, composite, grade, ranking, percentile, tier, neutral
- * default, or "elite" judgment anywhere in this contract. A mechanism with no
- * admitted evidence stays missing; it is never filled from another mechanism.
+ * there is no score, composite, grade, ranking, percentile, tier, rating,
+ * neutral default, or "elite" judgment anywhere in this contract. A mechanism
+ * with no admitted evidence stays missing; it is never filled from another.
  */
 
 const isoDatetimeSchema = z.string().datetime({ offset: true });
@@ -72,6 +77,23 @@ export const rbContactEvasionSourceMaterialKindSchema = z.enum([
   'measured_observation',
   'derived_publication',
   'editorial_opinion',
+]);
+
+/**
+ * Rights dispositions, recorded separately because #234 requires attribution,
+ * retention, redistribution/display, and automation to be stated independently.
+ * `unknown` is a real answer and fails closed — it is never read as permission.
+ */
+export const rbContactEvasionPermissionDispositionSchema = z.enum([
+  'permitted',
+  'prohibited',
+  'unknown',
+]);
+
+export const rbContactEvasionAttributionDispositionSchema = z.enum([
+  'required',
+  'not_required',
+  'unknown',
 ]);
 
 export const rbContactEvasionOpportunityClassSchema = z.enum([
@@ -147,62 +169,253 @@ export const rbContactEvasionIdentityResolutionSchema = z.enum([
 
 export const rbContactEvasionPositionSchema = z.enum(['QB', 'RB', 'WR', 'TE']);
 
+/**
+ * Which clock a timestamp actually came from.
+ *
+ * This replaces the previous timestamp-equality heuristic, which was unsound in
+ * both directions: it rejected a legitimately coincident instant and let an
+ * invented one-millisecond offset launder a substituted retrieval clock. A
+ * declared clock origin is machine-readable and cannot be dodged by arithmetic.
+ */
+export const rbContactEvasionClockProvenanceSchema = z.enum([
+  'football_window',
+  'source_supplied',
+  'not_supplied_by_source',
+  'retrieval_clock',
+  'artifact_build_clock',
+]);
+
+/** Clock origins that a source or window clock may never claim. */
+export const RB_CONTACT_EVASION_NON_SOURCE_CLOCK_ORIGINS: ReadonlySet<
+  RbContactEvasionClockProvenance
+> = new Set(['retrieval_clock', 'artifact_build_clock']);
+
 // ---------------------------------------------------------------------------
-// Metric registry: metric identity -> the mechanisms it may ever evidence
+// Code-owned metric dictionary
 // ---------------------------------------------------------------------------
 
 /**
- * Closed metric registry. The value is the set of mechanisms a metric may
- * evidence — an **empty** set means the metric is a component/denominator or a
- * known-inadmissible summary statistic that may never stand as mechanism
- * evidence at all (a lone long gain, yards per carry, a raw touch count).
+ * What a metric identity *means*, owned by this contract.
  *
- * Admitting a new metric is a contract change, not a data decision. This is the
- * structure that stops evidence for one mechanism from satisfying another.
+ * The first review found that binding only `metric_id -> mechanisms` left the
+ * payload free to redefine everything else: a row could keep a known metric id
+ * while swapping its unit, flipping its directionality, pointing the numerator
+ * at an unrelated metric, or emitting a value unrelated to its own numerator and
+ * denominator. Each descriptor now pins all of it, and a row may only agree.
+ *
+ * `mechanisms: []` means the metric may never stand as mechanism evidence at all
+ * — a component, a denominator, or a known-inadmissible summary (a lone long
+ * gain, yards per carry, a raw touch count).
+ *
+ * Admitting or changing a metric is a contract change, not a data decision.
  */
-export const RB_CONTACT_EVASION_METRIC_REGISTRY: Readonly<
-  Record<string, readonly RbContactEvasionMechanismId[]>
+export interface RbContactEvasionMetricDescriptor {
+  readonly mechanisms: readonly RbContactEvasionMechanismId[];
+  readonly value_kind: RbContactEvasionValueKind;
+  readonly unit: string;
+  readonly directionality: RbContactEvasionDirectionality;
+  readonly numerator_metric_id: string | null;
+  readonly denominator_metric_id: string | null;
+  readonly denominator_opportunity_type: RbContactEvasionOpportunityType | null;
+}
+
+const countDescriptor = (
+  mechanisms: readonly RbContactEvasionMechanismId[],
+  unit: string,
+): RbContactEvasionMetricDescriptor => ({
+  mechanisms,
+  value_kind: 'count',
+  unit,
+  directionality: 'higher_is_more_of_mechanism',
+  numerator_metric_id: null,
+  denominator_metric_id: null,
+  denominator_opportunity_type: null,
+});
+
+export const RB_CONTACT_EVASION_METRIC_DICTIONARY: Readonly<
+  Record<string, RbContactEvasionMetricDescriptor>
 > = {
-  // contact_avoidance
-  forced_missed_tackles_count: ['contact_avoidance'],
-  forced_missed_tackles_per_rush_attempt: ['contact_avoidance'],
-  forced_missed_tackles_per_touch: ['contact_avoidance'],
-  // contact_survival
-  yards_after_contact_total: ['contact_survival'],
-  yards_after_contact_per_rush_attempt: ['contact_survival'],
-  yards_after_contact_per_contact: ['contact_survival'],
-  // explosiveness
-  explosive_rushes_10_plus_count: ['explosiveness'],
-  explosive_rushes_10_plus_per_rush_attempt: ['explosiveness'],
-  explosive_rushes_15_plus_per_rush_attempt: ['explosiveness'],
-  // speed
-  verified_max_game_speed_mph: ['speed'],
-  forty_yard_dash_seconds: ['speed'],
-  // agility / change of direction
-  three_cone_drill_seconds: ['agility_change_of_direction'],
-  short_shuttle_seconds: ['agility_change_of_direction'],
-  tracking_change_of_direction_events_count: ['agility_change_of_direction'],
-  tracking_change_of_direction_events_per_rush_attempt: ['agility_change_of_direction'],
-  // components, denominators, and inadmissible summaries (never mechanism evidence)
-  rush_attempts: [],
-  receptions: [],
-  targets: [],
-  touches: [],
-  contact_events: [],
-  testing_trials: [],
-  rush_yards_total: [],
-  longest_rush_yards: [],
-  yards_per_carry: [],
+  // --- contact_avoidance ---
+  forced_missed_tackles_count: countDescriptor(['contact_avoidance'], 'forced_missed_tackles'),
+  forced_missed_tackles_per_rush_attempt: {
+    mechanisms: ['contact_avoidance'],
+    value_kind: 'rate',
+    unit: 'forced_missed_tackles_per_rush_attempt',
+    directionality: 'higher_is_more_of_mechanism',
+    numerator_metric_id: 'forced_missed_tackles_count',
+    denominator_metric_id: 'rush_attempts',
+    denominator_opportunity_type: 'rush_attempt',
+  },
+  forced_missed_tackles_per_touch: {
+    mechanisms: ['contact_avoidance'],
+    value_kind: 'rate',
+    unit: 'forced_missed_tackles_per_touch',
+    directionality: 'higher_is_more_of_mechanism',
+    numerator_metric_id: 'forced_missed_tackles_count',
+    denominator_metric_id: 'touches',
+    denominator_opportunity_type: 'touch',
+  },
+  // --- contact_survival ---
+  yards_after_contact_total: countDescriptor(['contact_survival'], 'yards'),
+  yards_after_contact_per_rush_attempt: {
+    mechanisms: ['contact_survival'],
+    value_kind: 'rate',
+    unit: 'yards_per_rush_attempt',
+    directionality: 'higher_is_more_of_mechanism',
+    numerator_metric_id: 'yards_after_contact_total',
+    denominator_metric_id: 'rush_attempts',
+    denominator_opportunity_type: 'rush_attempt',
+  },
+  yards_after_contact_per_contact: {
+    mechanisms: ['contact_survival'],
+    value_kind: 'rate',
+    unit: 'yards_per_contact',
+    directionality: 'higher_is_more_of_mechanism',
+    numerator_metric_id: 'yards_after_contact_total',
+    denominator_metric_id: 'contact_events',
+    denominator_opportunity_type: 'contact_event',
+  },
+  // --- explosiveness ---
+  explosive_rushes_10_plus_count: countDescriptor(['explosiveness'], 'explosive_rushes'),
+  explosive_rushes_10_plus_per_rush_attempt: {
+    mechanisms: ['explosiveness'],
+    value_kind: 'rate',
+    unit: 'explosive_rushes_per_rush_attempt',
+    directionality: 'higher_is_more_of_mechanism',
+    numerator_metric_id: 'explosive_rushes_10_plus_count',
+    denominator_metric_id: 'rush_attempts',
+    denominator_opportunity_type: 'rush_attempt',
+  },
+  explosive_rushes_15_plus_count: countDescriptor(['explosiveness'], 'explosive_rushes'),
+  explosive_rushes_15_plus_per_rush_attempt: {
+    mechanisms: ['explosiveness'],
+    value_kind: 'rate',
+    unit: 'explosive_rushes_per_rush_attempt',
+    directionality: 'higher_is_more_of_mechanism',
+    numerator_metric_id: 'explosive_rushes_15_plus_count',
+    denominator_metric_id: 'rush_attempts',
+    denominator_opportunity_type: 'rush_attempt',
+  },
+  // --- speed ---
+  verified_max_game_speed_mph: {
+    mechanisms: ['speed'],
+    value_kind: 'speed_mph',
+    unit: 'miles_per_hour',
+    directionality: 'higher_is_more_of_mechanism',
+    numerator_metric_id: null,
+    denominator_metric_id: null,
+    denominator_opportunity_type: null,
+  },
+  forty_yard_dash_seconds: {
+    mechanisms: ['speed'],
+    value_kind: 'duration_seconds',
+    unit: 'seconds',
+    directionality: 'lower_is_more_of_mechanism',
+    numerator_metric_id: null,
+    denominator_metric_id: null,
+    denominator_opportunity_type: null,
+  },
+  // --- agility / change of direction ---
+  three_cone_drill_seconds: {
+    mechanisms: ['agility_change_of_direction'],
+    value_kind: 'duration_seconds',
+    unit: 'seconds',
+    directionality: 'lower_is_more_of_mechanism',
+    numerator_metric_id: null,
+    denominator_metric_id: null,
+    denominator_opportunity_type: null,
+  },
+  short_shuttle_seconds: {
+    mechanisms: ['agility_change_of_direction'],
+    value_kind: 'duration_seconds',
+    unit: 'seconds',
+    directionality: 'lower_is_more_of_mechanism',
+    numerator_metric_id: null,
+    denominator_metric_id: null,
+    denominator_opportunity_type: null,
+  },
+  tracking_change_of_direction_events_count: countDescriptor(
+    ['agility_change_of_direction'],
+    'change_of_direction_events',
+  ),
+  tracking_change_of_direction_events_per_rush_attempt: {
+    mechanisms: ['agility_change_of_direction'],
+    value_kind: 'rate',
+    unit: 'change_of_direction_events_per_rush_attempt',
+    directionality: 'higher_is_more_of_mechanism',
+    numerator_metric_id: 'tracking_change_of_direction_events_count',
+    denominator_metric_id: 'rush_attempts',
+    denominator_opportunity_type: 'rush_attempt',
+  },
+  // --- components, denominators, and inadmissible summaries ---
+  rush_attempts: countDescriptor([], 'rush_attempts'),
+  receptions: countDescriptor([], 'receptions'),
+  targets: countDescriptor([], 'targets'),
+  touches: countDescriptor([], 'touches'),
+  contact_events: countDescriptor([], 'contact_events'),
+  testing_trials: countDescriptor([], 'testing_trials'),
+  rush_yards_total: countDescriptor([], 'yards'),
+  longest_rush_yards: countDescriptor([], 'yards'),
+  yards_per_carry: {
+    mechanisms: [],
+    value_kind: 'rate',
+    unit: 'yards_per_rush_attempt',
+    directionality: 'higher_is_more_of_mechanism',
+    numerator_metric_id: 'rush_yards_total',
+    denominator_metric_id: 'rush_attempts',
+    denominator_opportunity_type: 'rush_attempt',
+  },
 };
+
+/** Decimal places an emitted rate is rounded to, owned here rather than declared per row. */
+export const RB_CONTACT_EVASION_RATE_ROUNDING_DECIMALS = 3;
+
+/** The rounded rate this contract expects for a given numerator and denominator. */
+export function rbContactEvasionExpectedRate(numerator: number, denominator: number): number {
+  return Number((numerator / denominator).toFixed(RB_CONTACT_EVASION_RATE_ROUNDING_DECIMALS));
+}
+
+// ---------------------------------------------------------------------------
+// Code-owned minimum-sample rule
+// ---------------------------------------------------------------------------
+
+export const RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE_ID =
+  'rb_contact_evasion_fixture_only_minimum_sample_v0';
+
+/**
+ * The governing minimum-sample rule, owned in code so a row cannot set its own bar.
+ *
+ * **These thresholds are fixture-only pinned placeholders, not empirical
+ * football thresholds.** #234 has authorized no empirical N, and this slice does
+ * not invent one. They exist so the contract has a code-owned bar to enforce
+ * against fixtures. Accordingly the rule's authority is `fixture_only_placeholder`
+ * and {@link checkMinimumSample} **fails closed** for any observed rate in a
+ * `candidate` or `promoted` artifact: a real bar has to come from an admitted
+ * rule bound in Slice B before a rate may sit in either position.
+ */
+export const RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE = {
+  rule_id: RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE_ID,
+  authority: 'fixture_only_placeholder',
+  thresholds_by_window_completeness: {
+    single_week: 10,
+    multi_week: 20,
+    partial_season: 30,
+    full_season: 40,
+  },
+} as const satisfies {
+  rule_id: string;
+  authority: 'fixture_only_placeholder';
+  thresholds_by_window_completeness: Record<RbContactEvasionWindowCompleteness, number>;
+};
+
+// ---------------------------------------------------------------------------
+// Metric incompatibilities
+// ---------------------------------------------------------------------------
 
 /**
  * Metric pairs that may not be consumed together by one deterministic transform:
  * they carry different denominators or different opportunity universes, so a
  * transform combining them silently changes what is being measured.
- *
- * Declared once as unordered pairs; {@link RB_CONTACT_EVASION_METRIC_INCOMPATIBILITIES}
- * is expanded symmetrically from these and
- * {@link findRbContactEvasionIncompatibilityAsymmetries} proves the symmetry.
  */
 export const RB_CONTACT_EVASION_INCOMPATIBLE_METRIC_PAIRS: readonly (readonly [
   string,
@@ -236,7 +449,9 @@ export const RB_CONTACT_EVASION_METRIC_INCOMPATIBILITIES: Readonly<
  * against the real index rather than asserted in prose.
  */
 export function findRbContactEvasionIncompatibilityAsymmetries(
-  index: Readonly<Record<string, ReadonlySet<string>>> = RB_CONTACT_EVASION_METRIC_INCOMPATIBILITIES,
+  index: Readonly<
+    Record<string, ReadonlySet<string>>
+  > = RB_CONTACT_EVASION_METRIC_INCOMPATIBILITIES,
 ): Array<{ from: string; to: string }> {
   const asymmetries: Array<{ from: string; to: string }> = [];
   for (const [from, targets] of Object.entries(index)) {
@@ -254,38 +469,61 @@ export function findRbContactEvasionIncompatibilityAsymmetries(
 // ---------------------------------------------------------------------------
 
 /**
- * Closed, stable reason codes. Each negative fixture under
+ * Closed, stable reason codes. Each fixture under
  * `test/fixtures/rb_contact_evasion/negative/` is rejected by exactly one of
- * these, so a rejection can be attributed to a rule rather than to "it failed
- * to parse".
+ * these, so a rejection can be attributed to a rule rather than to "it failed to
+ * parse".
  */
 export const rbContactEvasionReasonCodeSchema = z.enum([
   'SCHEMA_SHAPE_INVALID',
   'UNKNOWN_FIELD_PRESENT',
+  // metric semantics
+  'UNKNOWN_METRIC_ID',
+  'MECHANISM_METRIC_BINDING_VIOLATION',
+  'METRIC_DESCRIPTOR_CONTRADICTED',
+  'METRIC_DEFINITION_DRIFT_UNDER_STABLE_ID',
+  // rate semantics
   'RATE_MISSING_DENOMINATOR',
+  'RATE_COMPONENT_METRIC_MISMATCH',
+  'RATE_DENOMINATOR_NOT_POSITIVE',
+  'RATE_VALUE_INCONSISTENT_WITH_COMPONENTS',
+  // denominators and opportunity classes
   'DENOMINATOR_OPPORTUNITY_UNSUPPORTED_BY_SOURCE',
   'DENOMINATOR_OPPORTUNITY_CLASS_MISMATCH',
   'RUSHING_RECEIVING_SILENTLY_COMBINED',
-  'METRIC_DEFINITION_DRIFT_UNDER_STABLE_ID',
+  // sample sufficiency
+  'ELIGIBLE_OPPORTUNITIES_REQUIRED_FOR_RATE',
+  'MINIMUM_SAMPLE_RULE_NOT_CODE_OWNED',
+  'MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION',
+  'MINIMUM_SAMPLE_NOT_MET_RATE_EMITTED',
+  // source governance
   'RESTRICTED_SOURCE_ACCESS_OVERCLAIMED',
   'EXTERNAL_OPINION_LABELED_AS_OBSERVATION',
-  'WINDOW_COMPLETENESS_COMPARISON_UNDISCLOSED',
-  'MINIMUM_SAMPLE_NOT_MET_RATE_EMITTED',
-  'COHORT_SCOPE_MISMATCH',
+  'SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_PROMOTABLE',
+  'SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_EVIDENCE_CLASS',
+  'SNAPSHOT_WITHOUT_CONTENT_DIGEST',
+  'CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION',
+  'SUPERSESSION_SELF_REFERENCE',
+  'FIXTURE_PROVENANCE_IN_CANDIDATE_POSITION',
+  // clocks
   'RETRIEVAL_CLOCK_SUBSTITUTED_FOR_SOURCE_CLOCK',
+  'CLOCK_AVAILABILITY_CONTRADICTED',
   'CLOCK_ORDER_INVALID',
   'ARTIFACT_CLOCK_MISMATCH',
+  // cohort scope
+  'WINDOW_COMPLETENESS_COMPARISON_UNDISCLOSED',
+  'COHORT_SCOPE_MISMATCH',
+  // identity, grain, measurement status
   'CANONICAL_IDENTITY_UNRESOLVED',
-  'MECHANISM_METRIC_BINDING_VIOLATION',
-  'UNKNOWN_METRIC_ID',
+  'DUPLICATE_OBSERVATION_ID',
+  'DUPLICATE_OBSERVATION_GRAIN',
   'MISSING_COMPONENT_CARRIES_VALUE',
   'MISSINGNESS_REASON_ABSENT',
   'OBSERVED_COMPONENT_MISSING_VALUE',
+  // transforms
   'INCOMPATIBLE_METRIC_TRANSFORM_INPUT',
   'INCOMPATIBILITY_REGISTRY_NOT_SYMMETRIC',
   'DERIVED_EVIDENCE_REQUIRES_TRANSFORM',
-  'SUPERSESSION_SELF_REFERENCE',
-  'FIXTURE_PROVENANCE_IN_CANDIDATE_POSITION',
 ]);
 
 export type RbContactEvasionReasonCode = z.infer<typeof rbContactEvasionReasonCodeSchema>;
@@ -318,16 +556,32 @@ export const rbContactEvasionScopeSchema = z
   })
   .strict();
 
-/** All seven clocks, each with its own meaning. None substitutes for another. */
+/**
+ * All seven clocks. The three source clocks are nullable so an unavailable
+ * source clock can stay honestly absent instead of being backfilled, and each
+ * carries a declared origin in {@link rbContactEvasionClockProvenanceSchema}.
+ */
 export const rbContactEvasionClocksSchema = z
   .object({
     window_start: isoDatetimeSchema,
     window_end: isoDatetimeSchema,
     source_observed_at: isoDatetimeSchema.nullable(),
-    source_generated_at: isoDatetimeSchema,
-    source_available_at: isoDatetimeSchema,
+    source_generated_at: isoDatetimeSchema.nullable(),
+    source_available_at: isoDatetimeSchema.nullable(),
     retrieved_at: isoDatetimeSchema,
     artifact_generated_at: isoDatetimeSchema,
+  })
+  .strict();
+
+export const rbContactEvasionClockProvenanceMapSchema = z
+  .object({
+    window_start: rbContactEvasionClockProvenanceSchema,
+    window_end: rbContactEvasionClockProvenanceSchema,
+    source_observed_at: rbContactEvasionClockProvenanceSchema,
+    source_generated_at: rbContactEvasionClockProvenanceSchema,
+    source_available_at: rbContactEvasionClockProvenanceSchema,
+    retrieved_at: rbContactEvasionClockProvenanceSchema,
+    artifact_generated_at: rbContactEvasionClockProvenanceSchema,
   })
   .strict();
 
@@ -339,6 +593,12 @@ export const rbContactEvasionCombinedComponentDisclosureSchema = z
   })
   .strict();
 
+/**
+ * Per-row metric declaration. `value_kind`, `unit`, and `directionality` are
+ * restated here for inspectability but are **not authoritative** — they must
+ * equal the code-owned descriptor. `minimum_sample_rule_id` names the governing
+ * rule; the row cannot state a threshold, only which rule binds it.
+ */
 export const rbContactEvasionMetricSchema = z
   .object({
     metric_id: nonEmptyStringSchema,
@@ -348,7 +608,7 @@ export const rbContactEvasionMetricSchema = z
     unit: nonEmptyStringSchema,
     value_kind: rbContactEvasionValueKindSchema,
     directionality: rbContactEvasionDirectionalitySchema,
-    minimum_eligible_opportunities: z.number().int().min(0),
+    minimum_sample_rule_id: nonEmptyStringSchema,
     inclusion_exclusion_rules: z.array(nonEmptyStringSchema),
     combined_component_disclosure:
       rbContactEvasionCombinedComponentDisclosureSchema.nullable(),
@@ -379,9 +639,10 @@ export const rbContactEvasionMeasurementSchema = z
   .strict();
 
 /**
- * The scope an observation is stated to be *eligible for*. This records cohort
- * membership inputs only — it carries no percentile, rank, threshold, or score,
- * and none may be added here (that boundary is TIBER-Ops #15, unresolved).
+ * The scope an observation is stated to be *eligible for*. Cohort membership
+ * inputs only — no percentile, rank, threshold, score, or grade, and none may be
+ * added (that boundary is TIBER-Ops #15, unresolved). It states no minimum
+ * either: the minimum-sample bar is code-owned.
  */
 export const rbContactEvasionCohortScopeSchema = z
   .object({
@@ -389,7 +650,6 @@ export const rbContactEvasionCohortScopeSchema = z
     season: z.number().int().min(1900),
     season_type: rbContactEvasionSeasonTypeSchema,
     window_completeness: rbContactEvasionWindowCompletenessSchema,
-    minimum_eligible_opportunities: z.number().int().min(0),
     window_completeness_disclosure: nonEmptyStringSchema.nullable(),
   })
   .strict();
@@ -401,18 +661,33 @@ export const rbContactEvasionTransformSchema = z
   })
   .strict();
 
+export const rbContactEvasionContentDigestSchema = z
+  .object({ algorithm: nonEmptyStringSchema, value: nonEmptyStringSchema })
+  .strict();
+
+/**
+ * Rights dispositions stated separately, per #234's source-and-rights audit.
+ * Every disposition is required; `unknown` is a real answer that fails closed.
+ */
+export const rbContactEvasionSourcePermissionsSchema = z
+  .object({
+    attribution: rbContactEvasionAttributionDispositionSchema,
+    retention_and_reproduction: rbContactEvasionPermissionDispositionSchema,
+    redistribution_and_display: rbContactEvasionPermissionDispositionSchema,
+    automated_access: rbContactEvasionPermissionDispositionSchema,
+  })
+  .strict();
+
 /**
  * Source descriptor.
  *
  * Honest limitation: `access_class`, `material_kind`, `supported_opportunity_types`,
- * `promotable`, and `rights_review_ref` are **declared by the producer**. This
- * contract can prove they are internally consistent (a gated source cannot also
- * be promotable; an editorial source cannot also be a direct observation; a
- * denominator cannot exceed what the source declares it supports) — it cannot
- * prove the declaration matches reality. Pinning declarations to an admitted
- * source registry is Slice B work and is not implemented here. `promotable: true`
- * is a producer claim requiring separate promotion review; it never authorizes
- * promotion.
+ * `promotable`, `permissions`, and `rights_review_ref` are **declared by the
+ * producer**. This contract proves they are internally consistent and fails
+ * closed on incompatible combinations; it cannot prove a declaration matches
+ * reality. Pinning declarations to an admitted source registry is Slice B work.
+ * `promotable: true` is a producer claim requiring separate promotion review; it
+ * never authorizes promotion.
  */
 export const rbContactEvasionSourceSchema = z
   .object({
@@ -424,6 +699,8 @@ export const rbContactEvasionSourceSchema = z
     material_kind: rbContactEvasionSourceMaterialKindSchema,
     supported_opportunity_types: z.array(rbContactEvasionOpportunityTypeSchema),
     rights_review_ref: nonEmptyStringSchema,
+    permissions: rbContactEvasionSourcePermissionsSchema,
+    content_digest: rbContactEvasionContentDigestSchema.nullable(),
     promotable: z.boolean(),
     provenance_mode: rbContactEvasionProvenanceModeSchema,
     superseded_by_snapshot_id: nonEmptyStringSchema.nullable(),
@@ -438,6 +715,7 @@ export const rbContactEvasionObservationSchema = z
     identity: rbContactEvasionIdentitySchema,
     scope: rbContactEvasionScopeSchema,
     clocks: rbContactEvasionClocksSchema,
+    clock_provenance: rbContactEvasionClockProvenanceMapSchema,
     metric: rbContactEvasionMetricSchema,
     measurement: rbContactEvasionMeasurementSchema,
     cohort_scope: rbContactEvasionCohortScopeSchema.nullable(),
@@ -448,8 +726,7 @@ export const rbContactEvasionObservationSchema = z
   .strict();
 
 export const RB_CONTACT_EVASION_ARTIFACT_ID = 'rb_contact_evasion_observations_v0';
-export const RB_CONTACT_EVASION_SCHEMA_VERSION =
-  'rb_contact_evasion_observations_v0.1.0';
+export const RB_CONTACT_EVASION_SCHEMA_VERSION = 'rb_contact_evasion_observations_v0.2.0';
 
 export const rbContactEvasionObservationsV0Schema = z
   .object({
@@ -462,9 +739,7 @@ export const rbContactEvasionObservationsV0Schema = z
   })
   .strict();
 
-export type RbContactEvasionMechanismId = z.infer<
-  typeof rbContactEvasionMechanismIdSchema
->;
+export type RbContactEvasionMechanismId = z.infer<typeof rbContactEvasionMechanismIdSchema>;
 export type RbContactEvasionEvidenceClass = z.infer<
   typeof rbContactEvasionEvidenceClassSchema
 >;
@@ -480,6 +755,12 @@ export type RbContactEvasionArtifactPosition = z.infer<
 export type RbContactEvasionSourceMaterialKind = z.infer<
   typeof rbContactEvasionSourceMaterialKindSchema
 >;
+export type RbContactEvasionPermissionDisposition = z.infer<
+  typeof rbContactEvasionPermissionDispositionSchema
+>;
+export type RbContactEvasionAttributionDisposition = z.infer<
+  typeof rbContactEvasionAttributionDispositionSchema
+>;
 export type RbContactEvasionOpportunityClass = z.infer<
   typeof rbContactEvasionOpportunityClassSchema
 >;
@@ -491,12 +772,16 @@ export type RbContactEvasionWindowCompleteness = z.infer<
   typeof rbContactEvasionWindowCompletenessSchema
 >;
 export type RbContactEvasionValueKind = z.infer<typeof rbContactEvasionValueKindSchema>;
+export type RbContactEvasionDirectionality = z.infer<
+  typeof rbContactEvasionDirectionalitySchema
+>;
 export type RbContactEvasionMeasurementStatus = z.infer<
   typeof rbContactEvasionMeasurementStatusSchema
 >;
-export type RbContactEvasionObservation = z.infer<
-  typeof rbContactEvasionObservationSchema
+export type RbContactEvasionClockProvenance = z.infer<
+  typeof rbContactEvasionClockProvenanceSchema
 >;
+export type RbContactEvasionObservation = z.infer<typeof rbContactEvasionObservationSchema>;
 export type RbContactEvasionObservationsV0 = z.infer<
   typeof rbContactEvasionObservationsV0Schema
 >;
@@ -527,7 +812,7 @@ export class RbContactEvasionContractError extends Error {
   constructor(report: RbContactEvasionValidationReport) {
     super(
       `${RB_CONTACT_EVASION_ARTIFACT_ID} contract violations: ${report.violations
-        .map((violation) => `${violation.reason_code} at ${violation.path}: ${violation.detail}`)
+        .map((v) => `${v.reason_code} at ${v.path}: ${v.detail}`)
         .join('; ')}`,
     );
     this.name = 'RbContactEvasionContractError';
@@ -536,23 +821,22 @@ export class RbContactEvasionContractError extends Error {
   }
 }
 
-/** Compare clocks as instants, so a re-formatted timestamp is not an escape hatch. */
+type Push = (violation: RbContactEvasionViolation) => void;
+
 function instant(value: string): number {
   return Date.parse(value);
 }
 
-function sameInstant(left: string, right: string | null): boolean {
-  return right !== null && instant(left) === instant(right);
-}
-
-function isKnownMetricId(metricId: string): boolean {
-  return Object.prototype.hasOwnProperty.call(RB_CONTACT_EVASION_METRIC_REGISTRY, metricId);
+function getDescriptor(metricId: string): RbContactEvasionMetricDescriptor | undefined {
+  return Object.prototype.hasOwnProperty.call(RB_CONTACT_EVASION_METRIC_DICTIONARY, metricId)
+    ? RB_CONTACT_EVASION_METRIC_DICTIONARY[metricId]
+    : undefined;
 }
 
 function checkIdentity(
   observation: RbContactEvasionObservation,
   path: string,
-  push: (violation: RbContactEvasionViolation) => void,
+  push: Push,
 ): void {
   const { gsis_id: gsisId, identity_resolution: resolution } = observation.identity;
   if (
@@ -568,12 +852,18 @@ function checkIdentity(
   }
 }
 
-function checkMetricBinding(
+/**
+ * The metric identity must mean what this contract says it means. Every
+ * referenced metric id must be in the dictionary, the row's restated semantics
+ * must equal the descriptor's, and the mechanism binding must hold.
+ */
+function checkMetricSemantics(
   observation: RbContactEvasionObservation,
   path: string,
-  push: (violation: RbContactEvasionViolation) => void,
+  push: Push,
 ): void {
   const { metric, measurement, transform } = observation;
+
   const referenced: Array<{ metricId: string; where: string }> = [
     { metricId: metric.metric_id, where: `${path}.metric.metric_id` },
   ];
@@ -590,43 +880,202 @@ function checkMetricBinding(
     });
   }
   for (const inputMetricId of transform?.input_metric_ids ?? []) {
-    referenced.push({
-      metricId: inputMetricId,
-      where: `${path}.transform.input_metric_ids`,
-    });
+    referenced.push({ metricId: inputMetricId, where: `${path}.transform.input_metric_ids` });
   }
   for (const { metricId, where } of referenced) {
-    if (!isKnownMetricId(metricId)) {
+    if (getDescriptor(metricId) === undefined) {
       push({
         reason_code: 'UNKNOWN_METRIC_ID',
         path: where,
-        detail: `metric id "${metricId}" is not in the closed rb_contact_evasion metric registry; admitting a metric is a contract change`,
+        detail: `metric id "${metricId}" is not in the code-owned rb_contact_evasion metric dictionary; admitting a metric is a contract change`,
       });
     }
   }
 
-  if (!isKnownMetricId(metric.metric_id)) {
+  const descriptor = getDescriptor(metric.metric_id);
+  if (descriptor === undefined) {
     return;
   }
-  const allowedMechanisms = RB_CONTACT_EVASION_METRIC_REGISTRY[metric.metric_id];
-  if (!allowedMechanisms.includes(observation.mechanism_id)) {
+
+  const contradictions: string[] = [];
+  if (metric.value_kind !== descriptor.value_kind) {
+    contradictions.push(
+      `value_kind "${metric.value_kind}" != "${descriptor.value_kind}"`,
+    );
+  }
+  if (metric.unit !== descriptor.unit) {
+    contradictions.push(`unit "${metric.unit}" != "${descriptor.unit}"`);
+  }
+  if (metric.directionality !== descriptor.directionality) {
+    contradictions.push(
+      `directionality "${metric.directionality}" != "${descriptor.directionality}"`,
+    );
+  }
+  if (contradictions.length > 0) {
+    push({
+      reason_code: 'METRIC_DESCRIPTOR_CONTRADICTED',
+      path: `${path}.metric`,
+      detail: `metric "${metric.metric_id}" restates semantics that contradict the code-owned descriptor (${contradictions.join('; ')}); the contract owns metric meaning, the row may only agree`,
+    });
+  }
+
+  if (!descriptor.mechanisms.includes(observation.mechanism_id)) {
     push({
       reason_code: 'MECHANISM_METRIC_BINDING_VIOLATION',
       path: `${path}.mechanism_id`,
       detail:
-        allowedMechanisms.length === 0
+        descriptor.mechanisms.length === 0
           ? `metric "${metric.metric_id}" may never stand as mechanism evidence (it is a component, denominator, or known-inadmissible summary), but it is declared under mechanism "${observation.mechanism_id}"`
-          : `metric "${metric.metric_id}" may only evidence [${allowedMechanisms.join(', ')}], but it is declared under mechanism "${observation.mechanism_id}"; evidence for one mechanism never satisfies another`,
+          : `metric "${metric.metric_id}" may only evidence [${descriptor.mechanisms.join(', ')}], but it is declared under mechanism "${observation.mechanism_id}"; evidence for one mechanism never satisfies another`,
     });
   }
 }
 
-function checkMeasurement(
+/**
+ * Rate arithmetic and component identity. A rate must name the numerator and
+ * denominator metrics its descriptor declares, carry a positive denominator, and
+ * emit the value its own components imply at the contract's rounding.
+ */
+function checkRateSemantics(
   observation: RbContactEvasionObservation,
   path: string,
-  push: (violation: RbContactEvasionViolation) => void,
+  push: Push,
 ): void {
-  const { metric, measurement, cohort_scope: cohortScope } = observation;
+  const { metric, measurement } = observation;
+  const descriptor = getDescriptor(metric.metric_id);
+  if (
+    descriptor === undefined ||
+    descriptor.value_kind !== 'rate' ||
+    measurement.status !== 'observed'
+  ) {
+    return;
+  }
+  const measurementPath = `${path}.measurement`;
+  const { numerator, denominator, value } = measurement;
+
+  if (numerator === null || denominator === null) {
+    push({
+      reason_code: 'RATE_MISSING_DENOMINATOR',
+      path: measurementPath,
+      detail: `a rate requires exact numerator and denominator metric ids and values (numerator=${JSON.stringify(numerator)}, denominator=${JSON.stringify(denominator)}); a rate without an exact denominator is not comparable to any other source's similarly named rate`,
+    });
+    return;
+  }
+
+  const mismatches: string[] = [];
+  if (numerator.metric_id !== descriptor.numerator_metric_id) {
+    mismatches.push(
+      `numerator "${numerator.metric_id}" != declared "${descriptor.numerator_metric_id}"`,
+    );
+  }
+  if (denominator.metric_id !== descriptor.denominator_metric_id) {
+    mismatches.push(
+      `denominator "${denominator.metric_id}" != declared "${descriptor.denominator_metric_id}"`,
+    );
+  }
+  if (denominator.opportunity_type !== descriptor.denominator_opportunity_type) {
+    mismatches.push(
+      `denominator opportunity_type "${denominator.opportunity_type}" != declared "${descriptor.denominator_opportunity_type}"`,
+    );
+  }
+  if (mismatches.length > 0) {
+    push({
+      reason_code: 'RATE_COMPONENT_METRIC_MISMATCH',
+      path: measurementPath,
+      detail: `metric "${metric.metric_id}" is composed of components the code-owned descriptor does not declare (${mismatches.join('; ')}); a known metric name does not license arbitrary components`,
+    });
+    return;
+  }
+
+  if (!(denominator.value > 0)) {
+    push({
+      reason_code: 'RATE_DENOMINATOR_NOT_POSITIVE',
+      path: `${measurementPath}.denominator.value`,
+      detail: `a rate denominator must be strictly positive, got ${denominator.value}; a zero or negative opportunity count cannot produce a rate`,
+    });
+    return;
+  }
+
+  if (value !== null) {
+    const expected = rbContactEvasionExpectedRate(numerator.value, denominator.value);
+    if (Math.abs(value - expected) > 1e-9) {
+      push({
+        reason_code: 'RATE_VALUE_INCONSISTENT_WITH_COMPONENTS',
+        path: `${measurementPath}.value`,
+        detail: `emitted value ${value} does not equal ${numerator.value}/${denominator.value} rounded to ${RB_CONTACT_EVASION_RATE_ROUNDING_DECIMALS} decimals (${expected}); the numerator and denominator define the rate, not the emitted number`,
+      });
+    }
+  }
+}
+
+/**
+ * Sample sufficiency, bound to the code-owned rule rather than to the row.
+ * Fails closed outside `fixture_only`, because the pinned thresholds are
+ * fixture placeholders and #234 has authorized no empirical minimum.
+ */
+function checkMinimumSample(
+  observation: RbContactEvasionObservation,
+  artifactPosition: RbContactEvasionArtifactPosition,
+  path: string,
+  push: Push,
+): void {
+  const { metric, measurement, scope } = observation;
+  const descriptor = getDescriptor(metric.metric_id);
+  if (
+    descriptor === undefined ||
+    descriptor.value_kind !== 'rate' ||
+    measurement.status !== 'observed'
+  ) {
+    return;
+  }
+  const measurementPath = `${path}.measurement`;
+
+  if (metric.minimum_sample_rule_id !== RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE_ID) {
+    push({
+      reason_code: 'MINIMUM_SAMPLE_RULE_NOT_CODE_OWNED',
+      path: `${path}.metric.minimum_sample_rule_id`,
+      detail: `minimum_sample_rule_id "${metric.minimum_sample_rule_id}" is not the code-owned rule "${RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE_ID}"; a row names the governing rule, it never states its own threshold`,
+    });
+    return;
+  }
+
+  if (artifactPosition !== 'fixture_only') {
+    push({
+      reason_code: 'MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION',
+      path: `${path}.metric.minimum_sample_rule_id`,
+      detail: `the only minimum-sample rule bound in this contract has authority "${RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE.authority}" and cannot govern an observed rate at artifact_position "${artifactPosition}"; an admitted rule must be bound before a rate may sit in a candidate or promoted artifact`,
+    });
+    return;
+  }
+
+  if (measurement.eligible_opportunities === null) {
+    push({
+      reason_code: 'ELIGIBLE_OPPORTUNITIES_REQUIRED_FOR_RATE',
+      path: `${measurementPath}.eligible_opportunities`,
+      detail: 'an observed rate must state its eligible opportunities; a null sample cannot be checked against any minimum',
+    });
+    return;
+  }
+
+  const threshold =
+    RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE.thresholds_by_window_completeness[
+      scope.window_completeness
+    ];
+  if (measurement.eligible_opportunities < threshold) {
+    push({
+      reason_code: 'MINIMUM_SAMPLE_NOT_MET_RATE_EMITTED',
+      path: measurementPath,
+      detail: `eligible_opportunities ${measurement.eligible_opportunities} is below the code-owned minimum ${threshold} for window_completeness "${scope.window_completeness}"; a below-minimum sample must be emitted as status "missing" with missingness_reason "below_minimum_sample" and no value`,
+    });
+  }
+}
+
+function checkMeasurementStatus(
+  observation: RbContactEvasionObservation,
+  path: string,
+  push: Push,
+): void {
+  const { measurement } = observation;
   const measurementPath = `${path}.measurement`;
 
   if (measurement.status === 'missing') {
@@ -651,7 +1100,6 @@ function checkMeasurement(
     return;
   }
 
-  // status === 'observed'
   if (measurement.value === null || measurement.missingness_reason !== null) {
     push({
       reason_code: 'OBSERVED_COMPONENT_MISSING_VALUE',
@@ -659,39 +1107,12 @@ function checkMeasurement(
       detail: `status "observed" requires a non-null value and a null missingness_reason (got value=${JSON.stringify(measurement.value)}, missingness_reason=${JSON.stringify(measurement.missingness_reason)})`,
     });
   }
-
-  if (metric.value_kind === 'rate') {
-    if (measurement.denominator === null || measurement.numerator === null) {
-      push({
-        reason_code: 'RATE_MISSING_DENOMINATOR',
-        path: measurementPath,
-        detail: `value_kind "rate" requires exact numerator and denominator metric ids and values (numerator=${JSON.stringify(measurement.numerator)}, denominator=${JSON.stringify(measurement.denominator)}); a rate without an exact denominator is not comparable to any other source's similarly named rate`,
-      });
-    }
-    // A row declares its own metric minimum, so on its own that bar can be set
-    // arbitrarily low. When the row also states a cohort, the stricter of the two
-    // minimums governs, so a row cannot buy eligibility by lowering its own bar.
-    const effectiveMinimum = Math.max(
-      metric.minimum_eligible_opportunities,
-      cohortScope?.minimum_eligible_opportunities ?? 0,
-    );
-    if (
-      measurement.eligible_opportunities !== null &&
-      measurement.eligible_opportunities < effectiveMinimum
-    ) {
-      push({
-        reason_code: 'MINIMUM_SAMPLE_NOT_MET_RATE_EMITTED',
-        path: measurementPath,
-        detail: `eligible_opportunities ${measurement.eligible_opportunities} is below the effective minimum ${effectiveMinimum} (metric minimum ${metric.minimum_eligible_opportunities}, cohort minimum ${cohortScope?.minimum_eligible_opportunities ?? 'none'}); a below-minimum sample must be emitted as status "missing" with missingness_reason "below_minimum_sample" and no value`,
-      });
-    }
-  }
 }
 
 function checkDenominatorSemantics(
   observation: RbContactEvasionObservation,
   path: string,
-  push: (violation: RbContactEvasionViolation) => void,
+  push: Push,
 ): void {
   const { scope, metric, measurement, source } = observation;
   const denominator = measurement.denominator;
@@ -742,64 +1163,93 @@ function checkDenominatorSemantics(
   }
 }
 
+/**
+ * Clock availability, origin, and ordering.
+ *
+ * Substitution is rejected by the declared clock origin, not by timestamp
+ * equality — equality was unsound in both directions. Ordering is checked only
+ * between clocks that actually exist, so an unavailable source clock stays null
+ * rather than being backfilled to satisfy a comparison.
+ */
 function checkClocks(
   observation: RbContactEvasionObservation,
   envelopeGeneratedAt: string,
   path: string,
-  push: (violation: RbContactEvasionViolation) => void,
+  push: Push,
 ): void {
-  const clocks = observation.clocks;
+  const { clocks, clock_provenance: provenance } = observation;
   const clocksPath = `${path}.clocks`;
+  const provenancePath = `${path}.clock_provenance`;
 
-  if (
-    sameInstant(clocks.retrieved_at, clocks.source_generated_at) ||
-    sameInstant(clocks.retrieved_at, clocks.source_observed_at) ||
-    sameInstant(clocks.retrieved_at, clocks.window_end)
-  ) {
-    push({
-      reason_code: 'RETRIEVAL_CLOCK_SUBSTITUTED_FOR_SOURCE_CLOCK',
-      path: clocksPath,
-      detail: `retrieved_at (${clocks.retrieved_at}) coincides exactly with a football-window or source-generation clock (window_end=${clocks.window_end}, source_generated_at=${clocks.source_generated_at}, source_observed_at=${JSON.stringify(clocks.source_observed_at)}); retrieval time never substitutes for either`,
-    });
-  }
+  const sourceClocks = [
+    ['source_observed_at', clocks.source_observed_at, provenance.source_observed_at],
+    ['source_generated_at', clocks.source_generated_at, provenance.source_generated_at],
+    ['source_available_at', clocks.source_available_at, provenance.source_available_at],
+  ] as const;
 
-  const ordered: Array<[string, string, string, string]> = [
-    ['window_start', clocks.window_start, 'window_end', clocks.window_end],
-    [
-      'source_generated_at',
-      clocks.source_generated_at,
-      'source_available_at',
-      clocks.source_available_at,
-    ],
-    [
-      'source_available_at',
-      clocks.source_available_at,
-      'retrieved_at',
-      clocks.retrieved_at,
-    ],
-    [
-      'retrieved_at',
-      clocks.retrieved_at,
-      'artifact_generated_at',
-      clocks.artifact_generated_at,
-    ],
-  ];
-  for (const [earlierName, earlier, laterName, later] of ordered) {
-    if (instant(earlier) > instant(later)) {
+  for (const [name, value, origin] of sourceClocks) {
+    if (RB_CONTACT_EVASION_NON_SOURCE_CLOCK_ORIGINS.has(origin)) {
       push({
-        reason_code: 'CLOCK_ORDER_INVALID',
-        path: clocksPath,
-        detail: `${earlierName} (${earlier}) must not be after ${laterName} (${later})`,
+        reason_code: 'RETRIEVAL_CLOCK_SUBSTITUTED_FOR_SOURCE_CLOCK',
+        path: `${provenancePath}.${name}`,
+        detail: `${name} declares origin "${origin}"; retrieval and artifact-build clocks never substitute for a source clock`,
+      });
+      continue;
+    }
+    if (origin === 'football_window') {
+      push({
+        reason_code: 'RETRIEVAL_CLOCK_SUBSTITUTED_FOR_SOURCE_CLOCK',
+        path: `${provenancePath}.${name}`,
+        detail: `${name} declares origin "football_window"; a football window never substitutes for a source clock`,
+      });
+      continue;
+    }
+    if (origin === 'source_supplied' && value === null) {
+      push({
+        reason_code: 'CLOCK_AVAILABILITY_CONTRADICTED',
+        path: `${clocksPath}.${name}`,
+        detail: `${name} declares origin "source_supplied" but carries no timestamp`,
+      });
+    }
+    if (origin === 'not_supplied_by_source' && value !== null) {
+      push({
+        reason_code: 'CLOCK_AVAILABILITY_CONTRADICTED',
+        path: `${clocksPath}.${name}`,
+        detail: `${name} declares origin "not_supplied_by_source" but carries timestamp ${value}; an unavailable source clock stays null rather than being backfilled`,
       });
     }
   }
 
-  if (clocks.source_observed_at !== null) {
-    if (instant(clocks.source_observed_at) > instant(clocks.source_generated_at)) {
+  for (const [name, expected] of [
+    ['window_start', 'football_window'],
+    ['window_end', 'football_window'],
+    ['retrieved_at', 'retrieval_clock'],
+    ['artifact_generated_at', 'artifact_build_clock'],
+  ] as const) {
+    if (provenance[name] !== expected) {
+      push({
+        reason_code: 'CLOCK_AVAILABILITY_CONTRADICTED',
+        path: `${provenancePath}.${name}`,
+        detail: `${name} must declare origin "${expected}", got "${provenance[name]}"`,
+      });
+    }
+  }
+
+  // Ordering, evaluated only between clocks that exist.
+  const ordered: Array<[string, string | null, string, string | null]> = [
+    ['window_start', clocks.window_start, 'window_end', clocks.window_end],
+    ['source_observed_at', clocks.source_observed_at, 'source_generated_at', clocks.source_generated_at],
+    ['source_generated_at', clocks.source_generated_at, 'source_available_at', clocks.source_available_at],
+    ['source_available_at', clocks.source_available_at, 'retrieved_at', clocks.retrieved_at],
+    ['source_generated_at', clocks.source_generated_at, 'retrieved_at', clocks.retrieved_at],
+    ['retrieved_at', clocks.retrieved_at, 'artifact_generated_at', clocks.artifact_generated_at],
+  ];
+  for (const [earlierName, earlier, laterName, later] of ordered) {
+    if (earlier !== null && later !== null && instant(earlier) > instant(later)) {
       push({
         reason_code: 'CLOCK_ORDER_INVALID',
         path: clocksPath,
-        detail: `source_observed_at (${clocks.source_observed_at}) must not be after source_generated_at (${clocks.source_generated_at})`,
+        detail: `${earlierName} (${earlier}) must not be after ${laterName} (${later})`,
       });
     }
   }
@@ -817,10 +1267,12 @@ function checkSourceAndEvidence(
   observation: RbContactEvasionObservation,
   artifactPosition: RbContactEvasionArtifactPosition,
   path: string,
-  push: (violation: RbContactEvasionViolation) => void,
+  push: Push,
 ): void {
   const { source, evidence_class: evidenceClass, measurement, transform } = observation;
   const sourcePath = `${path}.source`;
+  const permissions = source.permissions;
+  const observed = measurement.status === 'observed';
 
   if (RB_CONTACT_EVASION_RESTRICTED_ACCESS_CLASSES.has(source.access_class)) {
     if (source.promotable) {
@@ -830,7 +1282,7 @@ function checkSourceAndEvidence(
         detail: `source access_class "${source.access_class}" cannot be marked promotable`,
       });
     }
-    if (measurement.status === 'observed' && evidenceClass !== 'external_opinion') {
+    if (observed && evidenceClass !== 'external_opinion') {
       push({
         reason_code: 'RESTRICTED_SOURCE_ACCESS_OVERCLAIMED',
         path: `${path}.evidence_class`,
@@ -844,6 +1296,61 @@ function checkSourceAndEvidence(
       reason_code: 'EXTERNAL_OPINION_LABELED_AS_OBSERVATION',
       path: `${path}.evidence_class`,
       detail: `source material_kind "editorial_opinion" requires evidence_class "external_opinion", got "${evidenceClass}"`,
+    });
+  }
+
+  // Promotability requires every rights disposition to be affirmatively settled.
+  if (source.promotable) {
+    const blockers: Array<[string, string]> = [
+      ['retention_and_reproduction', permissions.retention_and_reproduction],
+      ['redistribution_and_display', permissions.redistribution_and_display],
+      ['automated_access', permissions.automated_access],
+    ].filter(([, disposition]) => disposition !== 'permitted') as Array<[string, string]>;
+    if (permissions.attribution === 'unknown') {
+      blockers.push(['attribution', permissions.attribution]);
+    }
+    if (blockers.length > 0) {
+      push({
+        reason_code: 'SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_PROMOTABLE',
+        path: `${sourcePath}.permissions`,
+        detail: `promotable "true" requires retention_and_reproduction, redistribution_and_display, and automated_access all "permitted" and attribution settled, but ${blockers.map(([name, disposition]) => `${name}="${disposition}"`).join(', ')}`,
+      });
+    }
+  }
+
+  // Storing an exact observed value requires retention and automated access.
+  // Only a cited `external_opinion` escapes this: it reproduces a published
+  // claim rather than storing measured payload values.
+  if (observed && evidenceClass !== 'external_opinion') {
+    const blockers: Array<[string, string]> = [
+      ['retention_and_reproduction', permissions.retention_and_reproduction],
+      ['automated_access', permissions.automated_access],
+    ].filter(([, disposition]) => disposition !== 'permitted') as Array<[string, string]>;
+    if (blockers.length > 0) {
+      push({
+        reason_code: 'SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_EVIDENCE_CLASS',
+        path: `${sourcePath}.permissions`,
+        detail: `evidence_class "${evidenceClass}" stores an exact observed value (only a cited "external_opinion" does not), which requires retention_and_reproduction and automated_access "permitted", but ${blockers.map(([name, disposition]) => `${name}="${disposition}"`).join(', ')}`,
+      });
+    }
+  }
+
+  if (source.provenance_mode === 'snapshot' && source.content_digest === null) {
+    push({
+      reason_code: 'SNAPSHOT_WITHOUT_CONTENT_DIGEST',
+      path: `${sourcePath}.content_digest`,
+      detail: 'provenance_mode "snapshot" requires a content digest; a snapshot with no digest cannot prove a rebuild consumed the same bytes',
+    });
+  }
+
+  if (
+    source.content_digest !== null &&
+    permissions.retention_and_reproduction === 'prohibited'
+  ) {
+    push({
+      reason_code: 'CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION',
+      path: `${sourcePath}.content_digest`,
+      detail: 'a content digest of payload bytes cannot be recorded when retention_and_reproduction is "prohibited"',
     });
   }
 
@@ -875,7 +1382,7 @@ function checkSourceAndEvidence(
 function checkCohortScope(
   observation: RbContactEvasionObservation,
   path: string,
-  push: (violation: RbContactEvasionViolation) => void,
+  push: Push,
 ): void {
   const cohort = observation.cohort_scope;
   if (cohort === null) {
@@ -918,7 +1425,7 @@ function checkCohortScope(
 function checkTransform(
   observation: RbContactEvasionObservation,
   path: string,
-  push: (violation: RbContactEvasionViolation) => void,
+  push: Push,
 ): void {
   const transform = observation.transform;
   if (transform === null) {
@@ -938,9 +1445,65 @@ function checkTransform(
   }
 }
 
+/** The declared one-row grain, as a comparable key. */
+export function rbContactEvasionGrainKey(observation: RbContactEvasionObservation): string {
+  const { identity, scope, clocks, metric, measurement, source } = observation;
+  return JSON.stringify([
+    identity.gsis_id,
+    scope.season,
+    scope.season_type,
+    scope.week,
+    scope.window_completeness,
+    clocks.window_start,
+    clocks.window_end,
+    metric.metric_id,
+    metric.definition_version,
+    source.snapshot_id,
+    measurement.denominator?.metric_id ?? null,
+    measurement.denominator?.opportunity_type ?? null,
+  ]);
+}
+
+/**
+ * Artifact-level identity and grain uniqueness. Without this, the same
+ * observation could appear twice and be double-counted downstream, which
+ * contradicts the declared one-row grain.
+ */
+function checkArtifactUniqueness(
+  observations: RbContactEvasionObservation[],
+  push: Push,
+): void {
+  const seenIds = new Map<string, number>();
+  const seenGrains = new Map<string, number>();
+  observations.forEach((observation, index) => {
+    const priorId = seenIds.get(observation.observation_id);
+    if (priorId === undefined) {
+      seenIds.set(observation.observation_id, index);
+    } else {
+      push({
+        reason_code: 'DUPLICATE_OBSERVATION_ID',
+        path: `observations[${index}].observation_id`,
+        detail: `observation_id "${observation.observation_id}" already appears at observations[${priorId}]; observation ids are unique within an artifact`,
+      });
+    }
+
+    const grain = rbContactEvasionGrainKey(observation);
+    const priorGrain = seenGrains.get(grain);
+    if (priorGrain === undefined) {
+      seenGrains.set(grain, index);
+    } else {
+      push({
+        reason_code: 'DUPLICATE_OBSERVATION_GRAIN',
+        path: `observations[${index}]`,
+        detail: `this row repeats the canonical grain (player x window x metric definition x source snapshot x denominator) already present at observations[${priorGrain}]; the declared one-row grain forbids double-counting`,
+      });
+    }
+  });
+}
+
 function checkDefinitionDrift(
   observations: RbContactEvasionObservation[],
-  push: (violation: RbContactEvasionViolation) => void,
+  push: Push,
 ): void {
   const seen = new Map<string, { definition: string; index: number }>();
   observations.forEach((observation, index) => {
@@ -970,28 +1533,26 @@ function checkDefinitionDrift(
  * contract and return every violation with its machine-readable reason code.
  *
  * The strict shape parse runs first. When it fails, cross-field rules are not
- * run (they cannot be evaluated on unshaped input) and the report says so via
- * `shape_valid: false` — so a caller can always distinguish "rejected by a
- * contract rule" from "did not parse".
+ * run and the report says so via `shape_valid: false` — so a caller can always
+ * distinguish "rejected by a contract rule" from "did not parse".
  */
 export function evaluateRbContactEvasionObservationsV0(
   input: unknown,
 ): RbContactEvasionValidationReport {
   const violations: RbContactEvasionViolation[] = [];
-  const push = (violation: RbContactEvasionViolation): void => {
+  const push: Push = (violation) => {
     violations.push(violation);
   };
 
   const parsed = rbContactEvasionObservationsV0Schema.safeParse(input);
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
-      const path = issue.path.length > 0 ? issue.path.join('.') : '<root>';
       push({
         reason_code:
           issue.code === z.ZodIssueCode.unrecognized_keys
             ? 'UNKNOWN_FIELD_PRESENT'
             : 'SCHEMA_SHAPE_INVALID',
-        path,
+        path: issue.path.length > 0 ? issue.path.join('.') : '<root>',
         detail: issue.message,
       });
     }
@@ -1011,8 +1572,10 @@ export function evaluateRbContactEvasionObservationsV0(
   artifact.observations.forEach((observation, index) => {
     const path = `observations[${index}]`;
     checkIdentity(observation, path, push);
-    checkMetricBinding(observation, path, push);
-    checkMeasurement(observation, path, push);
+    checkMetricSemantics(observation, path, push);
+    checkMeasurementStatus(observation, path, push);
+    checkRateSemantics(observation, path, push);
+    checkMinimumSample(observation, artifact.artifact_position, path, push);
     checkDenominatorSemantics(observation, path, push);
     checkClocks(observation, artifact.generated_at, path, push);
     checkSourceAndEvidence(observation, artifact.artifact_position, path, push);
@@ -1020,6 +1583,7 @@ export function evaluateRbContactEvasionObservationsV0(
     checkTransform(observation, path, push);
   });
 
+  checkArtifactUniqueness(artifact.observations, push);
   checkDefinitionDrift(artifact.observations, push);
 
   return buildReport(true, violations);
@@ -1029,13 +1593,8 @@ function buildReport(
   shapeValid: boolean,
   violations: RbContactEvasionViolation[],
 ): RbContactEvasionValidationReport {
-  const reasonCodes = [...new Set(violations.map((violation) => violation.reason_code))].sort();
-  return {
-    valid: violations.length === 0,
-    shape_valid: shapeValid,
-    violations,
-    reason_codes: reasonCodes,
-  };
+  const reasonCodes = [...new Set(violations.map((v) => v.reason_code))].sort();
+  return { valid: violations.length === 0, shape_valid: shapeValid, violations, reason_codes: reasonCodes };
 }
 
 /**
@@ -1064,7 +1623,8 @@ export function isRbContactEvasionObservationsV0(
  * Deliberately emits no composite, average, score, grade, or ranking: each of
  * the five mechanisms reports its own observed/missing state, and a mechanism
  * with no admitted observation stays `no_admitted_observation`. This is the
- * shape a later claim assessment reads; it is not itself an assessment.
+ * shape a later claim assessment reads; it is not itself an assessment, and
+ * `observed` means an observation row exists, never that the evidence is good.
  */
 export function summarizeRbContactEvasionMechanismCoverage(
   artifact: Pick<RbContactEvasionObservationsV0, 'observations'>,

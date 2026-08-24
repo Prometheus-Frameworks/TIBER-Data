@@ -6,7 +6,7 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "n04-2023-definition",
+      "observation_id": "n19-duplicate-id",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -17,20 +17,20 @@
       },
       "scope": {
         "position_at_window": "RB",
-        "season": 2023,
+        "season": 2024,
         "season_type": "REG",
-        "week": null,
-        "games_included": 17,
-        "window_completeness": "full_season",
+        "week": 12,
+        "games_included": 1,
+        "window_completeness": "single_week",
         "opportunity_class": "rushing"
       },
       "clocks": {
-        "window_start": "2023-09-07T00:00:00+00:00",
-        "window_end": "2024-01-08T00:00:00+00:00",
-        "source_observed_at": "2024-01-08T04:00:00+00:00",
-        "source_generated_at": "2024-01-09T12:00:00+00:00",
-        "source_available_at": "2024-01-10T09:00:00+00:00",
-        "retrieved_at": "2024-01-11T15:30:00+00:00",
+        "window_start": "2024-11-24T00:00:00+00:00",
+        "window_end": "2024-11-25T00:00:00+00:00",
+        "source_observed_at": "2025-01-06T04:00:00+00:00",
+        "source_generated_at": "2025-01-07T12:00:00+00:00",
+        "source_available_at": "2025-01-08T09:00:00+00:00",
+        "retrieved_at": "2025-01-09T15:30:00+00:00",
         "artifact_generated_at": "2026-08-24T00:00:00+00:00"
       },
       "clock_provenance": {
@@ -44,9 +44,9 @@
       },
       "metric": {
         "metric_id": "forced_missed_tackles_per_rush_attempt",
-        "source_native_metric_name": "forced missed tackles per rushing attempt (2023 definition)",
-        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary-2023",
-        "definition_version": "synthetic-def-2023.1",
+        "source_native_metric_name": "forced missed tackles per rushing attempt",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
         "unit": "forced_missed_tackles_per_rush_attempt",
         "value_kind": "rate",
         "directionality": "higher_is_more_of_mechanism",
@@ -59,17 +59,17 @@
       "measurement": {
         "status": "observed",
         "missingness_reason": null,
-        "value": 0.305,
+        "value": 0.316,
         "numerator": {
           "metric_id": "forced_missed_tackles_count",
-          "value": 62
+          "value": 6
         },
         "denominator": {
           "metric_id": "rush_attempts",
-          "value": 203,
+          "value": 19,
           "opportunity_type": "rush_attempt"
         },
-        "eligible_opportunities": 203
+        "eligible_opportunities": 19
       },
       "cohort_scope": null,
       "transform": null,
@@ -100,11 +100,11 @@
       },
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "negative fixture: the 2023 definition of the same metric id"
+        "negative fixture: the first of two rows sharing one observation id"
       ]
     },
     {
-      "observation_id": "n04-2024-definition",
+      "observation_id": "n19-duplicate-id",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -142,9 +142,9 @@
       },
       "metric": {
         "metric_id": "forced_missed_tackles_per_rush_attempt",
-        "source_native_metric_name": "forced missed tackles per rushing attempt (2024 definition)",
-        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary-2024",
-        "definition_version": "synthetic-def-2024.2",
+        "source_native_metric_name": "forced missed tackles per rushing attempt",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
         "unit": "forced_missed_tackles_per_rush_attempt",
         "value_kind": "rate",
         "directionality": "higher_is_more_of_mechanism",
@@ -198,7 +198,7 @@
       },
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "negative fixture: the definition changed but the metric id did not"
+        "negative fixture: a second, different-grain row reusing the same observation id"
       ]
     }
   ]

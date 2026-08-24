@@ -20,6 +20,33 @@ Slice A scope. The Python artifact validator and manifest gate (Slice B), the
 Bucky assembler (Slice C), cohort normalization, percentiles, thresholds, scores,
 and the Data/FORGE ownership decision are all out of scope and unimplemented.
 
+## Semantic authority
+
+**The contract owns what a row means; the payload may only agree.**
+
+The first exact-head review found five escapes that shared one root cause:
+semantic authority sat in each payload rather than in the contract. A row could
+keep a known metric id while rewriting its unit and directionality, point its
+numerator at an unrelated metric, emit a value unrelated to its own numerator and
+denominator, set its own minimum-sample bar, declare which clock a timestamp came
+from only implicitly, and appear twice without objection.
+
+The repair moves all of that into code:
+
+- `RB_CONTACT_EVASION_METRIC_DICTIONARY` fixes each metric's mechanism, value
+  kind, unit, directionality, and expected numerator, denominator, and
+  denominator opportunity type.
+- `RB_CONTACT_EVASION_RATE_ROUNDING_DECIMALS` fixes the rounding relationship
+  between numerator, denominator, and the emitted rate.
+- `RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE` fixes the governing sample bar; a row
+  names the rule with `minimum_sample_rule_id` and can state no threshold at all.
+- `clock_provenance` declares each clock's origin in a closed enum, replacing a
+  timestamp-equality heuristic that was unsound in both directions.
+- Artifact-level uniqueness enforces the declared one-row grain.
+
+Schema version moved to `rb_contact_evasion_observations_v0.2.0` for these
+changes. No artifact exists under either version.
+
 ## Purpose
 
 "Bucky Irving was elite and elusive as a rookie" is a human sentence, not a
@@ -41,7 +68,7 @@ over every emittable vocabulary.
 
 | File | Role |
 |---|---|
-| `src/contracts/v1/rbContactEvasionObservationsV0.ts` | Contract, closed vocabularies, registries, and the cross-field validation layer |
+| `src/contracts/v1/rbContactEvasionObservationsV0.ts` | Contract, closed vocabularies, code-owned metric dictionary and minimum-sample rule, and the cross-field validation layer |
 | `schemas/rb_contact_evasion_observations_v0.schema.json` | Shape gate (closed vocabularies, required clocks, unknown-field rejection) |
 | `test/fixtures/rb_contact_evasion/positive/**` | P1–P7 |
 | `test/fixtures/rb_contact_evasion/negative/**` | N1–N15 |
@@ -96,8 +123,15 @@ the mechanisms it may ever evidence.
 Metrics bound to **no** mechanism are components, denominators, or known-inadmissible
 summaries — `rush_attempts`, `touches`, `longest_rush_yards`, `yards_per_carry`.
 A lone long gain, a 40-yard dash, and yards per carry can never stand as
-contact-evasion evidence. A metric id absent from the registry fails closed
+contact-evasion evidence. A metric id absent from the dictionary fails closed
 (`UNKNOWN_METRIC_ID`): admitting a metric is a contract change, not a data decision.
+
+A descriptor pins more than the mechanism. A row that keeps a known metric id but
+restates a different unit or directionality is rejected
+(`METRIC_DESCRIPTOR_CONTRADICTED`); a rate whose numerator, denominator, or
+denominator opportunity type is not the one the descriptor declares is rejected
+(`RATE_COMPONENT_METRIC_MISMATCH`), even when the substituted metric is itself a
+known id.
 
 ## Identity
 
@@ -115,6 +149,14 @@ The Bucky golden trace uses governed canonical identity `00-0039361`.
 A `value_kind: "rate"` observation with a value requires exact numerator **and**
 denominator metric ids and values. A percentage without an exact denominator is
 not interchangeable with another source's similarly named rate.
+
+Three further rate rules close the gap between a stated rate and a real one: the
+components must be the ones the descriptor declares, the denominator must be
+strictly positive (`RATE_DENOMINATOR_NOT_POSITIVE`), and the emitted value must
+equal `numerator / denominator` rounded to
+`RB_CONTACT_EVASION_RATE_ROUNDING_DECIMALS` (3) decimals
+(`RATE_VALUE_INCONSISTENT_WITH_COMPONENTS`). The components define the rate; the
+emitted number does not get to disagree with them.
 
 Opportunity classes and their admissible denominator opportunity types:
 
@@ -146,11 +188,28 @@ source_observed_at    source_generated_at    source_available_at
 retrieved_at          artifact_generated_at
 ```
 
-`retrieved_at` may not coincide with `window_end`, `source_generated_at`, or
-`source_observed_at`. Clocks are compared as **instants**, not strings, so a
-re-formatted offset is not an escape hatch. Ordering is enforced
-(`window_start <= window_end`; `source_observed_at <= source_generated_at <=
-source_available_at <= retrieved_at <= artifact_generated_at`), and each row's
+**Availability.** The three source clocks are nullable. A source that supplies no
+observation or generation clock leaves it `null` and says so, rather than
+backfilling a plausible timestamp. Ordering is evaluated only between clocks that
+actually exist, so absence never forces a fabricated value to satisfy a
+comparison. P8 is the worked example.
+
+**Origin, not arithmetic.** Every clock declares its origin in `clock_provenance`,
+a closed enum: `football_window`, `source_supplied`, `not_supplied_by_source`,
+`retrieval_clock`, `artifact_build_clock`. A source clock that declares
+`retrieval_clock` or `artifact_build_clock` is a substitution and is rejected
+(`RETRIEVAL_CLOCK_SUBSTITUTED_FOR_SOURCE_CLOCK`). A clock whose declared
+availability contradicts its value — absent-but-present, or supplied-but-null —
+is rejected (`CLOCK_AVAILABILITY_CONTRADICTED`).
+
+This replaces an earlier timestamp-equality heuristic that was unsound in both
+directions: it rejected a legitimately coincident instant, and an invented
+one-millisecond offset walked straight past it. Declared origin cannot be dodged
+by arithmetic. Its honest limit is that a producer who copies the retrieval clock
+and declares it `source_supplied` is lying in a way this contract cannot detect;
+binding declarations to an admitted source registry is Slice B.
+
+Ordering is still enforced between existing clocks, and each row's
 `artifact_generated_at` must equal the envelope `generated_at`.
 
 ## Evidence class and source access
@@ -179,9 +238,69 @@ a rights-blocked component stays missing.
 opinion must carry `evidence_class: "external_opinion"`; labeling it an
 observation is rejected.
 
+### Rights dispositions
+
+`source.permissions` states four dispositions independently, per #234's
+source-and-rights audit:
+
+| Field | Values |
+|---|---|
+| `attribution` | `required` / `not_required` / `unknown` |
+| `retention_and_reproduction` | `permitted` / `prohibited` / `unknown` |
+| `redistribution_and_display` | `permitted` / `prohibited` / `unknown` |
+| `automated_access` | `permitted` / `prohibited` / `unknown` |
+
+`unknown` is a real answer and fails closed. It is never read as permission.
+
+- `promotable: true` requires retention, redistribution, and automated access all
+  `permitted`, and attribution settled
+  (`SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_PROMOTABLE`).
+- An observed value in any evidence class other than a cited `external_opinion`
+  stores exact source-derived numbers, so it requires retention and automated
+  access `permitted` (`SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_EVIDENCE_CLASS`).
+
+`source.content_digest` records a payload digest where permitted. A `snapshot`
+provenance mode requires one (`SNAPSHOT_WITHOUT_CONTENT_DIGEST`) — a snapshot
+with no digest cannot prove a rebuild consumed the same bytes — and a digest may
+not be recorded when retention is prohibited
+(`CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION`).
+
 Provenance is explicit per row: `live | snapshot | fixture`. A `fixture`-provenance
 row may never appear in an artifact at `candidate` or `promoted` position —
 fixture data does not become governed truth by location.
+
+## Grain uniqueness
+
+The declared one-row grain is enforced at artifact level, not merely described.
+Within one artifact, `observation_id` must be unique (`DUPLICATE_OBSERVATION_ID`)
+and the canonical grain key — player, window, metric definition, source snapshot,
+and denominator — must be unique (`DUPLICATE_OBSERVATION_GRAIN`). The two are
+separate codes because a repeated grain under a fresh id and a reused id across
+different grains are different defects, and both permit double-counting
+downstream. `rbContactEvasionGrainKey` exposes the key so a consumer can compute
+it the same way.
+
+## Sample sufficiency
+
+The governing minimum is **code-owned**. A row carries
+`metric.minimum_sample_rule_id` naming the rule that binds it and can state no
+threshold of its own; `cohort_scope` states none either.
+
+`RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE` holds the thresholds, keyed by window
+completeness (`single_week` 10, `multi_week` 20, `partial_season` 30,
+`full_season` 40).
+
+**These thresholds are fixture-only pinned placeholders, not empirical football
+thresholds.** #234 has authorized no empirical N and this slice does not invent
+one. The rule's `authority` is `fixture_only_placeholder`, and the contract
+**fails closed accordingly**: an observed rate in a `candidate` or `promoted`
+artifact is rejected outright
+(`MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION`) until Slice B binds an admitted
+rule. A rate may only carry a value at `fixture_only` position.
+
+An observed rate must also state its eligible opportunities
+(`ELIGIBLE_OPPORTUNITIES_REQUIRED_FOR_RATE`); a null sample cannot be checked
+against any minimum, and previously slipped through.
 
 ## Missingness
 
@@ -203,10 +322,10 @@ both windows under one definition).
 ## Cohort scope
 
 `cohort_scope` records cohort **membership inputs only** — position, season,
-season type, window completeness, and minimum eligible opportunities. It carries
-no percentile, rank, threshold, score, or grade, and none may be added: that
-boundary is TIBER-Ops #15 and remains unresolved. Cohort position, season, and
-season type must match the observation's own scope.
+season type, and window completeness. It carries no percentile, rank, threshold,
+score, or grade, and none may be added: that boundary is TIBER-Ops #15 and
+remains unresolved. It carries no minimum either — that bar is code-owned.
+Cohort position, season, and season type must match the observation's own scope.
 
 Comparing a partial window against a full-window cohort requires a non-empty
 `window_completeness_disclosure`. **Residual risk:** that disclosure is a declared
@@ -223,8 +342,9 @@ always distinguish "rejected by a contract rule" from "did not parse".
 carrying the same codes.
 
 Codes beyond the fixture corpus: `SCHEMA_SHAPE_INVALID`, `UNKNOWN_FIELD_PRESENT`,
-`DENOMINATOR_OPPORTUNITY_CLASS_MISMATCH`, `CLOCK_ORDER_INVALID`,
-`ARTIFACT_CLOCK_MISMATCH`, `UNKNOWN_METRIC_ID`,
+`UNKNOWN_METRIC_ID`, `DENOMINATOR_OPPORTUNITY_CLASS_MISMATCH`,
+`CLOCK_ORDER_INVALID`, `ARTIFACT_CLOCK_MISMATCH`, `MISSINGNESS_REASON_ABSENT`,
+`OBSERVED_COMPONENT_MISSING_VALUE`, `CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION`,
 `INCOMPATIBILITY_REGISTRY_NOT_SYMMETRIC`, `DERIVED_EVIDENCE_REQUIRES_TRANSFORM`,
 `SUPERSESSION_SELF_REFERENCE`.
 
@@ -240,7 +360,9 @@ Bucky Irving (`00-0039361`) appears **only** in P7, as the governed golden-trace
 identity and contract example already authorized by #234. P7's values are
 synthetic and are **not** evidence about Bucky Irving or any real player.
 
-### Positive fixtures P1–P7
+### Positive fixtures
+
+#### Mandated corpus P1–P7 (TIBER-Data #234)
 
 | # | File | What it establishes |
 |---|---|---|
@@ -252,9 +374,17 @@ synthetic and are **not** evidence about Bucky Irving or any real player.
 | P6 | `p6_weekly_and_season_windows_coexist.json` | A weekly and a full-season window coexist as separate rows under one unchanged metric definition |
 | P7 | `p7_bucky_receipt_remains_partial.json` | The Bucky receipt: three mechanisms observed, `speed` and `agility_change_of_direction` honestly missing, and no composite emitted. The receipt may legitimately stay partial |
 
-### Negative fixtures N1–N15
+#### Supplementary positive (review-repair round)
+
+| # | File | What it establishes |
+|---|---|---|
+| P8 | `p8_absent_source_clock_stays_null.json` | A source that supplies no observation or generation clock leaves both `null` with a declared origin, instead of backfilling them from the retrieval clock |
+
+### Negative fixtures
 
 Each is shape-valid and rejected by exactly one reason code.
+
+#### Mandated corpus N1–N15 (TIBER-Data #234)
 
 | # | File | Reason code |
 |---|---|---|
@@ -274,14 +404,36 @@ Each is shape-valid and rejected by exactly one reason code.
 | N14 | `n14_incompatible_transform_inputs.json` | `INCOMPATIBLE_METRIC_TRANSFORM_INPUT` |
 | N15 | `n15_fixture_provenance_in_candidate_position.json` | `FIXTURE_PROVENANCE_IN_CANDIDATE_POSITION` |
 
+#### Supplementary corpus N16–N28 (review-repair round)
+
+One fixture per escape the first exact-head review reproduced against the public
+evaluator.
+
+| # | File | Reason code |
+|---|---|---|
+| N16 | `n16_promotable_without_permissions.json` | `SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_PROMOTABLE` |
+| N17 | `n17_direct_observation_without_retention.json` | `SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_EVIDENCE_CLASS` |
+| N18 | `n18_snapshot_without_content_digest.json` | `SNAPSHOT_WITHOUT_CONTENT_DIGEST` |
+| N19 | `n19_duplicate_observation_id.json` | `DUPLICATE_OBSERVATION_ID` |
+| N20 | `n20_duplicate_observation_grain.json` | `DUPLICATE_OBSERVATION_GRAIN` |
+| N21 | `n21_rate_value_inconsistent_with_components.json` | `RATE_VALUE_INCONSISTENT_WITH_COMPONENTS` |
+| N22 | `n22_rate_component_metric_mismatch.json` | `RATE_COMPONENT_METRIC_MISMATCH` |
+| N23 | `n23_rate_denominator_not_positive.json` | `RATE_DENOMINATOR_NOT_POSITIVE` |
+| N24 | `n24_metric_descriptor_contradicted.json` | `METRIC_DESCRIPTOR_CONTRADICTED` |
+| N25 | `n25_eligible_opportunities_absent.json` | `ELIGIBLE_OPPORTUNITIES_REQUIRED_FOR_RATE` |
+| N26 | `n26_clock_availability_contradicted.json` | `CLOCK_AVAILABILITY_CONTRADICTED` |
+| N27 | `n27_minimum_sample_rule_not_code_owned.json` | `MINIMUM_SAMPLE_RULE_NOT_CODE_OWNED` |
+| N28 | `n28_minimum_sample_rule_not_admitted_for_position.json` | `MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION` |
+
 N12 carries three rows in one fixture — a 40-yard dash offered as contact
 avoidance, a long gain offered as explosiveness, and yards per carry offered as
 contact survival — because #234 names all three as the same failure and they are
 rejected by the same rule.
 
-N15 is the one fixture that declares `artifact_position: "candidate"`, precisely
-so the rule that keeps fixture provenance out of candidate position has something
-to reject.
+Two fixtures declare `artifact_position: "candidate"`, each so a rule that only
+bites outside `fixture_only` has something to reject: N15 (fixture provenance in
+a candidate artifact) and N28 (an observed rate where no admitted minimum-sample
+rule is bound). No fixture sits in a promoted position.
 
 ## Repository-convention adjustments
 
@@ -335,6 +487,8 @@ These are limits of a contract-only slice, recorded rather than papered over.
   presence, not adequacy.
 - That the contract layer's guarantees hold from the JSON schema alone. It is a
   shape gate; the cross-field rules are the TypeScript layer.
+- That a rate may carry a value outside `fixture_only` position. It may not,
+  until an admitted minimum-sample rule is bound in Slice B.
 - That this contract authorizes normalization, percentiles, thresholds, scores,
   cohort ranking, or any Data/FORGE ownership decision. It does not.
 

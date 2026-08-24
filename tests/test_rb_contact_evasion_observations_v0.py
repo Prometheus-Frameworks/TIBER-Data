@@ -32,7 +32,9 @@ CONTRACT_TS_PATH = REPO_ROOT / "src/contracts/v1/rbContactEvasionObservationsV0.
 DOC_PATH = REPO_ROOT / "docs/contracts/rb-contact-evasion-observations-v0.md"
 FIXTURE_ROOT = REPO_ROOT / "test/fixtures/rb_contact_evasion"
 
-POSITIVE_FIXTURES = [
+# P1-P7 are the corpus TIBER-Data #234 mandates; P8 was added in the
+# review-repair round to show an unavailable source clock staying honestly null.
+MANDATED_POSITIVE_FIXTURES = [
     "p1_complete_derived_explosiveness_rate.json",
     "p2_raw_count_without_denominator.json",
     "p3_historical_testing_classified.json",
@@ -41,9 +43,12 @@ POSITIVE_FIXTURES = [
     "p6_weekly_and_season_windows_coexist.json",
     "p7_bucky_receipt_remains_partial.json",
 ]
+SUPPLEMENTARY_POSITIVE_FIXTURES = ["p8_absent_source_clock_stays_null.json"]
+POSITIVE_FIXTURES = MANDATED_POSITIVE_FIXTURES + SUPPLEMENTARY_POSITIVE_FIXTURES
 
 # Fixture file -> the single reason code the contract layer must reject it with.
-NEGATIVE_FIXTURES = {
+# N1-N15 are the corpus #234 mandates.
+MANDATED_NEGATIVE_FIXTURES = {
     "n01_rate_missing_denominator.json": "RATE_MISSING_DENOMINATOR",
     "n02_denominator_unsupported_by_source.json": "DENOMINATOR_OPPORTUNITY_UNSUPPORTED_BY_SOURCE",
     "n03_rushing_receiving_silently_combined.json": "RUSHING_RECEIVING_SILENTLY_COMBINED",
@@ -65,6 +70,34 @@ NEGATIVE_FIXTURES = {
     ),
 }
 
+# N16-N28 were added in the review-repair round: one fixture per escape the first
+# exact-head review reproduced against the public evaluator.
+SUPPLEMENTARY_NEGATIVE_FIXTURES = {
+    "n16_promotable_without_permissions.json": (
+        "SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_PROMOTABLE"
+    ),
+    "n17_direct_observation_without_retention.json": (
+        "SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_EVIDENCE_CLASS"
+    ),
+    "n18_snapshot_without_content_digest.json": "SNAPSHOT_WITHOUT_CONTENT_DIGEST",
+    "n19_duplicate_observation_id.json": "DUPLICATE_OBSERVATION_ID",
+    "n20_duplicate_observation_grain.json": "DUPLICATE_OBSERVATION_GRAIN",
+    "n21_rate_value_inconsistent_with_components.json": (
+        "RATE_VALUE_INCONSISTENT_WITH_COMPONENTS"
+    ),
+    "n22_rate_component_metric_mismatch.json": "RATE_COMPONENT_METRIC_MISMATCH",
+    "n23_rate_denominator_not_positive.json": "RATE_DENOMINATOR_NOT_POSITIVE",
+    "n24_metric_descriptor_contradicted.json": "METRIC_DESCRIPTOR_CONTRADICTED",
+    "n25_eligible_opportunities_absent.json": "ELIGIBLE_OPPORTUNITIES_REQUIRED_FOR_RATE",
+    "n26_clock_availability_contradicted.json": "CLOCK_AVAILABILITY_CONTRADICTED",
+    "n27_minimum_sample_rule_not_code_owned.json": "MINIMUM_SAMPLE_RULE_NOT_CODE_OWNED",
+    "n28_minimum_sample_rule_not_admitted_for_position.json": (
+        "MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION"
+    ),
+}
+
+NEGATIVE_FIXTURES = {**MANDATED_NEGATIVE_FIXTURES, **SUPPLEMENTARY_NEGATIVE_FIXTURES}
+
 MECHANISMS = [
     "speed",
     "agility_change_of_direction",
@@ -82,6 +115,16 @@ SOURCE_ACCESS_CLASSES = [
     "unknown",
 ]
 PROVENANCE_MODES = ["live", "snapshot", "fixture"]
+CLOCK_PROVENANCE = [
+    "football_window",
+    "source_supplied",
+    "not_supplied_by_source",
+    "retrieval_clock",
+    "artifact_build_clock",
+]
+PERMISSION_DISPOSITIONS = ["permitted", "prohibited", "unknown"]
+ATTRIBUTION_DISPOSITIONS = ["required", "not_required", "unknown"]
+MINIMUM_SAMPLE_RULE_ID = "rb_contact_evasion_fixture_only_minimum_sample_v0"
 REQUIRED_CLOCKS = [
     "window_start",
     "window_end",
@@ -124,13 +167,21 @@ def test_positive_fixtures_satisfy_the_schema(name: str):
     assert schema_errors(load_fixture("positive", name)) == []
 
 
-def test_fixture_corpus_is_exactly_p1_p7_and_n1_n15():
+def test_fixture_corpus_matches_the_declared_lists():
     positives = sorted(p.name for p in (FIXTURE_ROOT / "positive").glob("*.json"))
     negatives = sorted(p.name for p in (FIXTURE_ROOT / "negative").glob("*.json"))
     assert positives == sorted(POSITIVE_FIXTURES)
     assert negatives == sorted(NEGATIVE_FIXTURES)
-    assert len(positives) == 7
-    assert len(negatives) == 15
+
+
+def test_the_mandated_234_corpus_remains_intact():
+    """The review round added fixtures; it must not have dropped #234's own."""
+    assert len(MANDATED_POSITIVE_FIXTURES) == 7
+    assert len(MANDATED_NEGATIVE_FIXTURES) == 15
+    for name in MANDATED_POSITIVE_FIXTURES:
+        assert (FIXTURE_ROOT / "positive" / name).is_file()
+    for name in MANDATED_NEGATIVE_FIXTURES:
+        assert (FIXTURE_ROOT / "negative" / name).is_file()
 
 
 @pytest.mark.parametrize("name", sorted(NEGATIVE_FIXTURES))
@@ -146,7 +197,8 @@ def test_negative_fixtures_are_shape_valid_so_rejection_is_attributable(name: st
 
 def test_negative_reason_codes_are_distinct():
     codes = list(NEGATIVE_FIXTURES.values())
-    assert len(set(codes)) == len(codes) == 15
+    assert len(set(codes)) == len(codes)
+    assert len(set(MANDATED_NEGATIVE_FIXTURES.values())) == 15
 
 
 def test_every_negative_reason_code_exists_in_the_contract_implementation():
@@ -222,6 +274,67 @@ def test_schema_closes_the_governance_vocabularies():
     assert defs["sourceAccessClass"]["enum"] == SOURCE_ACCESS_CLASSES
     assert defs["provenanceMode"]["enum"] == PROVENANCE_MODES
     assert defs["artifactPosition"]["enum"] == ["fixture_only", "candidate", "promoted"]
+    assert defs["clockProvenance"]["enum"] == CLOCK_PROVENANCE
+    assert defs["permissionDisposition"]["enum"] == PERMISSION_DISPOSITIONS
+    assert defs["attributionDisposition"]["enum"] == ATTRIBUTION_DISPOSITIONS
+
+
+def test_schema_requires_separate_rights_dispositions_and_a_digest_slot():
+    """#234 requires attribution, retention, redistribution, and automation
+    to be stated independently, plus a payload digest slot where permitted."""
+    defs = load_schema()["$defs"]
+    assert sorted(defs["sourcePermissions"]["required"]) == [
+        "attribution",
+        "automated_access",
+        "redistribution_and_display",
+        "retention_and_reproduction",
+    ]
+    assert "permissions" in defs["source"]["required"]
+    assert "content_digest" in defs["source"]["required"]
+    payload = load_fixture("positive", "p1_complete_derived_explosiveness_rate.json")
+    for field in ("attribution", "retention_and_reproduction",
+                  "redistribution_and_display", "automated_access"):
+        mutated = copy.deepcopy(payload)
+        del mutated["observations"][0]["source"]["permissions"][field]
+        assert schema_errors(mutated) != [], f"permissions.{field} must be required"
+
+
+def test_schema_lets_an_unavailable_source_clock_stay_null():
+    """An unavailable source clock must be representable as null with a declared
+    origin, rather than forced to carry a backfilled timestamp."""
+    payload = load_fixture("positive", "p8_absent_source_clock_stays_null.json")
+    assert payload["observations"][0]["clocks"]["source_generated_at"] is None
+    assert (
+        payload["observations"][0]["clock_provenance"]["source_generated_at"]
+        == "not_supplied_by_source"
+    )
+    assert schema_errors(payload) == []
+
+
+def test_schema_requires_a_declared_origin_for_every_clock():
+    defs = load_schema()["$defs"]
+    assert sorted(defs["clockProvenanceMap"]["required"]) == sorted(REQUIRED_CLOCKS)
+    payload = load_fixture("positive", "p1_complete_derived_explosiveness_rate.json")
+    for clock in REQUIRED_CLOCKS:
+        mutated = copy.deepcopy(payload)
+        del mutated["observations"][0]["clock_provenance"][clock]
+        assert schema_errors(mutated) != [], f"{clock} must declare an origin"
+
+
+def test_schema_gives_a_row_no_self_declared_minimum_sample_threshold():
+    """The governing minimum is code-owned; a row names the rule, never a number."""
+    defs = load_schema()["$defs"]
+    assert "minimum_sample_rule_id" in defs["metric"]["required"]
+    assert "minimum_eligible_opportunities" not in defs["metric"]["properties"]
+    assert "minimum_eligible_opportunities" not in defs["cohortScope"]["properties"]
+    payload = load_fixture("positive", "p1_complete_derived_explosiveness_rate.json")
+    assert (
+        payload["observations"][0]["metric"]["minimum_sample_rule_id"]
+        == MINIMUM_SAMPLE_RULE_ID
+    )
+    mutated = copy.deepcopy(payload)
+    mutated["observations"][0]["metric"]["minimum_eligible_opportunities"] = 1
+    assert schema_errors(mutated) != [], "a row must not be able to state its own threshold"
 
 
 def test_schema_requires_all_seven_clocks_separately():
@@ -278,16 +391,22 @@ def test_schema_names_no_score_composite_grade_ranking_or_fantasy_field():
 def test_no_fixture_sits_in_a_promoted_position_and_no_export_path_is_touched():
     for name in POSITIVE_FIXTURES:
         assert load_fixture("positive", name)["artifact_position"] == "fixture_only"
-    # N15 is the one fixture that models a candidate position, precisely so the
-    # contract layer can reject fixture provenance there.
+    # Exactly two fixtures model a candidate position, each so the contract
+    # layer has an illegal state to reject there: N15 (fixture provenance in a
+    # candidate artifact) and N28 (an observed rate where no admitted
+    # minimum-sample rule is bound). Nothing sits in a promoted position at all.
     positions = {
         name: load_fixture("negative", name)["artifact_position"] for name in NEGATIVE_FIXTURES
     }
-    assert positions["n15_fixture_provenance_in_candidate_position.json"] == "candidate"
+    candidate_fixtures = {
+        "n15_fixture_provenance_in_candidate_position.json",
+        "n28_minimum_sample_rule_not_admitted_for_position.json",
+    }
+    assert {name for name, pos in positions.items() if pos == "candidate"} == candidate_fixtures
     assert all(
         position == "fixture_only"
         for name, position in positions.items()
-        if name != "n15_fixture_provenance_in_candidate_position.json"
+        if name not in candidate_fixtures
     )
     assert all(position != "promoted" for position in positions.values())
 

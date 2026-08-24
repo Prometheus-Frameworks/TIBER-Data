@@ -1,6 +1,6 @@
 {
   "artifact_id": "rb_contact_evasion_observations_v0",
-  "schema_version": "rb_contact_evasion_observations_v0.1.0",
+  "schema_version": "rb_contact_evasion_observations_v0.2.0",
   "artifact_position": "fixture_only",
   "generated_at": "2026-08-24T00:00:00+00:00",
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
@@ -33,6 +33,15 @@
         "retrieved_at": "2025-01-09T15:30:00+00:00",
         "artifact_generated_at": "2026-08-24T00:00:00+00:00"
       },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
       "metric": {
         "metric_id": "forced_missed_tackles_per_rush_attempt",
         "source_native_metric_name": "forced missed tackles per rushing attempt",
@@ -41,7 +50,7 @@
         "unit": "forced_missed_tackles_per_rush_attempt",
         "value_kind": "rate",
         "directionality": "higher_is_more_of_mechanism",
-        "minimum_eligible_opportunities": 40,
+        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
         "inclusion_exclusion_rules": [
           "rushing attempts only; kneel-downs and aborted plays excluded"
         ],
@@ -78,6 +87,13 @@
           "testing_trial"
         ],
         "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "required",
+          "retention_and_reproduction": "permitted",
+          "redistribution_and_display": "permitted",
+          "automated_access": "permitted"
+        },
+        "content_digest": null,
         "promotable": false,
         "provenance_mode": "fixture",
         "superseded_by_snapshot_id": null
@@ -115,6 +131,15 @@
         "retrieved_at": "2025-01-09T15:30:00+00:00",
         "artifact_generated_at": "2026-08-24T00:00:00+00:00"
       },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
       "metric": {
         "metric_id": "yards_after_contact_per_rush_attempt",
         "source_native_metric_name": "yards after contact per rushing attempt",
@@ -123,7 +148,7 @@
         "unit": "yards_per_rush_attempt",
         "value_kind": "rate",
         "directionality": "higher_is_more_of_mechanism",
-        "minimum_eligible_opportunities": 40,
+        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
         "inclusion_exclusion_rules": [
           "rushing attempts only",
           "yards measured from the first point of defensive contact"
@@ -133,7 +158,7 @@
       "measurement": {
         "status": "observed",
         "missingness_reason": null,
-        "value": 3.42,
+        "value": 3.419,
         "numerator": {
           "metric_id": "yards_after_contact_total",
           "value": 694
@@ -161,6 +186,13 @@
           "testing_trial"
         ],
         "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "required",
+          "retention_and_reproduction": "permitted",
+          "redistribution_and_display": "permitted",
+          "automated_access": "permitted"
+        },
+        "content_digest": null,
         "promotable": false,
         "provenance_mode": "fixture",
         "superseded_by_snapshot_id": null
@@ -198,6 +230,15 @@
         "retrieved_at": "2025-01-09T15:30:00+00:00",
         "artifact_generated_at": "2026-08-24T00:00:00+00:00"
       },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
       "metric": {
         "metric_id": "explosive_rushes_10_plus_per_rush_attempt",
         "source_native_metric_name": "rushes of 10+ yards per rushing attempt",
@@ -206,7 +247,7 @@
         "unit": "explosive_rushes_per_rush_attempt",
         "value_kind": "rate",
         "directionality": "higher_is_more_of_mechanism",
-        "minimum_eligible_opportunities": 40,
+        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
         "inclusion_exclusion_rules": [
           "rushing attempts only",
           "an explosive rush is a rush gaining 10 or more yards from scrimmage"
@@ -244,6 +285,13 @@
           "testing_trial"
         ],
         "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "required",
+          "retention_and_reproduction": "permitted",
+          "redistribution_and_display": "permitted",
+          "automated_access": "permitted"
+        },
+        "content_digest": null,
         "promotable": false,
         "provenance_mode": "fixture",
         "superseded_by_snapshot_id": null
@@ -281,6 +329,15 @@
         "retrieved_at": "2025-01-09T15:30:00+00:00",
         "artifact_generated_at": "2026-08-24T00:00:00+00:00"
       },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
       "metric": {
         "metric_id": "verified_max_game_speed_mph",
         "source_native_metric_name": "verified maximum in-game speed",
@@ -289,7 +346,7 @@
         "unit": "miles_per_hour",
         "value_kind": "speed_mph",
         "directionality": "higher_is_more_of_mechanism",
-        "minimum_eligible_opportunities": 1,
+        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
         "inclusion_exclusion_rules": [
           "regular-season offensive snaps only"
         ],
@@ -306,11 +363,11 @@
       "cohort_scope": null,
       "transform": null,
       "source": {
-        "owner": "example_open_provider",
-        "product": "synthetic_rushing_contact_summary",
-        "snapshot_id": "synthetic-snapshot-2025-01-07",
-        "access_class": "open_and_ingestible",
-        "acquisition_method": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "owner": "example_unavailable_provider",
+        "product": "synthetic_game_speed_feed",
+        "snapshot_id": "synthetic-unavailable-snapshot-2025-01-07",
+        "access_class": "unavailable",
+        "acquisition_method": "not acquired; no admitted verified game-speed source exists for this window",
         "material_kind": "measured_observation",
         "supported_opportunity_types": [
           "rush_attempt",
@@ -319,6 +376,13 @@
           "testing_trial"
         ],
         "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "unknown",
+          "retention_and_reproduction": "unknown",
+          "redistribution_and_display": "unknown",
+          "automated_access": "unknown"
+        },
+        "content_digest": null,
         "promotable": false,
         "provenance_mode": "fixture",
         "superseded_by_snapshot_id": null
@@ -356,6 +420,15 @@
         "retrieved_at": "2025-01-09T15:30:00+00:00",
         "artifact_generated_at": "2026-08-24T00:00:00+00:00"
       },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
       "metric": {
         "metric_id": "tracking_change_of_direction_events_per_rush_attempt",
         "source_native_metric_name": "tracked change-of-direction events per rushing attempt",
@@ -364,7 +437,7 @@
         "unit": "change_of_direction_events_per_rush_attempt",
         "value_kind": "rate",
         "directionality": "higher_is_more_of_mechanism",
-        "minimum_eligible_opportunities": 40,
+        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
         "inclusion_exclusion_rules": [
           "rushing attempts only"
         ],
@@ -391,6 +464,13 @@
           "rush_attempt"
         ],
         "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "required",
+          "retention_and_reproduction": "prohibited",
+          "redistribution_and_display": "prohibited",
+          "automated_access": "prohibited"
+        },
+        "content_digest": null,
         "promotable": false,
         "provenance_mode": "fixture",
         "superseded_by_snapshot_id": null
