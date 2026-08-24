@@ -1326,7 +1326,10 @@ function checkMeasurementStatus(
  *   affirmative — rights uncertainty is represented by an unknown retention
  *   disposition. Redistribution/display and automation restrictions never
  *   support the claim.
- * - `source_unavailable` must be supported by access_class "unavailable".
+ * - `source_unavailable` must be supported by BOTH access_class "unavailable"
+ *   AND acquisition_method "not_acquired": a measurement cannot be absent
+ *   because the source was unavailable while the row simultaneously declares
+ *   its material was successfully acquired.
  * - `not_measured` and `definition_incompatible` assert facts about what the
  *   source measures and how it defines it; no structural cross-check exists
  *   for them in Slice A (recorded as a residual risk).
@@ -1384,11 +1387,24 @@ function checkMissingnessShape(
     }
   }
 
-  if (reason === 'source_unavailable' && source.access_class !== 'unavailable') {
+  if (
+    reason === 'source_unavailable' &&
+    (source.access_class !== 'unavailable' || source.acquisition_method !== 'not_acquired')
+  ) {
+    // Both fields are required. The access class states the source's declared
+    // state; the acquisition method states what actually happened, and
+    // "not_acquired" is the one state proving acquisition did not occur. A row
+    // whose material was successfully acquired (automated, manual, or
+    // synthetically produced) cannot blame the absence of its measurement on
+    // an unavailable source. This is deliberately scoped to the missingness
+    // claim: no global "unavailable implies not_acquired" rule is imposed,
+    // because current contract semantics do not prove that a source acquired
+    // earlier (e.g. a retained snapshot) can never later be declared
+    // unavailable.
     push({
       reason_code: 'MISSINGNESS_REASON_UNSUPPORTED',
       path: `${measurementPath}.missingness_reason`,
-      detail: `missingness_reason "source_unavailable" requires access_class "unavailable", got "${source.access_class}"; an unavailable source declares itself unavailable`,
+      detail: `missingness_reason "source_unavailable" requires access_class "unavailable" AND acquisition_method "not_acquired" (got access_class "${source.access_class}", acquisition_method "${source.acquisition_method}"); an unavailable source declares itself unavailable, and a successfully acquired material cannot be missing for unavailability`,
     });
   }
 }

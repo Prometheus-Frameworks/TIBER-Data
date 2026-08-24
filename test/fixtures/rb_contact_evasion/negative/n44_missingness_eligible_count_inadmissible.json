@@ -6,7 +6,7 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "n44-unavailable-source-retaining-eligible-count",
+      "observation_id": "n44-not-measured-retaining-eligible-count",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -58,7 +58,7 @@
       },
       "measurement": {
         "status": "missing",
-        "missingness_reason": "source_unavailable",
+        "missingness_reason": "not_measured",
         "value": null,
         "numerator": null,
         "denominator": null,
@@ -67,12 +67,12 @@
       "cohort_scope": null,
       "transform": null,
       "source": {
-        "owner": "example_unavailable_provider",
-        "product": "synthetic_unavailable_contact_feed",
-        "snapshot_id": "synthetic-unavailable-snapshot-2025-01-07",
-        "access_class": "unavailable",
+        "owner": "example_open_provider",
+        "product": "synthetic_rushing_contact_summary",
+        "snapshot_id": "synthetic-snapshot-2025-01-07",
+        "access_class": "open_and_ingestible",
         "acquisition_method": "synthetic_fixture",
-        "acquisition_notes": "synthetic fixture modeling an unavailable source; a count was (wrongly) retained",
+        "acquisition_notes": "synthetic contract fixture; the source does not measure this metric, yet a count was (wrongly) retained",
         "material_kind": "measured_observation",
         "supported_opportunity_types": [
           "rush_attempt",
@@ -99,7 +99,7 @@
       ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "negative fixture: an unavailable-source row retaining an exact eligible-opportunity count no measurement justifies"
+        "negative fixture: a not-measured row retaining an exact eligible-opportunity count no measurement justifies"
       ]
     }
   ]

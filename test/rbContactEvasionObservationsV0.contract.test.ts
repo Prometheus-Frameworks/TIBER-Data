@@ -1113,6 +1113,87 @@ describe('round six: a successful acquisition is never excused by its access lab
   });
 });
 
+describe('round seven: source_unavailable requires proven non-acquisition', () => {
+  const P4 = () => mutable('positive', 'p4_rights_blocked_missing_component.json');
+
+  function unavailableRow(
+    acquisition: RbContactEvasionAcquisitionMethod,
+  ): RbContactEvasionObservationsV0 {
+    const artifact = P4();
+    const observation = artifact.observations[0];
+    observation.measurement.missingness_reason = 'source_unavailable';
+    observation.source.access_class = 'unavailable';
+    observation.source.acquisition_method = acquisition;
+    observation.source.permissions = {
+      attribution: 'not_required',
+      retention_and_reproduction: 'permitted',
+      redistribution_and_display: 'permitted',
+      automated_access: 'permitted',
+    };
+    return artifact;
+  }
+
+  it.each(['automated_ingestion', 'manual_citation', 'synthetic_fixture'] as const)(
+    'a successful "%s" acquisition cannot blame an unavailable source',
+    (acquisition) => {
+      expect(evaluate(unavailableRow(acquisition)).reason_codes).toEqual([
+        'MISSINGNESS_REASON_UNSUPPORTED',
+      ]);
+    },
+  );
+
+  it('the unavailable + not_acquired + source_unavailable control stays valid', () => {
+    expect(evaluate(unavailableRow('not_acquired')).violations).toEqual([]);
+  });
+});
+
+describe('cross-product: access class x all acquisition modes for source_unavailable', () => {
+  const accessClasses = rbContactEvasionSourceAccessClassSchema.options;
+  const acquisitions: RbContactEvasionAcquisitionMethod[] = [
+    'automated_ingestion',
+    'manual_citation',
+    'synthetic_fixture',
+    'not_acquired',
+  ];
+  const permissionVariants = [
+    ['all_permitted', 'permitted'],
+    ['automation_prohibited', 'prohibited'],
+  ] as const;
+
+  for (const accessClass of accessClasses) {
+    for (const acquisition of acquisitions) {
+      for (const [variantName, automation] of permissionVariants) {
+        const expected: RbContactEvasionReasonCode[] = [];
+        if (acquisition === 'automated_ingestion' && automation !== 'permitted') {
+          expected.push('ACQUISITION_MODE_PERMISSION_INCOMPATIBLE');
+        }
+        if (!(accessClass === 'unavailable' && acquisition === 'not_acquired')) {
+          expected.push('MISSINGNESS_REASON_UNSUPPORTED');
+        }
+        expected.sort();
+        it(`${accessClass} / ${acquisition} / ${variantName} -> ${
+          expected.length === 0 ? 'valid' : expected.join(',')
+        }`, () => {
+          const artifact = mutable('positive', 'p4_rights_blocked_missing_component.json');
+          const observation = artifact.observations[0];
+          observation.measurement.missingness_reason = 'source_unavailable';
+          observation.source.access_class = accessClass;
+          observation.source.acquisition_method = acquisition;
+          observation.source.permissions = {
+            attribution: 'not_required',
+            retention_and_reproduction: 'permitted',
+            redistribution_and_display: 'permitted',
+            automated_access: automation,
+          };
+          const report = evaluate(artifact);
+          expect(report.shape_valid).toBe(true);
+          expect(report.reason_codes).toEqual(expected);
+        });
+      }
+    }
+  }
+});
+
 describe('cross-product: access class x all acquisition modes x permission variant for rights_blocked', () => {
   const accessClasses = rbContactEvasionSourceAccessClassSchema.options;
   const acquisitions: RbContactEvasionAcquisitionMethod[] = [
@@ -1243,6 +1324,7 @@ describe('cross-product: missingness reason x eligible count x source state', ()
       observation.source.acquisition_method = 'not_acquired';
     } else if (reason === 'source_unavailable') {
       observation.source.access_class = 'unavailable';
+      observation.source.acquisition_method = 'not_acquired';
     }
     return buildArtifact([observation]);
   }
@@ -1255,7 +1337,7 @@ describe('cross-product: missingness reason x eligible count x source state', ()
         expected = eligible === 12 ? [] : ['BELOW_MINIMUM_SAMPLE_UNPROVABLE'];
       } else if (eligible === null) {
         expected = [];
-      } else if (reason === 'rights_blocked') {
+      } else if (reason === 'rights_blocked' || reason === 'source_unavailable') {
         // A retained count under a not_acquired source is doubly wrong: the
         // count is inadmissible for the reason AND incoherent with the
         // declared non-acquisition.

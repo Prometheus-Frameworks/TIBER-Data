@@ -124,7 +124,7 @@ rejected even when the emitted rate is arithmetically consistent with it.
 | a `below_minimum_sample` claim must be provable and true: rate metric, count present, count below the code-owned bar | contract + code-owned rule | `BELOW_MINIMUM_SAMPLE_UNPROVABLE` |
 | a below-minimum claim outside `fixture_only` has no admitted rule to prove against | contract | `MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION` |
 | `rights_blocked` requires a state that blocks the action the claim is about, and `acquisition_method` records what actually happened — a declared successful acquisition is never excused by its access label. Two supporting states: a non-permitted retention disposition (independently sufficient — an obtained value cannot be kept), or a rights-restricting access class (`licensed_or_gated` / `reference_only`) **together with** `acquisition_method: "not_acquired"`, the one state proving acquisition did not occur. `unavailable` access belongs to `source_unavailable` and never doubles as a rights cause; `unknown` access proves nothing affirmative (rights uncertainty is an unknown retention disposition); automation and redistribution/display restrictions never support the claim | contract | `MISSINGNESS_REASON_UNSUPPORTED` |
-| `source_unavailable` requires `access_class: "unavailable"` | contract | `MISSINGNESS_REASON_UNSUPPORTED` |
+| `source_unavailable` requires **both** `access_class: "unavailable"` and `acquisition_method: "not_acquired"` — a measurement cannot be absent for unavailability while the row declares its material was successfully acquired. Scoped to the missingness claim: no global unavailable ⇒ not-acquired rule is imposed, because current semantics do not prove a source acquired earlier (e.g. a retained snapshot) can never later be declared unavailable | contract | `MISSINGNESS_REASON_UNSUPPORTED` |
 | every stored exact numeric fact — a retained eligible count included — participates in retention, attribution, and acquisition coherence | contract | `STORED_EXACT_VALUE_REQUIRES_RETENTION` / `ATTRIBUTION_METADATA_MISSING` / `ACQUISITION_MODE_INCOHERENT` |
 
 `not_measured` and `definition_incompatible` assert facts about what the source
@@ -446,11 +446,11 @@ checkable claims.
 | N48 | `n48_minimum_sample_rule_not_applicable.json` | `MINIMUM_SAMPLE_RULE_NOT_APPLICABLE` |
 | N49 | `n49_material_kind_incompatible_with_evidence_class.json` | `MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS` |
 
-Reshaped in the action-sensitive rights round: **N44** now isolates the
-inadmissible-count invariant via `source_unavailable` (access `unavailable`,
-count retained), because under the full rights model a `rights_blocked` row
-retaining a count always trips a second rule as well — the reshape keeps one
-fixture, one reason without weakening the contract.
+Reshaped as the missingness model tightened (twice): **N44** now isolates the
+inadmissible-count invariant via `not_measured` — the one reason with no
+source-state coupling — because every state-coupled reason (`rights_blocked`,
+then `source_unavailable`) that retains a count also trips its own state rule.
+The reshape keeps one fixture, one reason without weakening the contract.
 
 Reshaped in the missingness round, minimally: non-rate fixtures now carry
 `minimum_sample_rule_id: null` (the field became nullable — a rule id on a
