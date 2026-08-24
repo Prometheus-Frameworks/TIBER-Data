@@ -6,8 +6,8 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "p2-forced-missed-tackles-count",
-      "mechanism_id": "contact_avoidance",
+      "observation_id": "n29-forty-relabeled-rushing",
+      "mechanism_id": "speed",
       "evidence_class": "direct",
       "identity": {
         "gsis_id": "00-0000001",
@@ -43,26 +43,26 @@
         "artifact_generated_at": "artifact_build_clock"
       },
       "metric": {
-        "metric_id": "forced_missed_tackles_count",
-        "source_native_metric_name": "forced missed tackles (rushing)",
+        "metric_id": "forty_yard_dash_seconds",
+        "source_native_metric_name": "40-yard dash (electronic)",
         "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
         "definition_version": "synthetic-def-2024.1",
-        "unit": "forced_missed_tackles",
-        "value_kind": "count",
-        "directionality": "higher_is_more_of_mechanism",
+        "unit": "seconds",
+        "value_kind": "duration_seconds",
+        "directionality": "lower_is_more_of_mechanism",
         "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
         "inclusion_exclusion_rules": [
-          "rushing attempts only"
+          "single pre-draft testing trial"
         ],
         "combined_component_disclosure": null
       },
       "measurement": {
         "status": "observed",
         "missingness_reason": null,
-        "value": 62,
+        "value": 4.55,
         "numerator": null,
         "denominator": null,
-        "eligible_opportunities": null
+        "eligible_opportunities": 1
       },
       "cohort_scope": null,
       "transform": null,
@@ -95,11 +95,11 @@
       },
       "caveat_ids": [
         "synthetic_fixture_value",
-        "forced_missed_tackle_definitions_differ_by_source"
+        "historical_testing_not_current_form"
       ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "raw count with no denominator; it is not a rate and must not be compared against any per-opportunity rate"
+        "negative fixture: a 40-yard dash relabeled as a rushing opportunity observation"
       ]
     }
   ]

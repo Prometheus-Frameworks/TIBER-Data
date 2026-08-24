@@ -1,6 +1,6 @@
 {
   "artifact_id": "rb_contact_evasion_observations_v0",
-  "schema_version": "rb_contact_evasion_observations_v0.2.0",
+  "schema_version": "rb_contact_evasion_observations_v0.3.0",
   "artifact_position": "fixture_only",
   "generated_at": "2026-08-24T00:00:00+00:00",
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
@@ -71,7 +71,8 @@
         "product": "synthetic_rushing_contact_summary",
         "snapshot_id": "synthetic-snapshot-2025-01-07",
         "access_class": "open_and_ingestible",
-        "acquisition_method": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "acquisition_method": "synthetic_fixture",
+        "acquisition_notes": "in-repository synthetic contract fixture; no external source was accessed to produce it",
         "material_kind": "measured_observation",
         "supported_opportunity_types": [
           "rush_attempt",
@@ -86,11 +87,16 @@
           "redistribution_and_display": "permitted",
           "automated_access": "permitted"
         },
+        "attribution_text": "synthetic attribution statement for example provider (contract fixture)",
         "content_digest": null,
         "promotable": false,
         "provenance_mode": "fixture",
         "superseded_by_snapshot_id": null
       },
+      "caveat_ids": [
+        "synthetic_fixture_value",
+        "historical_testing_not_current_form"
+      ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
         "historical athletic testing and live in-game movement are different evidence classes; a timed 40 is not current in-game elusiveness"

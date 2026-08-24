@@ -72,13 +72,34 @@ MANDATED_NEGATIVE_FIXTURES = {
 
 # N16-N28 were added in the review-repair round: one fixture per escape the first
 # exact-head review reproduced against the public evaluator.
+# N29-N42 were added in the convergence round: one fixture per escape family
+# from the second exact-head review.
+CONVERGENCE_NEGATIVE_FIXTURES = {
+    "n29_metric_opportunity_class_incompatible.json": "METRIC_OPPORTUNITY_CLASS_INCOMPATIBLE",
+    "n30_canonical_definition_contradicted.json": "CANONICAL_DEFINITION_CONTRADICTED",
+    "n31_transform_composition_incomplete.json": "TRANSFORM_COMPOSITION_INCOMPLETE",
+    "n32_required_caveat_missing.json": "REQUIRED_CAVEAT_MISSING",
+    "n33_eligible_opportunities_denominator_mismatch.json": (
+        "ELIGIBLE_OPPORTUNITIES_DENOMINATOR_MISMATCH"
+    ),
+    "n34_measurement_numeric_domain_violation.json": "MEASUREMENT_NUMERIC_DOMAIN_VIOLATION",
+    "n35_rate_components_on_non_rate_metric.json": "RATE_COMPONENTS_ON_NON_RATE_METRIC",
+    "n36_clock_order_invalid_across_null.json": "CLOCK_ORDER_INVALID",
+    "n37_acquisition_mode_permission_incompatible.json": (
+        "ACQUISITION_MODE_PERMISSION_INCOMPATIBLE"
+    ),
+    "n38_attribution_metadata_missing.json": "ATTRIBUTION_METADATA_MISSING",
+    "n39_content_digest_malformed.json": "CONTENT_DIGEST_MALFORMED",
+    "n40_window_scope_incoherent.json": "WINDOW_SCOPE_INCOHERENT",
+    "n41_transform_requires_derived_evidence.json": "TRANSFORM_REQUIRES_DERIVED_EVIDENCE",
+    "n42_acquisition_mode_incoherent.json": "ACQUISITION_MODE_INCOHERENT",
+}
+
 SUPPLEMENTARY_NEGATIVE_FIXTURES = {
     "n16_promotable_without_permissions.json": (
         "SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_PROMOTABLE"
     ),
-    "n17_direct_observation_without_retention.json": (
-        "SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_EVIDENCE_CLASS"
-    ),
+    "n17_direct_observation_without_retention.json": "STORED_EXACT_VALUE_REQUIRES_RETENTION",
     "n18_snapshot_without_content_digest.json": "SNAPSHOT_WITHOUT_CONTENT_DIGEST",
     "n19_duplicate_observation_id.json": "DUPLICATE_OBSERVATION_ID",
     "n20_duplicate_observation_grain.json": "DUPLICATE_OBSERVATION_GRAIN",
@@ -96,7 +117,11 @@ SUPPLEMENTARY_NEGATIVE_FIXTURES = {
     ),
 }
 
-NEGATIVE_FIXTURES = {**MANDATED_NEGATIVE_FIXTURES, **SUPPLEMENTARY_NEGATIVE_FIXTURES}
+NEGATIVE_FIXTURES = {
+    **MANDATED_NEGATIVE_FIXTURES,
+    **SUPPLEMENTARY_NEGATIVE_FIXTURES,
+    **CONVERGENCE_NEGATIVE_FIXTURES,
+}
 
 MECHANISMS = [
     "speed",
@@ -125,6 +150,22 @@ CLOCK_PROVENANCE = [
 PERMISSION_DISPOSITIONS = ["permitted", "prohibited", "unknown"]
 ATTRIBUTION_DISPOSITIONS = ["required", "not_required", "unknown"]
 MINIMUM_SAMPLE_RULE_ID = "rb_contact_evasion_fixture_only_minimum_sample_v0"
+CAVEAT_IDS = [
+    "synthetic_fixture_value",
+    "historical_testing_not_current_form",
+    "explosive_outcome_not_speed_or_agility",
+    "yac_context_and_definition_dependent",
+    "forced_missed_tackle_definitions_differ_by_source",
+    "cross_window_not_comparable",
+    "combined_touch_denominator_disclosed",
+    "snapshot_superseded",
+]
+ACQUISITION_METHODS = [
+    "automated_ingestion",
+    "manual_citation",
+    "synthetic_fixture",
+    "not_acquired",
+]
 REQUIRED_CLOCKS = [
     "window_start",
     "window_end",
@@ -277,6 +318,24 @@ def test_schema_closes_the_governance_vocabularies():
     assert defs["clockProvenance"]["enum"] == CLOCK_PROVENANCE
     assert defs["permissionDisposition"]["enum"] == PERMISSION_DISPOSITIONS
     assert defs["attributionDisposition"]["enum"] == ATTRIBUTION_DISPOSITIONS
+    assert defs["caveatId"]["enum"] == CAVEAT_IDS
+    assert defs["acquisitionMethod"]["enum"] == ACQUISITION_METHODS
+
+
+def test_schema_closes_acquisition_and_requires_caveat_and_attribution_slots():
+    """The convergence round closed acquisition to an enum and added the caveat
+    and attribution surfaces; the schema must require them structurally."""
+    defs = load_schema()["$defs"]
+    assert "acquisition_notes" in defs["source"]["required"]
+    assert "attribution_text" in defs["source"]["required"]
+    assert "caveat_ids" in defs["observation"]["required"]
+    payload = load_fixture("positive", "p1_complete_derived_explosiveness_rate.json")
+    mutated = copy.deepcopy(payload)
+    mutated["observations"][0]["source"]["acquisition_method"] = "scraped_it_myself"
+    assert schema_errors(mutated) != [], "acquisition_method must be a closed enum"
+    mutated = copy.deepcopy(payload)
+    mutated["observations"][0]["caveat_ids"] = ["made_up_caveat"]
+    assert schema_errors(mutated) != [], "caveat ids must be a closed enum"
 
 
 def test_schema_requires_separate_rights_dispositions_and_a_digest_slot():
@@ -402,6 +461,8 @@ def test_no_fixture_sits_in_a_promoted_position_and_no_export_path_is_touched():
         "n15_fixture_provenance_in_candidate_position.json",
         "n28_minimum_sample_rule_not_admitted_for_position.json",
     }
+    # No negative fixture sits at promoted position: the contract fails closed
+    # there outright (PROMOTED_POSITION_REQUIRES_PROMOTION_GATE).
     assert {name for name, pos in positions.items() if pos == "candidate"} == candidate_fixtures
     assert all(
         position == "fixture_only"

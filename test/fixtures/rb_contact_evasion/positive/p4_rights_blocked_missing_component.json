@@ -1,6 +1,6 @@
 {
   "artifact_id": "rb_contact_evasion_observations_v0",
-  "schema_version": "rb_contact_evasion_observations_v0.2.0",
+  "schema_version": "rb_contact_evasion_observations_v0.3.0",
   "artifact_position": "fixture_only",
   "generated_at": "2026-08-24T00:00:00+00:00",
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
@@ -71,7 +71,8 @@
         "product": "synthetic_tracking_movement_feed",
         "snapshot_id": "synthetic-gated-snapshot-2025-01-07",
         "access_class": "licensed_or_gated",
-        "acquisition_method": "not acquired; the source is gated and no access was attempted for this contract fixture",
+        "acquisition_method": "not_acquired",
+        "acquisition_notes": "not acquired; the source is gated and no access was attempted for this contract fixture",
         "material_kind": "measured_observation",
         "supported_opportunity_types": [
           "rush_attempt"
@@ -83,11 +84,15 @@
           "redistribution_and_display": "prohibited",
           "automated_access": "prohibited"
         },
+        "attribution_text": null,
         "content_digest": null,
         "promotable": false,
         "provenance_mode": "fixture",
         "superseded_by_snapshot_id": null
       },
+      "caveat_ids": [
+        "synthetic_fixture_value"
+      ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
         "agility evidence is rights-blocked and stays missing; it is never replaced by a default, a neutral value, or evidence from another mechanism"

@@ -6,7 +6,7 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "p2-forced-missed-tackles-count",
+      "observation_id": "n35-count-carrying-rate-components",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -60,8 +60,15 @@
         "status": "observed",
         "missingness_reason": null,
         "value": 62,
-        "numerator": null,
-        "denominator": null,
+        "numerator": {
+          "metric_id": "forced_missed_tackles_count",
+          "value": 62
+        },
+        "denominator": {
+          "metric_id": "rush_attempts",
+          "value": 203,
+          "opportunity_type": "rush_attempt"
+        },
         "eligible_opportunities": null
       },
       "cohort_scope": null,
@@ -99,7 +106,7 @@
       ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "raw count with no denominator; it is not a rate and must not be compared against any per-opportunity rate"
+        "negative fixture: a count metric carrying numerator and denominator rate components"
       ]
     }
   ]

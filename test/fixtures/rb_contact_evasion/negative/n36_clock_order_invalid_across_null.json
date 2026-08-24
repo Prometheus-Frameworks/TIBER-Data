@@ -6,7 +6,7 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "p2-forced-missed-tackles-count",
+      "observation_id": "n36-order-reversal-hidden-behind-null-clock",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -27,8 +27,8 @@
       "clocks": {
         "window_start": "2024-09-05T00:00:00+00:00",
         "window_end": "2025-01-06T00:00:00+00:00",
-        "source_observed_at": "2025-01-06T04:00:00+00:00",
-        "source_generated_at": "2025-01-07T12:00:00+00:00",
+        "source_observed_at": "2025-01-08T10:00:00+00:00",
+        "source_generated_at": null,
         "source_available_at": "2025-01-08T09:00:00+00:00",
         "retrieved_at": "2025-01-09T15:30:00+00:00",
         "artifact_generated_at": "2026-08-24T00:00:00+00:00"
@@ -37,32 +37,39 @@
         "window_start": "football_window",
         "window_end": "football_window",
         "source_observed_at": "source_supplied",
-        "source_generated_at": "source_supplied",
+        "source_generated_at": "not_supplied_by_source",
         "source_available_at": "source_supplied",
         "retrieved_at": "retrieval_clock",
         "artifact_generated_at": "artifact_build_clock"
       },
       "metric": {
-        "metric_id": "forced_missed_tackles_count",
-        "source_native_metric_name": "forced missed tackles (rushing)",
+        "metric_id": "forced_missed_tackles_per_rush_attempt",
+        "source_native_metric_name": "forced missed tackles per rushing attempt",
         "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
         "definition_version": "synthetic-def-2024.1",
-        "unit": "forced_missed_tackles",
-        "value_kind": "count",
+        "unit": "forced_missed_tackles_per_rush_attempt",
+        "value_kind": "rate",
         "directionality": "higher_is_more_of_mechanism",
         "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
         "inclusion_exclusion_rules": [
-          "rushing attempts only"
+          "rushing attempts only; kneel-downs and aborted plays excluded"
         ],
         "combined_component_disclosure": null
       },
       "measurement": {
         "status": "observed",
         "missingness_reason": null,
-        "value": 62,
-        "numerator": null,
-        "denominator": null,
-        "eligible_opportunities": null
+        "value": 0.305,
+        "numerator": {
+          "metric_id": "forced_missed_tackles_count",
+          "value": 62
+        },
+        "denominator": {
+          "metric_id": "rush_attempts",
+          "value": 203,
+          "opportunity_type": "rush_attempt"
+        },
+        "eligible_opportunities": 203
       },
       "cohort_scope": null,
       "transform": null,
@@ -99,7 +106,7 @@
       ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "raw count with no denominator; it is not a rate and must not be compared against any per-opportunity rate"
+        "negative fixture: observed-at after available-at, with the generation clock between them honestly null"
       ]
     }
   ]

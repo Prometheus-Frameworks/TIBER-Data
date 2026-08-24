@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tiber-data.local/schemas/rb_contact_evasion_observations_v0.schema.json",
   "title": "rb_contact_evasion_observations_v0 (contract, no artifact)",
-  "description": "Shape gate for the RB contact-evasion source-observation contract (TIBER-Data #234, Slice A). This is a CONTRACT ONLY: no builder, no candidate or promoted artifact, and no admitted source exists under it. One row is one canonical player x one exact football window x one metric definition x one source snapshot x one denominator definition. SEMANTIC AUTHORITY LIVES IN src/contracts/v1/rbContactEvasionObservationsV0.ts, NOT IN THE PAYLOAD: the code-owned metric dictionary fixes each metric's mechanism, value kind, unit, directionality, and expected numerator/denominator, and the code-owned minimum-sample rule fixes the governing threshold. A row restates some of those facts for inspectability and is rejected when it disagrees. The schema is a SHAPE gate: closed vocabularies, all seven clocks with declared origins, and unknown-field rejection. Cross-field contract rules (rate arithmetic and component identity, definition drift, clock substitution and availability, cohort scope, mechanism/metric binding, source-permission compatibility, artifact-level identity and grain uniqueness, incompatible transform inputs, fixture-provenance position) are enforced by the contract layer and are NOT expressible here. There is deliberately no score, composite, grade, ranking, percentile, tier, rating, neutral default, fantasy field, or 'elite' judgment anywhere in this schema, and none may be added.",
+  "description": "Shape gate for the RB contact-evasion source-observation contract (TIBER-Data #234, Slice A). This is a CONTRACT ONLY: no builder, no candidate or promoted artifact, and no admitted source exists under it. One row is one canonical player x one exact football window x one metric definition x one source snapshot x one denominator definition. SEMANTIC AUTHORITY LIVES IN src/contracts/v1/rbContactEvasionObservationsV0.ts, NOT IN THE PAYLOAD: the code-owned metric dictionary fixes each metric's mechanism, admissible opportunity classes, value kind, unit, directionality, numeric domain, canonical inclusion rules, required caveat identities, and rate composition; the code-owned minimum-sample rule fixes the governing threshold; clock origins, acquisition modes, and rights dispositions are closed vocabularies whose combinations are cross-checked. A row restates some of those facts for inspectability and is rejected when it disagrees. The schema is a SHAPE gate: closed vocabularies, all seven clocks with declared origins, and unknown-field rejection. Cross-field contract rules (descriptor agreement, canonical-definition identity, rate arithmetic and component identity, eligible-opportunity/denominator equality, numeric domains, definition drift, clock substitution/availability/total ordering, window-scope coherence, acquisition-permission compatibility, retention of stored values, attribution obligations, digest format, cohort scope, mechanism/metric binding, artifact-level identity and grain uniqueness, transform lineage, fixture-provenance and promoted-position fail-closed rules) are enforced by the contract layer and are NOT expressible here. There is deliberately no score, composite, grade, ranking, percentile, tier, rating, neutral default, fantasy field, or 'elite' judgment anywhere in this schema, and none may be added.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -18,7 +18,7 @@
       "const": "rb_contact_evasion_observations_v0"
     },
     "schema_version": {
-      "const": "rb_contact_evasion_observations_v0.2.0"
+      "const": "rb_contact_evasion_observations_v0.3.0"
     },
     "artifact_position": {
       "$ref": "#/$defs/artifactPosition"
@@ -387,7 +387,7 @@
           "$ref": "#/$defs/nonEmptyString"
         }
       },
-      "description": "Per-row metric declaration. value_kind, unit, and directionality are restated for inspectability but are NOT authoritative -- they must equal the code-owned descriptor. minimum_sample_rule_id names the governing rule; a row cannot state a threshold, only which rule binds it."
+      "description": "Per-row metric declaration. value_kind, unit, directionality, and inclusion_exclusion_rules are restated for inspectability but are NOT authoritative -- each must equal the code-owned descriptor (inclusion rules are the canonical definition verbatim). minimum_sample_rule_id names the governing rule; a row cannot state a threshold. source_native_metric_name / definition_ref / definition_version are the source-native identity: inspectable, drift-checked, never a redefinition of the canonical metric."
     },
     "numerator": {
       "type": "object",
@@ -548,10 +548,12 @@
         "snapshot_id",
         "access_class",
         "acquisition_method",
+        "acquisition_notes",
         "material_kind",
         "supported_opportunity_types",
         "rights_review_ref",
         "permissions",
+        "attribution_text",
         "content_digest",
         "promotable",
         "provenance_mode",
@@ -571,7 +573,7 @@
           "$ref": "#/$defs/sourceAccessClass"
         },
         "acquisition_method": {
-          "$ref": "#/$defs/nonEmptyString"
+          "$ref": "#/$defs/acquisitionMethod"
         },
         "material_kind": {
           "$ref": "#/$defs/sourceMaterialKind"
@@ -610,6 +612,20 @@
               "type": "null"
             }
           ]
+        },
+        "acquisition_notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "attribution_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
         }
       }
     },
@@ -630,6 +646,7 @@
         "cohort_scope",
         "transform",
         "source",
+        "caveat_ids",
         "warnings"
       ],
       "properties": {
@@ -688,6 +705,12 @@
         },
         "clock_provenance": {
           "$ref": "#/$defs/clockProvenanceMap"
+        },
+        "caveat_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/caveatId"
+          }
         }
       }
     },
@@ -791,6 +814,28 @@
           "$ref": "#/$defs/permissionDisposition"
         }
       }
+    },
+    "caveatId": {
+      "description": "Closed caveat identities. Required caveats are bound per metric in the code-owned dictionary; free-text warnings remain supplementary display context and carry no obligation.",
+      "enum": [
+        "synthetic_fixture_value",
+        "historical_testing_not_current_form",
+        "explosive_outcome_not_speed_or_agility",
+        "yac_context_and_definition_dependent",
+        "forced_missed_tackle_definitions_differ_by_source",
+        "cross_window_not_comparable",
+        "combined_touch_denominator_disclosed",
+        "snapshot_superseded"
+      ]
+    },
+    "acquisitionMethod": {
+      "description": "Closed acquisition modes, so the automation-permission cross-check binds to a machine-readable mode rather than to prose. Free-text context lives in acquisition_notes.",
+      "enum": [
+        "automated_ingestion",
+        "manual_citation",
+        "synthetic_fixture",
+        "not_acquired"
+      ]
     }
   }
 }

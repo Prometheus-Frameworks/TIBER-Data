@@ -6,7 +6,7 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "p2-forced-missed-tackles-count",
+      "observation_id": "n37-automated-ingestion-without-automation-permission",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -43,26 +43,33 @@
         "artifact_generated_at": "artifact_build_clock"
       },
       "metric": {
-        "metric_id": "forced_missed_tackles_count",
-        "source_native_metric_name": "forced missed tackles (rushing)",
+        "metric_id": "forced_missed_tackles_per_rush_attempt",
+        "source_native_metric_name": "forced missed tackles per rushing attempt",
         "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
         "definition_version": "synthetic-def-2024.1",
-        "unit": "forced_missed_tackles",
-        "value_kind": "count",
+        "unit": "forced_missed_tackles_per_rush_attempt",
+        "value_kind": "rate",
         "directionality": "higher_is_more_of_mechanism",
         "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
         "inclusion_exclusion_rules": [
-          "rushing attempts only"
+          "rushing attempts only; kneel-downs and aborted plays excluded"
         ],
         "combined_component_disclosure": null
       },
       "measurement": {
         "status": "observed",
         "missingness_reason": null,
-        "value": 62,
-        "numerator": null,
-        "denominator": null,
-        "eligible_opportunities": null
+        "value": 0.305,
+        "numerator": {
+          "metric_id": "forced_missed_tackles_count",
+          "value": 62
+        },
+        "denominator": {
+          "metric_id": "rush_attempts",
+          "value": 203,
+          "opportunity_type": "rush_attempt"
+        },
+        "eligible_opportunities": 203
       },
       "cohort_scope": null,
       "transform": null,
@@ -71,8 +78,8 @@
         "product": "synthetic_rushing_contact_summary",
         "snapshot_id": "synthetic-snapshot-2025-01-07",
         "access_class": "open_and_ingestible",
-        "acquisition_method": "synthetic_fixture",
-        "acquisition_notes": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "acquisition_method": "automated_ingestion",
+        "acquisition_notes": "synthetic simulation of an automated pull against a source that prohibits automation",
         "material_kind": "measured_observation",
         "supported_opportunity_types": [
           "rush_attempt",
@@ -85,12 +92,12 @@
           "attribution": "required",
           "retention_and_reproduction": "permitted",
           "redistribution_and_display": "permitted",
-          "automated_access": "permitted"
+          "automated_access": "prohibited"
         },
         "attribution_text": "synthetic attribution statement for example provider (contract fixture)",
         "content_digest": null,
         "promotable": false,
-        "provenance_mode": "fixture",
+        "provenance_mode": "live",
         "superseded_by_snapshot_id": null
       },
       "caveat_ids": [
@@ -99,7 +106,7 @@
       ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "raw count with no denominator; it is not a rate and must not be compared against any per-opportunity rate"
+        "negative fixture: automated ingestion declared against a source whose automated access is prohibited"
       ]
     }
   ]

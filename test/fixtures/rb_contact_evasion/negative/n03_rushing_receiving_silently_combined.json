@@ -1,12 +1,12 @@
 {
   "artifact_id": "rb_contact_evasion_observations_v0",
-  "schema_version": "rb_contact_evasion_observations_v0.2.0",
+  "schema_version": "rb_contact_evasion_observations_v0.3.0",
   "artifact_position": "fixture_only",
   "generated_at": "2026-08-24T00:00:00+00:00",
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "n03-touch-denominator-declared-rushing",
+      "observation_id": "n03-combined-class-without-disclosure",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -22,7 +22,7 @@
         "week": null,
         "games_included": 17,
         "window_completeness": "full_season",
-        "opportunity_class": "rushing"
+        "opportunity_class": "combined_rushing_receiving"
       },
       "clocks": {
         "window_start": "2024-09-05T00:00:00+00:00",
@@ -78,7 +78,8 @@
         "product": "synthetic_rushing_contact_summary",
         "snapshot_id": "synthetic-snapshot-2025-01-07",
         "access_class": "open_and_ingestible",
-        "acquisition_method": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "acquisition_method": "synthetic_fixture",
+        "acquisition_notes": "in-repository synthetic contract fixture; no external source was accessed to produce it",
         "material_kind": "measured_observation",
         "supported_opportunity_types": [
           "rush_attempt",
@@ -93,14 +94,19 @@
           "redistribution_and_display": "permitted",
           "automated_access": "permitted"
         },
+        "attribution_text": "synthetic attribution statement for example provider (contract fixture)",
         "content_digest": null,
         "promotable": false,
         "provenance_mode": "fixture",
         "superseded_by_snapshot_id": null
       },
+      "caveat_ids": [
+        "synthetic_fixture_value",
+        "forced_missed_tackle_definitions_differ_by_source"
+      ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "negative fixture: receiving opportunity folded into a row declared as rushing, with no disclosure"
+        "negative fixture: rushing and receiving combined into one touch denominator with no component disclosure"
       ]
     }
   ]
