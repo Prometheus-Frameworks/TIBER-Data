@@ -187,7 +187,7 @@ arithmetic: an equality heuristic was unsound in both directions and is gone.
 |---|---|---|
 | acquisition is a closed mode (`automated_ingestion` / `manual_citation` / `synthetic_fixture` / `not_acquired`); prose moves to `acquisition_notes` | contract vocabulary | shape |
 | `automated_ingestion` requires `automated_access: permitted` | contract | `ACQUISITION_MODE_PERMISSION_INCOMPATIBLE` |
-| `synthetic_fixture` acquisition requires fixture provenance; `not_acquired` forbids an observed value | contract | `ACQUISITION_MODE_INCOHERENT` |
+| acquisition × provenance coherence: `synthetic_fixture` requires fixture provenance; `not_acquired` forbids an observed value or retained count **and forbids snapshot provenance** — a retained, digest-pinned snapshot is acquired material and cannot coexist with proven non-acquisition. Live provenance stays compatible with `not_acquired` (a live source can be known but inaccessible), and fixture provenance keeps its documented modeling behavior | contract | `ACQUISITION_MODE_INCOHERENT` |
 | **every stored exact value requires retention permitted** — the action is gated, never the evidence label; `external_opinion` is not exempt | contract | `STORED_EXACT_VALUE_REQUIRES_RETENTION` |
 | attribution `required` + stored value requires `attribution_text` | contract | `ATTRIBUTION_METADATA_MISSING` |
 | promotable requires retention, redistribution, automation all permitted and attribution settled | contract | `SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_PROMOTABLE` |
@@ -197,14 +197,24 @@ arithmetic: an equality heuristic was unsound in both directions and is gone.
 | digest closed to `sha256` + 64 lowercase hex | contract | `CONTENT_DIGEST_MALFORMED` |
 | supersession never self-references | contract | `SUPERSESSION_SELF_REFERENCE` |
 
+The complete admitted acquisition-by-provenance matrix (all other cells are
+rejected by the contract layer):
+
+| acquisition \ provenance | `live` | `snapshot` | `fixture` |
+|---|---|---|---|
+| `automated_ingestion` | admitted | admitted (digest required) | admitted (modeled) |
+| `manual_citation` | admitted | admitted (digest required) | admitted (modeled) |
+| `synthetic_fixture` | rejected | rejected | admitted |
+| `not_acquired` | admitted — a live source known but inaccessible | **rejected** — a retained, digest-pinned snapshot is acquired material | admitted (modeled, e.g. P4) |
+
 Rights follow the action being taken. Storing an exact figure is retention of
 source material whether the row calls itself `direct` or `external_opinion`; a
 published claim whose exact value is stored is still stored. Automation
 permission binds to the closed acquisition mode, not to what the value is. The
-acquisition-provenance rule is deliberately one-directional: synthetically
-produced material can only be fixture provenance, but a fixture row may honestly
-*model* any acquisition mode (a synthetic row simulating a gated source declares
-`not_acquired`).
+acquisition-provenance rules bind in the admitted matrix above: synthetically
+produced material can only be fixture provenance, a retained snapshot can never
+be `not_acquired`, and a fixture row may honestly *model* any acquisition mode
+(a synthetic row simulating a gated source declares `not_acquired`).
 
 `unknown` dispositions fail closed everywhere. They are never read as
 permission.
@@ -523,6 +533,12 @@ Codes beyond the fixture corpus: `SCHEMA_SHAPE_INVALID`, `UNKNOWN_FIELD_PRESENT`
   rewordings are rejected. That is deliberate — prose equivalence judgments do
   not belong in a fail-closed gate — but it means admitting new wording is a
   contract change.
+- **A payload digest outside snapshot provenance does not prove acquisition.**
+  A non-null `content_digest` on a live or fixture row with `not_acquired` is
+  left representable: the digest definition does not prove the hash was
+  computed from bytes *this* artifact acquired (a provider-published checksum
+  recorded as reference is one honest case). Snapshot + digest, by contrast,
+  is unambiguous retained material, and is rejected with `not_acquired`.
 - **An automation-blocked or attempted-but-failed acquisition is
   unrepresentable.** `acquisition_method` records what happened — on a missing
   row, `not_acquired` is the one state proving acquisition did not occur —

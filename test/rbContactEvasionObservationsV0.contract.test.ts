@@ -1147,6 +1147,125 @@ describe('round seven: source_unavailable requires proven non-acquisition', () =
   });
 });
 
+describe('round eight: proven non-acquisition cannot hold a retained snapshot', () => {
+  const P4 = () => mutable('positive', 'p4_rights_blocked_missing_component.json');
+  const P5 = () => mutable('positive', 'p5_declared_snapshot_supersession.json');
+
+  function snapshotAttack(
+    reason: 'rights_blocked' | 'source_unavailable',
+    accessClass: 'licensed_or_gated' | 'unavailable',
+  ): RbContactEvasionObservationsV0 {
+    const artifact = P4();
+    const observation = artifact.observations[0];
+    observation.measurement.missingness_reason = reason;
+    observation.source.access_class = accessClass;
+    observation.source.acquisition_method = 'not_acquired';
+    observation.source.provenance_mode = 'snapshot';
+    observation.source.content_digest = { algorithm: 'sha256', value: 'a'.repeat(64) };
+    observation.source.permissions = {
+      attribution: 'not_required',
+      retention_and_reproduction: 'permitted',
+      redistribution_and_display: 'prohibited',
+      automated_access: 'permitted',
+    };
+    observation.caveat_ids = observation.caveat_ids.filter(
+      (caveat) => caveat !== 'synthetic_fixture_value',
+    );
+    return artifact;
+  }
+
+  it('K1: rights_blocked + not_acquired + digest-pinned snapshot is incoherent', () => {
+    expect(evaluate(snapshotAttack('rights_blocked', 'licensed_or_gated')).reason_codes).toEqual([
+      'ACQUISITION_MODE_INCOHERENT',
+    ]);
+  });
+
+  it('K2: source_unavailable + not_acquired + digest-pinned snapshot is incoherent', () => {
+    expect(evaluate(snapshotAttack('source_unavailable', 'unavailable')).reason_codes).toEqual([
+      'ACQUISITION_MODE_INCOHERENT',
+    ]);
+  });
+
+  it('every admitted snapshot acquisition mode stays representable with its digest', () => {
+    // automated_ingestion: P5 as committed.
+    expect(evaluate(P5()).violations).toEqual([]);
+    // manual_citation: the other admitted mode.
+    const manual = P5();
+    manual.observations[0].source.acquisition_method = 'manual_citation';
+    manual.observations[0].source.acquisition_notes =
+      'synthetic simulation of a manually cited snapshot';
+    expect(evaluate(manual).violations).toEqual([]);
+  });
+
+  it('live provenance stays compatible with not_acquired (known but inaccessible source)', () => {
+    const artifact = P4();
+    const observation = artifact.observations[0];
+    observation.source.provenance_mode = 'live';
+    observation.caveat_ids = observation.caveat_ids.filter(
+      (caveat) => caveat !== 'synthetic_fixture_value',
+    );
+    expect(evaluate(artifact).violations).toEqual([]);
+  });
+});
+
+describe('cross-product: acquisition method x provenance mode x digest x measurement status', () => {
+  const acquisitions: RbContactEvasionAcquisitionMethod[] = [
+    'automated_ingestion',
+    'manual_citation',
+    'synthetic_fixture',
+    'not_acquired',
+  ];
+  const provenances: RbContactEvasionProvenanceMode[] = ['live', 'snapshot', 'fixture'];
+  const digests = ['none', 'sha256'] as const;
+  const statuses = ['observed', 'missing'] as const;
+
+  for (const acquisition of acquisitions) {
+    for (const provenance of provenances) {
+      for (const digest of digests) {
+        for (const status of statuses) {
+          const expected = new Set<RbContactEvasionReasonCode>();
+          if (acquisition === 'synthetic_fixture' && provenance !== 'fixture') {
+            expected.add('ACQUISITION_MODE_INCOHERENT');
+          }
+          if (acquisition === 'not_acquired' && provenance === 'snapshot') {
+            expected.add('ACQUISITION_MODE_INCOHERENT');
+          }
+          if (acquisition === 'not_acquired' && status === 'observed') {
+            expected.add('ACQUISITION_MODE_INCOHERENT');
+          }
+          if (provenance === 'snapshot' && digest === 'none') {
+            expected.add('SNAPSHOT_WITHOUT_CONTENT_DIGEST');
+          }
+          const sorted = [...expected].sort();
+          it(`${acquisition} / ${provenance} / digest=${digest} / ${status} -> ${
+            sorted.length === 0 ? 'valid' : sorted.join(',')
+          }`, () => {
+            const observation = buildObservation('forced_missed_tackles_count', {
+              acquisitionMethod: acquisition,
+              provenanceMode: provenance,
+            });
+            observation.source.content_digest =
+              digest === 'sha256' ? { algorithm: 'sha256', value: 'b'.repeat(64) } : null;
+            if (status === 'missing') {
+              observation.measurement = {
+                status: 'missing',
+                missingness_reason: 'not_measured',
+                value: null,
+                numerator: null,
+                denominator: null,
+                eligible_opportunities: null,
+              };
+            }
+            const report = evaluate(buildArtifact([observation]));
+            expect(report.shape_valid).toBe(true);
+            expect(report.reason_codes).toEqual(sorted);
+          });
+        }
+      }
+    }
+  }
+});
+
 describe('cross-product: access class x all acquisition modes for source_unavailable', () => {
   const accessClasses = rbContactEvasionSourceAccessClassSchema.options;
   const acquisitions: RbContactEvasionAcquisitionMethod[] = [

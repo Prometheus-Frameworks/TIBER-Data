@@ -2055,6 +2055,20 @@ function checkSourceAndEvidence(
     });
   }
 
+  // Snapshot provenance IS retained snapshot material, and its required digest
+  // pins the payload bytes a rebuild would consume — while "not_acquired" is
+  // the one state proving acquisition did not occur. The two cannot coexist.
+  // Live provenance stays compatible with "not_acquired" (a live source can be
+  // known but inaccessible: nothing is retained), and fixture provenance keeps
+  // its documented modeling behavior.
+  if (source.provenance_mode === 'snapshot' && source.acquisition_method === 'not_acquired') {
+    push({
+      reason_code: 'ACQUISITION_MODE_INCOHERENT',
+      path: `${sourcePath}.acquisition_method`,
+      detail: 'acquisition_method "not_acquired" contradicts provenance_mode "snapshot"; a retained, digest-pinned snapshot is acquired material, and a row cannot prove non-acquisition while claiming to hold one',
+    });
+  }
+
   // Promotability requires every rights disposition to be affirmatively settled.
   if (source.promotable) {
     const blockers: Array<[string, string]> = [
