@@ -1,0 +1,81 @@
+{
+  "artifact_id": "rb_contact_evasion_observations_v0",
+  "schema_version": "rb_contact_evasion_observations_v0.1.0",
+  "artifact_position": "fixture_only",
+  "generated_at": "2026-08-24T00:00:00+00:00",
+  "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
+  "observations": [
+    {
+      "observation_id": "p4-agility-rights-blocked",
+      "mechanism_id": "agility_change_of_direction",
+      "evidence_class": "direct",
+      "identity": {
+        "gsis_id": "00-0000001",
+        "identity_resolution": "canonical_gsis_id",
+        "provider_player_id": "synthetic-provider-id-0001",
+        "display_name_non_authoritative": null
+      },
+      "scope": {
+        "position_at_window": "RB",
+        "season": 2024,
+        "season_type": "REG",
+        "week": null,
+        "games_included": 17,
+        "window_completeness": "full_season",
+        "opportunity_class": "rushing"
+      },
+      "clocks": {
+        "window_start": "2024-09-05T00:00:00+00:00",
+        "window_end": "2025-01-06T00:00:00+00:00",
+        "source_observed_at": "2025-01-06T04:00:00+00:00",
+        "source_generated_at": "2025-01-07T12:00:00+00:00",
+        "source_available_at": "2025-01-08T09:00:00+00:00",
+        "retrieved_at": "2025-01-09T15:30:00+00:00",
+        "artifact_generated_at": "2026-08-24T00:00:00+00:00"
+      },
+      "metric": {
+        "metric_id": "tracking_change_of_direction_events_per_rush_attempt",
+        "source_native_metric_name": "tracked change-of-direction events per rushing attempt",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
+        "unit": "change_of_direction_events_per_rush_attempt",
+        "value_kind": "rate",
+        "directionality": "higher_is_more_of_mechanism",
+        "minimum_eligible_opportunities": 40,
+        "inclusion_exclusion_rules": [
+          "rushing attempts only"
+        ],
+        "combined_component_disclosure": null
+      },
+      "measurement": {
+        "status": "missing",
+        "missingness_reason": "rights_blocked",
+        "value": null,
+        "numerator": null,
+        "denominator": null,
+        "eligible_opportunities": null
+      },
+      "cohort_scope": null,
+      "transform": null,
+      "source": {
+        "owner": "example_gated_provider",
+        "product": "synthetic_tracking_movement_feed",
+        "snapshot_id": "synthetic-gated-snapshot-2025-01-07",
+        "access_class": "licensed_or_gated",
+        "acquisition_method": "not acquired; the source is gated and no access was attempted for this contract fixture",
+        "material_kind": "measured_observation",
+        "supported_opportunity_types": [
+          "rush_attempt"
+        ],
+        "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "promotable": false,
+        "provenance_mode": "fixture",
+        "superseded_by_snapshot_id": null
+      },
+      "warnings": [
+        "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
+        "agility evidence is rights-blocked and stays missing; it is never replaced by a default, a neutral value, or evidence from another mechanism"
+      ]
+    }
+  ]
+}

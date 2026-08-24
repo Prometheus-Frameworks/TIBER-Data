@@ -1,0 +1,241 @@
+{
+  "artifact_id": "rb_contact_evasion_observations_v0",
+  "schema_version": "rb_contact_evasion_observations_v0.1.0",
+  "artifact_position": "fixture_only",
+  "generated_at": "2026-08-24T00:00:00+00:00",
+  "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
+  "observations": [
+    {
+      "observation_id": "n12-forty-yard-dash-as-contact-avoidance",
+      "mechanism_id": "contact_avoidance",
+      "evidence_class": "direct",
+      "identity": {
+        "gsis_id": "00-0000001",
+        "identity_resolution": "canonical_gsis_id",
+        "provider_player_id": "synthetic-provider-id-0001",
+        "display_name_non_authoritative": null
+      },
+      "scope": {
+        "position_at_window": "RB",
+        "season": 2024,
+        "season_type": "PRE",
+        "week": null,
+        "games_included": 0,
+        "window_completeness": "single_week",
+        "opportunity_class": "athletic_testing"
+      },
+      "clocks": {
+        "window_start": "2024-02-29T00:00:00+00:00",
+        "window_end": "2024-03-01T00:00:00+00:00",
+        "source_observed_at": "2024-03-01T18:00:00+00:00",
+        "source_generated_at": "2024-03-02T12:00:00+00:00",
+        "source_available_at": "2024-03-03T09:00:00+00:00",
+        "retrieved_at": "2024-03-04T15:30:00+00:00",
+        "artifact_generated_at": "2026-08-24T00:00:00+00:00"
+      },
+      "metric": {
+        "metric_id": "forty_yard_dash_seconds",
+        "source_native_metric_name": "40-yard dash (electronic)",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
+        "unit": "seconds",
+        "value_kind": "duration_seconds",
+        "directionality": "lower_is_more_of_mechanism",
+        "minimum_eligible_opportunities": 1,
+        "inclusion_exclusion_rules": [
+          "single pre-draft testing trial"
+        ],
+        "combined_component_disclosure": null
+      },
+      "measurement": {
+        "status": "observed",
+        "missingness_reason": null,
+        "value": 4.55,
+        "numerator": null,
+        "denominator": null,
+        "eligible_opportunities": 1
+      },
+      "cohort_scope": null,
+      "transform": null,
+      "source": {
+        "owner": "example_open_provider",
+        "product": "synthetic_rushing_contact_summary",
+        "snapshot_id": "synthetic-snapshot-2025-01-07",
+        "access_class": "open_and_ingestible",
+        "acquisition_method": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "material_kind": "measured_observation",
+        "supported_opportunity_types": [
+          "rush_attempt",
+          "contact_event",
+          "touch",
+          "testing_trial"
+        ],
+        "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "promotable": false,
+        "provenance_mode": "fixture",
+        "superseded_by_snapshot_id": null
+      },
+      "warnings": [
+        "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
+        "negative fixture: a timed 40 offered as contact-avoidance evidence"
+      ]
+    },
+    {
+      "observation_id": "n12-long-gain-as-explosiveness",
+      "mechanism_id": "explosiveness",
+      "evidence_class": "direct",
+      "identity": {
+        "gsis_id": "00-0000001",
+        "identity_resolution": "canonical_gsis_id",
+        "provider_player_id": "synthetic-provider-id-0001",
+        "display_name_non_authoritative": null
+      },
+      "scope": {
+        "position_at_window": "RB",
+        "season": 2024,
+        "season_type": "REG",
+        "week": null,
+        "games_included": 17,
+        "window_completeness": "full_season",
+        "opportunity_class": "rushing"
+      },
+      "clocks": {
+        "window_start": "2024-09-05T00:00:00+00:00",
+        "window_end": "2025-01-06T00:00:00+00:00",
+        "source_observed_at": "2025-01-06T04:00:00+00:00",
+        "source_generated_at": "2025-01-07T12:00:00+00:00",
+        "source_available_at": "2025-01-08T09:00:00+00:00",
+        "retrieved_at": "2025-01-09T15:30:00+00:00",
+        "artifact_generated_at": "2026-08-24T00:00:00+00:00"
+      },
+      "metric": {
+        "metric_id": "longest_rush_yards",
+        "source_native_metric_name": "longest rush of the season",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
+        "unit": "yards",
+        "value_kind": "count",
+        "directionality": "higher_is_more_of_mechanism",
+        "minimum_eligible_opportunities": 0,
+        "inclusion_exclusion_rules": [
+          "rushing attempts only; kneel-downs and aborted plays excluded"
+        ],
+        "combined_component_disclosure": null
+      },
+      "measurement": {
+        "status": "observed",
+        "missingness_reason": null,
+        "value": 64,
+        "numerator": null,
+        "denominator": null,
+        "eligible_opportunities": null
+      },
+      "cohort_scope": null,
+      "transform": null,
+      "source": {
+        "owner": "example_open_provider",
+        "product": "synthetic_rushing_contact_summary",
+        "snapshot_id": "synthetic-snapshot-2025-01-07",
+        "access_class": "open_and_ingestible",
+        "acquisition_method": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "material_kind": "measured_observation",
+        "supported_opportunity_types": [
+          "rush_attempt",
+          "contact_event",
+          "touch",
+          "testing_trial"
+        ],
+        "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "promotable": false,
+        "provenance_mode": "fixture",
+        "superseded_by_snapshot_id": null
+      },
+      "warnings": [
+        "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
+        "negative fixture: one long gain offered as an explosiveness mechanism observation"
+      ]
+    },
+    {
+      "observation_id": "n12-yards-per-carry-as-contact-survival",
+      "mechanism_id": "contact_survival",
+      "evidence_class": "direct",
+      "identity": {
+        "gsis_id": "00-0000001",
+        "identity_resolution": "canonical_gsis_id",
+        "provider_player_id": "synthetic-provider-id-0001",
+        "display_name_non_authoritative": null
+      },
+      "scope": {
+        "position_at_window": "RB",
+        "season": 2024,
+        "season_type": "REG",
+        "week": null,
+        "games_included": 17,
+        "window_completeness": "full_season",
+        "opportunity_class": "rushing"
+      },
+      "clocks": {
+        "window_start": "2024-09-05T00:00:00+00:00",
+        "window_end": "2025-01-06T00:00:00+00:00",
+        "source_observed_at": "2025-01-06T04:00:00+00:00",
+        "source_generated_at": "2025-01-07T12:00:00+00:00",
+        "source_available_at": "2025-01-08T09:00:00+00:00",
+        "retrieved_at": "2025-01-09T15:30:00+00:00",
+        "artifact_generated_at": "2026-08-24T00:00:00+00:00"
+      },
+      "metric": {
+        "metric_id": "yards_per_carry",
+        "source_native_metric_name": "rushing yards per carry",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
+        "unit": "yards_per_rush_attempt",
+        "value_kind": "rate",
+        "directionality": "higher_is_more_of_mechanism",
+        "minimum_eligible_opportunities": 40,
+        "inclusion_exclusion_rules": [
+          "rushing attempts only"
+        ],
+        "combined_component_disclosure": null
+      },
+      "measurement": {
+        "status": "observed",
+        "missingness_reason": null,
+        "value": 5.53,
+        "numerator": {
+          "metric_id": "rush_yards_total",
+          "value": 1122
+        },
+        "denominator": {
+          "metric_id": "rush_attempts",
+          "value": 203,
+          "opportunity_type": "rush_attempt"
+        },
+        "eligible_opportunities": 203
+      },
+      "cohort_scope": null,
+      "transform": null,
+      "source": {
+        "owner": "example_open_provider",
+        "product": "synthetic_rushing_contact_summary",
+        "snapshot_id": "synthetic-snapshot-2025-01-07",
+        "access_class": "open_and_ingestible",
+        "acquisition_method": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "material_kind": "measured_observation",
+        "supported_opportunity_types": [
+          "rush_attempt",
+          "contact_event",
+          "touch",
+          "testing_trial"
+        ],
+        "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "promotable": false,
+        "provenance_mode": "fixture",
+        "superseded_by_snapshot_id": null
+      },
+      "warnings": [
+        "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
+        "negative fixture: yards per carry offered as contact-survival evidence"
+      ]
+    }
+  ]
+}
