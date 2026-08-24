@@ -6,7 +6,7 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "n33-sample-gate-cleared-by-unrelated-count",
+      "observation_id": "n47-synthetic-caveat-on-live-provenance",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -59,14 +59,14 @@
       "measurement": {
         "status": "observed",
         "missingness_reason": null,
-        "value": 5.2,
+        "value": 0.305,
         "numerator": {
           "metric_id": "forced_missed_tackles_count",
-          "value": 26
+          "value": 62
         },
         "denominator": {
           "metric_id": "rush_attempts",
-          "value": 5,
+          "value": 203,
           "opportunity_type": "rush_attempt"
         },
         "eligible_opportunities": 203
@@ -78,8 +78,8 @@
         "product": "synthetic_rushing_contact_summary",
         "snapshot_id": "synthetic-snapshot-2025-01-07",
         "access_class": "open_and_ingestible",
-        "acquisition_method": "synthetic_fixture",
-        "acquisition_notes": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "acquisition_method": "automated_ingestion",
+        "acquisition_notes": "synthetic simulation of a live automated pull",
         "material_kind": "measured_observation",
         "supported_opportunity_types": [
           "rush_attempt",
@@ -97,7 +97,7 @@
         "attribution_text": "synthetic attribution statement for example provider (contract fixture)",
         "content_digest": null,
         "promotable": false,
-        "provenance_mode": "fixture",
+        "provenance_mode": "live",
         "superseded_by_snapshot_id": null
       },
       "caveat_ids": [
@@ -106,7 +106,7 @@
       ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "negative fixture: a five-attempt rate clearing the sample gate with an unrelated eligible-opportunity count"
+        "negative fixture: a synthetic-value caveat declared on a row whose provenance says live"
       ]
     }
   ]

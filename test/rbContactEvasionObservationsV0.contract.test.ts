@@ -190,7 +190,8 @@ function buildObservation(metricId: string, options: BuildOptions = {}): RbConta
       unit: descriptor.unit,
       value_kind: descriptor.value_kind,
       directionality: descriptor.directionality,
-      minimum_sample_rule_id: RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE_ID,
+      minimum_sample_rule_id:
+        descriptor.value_kind === 'rate' ? RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE_ID : null,
       inclusion_exclusion_rules: [...descriptor.canonical_inclusion_rules],
       combined_component_disclosure:
         opportunityClass === 'combined_rushing_receiving'
@@ -254,6 +255,9 @@ function buildObservation(metricId: string, options: BuildOptions = {}): RbConta
     },
     caveat_ids: [
       ...(provenanceMode === 'fixture' ? (['synthetic_fixture_value'] as const) : []),
+      ...(opportunityClass === 'combined_rushing_receiving'
+        ? (['combined_touch_denominator_disclosed'] as const)
+        : []),
       ...descriptor.required_caveat_ids,
     ],
     warnings: [
@@ -292,6 +296,7 @@ const MANDATED_POSITIVE: ReadonlyArray<[string, string]> = [
 
 const SUPPLEMENTARY_POSITIVE: ReadonlyArray<[string, string]> = [
   ['P8 absent source clock stays null', 'p8_absent_source_clock_stays_null.json'],
+  ['P9 below-minimum sample honestly missing and provable', 'p9_below_minimum_sample_provable.json'],
 ];
 
 const MANDATED_NEGATIVE: ReadonlyArray<[string, string, RbContactEvasionReasonCode]> = [
@@ -345,8 +350,24 @@ const CONVERGENCE_NEGATIVE: ReadonlyArray<[string, string, RbContactEvasionReaso
   ['N42 synthetic acquisition with live provenance', 'n42_acquisition_mode_incoherent.json', 'ACQUISITION_MODE_INCOHERENT'],
 ];
 
+/** N43-N49: the missingness-and-declaration round, one fixture per new rule. */
+const MISSINGNESS_NEGATIVE: ReadonlyArray<[string, string, RbContactEvasionReasonCode]> = [
+  ['N43 rights-blocked claim against a fully open source', 'n43_missingness_reason_unsupported.json', 'MISSINGNESS_REASON_UNSUPPORTED'],
+  ['N44 missing row retaining an unjustified eligible count', 'n44_missingness_eligible_count_inadmissible.json', 'MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE'],
+  ['N45 below-minimum claim without its proving count', 'n45_below_minimum_sample_unprovable.json', 'BELOW_MINIMUM_SAMPLE_UNPROVABLE'],
+  ['N46 combined disclosure naming wrong components', 'n46_combined_component_disclosure_contradicted.json', 'COMBINED_COMPONENT_DISCLOSURE_CONTRADICTED'],
+  ['N47 synthetic caveat on live provenance', 'n47_inapplicable_caveat_declared.json', 'INAPPLICABLE_CAVEAT_DECLARED'],
+  ['N48 count metric naming a sample rule', 'n48_minimum_sample_rule_not_applicable.json', 'MINIMUM_SAMPLE_RULE_NOT_APPLICABLE'],
+  ['N49 derived publication labeled a direct observation', 'n49_material_kind_incompatible_with_evidence_class.json', 'MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS'],
+];
+
 const ALL_POSITIVE = [...MANDATED_POSITIVE, ...SUPPLEMENTARY_POSITIVE];
-const ALL_NEGATIVE = [...MANDATED_NEGATIVE, ...SECOND_ROUND_NEGATIVE, ...CONVERGENCE_NEGATIVE];
+const ALL_NEGATIVE = [
+  ...MANDATED_NEGATIVE,
+  ...SECOND_ROUND_NEGATIVE,
+  ...CONVERGENCE_NEGATIVE,
+  ...MISSINGNESS_NEGATIVE,
+];
 
 describe('rb_contact_evasion_observations_v0 positive fixtures', () => {
   it('covers exactly the positive corpus with no unlisted fixtures', () => {
@@ -778,6 +799,289 @@ describe('rb_contact_evasion_observations_v0 review-round escapes, at the public
       expect(evaluate(artifact).reason_codes).toEqual(['WINDOW_SCOPE_INCOHERENT']);
     });
   });
+});
+
+/**
+ * Round-four escape locks: the missingness-and-declaration findings. Each
+ * exact attack reproduced by the third exact-head review is re-applied through
+ * the public evaluator.
+ */
+describe('round four: missingness and declarations were self-declaring', () => {
+  const P1 = () => mutable('positive', 'p1_complete_derived_explosiveness_rate.json');
+  const P2 = () => mutable('positive', 'p2_raw_count_without_denominator.json');
+  const P4 = () => mutable('positive', 'p4_rights_blocked_missing_component.json');
+  const P9 = () => mutable('positive', 'p9_below_minimum_sample_provable.json');
+
+  it('G1: a missing row cannot retain an eligible count without retention rights', () => {
+    // The reviewer's exact attack: rights_blocked, components nulled, eligible
+    // kept at 203, reference-only editorial source with retention prohibited.
+    const artifact = P1();
+    const observation = artifact.observations[0];
+    observation.measurement.status = 'missing';
+    observation.measurement.missingness_reason = 'rights_blocked';
+    observation.measurement.value = null;
+    observation.measurement.numerator = null;
+    observation.measurement.denominator = null;
+    observation.evidence_class = 'external_opinion';
+    observation.transform = null;
+    observation.source.access_class = 'reference_only';
+    observation.source.material_kind = 'editorial_opinion';
+    observation.source.acquisition_method = 'manual_citation';
+    observation.source.permissions.retention_and_reproduction = 'prohibited';
+    const report = evaluate(artifact);
+    expect(report.valid).toBe(false);
+    // The retained count is inadmissible under this reason AND is a stored
+    // exact fact requiring retention. Both rules bite; neither alone carried it.
+    expect(report.reason_codes).toContain('MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE');
+    expect(report.reason_codes).toContain('STORED_EXACT_VALUE_REQUIRES_RETENTION');
+  });
+
+  it('G1: eligible_opportunities participates in retention and attribution as a stored fact', () => {
+    const artifact = P9();
+    artifact.observations[0].source.permissions.retention_and_reproduction = 'prohibited';
+    expect(evaluate(artifact).reason_codes).toEqual(['STORED_EXACT_VALUE_REQUIRES_RETENTION']);
+
+    const attribution = P9();
+    attribution.observations[0].source.attribution_text = null;
+    expect(evaluate(attribution).reason_codes).toEqual(['ATTRIBUTION_METADATA_MISSING']);
+
+    const notAcquired = P9();
+    notAcquired.observations[0].source.acquisition_method = 'not_acquired';
+    notAcquired.observations[0].source.provenance_mode = 'fixture';
+    expect(evaluate(notAcquired).reason_codes).toEqual(['ACQUISITION_MODE_INCOHERENT']);
+  });
+
+  it('G1: below_minimum_sample stays expressible and provable (P9), and is policed', () => {
+    expect(evaluate(loadFixture('positive', 'p9_below_minimum_sample_provable.json')).violations).toEqual([]);
+
+    // No count -> unprovable.
+    const unprovable = P9();
+    unprovable.observations[0].measurement.eligible_opportunities = null;
+    expect(evaluate(unprovable).reason_codes).toEqual(['BELOW_MINIMUM_SAMPLE_UNPROVABLE']);
+
+    // Count meeting the bar -> disproven.
+    const disproven = P9();
+    disproven.observations[0].measurement.eligible_opportunities = 20;
+    expect(evaluate(disproven).reason_codes).toEqual(['BELOW_MINIMUM_SAMPLE_UNPROVABLE']);
+
+    // On a non-rate metric there is no gate to fall below.
+    const nonRate = P2();
+    nonRate.observations[0].measurement.status = 'missing';
+    nonRate.observations[0].measurement.missingness_reason = 'below_minimum_sample';
+    nonRate.observations[0].measurement.value = null;
+    expect(evaluate(nonRate).reason_codes).toEqual(['BELOW_MINIMUM_SAMPLE_UNPROVABLE']);
+
+    // Outside fixture_only the governing rule is not admitted, for claims as
+    // for observed rates.
+    const candidate = P9();
+    candidate.artifact_position = 'candidate';
+    candidate.observations[0].source.provenance_mode = 'live';
+    candidate.observations[0].source.acquisition_method = 'automated_ingestion';
+    candidate.observations[0].caveat_ids = candidate.observations[0].caveat_ids.filter(
+      (caveat) => caveat !== 'synthetic_fixture_value',
+    );
+    expect(evaluate(candidate).reason_codes).toEqual(['MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION']);
+  });
+
+  it('G1: missingness reasons are policed against the declared source state', () => {
+    // rights_blocked against a fully open, fully permitted source.
+    const openRights = P4();
+    openRights.observations[0].source = {
+      ...openRights.observations[0].source,
+      access_class: 'open_and_ingestible',
+      acquisition_method: 'synthetic_fixture',
+      permissions: {
+        attribution: 'not_required',
+        retention_and_reproduction: 'permitted',
+        redistribution_and_display: 'permitted',
+        automated_access: 'permitted',
+      },
+    };
+    expect(evaluate(openRights).reason_codes).toEqual(['MISSINGNESS_REASON_UNSUPPORTED']);
+
+    // source_unavailable without access_class "unavailable".
+    const unavailable = P4();
+    unavailable.observations[0].measurement.missingness_reason = 'source_unavailable';
+    expect(evaluate(unavailable).reason_codes).toEqual(['MISSINGNESS_REASON_UNSUPPORTED']);
+
+    // An unrelated eligible count under rights_blocked (state itself valid).
+    const withCount = P4();
+    withCount.observations[0].measurement.eligible_opportunities = 203;
+    const report = evaluate(withCount);
+    expect(report.reason_codes).toContain('MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE');
+  });
+
+  it('G2: a combined disclosure must restate the code-owned composition', () => {
+    const artifact = mutable('negative', 'n02_denominator_unsupported_by_source.json');
+    const observation = artifact.observations[0];
+    observation.source.supported_opportunity_types = ['rush_attempt', 'reception', 'touch'];
+    observation.metric.combined_component_disclosure = {
+      rushing_component_metric_id: 'testing_trials',
+      receiving_component_metric_id: 'testing_trials',
+      disclosure: 'components exist',
+    };
+    expect(evaluate(artifact).reason_codes).toEqual(['COMBINED_COMPONENT_DISCLOSURE_CONTRADICTED']);
+
+    // A disclosure with no combination to disclose is equally contradicted.
+    const uncombined = P1();
+    uncombined.observations[0].metric.combined_component_disclosure = {
+      rushing_component_metric_id: 'rush_attempts',
+      receiving_component_metric_id: 'receptions',
+      disclosure: 'nothing is combined here',
+    };
+    const report = evaluate(uncombined);
+    expect(report.reason_codes).toContain('COMBINED_COMPONENT_DISCLOSURE_CONTRADICTED');
+  });
+
+  it('G2: the combined caveat binds to the verified disclosure in both directions', () => {
+    // Disclosure present, caveat dropped -> required.
+    const missingCaveat = mutable('negative', 'n02_denominator_unsupported_by_source.json');
+    missingCaveat.observations[0].source.supported_opportunity_types = [
+      'rush_attempt',
+      'reception',
+      'touch',
+    ];
+    missingCaveat.observations[0].caveat_ids = missingCaveat.observations[0].caveat_ids.filter(
+      (caveat) => caveat !== 'combined_touch_denominator_disclosed',
+    );
+    expect(evaluate(missingCaveat).reason_codes).toEqual(['REQUIRED_CAVEAT_MISSING']);
+
+    // Caveat without a disclosure -> a false claim.
+    const falseClaim = P1();
+    falseClaim.observations[0].caveat_ids = [
+      ...falseClaim.observations[0].caveat_ids,
+      'combined_touch_denominator_disclosed',
+    ];
+    expect(evaluate(falseClaim).reason_codes).toEqual(['INAPPLICABLE_CAVEAT_DECLARED']);
+
+    // Same discipline for the supersession caveat.
+    const staleSupersession = P1();
+    staleSupersession.observations[0].caveat_ids = [
+      ...staleSupersession.observations[0].caveat_ids,
+      'snapshot_superseded',
+    ];
+    expect(evaluate(staleSupersession).reason_codes).toEqual(['INAPPLICABLE_CAVEAT_DECLARED']);
+  });
+
+  it('G3: no payload-invented sample rule validates on any value kind', () => {
+    // The reviewer's exact attack: a count naming "payload_invented_rule".
+    const invented = P2();
+    invented.observations[0].metric.minimum_sample_rule_id = 'payload_invented_rule';
+    expect(evaluate(invented).reason_codes).toEqual(['MINIMUM_SAMPLE_RULE_NOT_APPLICABLE']);
+
+    // Even the real code-owned rule is a false claim on a metric it does not govern.
+    const codeOwnedOnCount = P2();
+    codeOwnedOnCount.observations[0].metric.minimum_sample_rule_id =
+      RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE_ID;
+    expect(evaluate(codeOwnedOnCount).reason_codes).toEqual(['MINIMUM_SAMPLE_RULE_NOT_APPLICABLE']);
+
+    // A rate declaring null has abandoned the rule that governs it.
+    const rateNull = P1();
+    rateNull.observations[0].metric.minimum_sample_rule_id = null;
+    expect(evaluate(rateNull).reason_codes).toEqual(['MINIMUM_SAMPLE_RULE_NOT_CODE_OWNED']);
+  });
+
+  it('G3-adjacent: material kind bounds the evidence class, conservative only', () => {
+    const artifact = P1();
+    artifact.observations[0].source.material_kind = 'derived_publication';
+    artifact.observations[0].evidence_class = 'direct';
+    artifact.observations[0].transform = null;
+    expect(evaluate(artifact).reason_codes).toEqual(['MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS']);
+  });
+});
+
+describe('cross-product: material kind x evidence class', () => {
+  const materials = ['measured_observation', 'derived_publication', 'editorial_opinion'] as const;
+  const evidences: RbContactEvasionEvidenceClass[] = [
+    'direct',
+    'normalized',
+    'derived',
+    'external_opinion',
+  ];
+  const allowed: Record<string, readonly RbContactEvasionEvidenceClass[]> = {
+    measured_observation: ['direct', 'normalized', 'derived', 'external_opinion'],
+    derived_publication: ['normalized', 'derived', 'external_opinion'],
+    editorial_opinion: ['external_opinion'],
+  };
+  for (const material of materials) {
+    for (const evidence of evidences) {
+      const ok = allowed[material].includes(evidence);
+      it(`${material} x ${evidence} -> ${ok ? 'valid' : 'rejected semantically'}`, () => {
+        const observation = buildObservation('forced_missed_tackles_count', {
+          evidenceClass: evidence,
+        });
+        observation.source.material_kind = material;
+        const report = evaluate(buildArtifact([observation]));
+        expect(report.shape_valid).toBe(true);
+        if (ok) {
+          expect(report.violations).toEqual([]);
+        } else {
+          expect(report.reason_codes).toEqual(
+            material === 'editorial_opinion'
+              ? ['EXTERNAL_OPINION_LABELED_AS_OBSERVATION']
+              : ['MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS'],
+          );
+        }
+      });
+    }
+  }
+});
+
+describe('cross-product: missingness reason x eligible count x source state', () => {
+  const reasons = [
+    'rights_blocked',
+    'source_unavailable',
+    'below_minimum_sample',
+    'not_measured',
+    'definition_incompatible',
+  ] as const;
+
+  function missingRow(
+    reason: (typeof reasons)[number],
+    eligible: number | null,
+  ): RbContactEvasionObservationsV0 {
+    const observation = buildObservation('forced_missed_tackles_per_rush_attempt', {
+      windowCompleteness: 'multi_week',
+      gamesIncluded: 2,
+    });
+    observation.measurement = {
+      status: 'missing',
+      missingness_reason: reason,
+      value: null,
+      numerator: null,
+      denominator: null,
+      eligible_opportunities: eligible,
+    };
+    // Give each reason a supporting source state so the sweep isolates the
+    // eligible-count dimension.
+    if (reason === 'rights_blocked') {
+      observation.source.access_class = 'licensed_or_gated';
+    } else if (reason === 'source_unavailable') {
+      observation.source.access_class = 'unavailable';
+    }
+    return buildArtifact([observation]);
+  }
+
+  for (const reason of reasons) {
+    for (const eligible of [null, 12, 203] as const) {
+      let expected: RbContactEvasionReasonCode | null;
+      if (reason === 'below_minimum_sample') {
+        // multi_week threshold is 20: 12 proves the claim, null cannot, 203 disproves it.
+        expected = eligible === 12 ? null : 'BELOW_MINIMUM_SAMPLE_UNPROVABLE';
+      } else {
+        expected = eligible === null ? null : 'MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE';
+      }
+      it(`${reason} with eligible=${JSON.stringify(eligible)} -> ${expected ?? 'valid'}`, () => {
+        const report = evaluate(missingRow(reason, eligible));
+        expect(report.shape_valid).toBe(true);
+        if (expected === null) {
+          expect(report.violations).toEqual([]);
+        } else {
+          expect(report.reason_codes).toEqual([expected]);
+        }
+      });
+    }
+  }
 });
 
 // ---------------------------------------------------------------------------

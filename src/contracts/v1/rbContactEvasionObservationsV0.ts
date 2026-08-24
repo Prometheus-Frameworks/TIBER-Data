@@ -148,6 +148,36 @@ export const RB_CONTACT_EVASION_CROSS_CLASS_OPPORTUNITY_TYPES: ReadonlySet<
   RbContactEvasionOpportunityType
 > = new Set(['touch']);
 
+/**
+ * The code-owned composition of each cross-class denominator. A combined
+ * disclosure restates these components for inspectability; it cannot invent
+ * them. Presence of a disclosure was checkable before this map existed —
+ * its truth was not.
+ */
+export const RB_CONTACT_EVASION_COMBINED_DENOMINATOR_COMPONENTS: Readonly<
+  Record<string, { rushing_component_metric_id: string; receiving_component_metric_id: string }>
+> = {
+  touch: {
+    rushing_component_metric_id: 'rush_attempts',
+    receiving_component_metric_id: 'receptions',
+  },
+};
+
+/**
+ * Which evidence classes each material kind may carry. Rows may label
+ * conservatively (measured material cited as an opinion) but never the
+ * reverse: a derived publication's figures are the source's derivations and
+ * cannot be presented as a direct observation, and editorial opinion is only
+ * ever an external opinion.
+ */
+export const RB_CONTACT_EVASION_MATERIAL_EVIDENCE_CLASSES: Readonly<
+  Record<RbContactEvasionSourceMaterialKind, readonly RbContactEvasionEvidenceClass[]>
+> = {
+  measured_observation: ['direct', 'normalized', 'derived', 'external_opinion'],
+  derived_publication: ['normalized', 'derived', 'external_opinion'],
+  editorial_opinion: ['external_opinion'],
+};
+
 export const rbContactEvasionSeasonTypeSchema = z.enum(['PRE', 'REG', 'POST']);
 
 export const rbContactEvasionWindowCompletenessSchema = z.enum([
@@ -662,6 +692,7 @@ export const rbContactEvasionReasonCodeSchema = z.enum([
   'CANONICAL_DEFINITION_CONTRADICTED',
   'METRIC_DEFINITION_DRIFT_UNDER_STABLE_ID',
   'REQUIRED_CAVEAT_MISSING',
+  'INAPPLICABLE_CAVEAT_DECLARED',
   // rate and measurement semantics
   'RATE_MISSING_DENOMINATOR',
   'RATE_COMPONENT_METRIC_MISMATCH',
@@ -674,14 +705,18 @@ export const rbContactEvasionReasonCodeSchema = z.enum([
   'DENOMINATOR_OPPORTUNITY_UNSUPPORTED_BY_SOURCE',
   'DENOMINATOR_OPPORTUNITY_CLASS_MISMATCH',
   'RUSHING_RECEIVING_SILENTLY_COMBINED',
+  'COMBINED_COMPONENT_DISCLOSURE_CONTRADICTED',
   // sample sufficiency
   'ELIGIBLE_OPPORTUNITIES_REQUIRED_FOR_RATE',
   'MINIMUM_SAMPLE_RULE_NOT_CODE_OWNED',
+  'MINIMUM_SAMPLE_RULE_NOT_APPLICABLE',
+  'BELOW_MINIMUM_SAMPLE_UNPROVABLE',
   'MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION',
   'MINIMUM_SAMPLE_NOT_MET_RATE_EMITTED',
   // source governance
   'RESTRICTED_SOURCE_ACCESS_OVERCLAIMED',
   'EXTERNAL_OPINION_LABELED_AS_OBSERVATION',
+  'MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS',
   'SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_PROMOTABLE',
   'STORED_EXACT_VALUE_REQUIRES_RETENTION',
   'ACQUISITION_MODE_PERMISSION_INCOMPATIBLE',
@@ -709,6 +744,8 @@ export const rbContactEvasionReasonCodeSchema = z.enum([
   'DUPLICATE_OBSERVATION_GRAIN',
   'MISSING_COMPONENT_CARRIES_VALUE',
   'MISSINGNESS_REASON_ABSENT',
+  'MISSINGNESS_REASON_UNSUPPORTED',
+  'MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE',
   'OBSERVED_COMPONENT_MISSING_VALUE',
   // transforms
   'INCOMPATIBLE_METRIC_TRANSFORM_INPUT',
@@ -789,8 +826,10 @@ export const rbContactEvasionCombinedComponentDisclosureSchema = z
  * Per-row metric declaration. `value_kind`, `unit`, `directionality`, and
  * `inclusion_exclusion_rules` are restated here for inspectability but are
  * **not authoritative** — each must equal the code-owned descriptor.
- * `minimum_sample_rule_id` names the governing rule; the row cannot state a
- * threshold, only which rule binds it. `source_native_metric_name`,
+ * `minimum_sample_rule_id` names the governing rule where sample governance
+ * applies (rate metrics and below-minimum-sample claims); it is null on metrics
+ * no rule governs, and a row can never state a threshold, only which rule
+ * binds it. `source_native_metric_name`,
  * `definition_ref`, and `definition_version` are the source-native identity:
  * inspectable, drift-checked, and never a redefinition of the canonical metric.
  */
@@ -803,7 +842,7 @@ export const rbContactEvasionMetricSchema = z
     unit: nonEmptyStringSchema,
     value_kind: rbContactEvasionValueKindSchema,
     directionality: rbContactEvasionDirectionalitySchema,
-    minimum_sample_rule_id: nonEmptyStringSchema,
+    minimum_sample_rule_id: nonEmptyStringSchema.nullable(),
     inclusion_exclusion_rules: z.array(nonEmptyStringSchema),
     combined_component_disclosure:
       rbContactEvasionCombinedComponentDisclosureSchema.nullable(),
@@ -925,7 +964,7 @@ export const rbContactEvasionObservationSchema = z
   .strict();
 
 export const RB_CONTACT_EVASION_ARTIFACT_ID = 'rb_contact_evasion_observations_v0';
-export const RB_CONTACT_EVASION_SCHEMA_VERSION = 'rb_contact_evasion_observations_v0.3.0';
+export const RB_CONTACT_EVASION_SCHEMA_VERSION = 'rb_contact_evasion_observations_v0.4.0';
 
 export const rbContactEvasionObservationsV0Schema = z
   .object({
@@ -1154,6 +1193,17 @@ function checkMetricSemantics(
       detail: `metric "${metric.metric_id}" describes [${descriptor.allowed_opportunity_classes.join(', ')}] opportunity, but the row declares opportunity_class "${scope.opportunity_class}"; a testing measurement cannot be relabeled a game observation (nor the reverse)`,
     });
   }
+
+  // Sample governance applies to rate metrics only. A non-rate metric naming
+  // ANY rule — payload-invented or even the real code-owned one — claims a
+  // governance that does not exist for it.
+  if (descriptor.value_kind !== 'rate' && metric.minimum_sample_rule_id !== null) {
+    push({
+      reason_code: 'MINIMUM_SAMPLE_RULE_NOT_APPLICABLE',
+      path: `${path}.metric.minimum_sample_rule_id`,
+      detail: `metric "${metric.metric_id}" has value_kind "${descriptor.value_kind}", which no minimum-sample rule governs; minimum_sample_rule_id must be null, got "${metric.minimum_sample_rule_id}"`,
+    });
+  }
 }
 
 /** Required caveats are identities, not prose, so their presence is checkable. */
@@ -1173,12 +1223,41 @@ function checkCaveats(
       });
     }
   }
-  if (observation.source.provenance_mode === 'fixture' && !present.has('synthetic_fixture_value')) {
-    push({
-      reason_code: 'REQUIRED_CAVEAT_MISSING',
-      path: `${path}.caveat_ids`,
-      detail: 'a fixture-provenance row must carry the "synthetic_fixture_value" caveat; synthetic values always declare themselves',
-    });
+  // State-bound caveats are required exactly when their state holds and are
+  // inadmissible otherwise — a caveat is a machine-readable claim, and a claim
+  // whose state does not hold is a false declaration, not extra caution.
+  const stateBound: Array<[RbContactEvasionCaveatId, boolean, string]> = [
+    [
+      'synthetic_fixture_value',
+      observation.source.provenance_mode === 'fixture',
+      'the row has fixture provenance (synthetic values always declare themselves)',
+    ],
+    [
+      'combined_touch_denominator_disclosed',
+      observation.metric.combined_component_disclosure !== null,
+      'a combined-component disclosure is declared',
+    ],
+    [
+      'snapshot_superseded',
+      observation.source.superseded_by_snapshot_id !== null,
+      'a superseding snapshot is declared',
+    ],
+  ];
+  for (const [caveat, stateHolds, stateDescription] of stateBound) {
+    if (stateHolds && !present.has(caveat)) {
+      push({
+        reason_code: 'REQUIRED_CAVEAT_MISSING',
+        path: `${path}.caveat_ids`,
+        detail: `caveat "${caveat}" is required because ${stateDescription}`,
+      });
+    }
+    if (!stateHolds && present.has(caveat)) {
+      push({
+        reason_code: 'INAPPLICABLE_CAVEAT_DECLARED',
+        path: `${path}.caveat_ids`,
+        detail: `caveat "${caveat}" is declared but its state does not hold (it applies only when ${stateDescription}); a caveat is a checkable claim, not free prose`,
+      });
+    }
   }
 }
 
@@ -1208,7 +1287,9 @@ function checkMeasurementStatus(
         path: `${measurementPath}.missingness_reason`,
         detail: 'status "missing" requires an explicit missingness_reason',
       });
+      return;
     }
+    checkMissingnessShape(observation, path, push);
     return;
   }
 
@@ -1217,6 +1298,70 @@ function checkMeasurementStatus(
       reason_code: 'OBSERVED_COMPONENT_MISSING_VALUE',
       path: measurementPath,
       detail: `status "observed" requires a non-null value and a null missingness_reason (got value=${JSON.stringify(measurement.value)}, missingness_reason=${JSON.stringify(measurement.missingness_reason)})`,
+    });
+  }
+}
+
+/**
+ * Each missingness reason has one allowed measurement shape and, where the
+ * reason makes a claim about the source, a source state that must support it.
+ * A missing row is not a free-text apology: it is a checkable declaration.
+ *
+ * - `below_minimum_sample` is the one reason that MAY — and must — retain an
+ *   eligible-opportunity count, because the claim is provable only against the
+ *   code-owned rule and a real count. The claim must also be TRUE: an eligible
+ *   count at or above the code-owned threshold disproves it. Only rate metrics
+ *   have a sample gate to fall below.
+ * - Every other reason must carry no eligible count. An exact count retained
+ *   under `rights_blocked` or `source_unavailable` is a stored source fact
+ *   with no measurement to justify it.
+ * - `rights_blocked` must be supported by a blocking source state: a
+ *   restricted access class, or a retention / redistribution / automation
+ *   disposition that is not permitted. Claiming rights blockage against a
+ *   fully open, fully permitted source is a self-declaring contradiction.
+ * - `source_unavailable` must be supported by access_class "unavailable".
+ * - `not_measured` and `definition_incompatible` assert facts about what the
+ *   source measures and how it defines it; no structural cross-check exists
+ *   for them in Slice A (recorded as a residual risk).
+ */
+function checkMissingnessShape(
+  observation: RbContactEvasionObservation,
+  path: string,
+  push: Push,
+): void {
+  const { measurement, source } = observation;
+  const reason = measurement.missingness_reason;
+  const measurementPath = `${path}.measurement`;
+  const permissions = source.permissions;
+
+  if (reason !== 'below_minimum_sample' && measurement.eligible_opportunities !== null) {
+    push({
+      reason_code: 'MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE',
+      path: `${measurementPath}.eligible_opportunities`,
+      detail: `missingness_reason "${reason}" admits no eligible-opportunity count, got ${measurement.eligible_opportunities}; only "below_minimum_sample" retains a count, because only that claim is proven by one`,
+    });
+  }
+
+  if (reason === 'rights_blocked') {
+    const blockingState =
+      RB_CONTACT_EVASION_RESTRICTED_ACCESS_CLASSES.has(source.access_class) ||
+      permissions.retention_and_reproduction !== 'permitted' ||
+      permissions.redistribution_and_display !== 'permitted' ||
+      permissions.automated_access !== 'permitted';
+    if (!blockingState) {
+      push({
+        reason_code: 'MISSINGNESS_REASON_UNSUPPORTED',
+        path: `${measurementPath}.missingness_reason`,
+        detail: `missingness_reason "rights_blocked" is claimed against access_class "${source.access_class}" with every permission disposition "permitted"; nothing in the declared source state blocks anything`,
+      });
+    }
+  }
+
+  if (reason === 'source_unavailable' && source.access_class !== 'unavailable') {
+    push({
+      reason_code: 'MISSINGNESS_REASON_UNSUPPORTED',
+      path: `${measurementPath}.missingness_reason`,
+      detail: `missingness_reason "source_unavailable" requires access_class "unavailable", got "${source.access_class}"; an unavailable source declares itself unavailable`,
     });
   }
 }
@@ -1403,14 +1548,27 @@ function checkMinimumSample(
 ): void {
   const { metric, measurement, scope } = observation;
   const descriptor = getDescriptor(metric.metric_id);
-  if (
-    descriptor === undefined ||
-    descriptor.value_kind !== 'rate' ||
-    measurement.status !== 'observed'
-  ) {
+  if (descriptor === undefined) {
+    return;
+  }
+  const belowMinimumClaim =
+    measurement.status === 'missing' &&
+    measurement.missingness_reason === 'below_minimum_sample';
+  const observedRate = descriptor.value_kind === 'rate' && measurement.status === 'observed';
+  if (!belowMinimumClaim && !observedRate) {
     return;
   }
   const measurementPath = `${path}.measurement`;
+
+  // Only rate metrics have a sample gate to fall below.
+  if (belowMinimumClaim && descriptor.value_kind !== 'rate') {
+    push({
+      reason_code: 'BELOW_MINIMUM_SAMPLE_UNPROVABLE',
+      path: `${measurementPath}.missingness_reason`,
+      detail: `missingness_reason "below_minimum_sample" is claimed on metric "${metric.metric_id}" with value_kind "${descriptor.value_kind}", which no minimum-sample rule governs; there is no gate to fall below`,
+    });
+    return;
+  }
 
   if (metric.minimum_sample_rule_id !== RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE_ID) {
     push({
@@ -1425,8 +1583,35 @@ function checkMinimumSample(
     push({
       reason_code: 'MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION',
       path: `${path}.metric.minimum_sample_rule_id`,
-      detail: `the only minimum-sample rule bound in this contract has authority "${RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE.authority}" and cannot govern an observed rate at artifact_position "${artifactPosition}"; an admitted rule must be bound before a rate may sit in a candidate or promoted artifact`,
+      detail: `the only minimum-sample rule bound in this contract has authority "${RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE.authority}" and cannot govern ${belowMinimumClaim ? 'a below-minimum-sample claim' : 'an observed rate'} at artifact_position "${artifactPosition}"; an admitted rule must be bound before either may sit in a candidate or promoted artifact`,
     });
+    return;
+  }
+
+  const threshold =
+    RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE.thresholds_by_window_completeness[
+      scope.window_completeness
+    ];
+
+  if (belowMinimumClaim) {
+    // The claim is provable, and must be proven: an eligible count below the
+    // code-owned bar. No count means nothing to prove it; a count at or above
+    // the bar disproves it.
+    if (measurement.eligible_opportunities === null) {
+      push({
+        reason_code: 'BELOW_MINIMUM_SAMPLE_UNPROVABLE',
+        path: `${measurementPath}.eligible_opportunities`,
+        detail: `missingness_reason "below_minimum_sample" requires the eligible-opportunity count that proves it against the code-owned minimum ${threshold} for window_completeness "${scope.window_completeness}"; with no count the claim is unprovable`,
+      });
+      return;
+    }
+    if (measurement.eligible_opportunities >= threshold) {
+      push({
+        reason_code: 'BELOW_MINIMUM_SAMPLE_UNPROVABLE',
+        path: `${measurementPath}.eligible_opportunities`,
+        detail: `missingness_reason "below_minimum_sample" is disproven: eligible_opportunities ${measurement.eligible_opportunities} meets the code-owned minimum ${threshold} for window_completeness "${scope.window_completeness}"`,
+      });
+    }
     return;
   }
 
@@ -1439,10 +1624,6 @@ function checkMinimumSample(
     return;
   }
 
-  const threshold =
-    RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE.thresholds_by_window_completeness[
-      scope.window_completeness
-    ];
   if (measurement.eligible_opportunities < threshold) {
     push({
       reason_code: 'MINIMUM_SAMPLE_NOT_MET_RATE_EMITTED',
@@ -1471,6 +1652,41 @@ function checkDenominatorSemantics(
       detail:
         'opportunity_class "combined_rushing_receiving" requires an explicit combined_component_disclosure naming the rushing and receiving component metrics; rushing and receiving observations are never combined silently',
     });
+  }
+
+  // A disclosure is a checkable statement, not a presence token: its structured
+  // component ids must equal the code-owned composition of the combined
+  // denominator, and it may only exist where a combination exists.
+  if (metric.combined_component_disclosure !== null) {
+    const disclosure = metric.combined_component_disclosure;
+    const disclosurePath = `${path}.metric.combined_component_disclosure`;
+    if (opportunityClass !== 'combined_rushing_receiving') {
+      push({
+        reason_code: 'COMBINED_COMPONENT_DISCLOSURE_CONTRADICTED',
+        path: disclosurePath,
+        detail: `a combined-component disclosure is declared under opportunity_class "${opportunityClass}", where no combination exists to disclose`,
+      });
+    } else {
+      const canonical = RB_CONTACT_EVASION_COMBINED_DENOMINATOR_COMPONENTS.touch;
+      const mismatches: string[] = [];
+      if (disclosure.rushing_component_metric_id !== canonical.rushing_component_metric_id) {
+        mismatches.push(
+          `rushing component "${disclosure.rushing_component_metric_id}" != code-owned "${canonical.rushing_component_metric_id}"`,
+        );
+      }
+      if (disclosure.receiving_component_metric_id !== canonical.receiving_component_metric_id) {
+        mismatches.push(
+          `receiving component "${disclosure.receiving_component_metric_id}" != code-owned "${canonical.receiving_component_metric_id}"`,
+        );
+      }
+      if (mismatches.length > 0) {
+        push({
+          reason_code: 'COMBINED_COMPONENT_DISCLOSURE_CONTRADICTED',
+          path: disclosurePath,
+          detail: `the disclosure's structured components contradict the code-owned composition of the touch denominator (${mismatches.join('; ')}); a disclosure restates the combination, it does not invent one`,
+        });
+      }
+    }
   }
 
   if (denominator === null) {
@@ -1692,7 +1908,13 @@ function checkSourceAndEvidence(
   const { source, evidence_class: evidenceClass, measurement, transform } = observation;
   const sourcePath = `${path}.source`;
   const permissions = source.permissions;
-  const storesExactValue = measurement.status === 'observed' && measurement.value !== null;
+  // ANY stored exact numeric fact counts — an eligible-opportunity count
+  // retained on a missing row is a source-derived number like any other.
+  const storesExactValue =
+    measurement.value !== null ||
+    measurement.numerator !== null ||
+    measurement.denominator !== null ||
+    measurement.eligible_opportunities !== null;
 
   if (RB_CONTACT_EVASION_RESTRICTED_ACCESS_CLASSES.has(source.access_class)) {
     if (source.promotable) {
@@ -1711,12 +1933,22 @@ function checkSourceAndEvidence(
     }
   }
 
-  if (source.material_kind === 'editorial_opinion' && evidenceClass !== 'external_opinion') {
-    push({
-      reason_code: 'EXTERNAL_OPINION_LABELED_AS_OBSERVATION',
-      path: `${path}.evidence_class`,
-      detail: `source material_kind "editorial_opinion" requires evidence_class "external_opinion", got "${evidenceClass}"`,
-    });
+  // The material kind bounds the evidence class: conservative labeling is
+  // allowed, overstating never is. Editorial keeps its dedicated code.
+  if (!RB_CONTACT_EVASION_MATERIAL_EVIDENCE_CLASSES[source.material_kind].includes(evidenceClass)) {
+    if (source.material_kind === 'editorial_opinion') {
+      push({
+        reason_code: 'EXTERNAL_OPINION_LABELED_AS_OBSERVATION',
+        path: `${path}.evidence_class`,
+        detail: `source material_kind "editorial_opinion" requires evidence_class "external_opinion", got "${evidenceClass}"`,
+      });
+    } else {
+      push({
+        reason_code: 'MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS',
+        path: `${path}.evidence_class`,
+        detail: `source material_kind "${source.material_kind}" admits evidence classes [${RB_CONTACT_EVASION_MATERIAL_EVIDENCE_CLASSES[source.material_kind].join(', ')}], got "${evidenceClass}"; a derived publication's figures are the source's derivations and cannot be presented as a direct observation`,
+      });
+    }
   }
 
   // Storing an exact value is retention/reproduction of source material,
@@ -1769,11 +2001,14 @@ function checkSourceAndEvidence(
     });
   }
 
-  if (source.acquisition_method === 'not_acquired' && measurement.status === 'observed') {
+  if (
+    source.acquisition_method === 'not_acquired' &&
+    (measurement.status === 'observed' || measurement.eligible_opportunities !== null)
+  ) {
     push({
       reason_code: 'ACQUISITION_MODE_INCOHERENT',
       path: `${sourcePath}.acquisition_method`,
-      detail: 'acquisition_method "not_acquired" cannot back an observed measurement; a value that was never acquired cannot be observed',
+      detail: 'acquisition_method "not_acquired" cannot back an observed measurement or a retained eligible-opportunity count; a number that was never acquired cannot be stored',
     });
   }
 

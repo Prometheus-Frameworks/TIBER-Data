@@ -6,7 +6,7 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "n33-sample-gate-cleared-by-unrelated-count",
+      "observation_id": "n45-below-minimum-without-its-proof",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -20,8 +20,8 @@
         "season": 2024,
         "season_type": "REG",
         "week": null,
-        "games_included": 17,
-        "window_completeness": "full_season",
+        "games_included": 2,
+        "window_completeness": "multi_week",
         "opportunity_class": "rushing"
       },
       "clocks": {
@@ -57,19 +57,12 @@
         "combined_component_disclosure": null
       },
       "measurement": {
-        "status": "observed",
-        "missingness_reason": null,
-        "value": 5.2,
-        "numerator": {
-          "metric_id": "forced_missed_tackles_count",
-          "value": 26
-        },
-        "denominator": {
-          "metric_id": "rush_attempts",
-          "value": 5,
-          "opportunity_type": "rush_attempt"
-        },
-        "eligible_opportunities": 203
+        "status": "missing",
+        "missingness_reason": "below_minimum_sample",
+        "value": null,
+        "numerator": null,
+        "denominator": null,
+        "eligible_opportunities": null
       },
       "cohort_scope": null,
       "transform": null,
@@ -106,7 +99,7 @@
       ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "negative fixture: a five-attempt rate clearing the sample gate with an unrelated eligible-opportunity count"
+        "negative fixture: a below-minimum-sample claim with no eligible count to prove it"
       ]
     }
   ]

@@ -6,7 +6,7 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "n33-sample-gate-cleared-by-unrelated-count",
+      "observation_id": "n44-rights-blocked-retaining-eligible-count",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -57,29 +57,22 @@
         "combined_component_disclosure": null
       },
       "measurement": {
-        "status": "observed",
-        "missingness_reason": null,
-        "value": 5.2,
-        "numerator": {
-          "metric_id": "forced_missed_tackles_count",
-          "value": 26
-        },
-        "denominator": {
-          "metric_id": "rush_attempts",
-          "value": 5,
-          "opportunity_type": "rush_attempt"
-        },
+        "status": "missing",
+        "missingness_reason": "rights_blocked",
+        "value": null,
+        "numerator": null,
+        "denominator": null,
         "eligible_opportunities": 203
       },
       "cohort_scope": null,
       "transform": null,
       "source": {
-        "owner": "example_open_provider",
-        "product": "synthetic_rushing_contact_summary",
-        "snapshot_id": "synthetic-snapshot-2025-01-07",
-        "access_class": "open_and_ingestible",
-        "acquisition_method": "synthetic_fixture",
-        "acquisition_notes": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "owner": "example_licensed_provider",
+        "product": "synthetic_licensed_contact_feed",
+        "snapshot_id": "synthetic-licensed-snapshot-2025-01-07",
+        "access_class": "licensed_or_gated",
+        "acquisition_method": "manual_citation",
+        "acquisition_notes": "cited under license; the metric value itself is rights-blocked",
         "material_kind": "measured_observation",
         "supported_opportunity_types": [
           "rush_attempt",
@@ -89,12 +82,12 @@
         ],
         "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
         "permissions": {
-          "attribution": "required",
+          "attribution": "not_required",
           "retention_and_reproduction": "permitted",
-          "redistribution_and_display": "permitted",
-          "automated_access": "permitted"
+          "redistribution_and_display": "prohibited",
+          "automated_access": "prohibited"
         },
-        "attribution_text": "synthetic attribution statement for example provider (contract fixture)",
+        "attribution_text": null,
         "content_digest": null,
         "promotable": false,
         "provenance_mode": "fixture",
@@ -106,7 +99,7 @@
       ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "negative fixture: a five-attempt rate clearing the sample gate with an unrelated eligible-opportunity count"
+        "negative fixture: a rights-blocked row retaining an exact eligible-opportunity count no measurement justifies"
       ]
     }
   ]

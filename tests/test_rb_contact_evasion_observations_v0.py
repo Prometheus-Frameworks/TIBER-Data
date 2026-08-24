@@ -43,7 +43,10 @@ MANDATED_POSITIVE_FIXTURES = [
     "p6_weekly_and_season_windows_coexist.json",
     "p7_bucky_receipt_remains_partial.json",
 ]
-SUPPLEMENTARY_POSITIVE_FIXTURES = ["p8_absent_source_clock_stays_null.json"]
+SUPPLEMENTARY_POSITIVE_FIXTURES = [
+    "p8_absent_source_clock_stays_null.json",
+    "p9_below_minimum_sample_provable.json",
+]
 POSITIVE_FIXTURES = MANDATED_POSITIVE_FIXTURES + SUPPLEMENTARY_POSITIVE_FIXTURES
 
 # Fixture file -> the single reason code the contract layer must reject it with.
@@ -117,10 +120,28 @@ SUPPLEMENTARY_NEGATIVE_FIXTURES = {
     ),
 }
 
+# N43-N49: the missingness-and-declaration round.
+MISSINGNESS_NEGATIVE_FIXTURES = {
+    "n43_missingness_reason_unsupported.json": "MISSINGNESS_REASON_UNSUPPORTED",
+    "n44_missingness_eligible_count_inadmissible.json": (
+        "MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE"
+    ),
+    "n45_below_minimum_sample_unprovable.json": "BELOW_MINIMUM_SAMPLE_UNPROVABLE",
+    "n46_combined_component_disclosure_contradicted.json": (
+        "COMBINED_COMPONENT_DISCLOSURE_CONTRADICTED"
+    ),
+    "n47_inapplicable_caveat_declared.json": "INAPPLICABLE_CAVEAT_DECLARED",
+    "n48_minimum_sample_rule_not_applicable.json": "MINIMUM_SAMPLE_RULE_NOT_APPLICABLE",
+    "n49_material_kind_incompatible_with_evidence_class.json": (
+        "MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS"
+    ),
+}
+
 NEGATIVE_FIXTURES = {
     **MANDATED_NEGATIVE_FIXTURES,
     **SUPPLEMENTARY_NEGATIVE_FIXTURES,
     **CONVERGENCE_NEGATIVE_FIXTURES,
+    **MISSINGNESS_NEGATIVE_FIXTURES,
 }
 
 MECHANISMS = [
@@ -381,9 +402,13 @@ def test_schema_requires_a_declared_origin_for_every_clock():
 
 
 def test_schema_gives_a_row_no_self_declared_minimum_sample_threshold():
-    """The governing minimum is code-owned; a row names the rule, never a number."""
+    """The governing minimum is code-owned; a row names the rule where one
+    governs it (rate metrics), states null where none does, and never a number."""
     defs = load_schema()["$defs"]
     assert "minimum_sample_rule_id" in defs["metric"]["required"]
+    assert defs["metric"]["properties"]["minimum_sample_rule_id"]["type"] == ["string", "null"]
+    non_rate = load_fixture("positive", "p2_raw_count_without_denominator.json")
+    assert non_rate["observations"][0]["metric"]["minimum_sample_rule_id"] is None
     assert "minimum_eligible_opportunities" not in defs["metric"]["properties"]
     assert "minimum_eligible_opportunities" not in defs["cohortScope"]["properties"]
     payload = load_fixture("positive", "p1_complete_derived_explosiveness_rate.json")

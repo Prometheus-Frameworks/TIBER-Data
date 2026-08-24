@@ -18,7 +18,7 @@
       "const": "rb_contact_evasion_observations_v0"
     },
     "schema_version": {
-      "const": "rb_contact_evasion_observations_v0.3.0"
+      "const": "rb_contact_evasion_observations_v0.4.0"
     },
     "artifact_position": {
       "$ref": "#/$defs/artifactPosition"
@@ -328,7 +328,8 @@
         "disclosure": {
           "$ref": "#/$defs/nonEmptyString"
         }
-      }
+      },
+      "description": "A checkable statement, not a presence token: the structured component ids must equal the code-owned composition of the combined denominator (touch = rush_attempts + receptions), verified by the contract layer; the prose disclosure remains inspectable context."
     },
     "metric": {
       "type": "object",
@@ -384,10 +385,14 @@
           ]
         },
         "minimum_sample_rule_id": {
-          "$ref": "#/$defs/nonEmptyString"
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
         }
       },
-      "description": "Per-row metric declaration. value_kind, unit, directionality, and inclusion_exclusion_rules are restated for inspectability but are NOT authoritative -- each must equal the code-owned descriptor (inclusion rules are the canonical definition verbatim). minimum_sample_rule_id names the governing rule; a row cannot state a threshold. source_native_metric_name / definition_ref / definition_version are the source-native identity: inspectable, drift-checked, never a redefinition of the canonical metric."
+      "description": "Per-row metric declaration. value_kind, unit, directionality, and inclusion_exclusion_rules are restated for inspectability but are NOT authoritative -- each must equal the code-owned descriptor (inclusion rules are the canonical definition verbatim). minimum_sample_rule_id names the governing rule where sample governance applies (rate metrics and below-minimum-sample claims) and is null on metrics no rule governs; a row can never state a threshold. source_native_metric_name / definition_ref / definition_version are the source-native identity: inspectable, drift-checked, never a redefinition of the canonical metric."
     },
     "numerator": {
       "type": "object",
@@ -483,7 +488,8 @@
           ],
           "minimum": 0
         }
-      }
+      },
+      "description": "Measurement. Missing rows follow a per-reason shape enforced by the contract layer: only below_minimum_sample may (and must) retain an eligible-opportunity count, because only that claim is proven by one; rights_blocked and source_unavailable must be supported by the declared source state. Every stored exact numeric fact, eligible_opportunities included, participates in retention, attribution, and acquisition coherence checks."
     },
     "cohortScope": {
       "description": "Cohort MEMBERSHIP INPUTS only. No percentile, rank, threshold, score, or grade, and none may be added (that boundary is TIBER-Ops #15, unresolved). It states no minimum either: the minimum-sample bar is code-owned.",

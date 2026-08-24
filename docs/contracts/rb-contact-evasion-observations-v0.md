@@ -20,7 +20,7 @@ Slice A scope. The Python artifact validator and manifest gate (Slice B), the
 Bucky assembler (Slice C), cohort normalization, percentiles, thresholds, scores,
 and the Data/FORGE ownership decision are all out of scope and unimplemented.
 
-Current schema version: `rb_contact_evasion_observations_v0.3.0`. No artifact
+Current schema version: `rb_contact_evasion_observations_v0.4.0`. No artifact
 exists under any version.
 
 ## Semantic authority
@@ -39,7 +39,11 @@ window/week coherence.
 
 The convergence repair therefore stopped patching named escapes and instead
 enumerated every dimension a row could author, then moved each one into either a
-code-owned descriptor, a closed vocabulary, or a cross-field rule. That
+code-owned descriptor, a closed vocabulary, or a cross-field rule. A third
+review extended the same discipline to the contract's **declarations about
+absence and about itself**: missingness reasons, retained counts on missing
+rows, disclosure contents, caveat applicability, and rule-id applicability are
+now checkable claims with per-state shapes, not free assertions. That
 enumeration is the invariant matrix below, and it — not any fixture list — is
 the contract's design.
 
@@ -57,6 +61,8 @@ that fires when a payload disagrees.
 | canonical inclusion/exclusion rules (verbatim) | descriptor | `CANONICAL_DEFINITION_CONTRADICTED` |
 | source-native name / ref / version | source-native, inspectable | drift-checked only: `METRIC_DEFINITION_DRIFT_UNDER_STABLE_ID` |
 | required caveat identity | descriptor | `REQUIRED_CAVEAT_MISSING` |
+| state-bound caveats (`synthetic_fixture_value` ⇔ fixture provenance; `combined_touch_denominator_disclosed` ⇔ a verified disclosure; `snapshot_superseded` ⇔ a superseding snapshot) hold exactly when their state holds | contract | `REQUIRED_CAVEAT_MISSING` / `INAPPLICABLE_CAVEAT_DECLARED` |
+| `minimum_sample_rule_id` names the code-owned rule on rate metrics and is null where no rule governs — no payload-invented rule id validates on any value kind | contract | `MINIMUM_SAMPLE_RULE_NOT_CODE_OWNED` / `MINIMUM_SAMPLE_RULE_NOT_APPLICABLE` |
 
 A row restates value kind, unit, directionality, and inclusion rules for
 inspectability; none of them is authoritative. Rewriting "10 or more yards" to
@@ -73,6 +79,7 @@ drift-checked within an artifact, and never redefines the canonical metric.
 | metric → allowed opportunity classes | descriptor | `METRIC_OPPORTUNITY_CLASS_INCOMPATIBLE` |
 | class → admissible denominator opportunity types | contract table | `DENOMINATOR_OPPORTUNITY_CLASS_MISMATCH` |
 | cross-class `touch` requires combined class + disclosure | contract | `RUSHING_RECEIVING_SILENTLY_COMBINED` |
+| a disclosure's structured components equal the code-owned touch composition (`rush_attempts` + `receptions`), and exist only where a combination exists | `RB_CONTACT_EVASION_COMBINED_DENOMINATOR_COMPONENTS` | `COMBINED_COMPONENT_DISCLOSURE_CONTRADICTED` |
 | denominator type supported by declared source | cross-check | `DENOMINATOR_OPPORTUNITY_UNSUPPORTED_BY_SOURCE` |
 
 A 40-yard dash cannot be relabeled a rushing observation; the descriptor pins
@@ -107,6 +114,24 @@ rejected even when the emitted rate is arithmetically consistent with it.
 | value equals round(numerator/denominator, 3) | contract (`RB_CONTACT_EVASION_RATE_ROUNDING_DECIMALS`) | `RATE_VALUE_INCONSISTENT_WITH_COMPONENTS` |
 | non-rate metrics carry no rate components | descriptor (null composition) | `RATE_COMPONENTS_ON_NON_RATE_METRIC` |
 | observed rate states its eligible opportunities | contract | `ELIGIBLE_OPPORTUNITIES_REQUIRED_FOR_RATE` |
+
+### D2. Missingness declarations
+
+| Fact | Owner | Code |
+|---|---|---|
+| each missingness reason has one allowed measurement shape | contract | see below |
+| only `below_minimum_sample` retains an eligible count — the count is the claim's proof | contract | `MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE` |
+| a `below_minimum_sample` claim must be provable and true: rate metric, count present, count below the code-owned bar | contract + code-owned rule | `BELOW_MINIMUM_SAMPLE_UNPROVABLE` |
+| a below-minimum claim outside `fixture_only` has no admitted rule to prove against | contract | `MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION` |
+| `rights_blocked` requires a blocking source state (restricted access, or a non-permitted disposition) | contract | `MISSINGNESS_REASON_UNSUPPORTED` |
+| `source_unavailable` requires `access_class: "unavailable"` | contract | `MISSINGNESS_REASON_UNSUPPORTED` |
+| every stored exact numeric fact — a retained eligible count included — participates in retention, attribution, and acquisition coherence | contract | `STORED_EXACT_VALUE_REQUIRES_RETENTION` / `ATTRIBUTION_METADATA_MISSING` / `ACQUISITION_MODE_INCOHERENT` |
+
+`not_measured` and `definition_incompatible` assert facts about what the source
+measures and how it defines it; no structural cross-check exists for them in
+Slice A (a recorded residual risk). Requiring every missing row to drop its
+count was rejected deliberately: it would have made `below_minimum_sample`
+unverifiable, and the count is exactly what proves that claim.
 
 The denominator **is** the eligible-opportunity count. Without that equality, a
 five-attempt rate could clear a forty-sample gate by declaring an unrelated
@@ -167,7 +192,7 @@ arithmetic: an equality heuristic was unsound in both directions and is gone.
 | attribution `required` + stored value requires `attribution_text` | contract | `ATTRIBUTION_METADATA_MISSING` |
 | promotable requires retention, redistribution, automation all permitted and attribution settled | contract | `SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_PROMOTABLE` |
 | restricted access cannot be promotable or back a non-opinion observed value | contract | `RESTRICTED_SOURCE_ACCESS_OVERCLAIMED` |
-| editorial material must be labeled opinion | contract | `EXTERNAL_OPINION_LABELED_AS_OBSERVATION` |
+| material kind bounds the evidence class (`measured_observation` → any; `derived_publication` → normalized/derived/opinion, never direct; `editorial_opinion` → opinion only). Conservative labeling is allowed; overstating never is | `RB_CONTACT_EVASION_MATERIAL_EVIDENCE_CLASSES` | `EXTERNAL_OPINION_LABELED_AS_OBSERVATION` / `MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS` |
 | snapshot requires a digest; a digest is forbidden where retention is prohibited | contract | `SNAPSHOT_WITHOUT_CONTENT_DIGEST` / `CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION` |
 | digest closed to `sha256` + 64 lowercase hex | contract | `CONTENT_DIGEST_MALFORMED` |
 | supersession never self-references | contract | `SUPERSESSION_SELF_REFERENCE` |
@@ -209,8 +234,8 @@ position that has no legitimate occupant at all.
 |---|---|
 | `src/contracts/v1/rbContactEvasionObservationsV0.ts` | Contract: closed vocabularies, code-owned metric dictionary and minimum-sample rule, cross-field validation |
 | `schemas/rb_contact_evasion_observations_v0.schema.json` | Shape gate (closed vocabularies, clock origins, unknown-field rejection) |
-| `test/fixtures/rb_contact_evasion/positive/**` | P1–P8 |
-| `test/fixtures/rb_contact_evasion/negative/**` | N1–N42 |
+| `test/fixtures/rb_contact_evasion/positive/**` | P1–P9 |
+| `test/fixtures/rb_contact_evasion/negative/**` | N1–N49 |
 | `test/rbContactEvasionObservationsV0.contract.test.ts` | Contract behavior at the public barrel, exact-attack regression locks, cross-product suites |
 | `tests/test_rb_contact_evasion_observations_v0.py` | Schema-boundary behavior and corpus/doc drift guards |
 
@@ -267,9 +292,14 @@ metric → mechanism binding.
 
 ## Sample sufficiency
 
-The governing minimum is **code-owned**. A row carries
-`metric.minimum_sample_rule_id` naming the rule that binds it and can state no
-threshold anywhere. `RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE` holds the
+The governing minimum is **code-owned**. A rate row carries
+`metric.minimum_sample_rule_id` naming the rule that binds it; a non-rate row
+carries `null`, because naming a rule where none governs is a false claim
+(`MINIMUM_SAMPLE_RULE_NOT_APPLICABLE`). No row can state a threshold anywhere.
+The same rule governs `below_minimum_sample` missingness claims: they must be
+provable (a retained eligible count under the bar), are disproven by a count at
+or over it, and fail closed outside `fixture_only` exactly as observed rates
+do. `RB_CONTACT_EVASION_MINIMUM_SAMPLE_RULE` holds the
 thresholds, keyed by window completeness (`single_week` 10, `multi_week` 20,
 `partial_season` 30, `full_season` 40).
 
@@ -281,10 +311,17 @@ rejected outright until Slice B binds an admitted rule.
 
 ## Missingness
 
-A missing component carries an explicit `missingness_reason` and no value of any
-kind. There is no neutral default, no zero fill, and no substitution from
-another mechanism. A below-minimum sample must be emitted as missing with
-`below_minimum_sample`, never as a value.
+A missing component carries an explicit `missingness_reason` and no value,
+numerator, or denominator. There is no neutral default, no zero fill, and no
+substitution from another mechanism.
+
+Each reason has one allowed shape (matrix section D2): only
+`below_minimum_sample` retains an eligible-opportunity count — the count is the
+claim's proof against the code-owned bar — and every other reason must carry
+none. `rights_blocked` and `source_unavailable` must be supported by the
+declared source state. A retained eligible count is a stored exact numeric fact
+and participates in retention, attribution, and acquisition-coherence checks
+like any other.
 
 ## Fixture corpus
 
@@ -317,6 +354,7 @@ are **not** evidence about Bucky Irving or any real player.
 | # | File | What it establishes |
 |---|---|---|
 | P8 | `p8_absent_source_clock_stays_null.json` | A source supplying no observation or generation clock leaves both `null` with declared origins, instead of backfilling |
+| P9 | `p9_below_minimum_sample_provable.json` | An honestly missing below-minimum rate: the retained eligible count (12, under the multi-week bar of 20) is exactly what proves the claim |
 
 ### Negative fixtures
 
@@ -392,6 +430,30 @@ One fixture per escape family from the second exact-head review.
 | N41 | `n41_transform_requires_derived_evidence.json` | `TRANSFORM_REQUIRES_DERIVED_EVIDENCE` |
 | N42 | `n42_acquisition_mode_incoherent.json` | `ACQUISITION_MODE_INCOHERENT` |
 
+#### Missingness-and-declaration corpus N43–N49 (fourth review round)
+
+One fixture per rule added when missingness reasons, retained counts,
+disclosure contents, caveat applicability, and rule-id applicability became
+checkable claims.
+
+| # | File | Reason code |
+|---|---|---|
+| N43 | `n43_missingness_reason_unsupported.json` | `MISSINGNESS_REASON_UNSUPPORTED` |
+| N44 | `n44_missingness_eligible_count_inadmissible.json` | `MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE` |
+| N45 | `n45_below_minimum_sample_unprovable.json` | `BELOW_MINIMUM_SAMPLE_UNPROVABLE` |
+| N46 | `n46_combined_component_disclosure_contradicted.json` | `COMBINED_COMPONENT_DISCLOSURE_CONTRADICTED` |
+| N47 | `n47_inapplicable_caveat_declared.json` | `INAPPLICABLE_CAVEAT_DECLARED` |
+| N48 | `n48_minimum_sample_rule_not_applicable.json` | `MINIMUM_SAMPLE_RULE_NOT_APPLICABLE` |
+| N49 | `n49_material_kind_incompatible_with_evidence_class.json` | `MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS` |
+
+Reshaped this round, minimally: non-rate fixtures now carry
+`minimum_sample_rule_id: null` (the field became nullable — a rule id on a
+metric no rule governs is a false claim), and the six fixtures whose rows model
+non-fixture provenance (P5, N18, N28, N37, N39, N42) no longer carry the
+`synthetic_fixture_value` caveat, which is now state-bound to fixture
+provenance. Their synthetic nature remains declared in free-text warnings and
+by the fixture-only artifact position.
+
 N12 carries three rows in one fixture — a 40-yard dash offered as contact
 avoidance, a long gain offered as explosiveness, and yards per carry offered as
 contact survival — because #234 names all three as the same failure and one rule
@@ -455,6 +517,9 @@ Codes beyond the fixture corpus: `SCHEMA_SHAPE_INVALID`, `UNKNOWN_FIELD_PRESENT`
   rewordings are rejected. That is deliberate — prose equivalence judgments do
   not belong in a fail-closed gate — but it means admitting new wording is a
   contract change.
+- **`not_measured` and `definition_incompatible` are not structurally
+  cross-checkable.** They assert what a source measures and how it defines it;
+  Slice A has no admitted source registry to check them against.
 - **Dropping `cohort_scope` to `null` skips the cohort rules.** A weaker claim,
   not a laundered stronger one, and the sample bar applies regardless.
 - **The pinned minimum-sample thresholds are placeholders, not football.** No

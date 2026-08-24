@@ -1,6 +1,6 @@
 {
   "artifact_id": "rb_contact_evasion_observations_v0",
-  "schema_version": "rb_contact_evasion_observations_v0.3.0",
+  "schema_version": "rb_contact_evasion_observations_v0.4.0",
   "artifact_position": "candidate",
   "generated_at": "2026-08-24T00:00:00+00:00",
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
@@ -50,7 +50,7 @@
         "unit": "forced_missed_tackles",
         "value_kind": "count",
         "directionality": "higher_is_more_of_mechanism",
-        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
+        "minimum_sample_rule_id": null,
         "inclusion_exclusion_rules": [
           "rushing attempts only"
         ],

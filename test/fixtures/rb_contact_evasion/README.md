@@ -8,11 +8,11 @@ provider data, and no external source was accessed to produce any of it. Source
 owners are `example_*` placeholders; snapshot ids are marked synthetic; every
 observation declares its synthetic nature in `warnings`.
 
-- `positive/` — P1–P7 (the corpus #234 mandates) plus P8. Each must validate
+- `positive/` — P1–P7 (the corpus #234 mandates) plus P8–P9. Each must validate
   through the public contract gate.
 - `negative/` — N1–N15 (the corpus #234 mandates), N16–N28 (second review
-  round), and N29–N42 (convergence round: one per escape family from the second
-  exact-head review). Each is deliberately **shape-valid** and must be rejected
+  round), N29–N42 (convergence round), and N43–N49
+  (missingness-and-declaration round). Each is deliberately **shape-valid** and must be rejected
   by exactly one reason code, so the rejection is attributable to the contract
   rule it exercises rather than to a parse failure.
 

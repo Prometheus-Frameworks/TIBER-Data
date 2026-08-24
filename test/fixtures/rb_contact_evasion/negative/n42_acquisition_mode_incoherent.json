@@ -1,6 +1,6 @@
 {
   "artifact_id": "rb_contact_evasion_observations_v0",
-  "schema_version": "rb_contact_evasion_observations_v0.3.0",
+  "schema_version": "rb_contact_evasion_observations_v0.4.0",
   "artifact_position": "fixture_only",
   "generated_at": "2026-08-24T00:00:00+00:00",
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
@@ -101,7 +101,6 @@
         "superseded_by_snapshot_id": null
       },
       "caveat_ids": [
-        "synthetic_fixture_value",
         "forced_missed_tackle_definitions_differ_by_source"
       ],
       "warnings": [

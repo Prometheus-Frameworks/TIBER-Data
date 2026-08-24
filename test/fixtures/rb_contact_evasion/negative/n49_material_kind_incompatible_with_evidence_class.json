@@ -6,7 +6,7 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "n33-sample-gate-cleared-by-unrelated-count",
+      "observation_id": "n49-derived-publication-labeled-direct",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -43,44 +43,37 @@
         "artifact_generated_at": "artifact_build_clock"
       },
       "metric": {
-        "metric_id": "forced_missed_tackles_per_rush_attempt",
-        "source_native_metric_name": "forced missed tackles per rushing attempt",
+        "metric_id": "forced_missed_tackles_count",
+        "source_native_metric_name": "forced missed tackles (rushing)",
         "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
         "definition_version": "synthetic-def-2024.1",
-        "unit": "forced_missed_tackles_per_rush_attempt",
-        "value_kind": "rate",
+        "unit": "forced_missed_tackles",
+        "value_kind": "count",
         "directionality": "higher_is_more_of_mechanism",
-        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
+        "minimum_sample_rule_id": null,
         "inclusion_exclusion_rules": [
-          "rushing attempts only; kneel-downs and aborted plays excluded"
+          "rushing attempts only"
         ],
         "combined_component_disclosure": null
       },
       "measurement": {
         "status": "observed",
         "missingness_reason": null,
-        "value": 5.2,
-        "numerator": {
-          "metric_id": "forced_missed_tackles_count",
-          "value": 26
-        },
-        "denominator": {
-          "metric_id": "rush_attempts",
-          "value": 5,
-          "opportunity_type": "rush_attempt"
-        },
-        "eligible_opportunities": 203
+        "value": 62,
+        "numerator": null,
+        "denominator": null,
+        "eligible_opportunities": null
       },
       "cohort_scope": null,
       "transform": null,
       "source": {
         "owner": "example_open_provider",
-        "product": "synthetic_rushing_contact_summary",
+        "product": "synthetic_derived_rate_table",
         "snapshot_id": "synthetic-snapshot-2025-01-07",
         "access_class": "open_and_ingestible",
         "acquisition_method": "synthetic_fixture",
         "acquisition_notes": "in-repository synthetic contract fixture; no external source was accessed to produce it",
-        "material_kind": "measured_observation",
+        "material_kind": "derived_publication",
         "supported_opportunity_types": [
           "rush_attempt",
           "contact_event",
@@ -106,7 +99,7 @@
       ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "negative fixture: a five-attempt rate clearing the sample gate with an unrelated eligible-opportunity count"
+        "negative fixture: a derived publication's figures presented as a direct observation"
       ]
     }
   ]
