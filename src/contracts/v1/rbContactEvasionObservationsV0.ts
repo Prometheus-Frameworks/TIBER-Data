@@ -1315,10 +1315,17 @@ function checkMeasurementStatus(
  * - Every other reason must carry no eligible count. An exact count retained
  *   under `rights_blocked` or `source_unavailable` is a stored source fact
  *   with no measurement to justify it.
- * - `rights_blocked` must be supported by a blocking source state: a
- *   restricted access class, or a retention / redistribution / automation
- *   disposition that is not permitted. Claiming rights blockage against a
- *   fully open, fully permitted source is a self-declaring contradiction.
+ * - `rights_blocked` must name an action that was actually blocked. A
+ *   non-permitted retention disposition is independently sufficient (an
+ *   obtained value cannot be kept). An access class supports the claim only
+ *   when it is `licensed_or_gated` or `reference_only` AND the declared
+ *   acquisition state proves acquisition did not occur (`not_acquired`): a
+ *   successfully declared acquisition is never excused by its access label,
+ *   `unavailable` has its own truthful reason (`source_unavailable`) and does
+ *   not double as a rights cause, and `unknown` access proves nothing
+ *   affirmative — rights uncertainty is represented by an unknown retention
+ *   disposition. Redistribution/display and automation restrictions never
+ *   support the claim.
  * - `source_unavailable` must be supported by access_class "unavailable".
  * - `not_measured` and `definition_incompatible` assert facts about what the
  *   source measures and how it defines it; no structural cross-check exists
@@ -1343,32 +1350,36 @@ function checkMissingnessShape(
   }
 
   if (reason === 'rights_blocked') {
-    // Rights follow the action the claim is about. A rights-blocked
-    // measurement is one this artifact could not ACQUIRE or could not RETAIN,
-    // so exactly two declared states can support the claim:
+    // Rights follow the action the claim is about, and acquisition_method
+    // records what actually happened — so a declared successful acquisition is
+    // never excused by its access label. Exactly two states support the claim:
     //
-    // - a restricted access class, which blocks acquisition at the source
-    //   boundary; or
-    // - a retention/reproduction disposition that is not "permitted", which
-    //   blocks retaining the value even where acquisition is open.
+    // - a retention/reproduction disposition that is not "permitted",
+    //   independently sufficient because an obtained value cannot be kept; or
+    // - a rights-restricting access class ("licensed_or_gated" or
+    //   "reference_only") TOGETHER WITH the one acquisition state that proves
+    //   acquisition did not occur ("not_acquired").
     //
-    // An automation restriction cannot support it: nothing in this vocabulary
-    // can declare that acquisition DEPENDED on automation (a missing row's
-    // acquisition_method records what happened — typically "not_acquired" —
-    // never the counterfactual), and a declared automated acquisition with
-    // automation prohibited is already rejected as incoherent, so the fields
-    // cannot prove an automation-blocked action; the claim fails closed
-    // rather than leaning on an unprovable one. A redistribution/display
-    // restriction governs downstream use and says nothing about why a
-    // measurement is absent. Restrictions are not interchangeable.
+    // "unavailable" access has its own truthful reason, source_unavailable,
+    // and does not double as a rights cause. "unknown" access proves nothing
+    // affirmative — rights uncertainty is represented by an unknown retention
+    // disposition, which the first path already honors. Automation
+    // restrictions cannot support the claim (this vocabulary cannot declare
+    // that acquisition depended on automation, and a declared automated
+    // acquisition with automation prohibited is already incoherent), and
+    // redistribution/display governs downstream use, never absence. Where the
+    // fields cannot prove a blocked action, the claim fails closed.
+    const accessSupportsRightsBlocked =
+      source.acquisition_method === 'not_acquired' &&
+      (source.access_class === 'licensed_or_gated' ||
+        source.access_class === 'reference_only');
     const blockingState =
-      RB_CONTACT_EVASION_RESTRICTED_ACCESS_CLASSES.has(source.access_class) ||
-      permissions.retention_and_reproduction !== 'permitted';
+      permissions.retention_and_reproduction !== 'permitted' || accessSupportsRightsBlocked;
     if (!blockingState) {
       push({
         reason_code: 'MISSINGNESS_REASON_UNSUPPORTED',
         path: `${measurementPath}.missingness_reason`,
-        detail: `missingness_reason "rights_blocked" is claimed against access_class "${source.access_class}" with retention_and_reproduction "permitted"; neither acquisition nor retention is blocked, and restrictions on other actions (redistribution/display, automation) do not explain a missing measurement`,
+        detail: `missingness_reason "rights_blocked" is claimed with retention_and_reproduction "permitted" and acquisition_method "${source.acquisition_method}" against access_class "${source.access_class}"; a declared successful acquisition is never excused by its access label, "unavailable" belongs to source_unavailable, "unknown" access proves nothing affirmative, and redistribution/automation restrictions do not explain a missing measurement`,
       });
     }
   }

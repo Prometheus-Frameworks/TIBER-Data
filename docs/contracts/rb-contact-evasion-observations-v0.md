@@ -123,7 +123,7 @@ rejected even when the emitted rate is arithmetically consistent with it.
 | only `below_minimum_sample` retains an eligible count — the count is the claim's proof | contract | `MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE` |
 | a `below_minimum_sample` claim must be provable and true: rate metric, count present, count below the code-owned bar | contract + code-owned rule | `BELOW_MINIMUM_SAMPLE_UNPROVABLE` |
 | a below-minimum claim outside `fixture_only` has no admitted rule to prove against | contract | `MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION` |
-| `rights_blocked` requires a state that blocks the action the claim is about: a restricted access class (acquisition blocked at the source boundary) or a non-permitted retention disposition (the value cannot be retained). Restrictions are **not interchangeable**: automation restrictions cannot support the claim — this vocabulary cannot declare that acquisition depended on automation, so the claim fails closed rather than lean on an unprovable action — and redistribution/display restrictions govern downstream use, never absence | contract | `MISSINGNESS_REASON_UNSUPPORTED` |
+| `rights_blocked` requires a state that blocks the action the claim is about, and `acquisition_method` records what actually happened — a declared successful acquisition is never excused by its access label. Two supporting states: a non-permitted retention disposition (independently sufficient — an obtained value cannot be kept), or a rights-restricting access class (`licensed_or_gated` / `reference_only`) **together with** `acquisition_method: "not_acquired"`, the one state proving acquisition did not occur. `unavailable` access belongs to `source_unavailable` and never doubles as a rights cause; `unknown` access proves nothing affirmative (rights uncertainty is an unknown retention disposition); automation and redistribution/display restrictions never support the claim | contract | `MISSINGNESS_REASON_UNSUPPORTED` |
 | `source_unavailable` requires `access_class: "unavailable"` | contract | `MISSINGNESS_REASON_UNSUPPORTED` |
 | every stored exact numeric fact — a retained eligible count included — participates in retention, attribution, and acquisition coherence | contract | `STORED_EXACT_VALUE_REQUIRES_RETENTION` / `ATTRIBUTION_METADATA_MISSING` / `ACQUISITION_MODE_INCOHERENT` |
 
@@ -446,7 +446,13 @@ checkable claims.
 | N48 | `n48_minimum_sample_rule_not_applicable.json` | `MINIMUM_SAMPLE_RULE_NOT_APPLICABLE` |
 | N49 | `n49_material_kind_incompatible_with_evidence_class.json` | `MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS` |
 
-Reshaped this round, minimally: non-rate fixtures now carry
+Reshaped in the action-sensitive rights round: **N44** now isolates the
+inadmissible-count invariant via `source_unavailable` (access `unavailable`,
+count retained), because under the full rights model a `rights_blocked` row
+retaining a count always trips a second rule as well — the reshape keeps one
+fixture, one reason without weakening the contract.
+
+Reshaped in the missingness round, minimally: non-rate fixtures now carry
 `minimum_sample_rule_id: null` (the field became nullable — a rule id on a
 metric no rule governs is a false claim), and the six fixtures whose rows model
 non-fixture provenance (P5, N18, N28, N37, N39, N42) no longer carry the
@@ -517,11 +523,12 @@ Codes beyond the fixture corpus: `SCHEMA_SHAPE_INVALID`, `UNKNOWN_FIELD_PRESENT`
   rewordings are rejected. That is deliberate — prose equivalence judgments do
   not belong in a fail-closed gate — but it means admitting new wording is a
   contract change.
-- **An automation-blocked acquisition is unrepresentable, so it never supports
-  `rights_blocked`.** `acquisition_method` records what happened (on a missing
-  row, typically `not_acquired`), never the counterfactual "acquisition would
-  have required automation". Fail-closed was chosen over inventing an
-  acquisition architecture to represent it.
+- **An automation-blocked or attempted-but-failed acquisition is
+  unrepresentable.** `acquisition_method` records what happened — on a missing
+  row, `not_acquired` is the one state proving acquisition did not occur —
+  never a counterfactual ("acquisition would have required automation") or an
+  attempt. Fail-closed was chosen, twice, over inventing an
+  attempted-acquisition architecture to represent either.
 - **`not_measured` and `definition_incompatible` are not structurally
   cross-checkable.** They assert what a source measures and how it defines it;
   Slice A has no admitted source registry to check them against.

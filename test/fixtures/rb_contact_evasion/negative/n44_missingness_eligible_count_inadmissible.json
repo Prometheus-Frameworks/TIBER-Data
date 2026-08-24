@@ -6,7 +6,7 @@
   "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
   "observations": [
     {
-      "observation_id": "n44-rights-blocked-retaining-eligible-count",
+      "observation_id": "n44-unavailable-source-retaining-eligible-count",
       "mechanism_id": "contact_avoidance",
       "evidence_class": "direct",
       "identity": {
@@ -58,7 +58,7 @@
       },
       "measurement": {
         "status": "missing",
-        "missingness_reason": "rights_blocked",
+        "missingness_reason": "source_unavailable",
         "value": null,
         "numerator": null,
         "denominator": null,
@@ -67,12 +67,12 @@
       "cohort_scope": null,
       "transform": null,
       "source": {
-        "owner": "example_licensed_provider",
-        "product": "synthetic_licensed_contact_feed",
-        "snapshot_id": "synthetic-licensed-snapshot-2025-01-07",
-        "access_class": "licensed_or_gated",
-        "acquisition_method": "manual_citation",
-        "acquisition_notes": "cited under license; the metric value itself is rights-blocked",
+        "owner": "example_unavailable_provider",
+        "product": "synthetic_unavailable_contact_feed",
+        "snapshot_id": "synthetic-unavailable-snapshot-2025-01-07",
+        "access_class": "unavailable",
+        "acquisition_method": "synthetic_fixture",
+        "acquisition_notes": "synthetic fixture modeling an unavailable source; a count was (wrongly) retained",
         "material_kind": "measured_observation",
         "supported_opportunity_types": [
           "rush_attempt",
@@ -82,12 +82,12 @@
         ],
         "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
         "permissions": {
-          "attribution": "not_required",
+          "attribution": "required",
           "retention_and_reproduction": "permitted",
-          "redistribution_and_display": "prohibited",
-          "automated_access": "prohibited"
+          "redistribution_and_display": "permitted",
+          "automated_access": "permitted"
         },
-        "attribution_text": null,
+        "attribution_text": "synthetic attribution statement for example provider (contract fixture)",
         "content_digest": null,
         "promotable": false,
         "provenance_mode": "fixture",
@@ -99,7 +99,7 @@
       ],
       "warnings": [
         "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
-        "negative fixture: a rights-blocked row retaining an exact eligible-opportunity count no measurement justifies"
+        "negative fixture: an unavailable-source row retaining an exact eligible-opportunity count no measurement justifies"
       ]
     }
   ]

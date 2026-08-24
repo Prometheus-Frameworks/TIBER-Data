@@ -1031,16 +1031,96 @@ describe('round five: rights_blocked must name the blocked action', () => {
     }
   });
 
-  it('a restricted access class supports the claim on its own', () => {
-    const artifact = openManualP4({});
-    artifact.observations[0].source.access_class = 'licensed_or_gated';
-    expect(evaluate(artifact).violations).toEqual([]);
+  it('a rights-restricting access class supports the claim only when acquisition did not occur', () => {
+    const notAcquired = openManualP4({});
+    notAcquired.observations[0].source.access_class = 'licensed_or_gated';
+    notAcquired.observations[0].source.acquisition_method = 'not_acquired';
+    expect(evaluate(notAcquired).violations).toEqual([]);
+
+    // The same access label with a declared successful manual acquisition
+    // proves nothing was blocked.
+    const acquired = openManualP4({});
+    acquired.observations[0].source.access_class = 'licensed_or_gated';
+    expect(evaluate(acquired).reason_codes).toEqual(['MISSINGNESS_REASON_UNSUPPORTED']);
   });
 });
 
-describe('cross-product: access class x acquisition method x permission variant for rights_blocked', () => {
+describe('round six: a successful acquisition is never excused by its access label', () => {
+  const P4 = () => mutable('positive', 'p4_rights_blocked_missing_component.json');
+  const allPermitted: RbContactEvasionObservation['source']['permissions'] = {
+    attribution: 'not_required',
+    retention_and_reproduction: 'permitted',
+    redistribution_and_display: 'permitted',
+    automated_access: 'permitted',
+  };
+
+  function rightsRow(
+    accessClass: (typeof rbContactEvasionSourceAccessClassSchema.options)[number],
+    acquisition: RbContactEvasionAcquisitionMethod,
+    permissions: Partial<RbContactEvasionObservation['source']['permissions']> = {},
+  ): RbContactEvasionObservationsV0 {
+    const artifact = P4();
+    const observation = artifact.observations[0];
+    observation.source.access_class = accessClass;
+    observation.source.acquisition_method = acquisition;
+    observation.source.permissions = { ...allPermitted, ...permissions };
+    return artifact;
+  }
+
+  it('lock 1: gated + successful automated ingestion + all permitted -> unsupported', () => {
+    expect(evaluate(rightsRow('licensed_or_gated', 'automated_ingestion')).reason_codes).toEqual([
+      'MISSINGNESS_REASON_UNSUPPORTED',
+    ]);
+  });
+
+  it('lock 2: unavailable + successful automated ingestion -> rejected', () => {
+    expect(evaluate(rightsRow('unavailable', 'automated_ingestion')).reason_codes).toEqual([
+      'MISSINGNESS_REASON_UNSUPPORTED',
+    ]);
+  });
+
+  it('lock 3: unavailable + not acquired + source_unavailable -> valid', () => {
+    const artifact = rightsRow('unavailable', 'not_acquired');
+    artifact.observations[0].measurement.missingness_reason = 'source_unavailable';
+    expect(evaluate(artifact).violations).toEqual([]);
+  });
+
+  it('lock 4: unavailable + not acquired + rights_blocked -> rejected', () => {
+    expect(evaluate(rightsRow('unavailable', 'not_acquired')).reason_codes).toEqual([
+      'MISSINGNESS_REASON_UNSUPPORTED',
+    ]);
+  });
+
+  it('lock 5: unknown access + all permitted + rights_blocked -> rejected', () => {
+    expect(evaluate(rightsRow('unknown', 'not_acquired')).reason_codes).toEqual([
+      'MISSINGNESS_REASON_UNSUPPORTED',
+    ]);
+  });
+
+  it('lock 6: licensed/gated or reference-only + not_acquired -> valid', () => {
+    for (const accessClass of ['licensed_or_gated', 'reference_only'] as const) {
+      expect(evaluate(rightsRow(accessClass, 'not_acquired')).violations).toEqual([]);
+    }
+  });
+
+  it('lock 7: open access + retention prohibited or unknown -> valid', () => {
+    for (const retention of ['prohibited', 'unknown'] as const) {
+      const artifact = rightsRow('open_and_ingestible', 'manual_citation', {
+        retention_and_reproduction: retention,
+      });
+      expect(evaluate(artifact).violations).toEqual([]);
+    }
+  });
+});
+
+describe('cross-product: access class x all acquisition modes x permission variant for rights_blocked', () => {
   const accessClasses = rbContactEvasionSourceAccessClassSchema.options;
-  const acquisitions = ['manual_citation', 'not_acquired'] as const;
+  const acquisitions: RbContactEvasionAcquisitionMethod[] = [
+    'automated_ingestion',
+    'manual_citation',
+    'synthetic_fixture',
+    'not_acquired',
+  ];
   const permissionVariants = [
     ['all_permitted', {}],
     ['retention_prohibited', { retention_and_reproduction: 'prohibited' }],
@@ -1048,7 +1128,6 @@ describe('cross-product: access class x acquisition method x permission variant 
     ['redistribution_prohibited', { redistribution_and_display: 'prohibited' }],
     ['automation_prohibited', { automated_access: 'prohibited' }],
   ] as const;
-  const restricted = new Set(['licensed_or_gated', 'reference_only', 'unavailable', 'unknown']);
 
   for (const accessClass of accessClasses) {
     for (const acquisition of acquisitions) {
@@ -1056,14 +1135,28 @@ describe('cross-product: access class x acquisition method x permission variant 
         const retention =
           (variant as { retention_and_reproduction?: string }).retention_and_reproduction ??
           'permitted';
-        const supported = restricted.has(accessClass) || retention !== 'permitted';
+        const automation =
+          (variant as { automated_access?: string }).automated_access ?? 'permitted';
+        // Expected code set, from the action-sensitive model:
+        const expected: RbContactEvasionReasonCode[] = [];
+        if (acquisition === 'automated_ingestion' && automation !== 'permitted') {
+          expected.push('ACQUISITION_MODE_PERMISSION_INCOMPATIBLE');
+        }
+        const accessSupports =
+          acquisition === 'not_acquired' &&
+          (accessClass === 'licensed_or_gated' || accessClass === 'reference_only');
+        if (!(retention !== 'permitted' || accessSupports)) {
+          expected.push('MISSINGNESS_REASON_UNSUPPORTED');
+        }
+        expected.sort();
         it(`${accessClass} / ${acquisition} / ${variantName} -> ${
-          supported ? 'valid' : 'MISSINGNESS_REASON_UNSUPPORTED'
+          expected.length === 0 ? 'valid' : expected.join(',')
         }`, () => {
           const artifact = mutable('positive', 'p4_rights_blocked_missing_component.json');
           const observation = artifact.observations[0];
           observation.source.access_class = accessClass;
           observation.source.acquisition_method = acquisition;
+          // synthetic acquisition requires fixture provenance; P4 already is.
           observation.source.permissions = {
             attribution: 'not_required',
             retention_and_reproduction: 'permitted',
@@ -1073,11 +1166,7 @@ describe('cross-product: access class x acquisition method x permission variant 
           };
           const report = evaluate(artifact);
           expect(report.shape_valid).toBe(true);
-          if (supported) {
-            expect(report.violations).toEqual([]);
-          } else {
-            expect(report.reason_codes).toEqual(['MISSINGNESS_REASON_UNSUPPORTED']);
-          }
+          expect(report.reason_codes).toEqual(expected);
         });
       }
     }
@@ -1147,9 +1236,11 @@ describe('cross-product: missingness reason x eligible count x source state', ()
       eligible_opportunities: eligible,
     };
     // Give each reason a supporting source state so the sweep isolates the
-    // eligible-count dimension.
+    // eligible-count dimension. rights_blocked support requires the declared
+    // acquisition state to prove acquisition did not occur.
     if (reason === 'rights_blocked') {
       observation.source.access_class = 'licensed_or_gated';
+      observation.source.acquisition_method = 'not_acquired';
     } else if (reason === 'source_unavailable') {
       observation.source.access_class = 'unavailable';
     }
@@ -1158,21 +1249,26 @@ describe('cross-product: missingness reason x eligible count x source state', ()
 
   for (const reason of reasons) {
     for (const eligible of [null, 12, 203] as const) {
-      let expected: RbContactEvasionReasonCode | null;
+      let expected: RbContactEvasionReasonCode[];
       if (reason === 'below_minimum_sample') {
         // multi_week threshold is 20: 12 proves the claim, null cannot, 203 disproves it.
-        expected = eligible === 12 ? null : 'BELOW_MINIMUM_SAMPLE_UNPROVABLE';
+        expected = eligible === 12 ? [] : ['BELOW_MINIMUM_SAMPLE_UNPROVABLE'];
+      } else if (eligible === null) {
+        expected = [];
+      } else if (reason === 'rights_blocked') {
+        // A retained count under a not_acquired source is doubly wrong: the
+        // count is inadmissible for the reason AND incoherent with the
+        // declared non-acquisition.
+        expected = ['ACQUISITION_MODE_INCOHERENT', 'MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE'];
       } else {
-        expected = eligible === null ? null : 'MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE';
+        expected = ['MISSINGNESS_ELIGIBLE_COUNT_INADMISSIBLE'];
       }
-      it(`${reason} with eligible=${JSON.stringify(eligible)} -> ${expected ?? 'valid'}`, () => {
+      it(`${reason} with eligible=${JSON.stringify(eligible)} -> ${
+        expected.length === 0 ? 'valid' : expected.join(',')
+      }`, () => {
         const report = evaluate(missingRow(reason, eligible));
         expect(report.shape_valid).toBe(true);
-        if (expected === null) {
-          expect(report.violations).toEqual([]);
-        } else {
-          expect(report.reason_codes).toEqual([expected]);
-        }
+        expect(report.reason_codes).toEqual(expected);
       });
     }
   }
