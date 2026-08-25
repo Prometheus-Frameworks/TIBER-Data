@@ -2562,3 +2562,110 @@ def test_no_test_writes_to_the_checkout_dist(tmp_path: Path) -> None:
     needle = "REPO_ROOT" + ' / "' + "dist"  # assembled so it is not a literal here
     assert needle not in scanned
     assert ("poisoned" + "_dist") not in scanned
+
+
+def test_transport_success_then_extra_line_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A success line FIRST, followed by any extra line, must be refused.
+
+    The parser reads the first line, so without the "exactly one line" check a
+    bridge could emit a success and then trailing output and have the success
+    admitted. This is the case the multiple-response check exists for.
+    """
+
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: true, report: {valid: true, shape_valid: true, "
+        "reason_codes: [], violations: []}});\n"
+        "if (process.argv[2] === 'constants') { console.log(c); }\n"
+        "else { console.log(e); console.log('trailing junk'); }\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+    assert not any(a.contract and a.contract["valid"] for a in result.artifacts)
+
+
+def test_receipt_hashes_the_snapshot_not_the_working_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The receipt must hash the immutable snapshot, never the live working tree.
+
+    The working-tree source is drifted in the window *after* the snapshot is
+    copied but *before* the hash loop runs (hooking the snapshot's symlink
+    creation, which sits exactly there). If the code hashed the working tree the
+    receipt would record the drifted bytes; because it hashes the snapshot, it
+    records the original.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    root = tmp_path / "repo"
+    (root / "src/contracts/v1").mkdir(parents=True)
+    (root / "scripts").mkdir()
+    for cfg in (
+        "tsconfig.json",
+        "package.json",
+        "package-lock.json",
+        "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+    ):
+        (root / cfg).write_bytes((REPO_ROOT / cfg).read_bytes())
+    os.symlink(REPO_ROOT / "node_modules", root / "node_modules", target_is_directory=True)
+    old = (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text()
+    drifted = old.replace(
+        "'rb_contact_evasion_observations_v0.4.0'",
+        "'rb_contact_evasion_observations_v9.9.9-drifted'",
+    )
+    (root / EVALUATOR_ENTRY_SOURCE).write_text(old)
+
+    real_symlink = os.symlink
+    fired = {"done": False}
+
+    def drifting_symlink(src, dst, *args, **kwargs):
+        # The first symlink build_evaluator makes is the snapshot's node_modules,
+        # created after the source is copied and before it is hashed.
+        if not fired["done"]:
+            fired["done"] = True
+            (root / EVALUATOR_ENTRY_SOURCE).write_text(drifted)
+        return real_symlink(src, dst, *args, **kwargs)
+
+    monkeypatch.setattr(gate.os, "symlink", drifting_symlink)
+    build, error = gate.build_evaluator(
+        tsconfig_path=root / "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+        repo_root=root,
+    )
+    assert error is None and build is not None
+    assert fired["done"], "the drift injection did fire"
+    assert (root / EVALUATOR_ENTRY_SOURCE).read_text() == drifted, "the working tree did drift"
+
+    recorded = dict(build.source_files)[EVALUATOR_ENTRY_SOURCE]
+    assert recorded == hashlib.sha256(old.encode()).hexdigest(), (
+        "the receipt must hash the immutable snapshot bytes, not the drifted working tree"
+    )
+    assert recorded != hashlib.sha256(drifted.encode()).hexdigest()
+
+
+def test_tsc_listfiles_escape_detector() -> None:
+    """The escape detector splits repo-local sources from out-of-tree reads.
+
+    This is the logic the snapshot-confinement guards rely on. A path outside the
+    root and outside node_modules is an escape; node_modules declarations and
+    non-path lines are neither source nor escape.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    root = REPO_ROOT
+    stdout = "\n".join(
+        [
+            f"{root}/src/contracts/v1/rbContactEvasionObservationsV0.ts",
+            f"{root}/node_modules/zod/index.d.ts",
+            "/etc/passwd",
+            "/some/other/repo/evil.ts",
+            "Files:",
+        ]
+    )
+    sources, escapes = gate._tsc_repo_local_sources(stdout, root)
+    assert sources == ["src/contracts/v1/rbContactEvasionObservationsV0.ts"]
+    assert set(escapes) == {"/etc/passwd", "/some/other/repo/evil.ts"}
