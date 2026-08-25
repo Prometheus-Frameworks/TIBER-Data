@@ -332,3 +332,12 @@ does not claim to be one.
 - **The build trusts `tsc`.** Identity means "deterministically produced from
   this source by the repository's pinned compiler". A compromised toolchain is
   not in scope.
+- **Four guards are redundant, and are recorded as such.** Mutation testing
+  shows that disabling any one of them individually changes no outcome, because
+  another rule already covers every case it would admit: the
+  rejection-names-a-violation and acceptance-carries-no-violation rules are
+  covered by the reason-code and code-agreement rules; the empty-violation
+  backstop is covered by the closing sweep; and the entry-source check is
+  covered by the emitted-output check. They are kept as defence-in-depth — with
+  all four covering rules removed together, the escapes reappear immediately —
+  but no test claims they are individually necessary.

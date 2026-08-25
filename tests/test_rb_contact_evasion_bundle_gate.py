@@ -2093,8 +2093,13 @@ def test_swapped_module_cannot_deliver_a_verdict(tmp_path: Path, fresh_evaluator
 def test_build_surface_that_omits_the_contract_is_refused(tmp_path: Path) -> None:
     """A build that never compiled the canonical contract is not an evaluator.
 
-    Without this check a tsconfig pointing anywhere else would still produce a
-    "build", and the gate would run whatever it emitted.
+    Honest note on which control does the work: ``tsc`` derives its output path
+    from the input path, so a tsconfig pointing anywhere else emits nothing at
+    the expected location and the *emitted-output* check refuses the build first.
+    The entry-source check behind it is defence-in-depth for a future change to
+    the output mapping, and mutation testing records it as redundant today
+    rather than claiming a necessity it does not have. This asserts the exact
+    code so the test cannot drift into implying otherwise.
     """
 
     other = tmp_path / "elsewhere"
@@ -2118,10 +2123,7 @@ def test_build_surface_that_omits_the_contract_is_refused(tmp_path: Path) -> Non
     )
     build, error = build_evaluator(tsconfig_path=tsconfig, repo_root=other)
     assert build is None
-    assert error is not None and error["error"] in {
-        "evaluator_entry_not_compiled",
-        "evaluator_build_incomplete",
-    }
+    assert error is not None and error["error"] == "evaluator_build_incomplete"
 
 
 def test_a_bundle_declaring_no_artifact_can_never_pass(
