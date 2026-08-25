@@ -365,6 +365,7 @@ does not claim to be one.
   "deterministically produced from this source by the repository's lock-pinned
   compiler". The gate verifies the compiler's version against the lockfile, but
   a compromised toolchain binary or a compromised Node is out of scope.
+- **Some guards are redundant defence-in-depth.** Mutation testing records that the exact failure-envelope check and the snapshot-compile escape / un-snapshotted checks kill no test individually: an `ok:false` response already fails closed whatever its shape, and confining the compile to the snapshot directory already prevents a repo-local read from outside it. They are kept as belt-and-braces; the escape-detector logic is unit-tested directly.
 - **Module execution uses a Node loader hook.** The authenticated bytes are run
   from memory (never reopened), which closes the hash-then-reopen window. This
   relies on Node's built-in `module.register` customization hooks -- no new
