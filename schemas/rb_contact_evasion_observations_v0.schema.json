@@ -1,0 +1,847 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber-data.local/schemas/rb_contact_evasion_observations_v0.schema.json",
+  "title": "rb_contact_evasion_observations_v0 (contract, no artifact)",
+  "description": "Shape gate for the RB contact-evasion source-observation contract (TIBER-Data #234, Slice A). This is a CONTRACT ONLY: no builder, no candidate or promoted artifact, and no admitted source exists under it. One row is one canonical player x one exact football window x one metric definition x one source snapshot x one denominator definition. SEMANTIC AUTHORITY LIVES IN src/contracts/v1/rbContactEvasionObservationsV0.ts, NOT IN THE PAYLOAD: the code-owned metric dictionary fixes each metric's mechanism, admissible opportunity classes, value kind, unit, directionality, numeric domain, canonical inclusion rules, required caveat identities, and rate composition; the code-owned minimum-sample rule fixes the governing threshold; clock origins, acquisition modes, and rights dispositions are closed vocabularies whose combinations are cross-checked. A row restates some of those facts for inspectability and is rejected when it disagrees. The schema is a SHAPE gate: closed vocabularies, all seven clocks with declared origins, and unknown-field rejection. Cross-field contract rules (descriptor agreement, canonical-definition identity, rate arithmetic and component identity, eligible-opportunity/denominator equality, numeric domains, definition drift, clock substitution/availability/total ordering, window-scope coherence, acquisition-permission compatibility, retention of stored values, attribution obligations, digest format, cohort scope, mechanism/metric binding, artifact-level identity and grain uniqueness, transform lineage, fixture-provenance and promoted-position fail-closed rules) are enforced by the contract layer and are NOT expressible here. There is deliberately no score, composite, grade, ranking, percentile, tier, rating, neutral default, fantasy field, or 'elite' judgment anywhere in this schema, and none may be added.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "schema_version",
+    "artifact_position",
+    "generated_at",
+    "contract_ref",
+    "observations"
+  ],
+  "properties": {
+    "artifact_id": {
+      "const": "rb_contact_evasion_observations_v0"
+    },
+    "schema_version": {
+      "const": "rb_contact_evasion_observations_v0.4.0"
+    },
+    "artifact_position": {
+      "$ref": "#/$defs/artifactPosition"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "contract_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/observation"
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "isoDatetime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "mechanismId": {
+      "description": "Closed mechanism universe. 'elusiveness' is not a member: it is a human umbrella term that decomposes into these five separately-observed mechanisms. Evidence for one never satisfies another.",
+      "enum": [
+        "speed",
+        "agility_change_of_direction",
+        "contact_avoidance",
+        "contact_survival",
+        "explosiveness"
+      ]
+    },
+    "evidenceClass": {
+      "enum": [
+        "direct",
+        "normalized",
+        "derived",
+        "external_opinion"
+      ]
+    },
+    "sourceAccessClass": {
+      "enum": [
+        "open_and_ingestible",
+        "public_but_terms_constrained",
+        "licensed_or_gated",
+        "reference_only",
+        "unavailable",
+        "unknown"
+      ]
+    },
+    "provenanceMode": {
+      "enum": [
+        "live",
+        "snapshot",
+        "fixture"
+      ]
+    },
+    "artifactPosition": {
+      "enum": [
+        "fixture_only",
+        "candidate",
+        "promoted"
+      ]
+    },
+    "sourceMaterialKind": {
+      "enum": [
+        "measured_observation",
+        "derived_publication",
+        "editorial_opinion"
+      ]
+    },
+    "opportunityClass": {
+      "enum": [
+        "rushing",
+        "receiving",
+        "combined_rushing_receiving",
+        "athletic_testing"
+      ]
+    },
+    "opportunityType": {
+      "enum": [
+        "rush_attempt",
+        "reception",
+        "target",
+        "touch",
+        "contact_event",
+        "testing_trial"
+      ]
+    },
+    "seasonType": {
+      "enum": [
+        "PRE",
+        "REG",
+        "POST"
+      ]
+    },
+    "windowCompleteness": {
+      "enum": [
+        "single_week",
+        "multi_week",
+        "partial_season",
+        "full_season"
+      ]
+    },
+    "valueKind": {
+      "enum": [
+        "rate",
+        "count",
+        "duration_seconds",
+        "speed_mph"
+      ]
+    },
+    "directionality": {
+      "enum": [
+        "higher_is_more_of_mechanism",
+        "lower_is_more_of_mechanism"
+      ]
+    },
+    "measurementStatus": {
+      "enum": [
+        "observed",
+        "missing"
+      ]
+    },
+    "missingnessReason": {
+      "enum": [
+        "rights_blocked",
+        "source_unavailable",
+        "below_minimum_sample",
+        "not_measured",
+        "definition_incompatible"
+      ]
+    },
+    "identityResolution": {
+      "enum": [
+        "canonical_gsis_id",
+        "unresolved"
+      ]
+    },
+    "position": {
+      "enum": [
+        "QB",
+        "RB",
+        "WR",
+        "TE"
+      ]
+    },
+    "identity": {
+      "description": "Canonical identity. gsis_id is nullable only so an unresolved row can be expressed and then rejected by the contract layer; a name, team, position, or provider id never authorizes identity.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gsis_id",
+        "identity_resolution",
+        "provider_player_id",
+        "display_name_non_authoritative"
+      ],
+      "properties": {
+        "gsis_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "identity_resolution": {
+          "$ref": "#/$defs/identityResolution"
+        },
+        "provider_player_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "display_name_non_authoritative": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "position_at_window",
+        "season",
+        "season_type",
+        "week",
+        "games_included",
+        "window_completeness",
+        "opportunity_class"
+      ],
+      "properties": {
+        "position_at_window": {
+          "$ref": "#/$defs/position"
+        },
+        "season": {
+          "type": "integer",
+          "minimum": 1900
+        },
+        "season_type": {
+          "$ref": "#/$defs/seasonType"
+        },
+        "week": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 22
+        },
+        "games_included": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "window_completeness": {
+          "$ref": "#/$defs/windowCompleteness"
+        },
+        "opportunity_class": {
+          "$ref": "#/$defs/opportunityClass"
+        }
+      }
+    },
+    "clocks": {
+      "description": "All seven clocks, each with its own meaning. The three source clocks are nullable so an unavailable source clock stays null with a declared origin rather than being backfilled. Origins are declared in clockProvenanceMap; substitution and availability contradictions are caught by the contract layer, not here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "window_start",
+        "window_end",
+        "source_observed_at",
+        "source_generated_at",
+        "source_available_at",
+        "retrieved_at",
+        "artifact_generated_at"
+      ],
+      "properties": {
+        "window_start": {
+          "$ref": "#/$defs/isoDatetime"
+        },
+        "window_end": {
+          "$ref": "#/$defs/isoDatetime"
+        },
+        "source_observed_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/isoDatetime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_generated_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/isoDatetime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_available_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/isoDatetime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retrieved_at": {
+          "$ref": "#/$defs/isoDatetime"
+        },
+        "artifact_generated_at": {
+          "$ref": "#/$defs/isoDatetime"
+        }
+      }
+    },
+    "combinedComponentDisclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rushing_component_metric_id",
+        "receiving_component_metric_id",
+        "disclosure"
+      ],
+      "properties": {
+        "rushing_component_metric_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "receiving_component_metric_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "disclosure": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "description": "A checkable statement, not a presence token: the structured component ids must equal the code-owned composition of the combined denominator (touch = rush_attempts + receptions), verified by the contract layer; the prose disclosure remains inspectable context."
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric_id",
+        "source_native_metric_name",
+        "definition_ref",
+        "definition_version",
+        "unit",
+        "value_kind",
+        "directionality",
+        "minimum_sample_rule_id",
+        "inclusion_exclusion_rules",
+        "combined_component_disclosure"
+      ],
+      "properties": {
+        "metric_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source_native_metric_name": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "definition_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "definition_version": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "unit": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "value_kind": {
+          "$ref": "#/$defs/valueKind"
+        },
+        "directionality": {
+          "$ref": "#/$defs/directionality"
+        },
+        "inclusion_exclusion_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "combined_component_disclosure": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/combinedComponentDisclosure"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minimum_sample_rule_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      },
+      "description": "Per-row metric declaration. value_kind, unit, directionality, and inclusion_exclusion_rules are restated for inspectability but are NOT authoritative -- each must equal the code-owned descriptor (inclusion rules are the canonical definition verbatim). minimum_sample_rule_id names the governing rule where sample governance applies (rate metrics and below-minimum-sample claims) and is null on metrics no rule governs; a row can never state a threshold. source_native_metric_name / definition_ref / definition_version are the source-native identity: inspectable, drift-checked, never a redefinition of the canonical metric."
+    },
+    "numerator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric_id",
+        "value"
+      ],
+      "properties": {
+        "metric_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    },
+    "denominator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric_id",
+        "value",
+        "opportunity_type"
+      ],
+      "properties": {
+        "metric_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "value": {
+          "type": "number"
+        },
+        "opportunity_type": {
+          "$ref": "#/$defs/opportunityType"
+        }
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "missingness_reason",
+        "value",
+        "numerator",
+        "denominator",
+        "eligible_opportunities"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/measurementStatus"
+        },
+        "missingness_reason": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/missingnessReason"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "numerator": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/numerator"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "denominator": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/denominator"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "eligible_opportunities": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "description": "Measurement. Missing rows follow a per-reason shape enforced by the contract layer: only below_minimum_sample may (and must) retain an eligible-opportunity count, because only that claim is proven by one; rights_blocked and source_unavailable must be supported by the declared source state. Every stored exact numeric fact, eligible_opportunities included, participates in retention, attribution, and acquisition coherence checks."
+    },
+    "cohortScope": {
+      "description": "Cohort MEMBERSHIP INPUTS only. No percentile, rank, threshold, score, or grade, and none may be added (that boundary is TIBER-Ops #15, unresolved). It states no minimum either: the minimum-sample bar is code-owned.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "position",
+        "season",
+        "season_type",
+        "window_completeness",
+        "window_completeness_disclosure"
+      ],
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/position"
+        },
+        "season": {
+          "type": "integer",
+          "minimum": 1900
+        },
+        "season_type": {
+          "$ref": "#/$defs/seasonType"
+        },
+        "window_completeness": {
+          "$ref": "#/$defs/windowCompleteness"
+        },
+        "window_completeness_disclosure": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "transform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transform_version",
+        "input_metric_ids"
+      ],
+      "properties": {
+        "transform_version": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "input_metric_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner",
+        "product",
+        "snapshot_id",
+        "access_class",
+        "acquisition_method",
+        "acquisition_notes",
+        "material_kind",
+        "supported_opportunity_types",
+        "rights_review_ref",
+        "permissions",
+        "attribution_text",
+        "content_digest",
+        "promotable",
+        "provenance_mode",
+        "superseded_by_snapshot_id"
+      ],
+      "properties": {
+        "owner": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "product": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "access_class": {
+          "$ref": "#/$defs/sourceAccessClass"
+        },
+        "acquisition_method": {
+          "$ref": "#/$defs/acquisitionMethod"
+        },
+        "material_kind": {
+          "$ref": "#/$defs/sourceMaterialKind"
+        },
+        "supported_opportunity_types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/opportunityType"
+          }
+        },
+        "rights_review_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "promotable": {
+          "type": "boolean"
+        },
+        "provenance_mode": {
+          "$ref": "#/$defs/provenanceMode"
+        },
+        "superseded_by_snapshot_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "permissions": {
+          "$ref": "#/$defs/sourcePermissions"
+        },
+        "content_digest": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/contentDigest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "acquisition_notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "attribution_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "observation": {
+      "description": "One canonical player x one exact football window x one metric definition x one source snapshot x one denominator definition.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation_id",
+        "mechanism_id",
+        "evidence_class",
+        "identity",
+        "scope",
+        "clocks",
+        "clock_provenance",
+        "metric",
+        "measurement",
+        "cohort_scope",
+        "transform",
+        "source",
+        "caveat_ids",
+        "warnings"
+      ],
+      "properties": {
+        "observation_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "mechanism_id": {
+          "$ref": "#/$defs/mechanismId"
+        },
+        "evidence_class": {
+          "$ref": "#/$defs/evidenceClass"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "scope": {
+          "$ref": "#/$defs/scope"
+        },
+        "clocks": {
+          "$ref": "#/$defs/clocks"
+        },
+        "metric": {
+          "$ref": "#/$defs/metric"
+        },
+        "measurement": {
+          "$ref": "#/$defs/measurement"
+        },
+        "cohort_scope": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/cohortScope"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "transform": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/transform"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "clock_provenance": {
+          "$ref": "#/$defs/clockProvenanceMap"
+        },
+        "caveat_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/caveatId"
+          }
+        }
+      }
+    },
+    "clockProvenance": {
+      "description": "Which clock a timestamp actually came from. Declared origin replaces the earlier timestamp-equality heuristic, which was unsound in both directions: it rejected a legitimately coincident instant and let an invented sub-second offset launder a substituted retrieval clock.",
+      "enum": [
+        "football_window",
+        "source_supplied",
+        "not_supplied_by_source",
+        "retrieval_clock",
+        "artifact_build_clock"
+      ]
+    },
+    "permissionDisposition": {
+      "enum": [
+        "permitted",
+        "prohibited",
+        "unknown"
+      ]
+    },
+    "attributionDisposition": {
+      "enum": [
+        "required",
+        "not_required",
+        "unknown"
+      ]
+    },
+    "clockProvenanceMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "window_start",
+        "window_end",
+        "source_observed_at",
+        "source_generated_at",
+        "source_available_at",
+        "retrieved_at",
+        "artifact_generated_at"
+      ],
+      "properties": {
+        "window_start": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "window_end": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "source_observed_at": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "source_generated_at": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "source_available_at": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "retrieved_at": {
+          "$ref": "#/$defs/clockProvenance"
+        },
+        "artifact_generated_at": {
+          "$ref": "#/$defs/clockProvenance"
+        }
+      }
+    },
+    "contentDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "properties": {
+        "algorithm": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "value": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "sourcePermissions": {
+      "description": "Rights dispositions stated separately per #234's source-and-rights audit. Every disposition is required; 'unknown' is a real answer that fails closed and is never read as permission.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attribution",
+        "retention_and_reproduction",
+        "redistribution_and_display",
+        "automated_access"
+      ],
+      "properties": {
+        "attribution": {
+          "$ref": "#/$defs/attributionDisposition"
+        },
+        "retention_and_reproduction": {
+          "$ref": "#/$defs/permissionDisposition"
+        },
+        "redistribution_and_display": {
+          "$ref": "#/$defs/permissionDisposition"
+        },
+        "automated_access": {
+          "$ref": "#/$defs/permissionDisposition"
+        }
+      }
+    },
+    "caveatId": {
+      "description": "Closed caveat identities. Required caveats are bound per metric in the code-owned dictionary; free-text warnings remain supplementary display context and carry no obligation.",
+      "enum": [
+        "synthetic_fixture_value",
+        "historical_testing_not_current_form",
+        "explosive_outcome_not_speed_or_agility",
+        "yac_context_and_definition_dependent",
+        "forced_missed_tackle_definitions_differ_by_source",
+        "cross_window_not_comparable",
+        "combined_touch_denominator_disclosed",
+        "snapshot_superseded"
+      ]
+    },
+    "acquisitionMethod": {
+      "description": "Closed acquisition modes, so the automation-permission cross-check binds to a machine-readable mode rather than to prose. Free-text context lives in acquisition_notes.",
+      "enum": [
+        "automated_ingestion",
+        "manual_citation",
+        "synthetic_fixture",
+        "not_acquired"
+      ]
+    }
+  }
+}

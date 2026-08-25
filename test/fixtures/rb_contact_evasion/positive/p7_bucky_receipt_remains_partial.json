@@ -1,0 +1,518 @@
+{
+  "artifact_id": "rb_contact_evasion_observations_v0",
+  "schema_version": "rb_contact_evasion_observations_v0.4.0",
+  "artifact_position": "fixture_only",
+  "generated_at": "2026-08-24T00:00:00+00:00",
+  "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
+  "observations": [
+    {
+      "observation_id": "p7-contact-avoidance",
+      "mechanism_id": "contact_avoidance",
+      "evidence_class": "direct",
+      "identity": {
+        "gsis_id": "00-0039361",
+        "identity_resolution": "canonical_gsis_id",
+        "provider_player_id": null,
+        "display_name_non_authoritative": "Bucky Irving"
+      },
+      "scope": {
+        "position_at_window": "RB",
+        "season": 2024,
+        "season_type": "REG",
+        "week": null,
+        "games_included": 17,
+        "window_completeness": "full_season",
+        "opportunity_class": "rushing"
+      },
+      "clocks": {
+        "window_start": "2024-09-05T00:00:00+00:00",
+        "window_end": "2025-01-06T00:00:00+00:00",
+        "source_observed_at": "2025-01-06T04:00:00+00:00",
+        "source_generated_at": "2025-01-07T12:00:00+00:00",
+        "source_available_at": "2025-01-08T09:00:00+00:00",
+        "retrieved_at": "2025-01-09T15:30:00+00:00",
+        "artifact_generated_at": "2026-08-24T00:00:00+00:00"
+      },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
+      "metric": {
+        "metric_id": "forced_missed_tackles_per_rush_attempt",
+        "source_native_metric_name": "forced missed tackles per rushing attempt",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
+        "unit": "forced_missed_tackles_per_rush_attempt",
+        "value_kind": "rate",
+        "directionality": "higher_is_more_of_mechanism",
+        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
+        "inclusion_exclusion_rules": [
+          "rushing attempts only; kneel-downs and aborted plays excluded"
+        ],
+        "combined_component_disclosure": null
+      },
+      "measurement": {
+        "status": "observed",
+        "missingness_reason": null,
+        "value": 0.305,
+        "numerator": {
+          "metric_id": "forced_missed_tackles_count",
+          "value": 62
+        },
+        "denominator": {
+          "metric_id": "rush_attempts",
+          "value": 203,
+          "opportunity_type": "rush_attempt"
+        },
+        "eligible_opportunities": 203
+      },
+      "cohort_scope": null,
+      "transform": null,
+      "source": {
+        "owner": "example_open_provider",
+        "product": "synthetic_rushing_contact_summary",
+        "snapshot_id": "synthetic-snapshot-2025-01-07",
+        "access_class": "open_and_ingestible",
+        "acquisition_method": "synthetic_fixture",
+        "acquisition_notes": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "material_kind": "measured_observation",
+        "supported_opportunity_types": [
+          "rush_attempt",
+          "contact_event",
+          "touch",
+          "testing_trial"
+        ],
+        "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "required",
+          "retention_and_reproduction": "permitted",
+          "redistribution_and_display": "permitted",
+          "automated_access": "permitted"
+        },
+        "attribution_text": "synthetic attribution statement for example provider (contract fixture)",
+        "content_digest": null,
+        "promotable": false,
+        "provenance_mode": "fixture",
+        "superseded_by_snapshot_id": null
+      },
+      "caveat_ids": [
+        "synthetic_fixture_value",
+        "forced_missed_tackle_definitions_differ_by_source"
+      ],
+      "warnings": [
+        "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
+        "source definitions of a forced missed tackle differ between providers and cannot be silently combined"
+      ]
+    },
+    {
+      "observation_id": "p7-contact-survival",
+      "mechanism_id": "contact_survival",
+      "evidence_class": "direct",
+      "identity": {
+        "gsis_id": "00-0039361",
+        "identity_resolution": "canonical_gsis_id",
+        "provider_player_id": null,
+        "display_name_non_authoritative": "Bucky Irving"
+      },
+      "scope": {
+        "position_at_window": "RB",
+        "season": 2024,
+        "season_type": "REG",
+        "week": null,
+        "games_included": 17,
+        "window_completeness": "full_season",
+        "opportunity_class": "rushing"
+      },
+      "clocks": {
+        "window_start": "2024-09-05T00:00:00+00:00",
+        "window_end": "2025-01-06T00:00:00+00:00",
+        "source_observed_at": "2025-01-06T04:00:00+00:00",
+        "source_generated_at": "2025-01-07T12:00:00+00:00",
+        "source_available_at": "2025-01-08T09:00:00+00:00",
+        "retrieved_at": "2025-01-09T15:30:00+00:00",
+        "artifact_generated_at": "2026-08-24T00:00:00+00:00"
+      },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
+      "metric": {
+        "metric_id": "yards_after_contact_per_rush_attempt",
+        "source_native_metric_name": "yards after contact per rushing attempt",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
+        "unit": "yards_per_rush_attempt",
+        "value_kind": "rate",
+        "directionality": "higher_is_more_of_mechanism",
+        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
+        "inclusion_exclusion_rules": [
+          "rushing attempts only",
+          "yards measured from the first point of defensive contact"
+        ],
+        "combined_component_disclosure": null
+      },
+      "measurement": {
+        "status": "observed",
+        "missingness_reason": null,
+        "value": 3.419,
+        "numerator": {
+          "metric_id": "yards_after_contact_total",
+          "value": 694
+        },
+        "denominator": {
+          "metric_id": "rush_attempts",
+          "value": 203,
+          "opportunity_type": "rush_attempt"
+        },
+        "eligible_opportunities": 203
+      },
+      "cohort_scope": null,
+      "transform": null,
+      "source": {
+        "owner": "example_open_provider",
+        "product": "synthetic_rushing_contact_summary",
+        "snapshot_id": "synthetic-snapshot-2025-01-07",
+        "access_class": "open_and_ingestible",
+        "acquisition_method": "synthetic_fixture",
+        "acquisition_notes": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "material_kind": "measured_observation",
+        "supported_opportunity_types": [
+          "rush_attempt",
+          "contact_event",
+          "touch",
+          "testing_trial"
+        ],
+        "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "required",
+          "retention_and_reproduction": "permitted",
+          "redistribution_and_display": "permitted",
+          "automated_access": "permitted"
+        },
+        "attribution_text": "synthetic attribution statement for example provider (contract fixture)",
+        "content_digest": null,
+        "promotable": false,
+        "provenance_mode": "fixture",
+        "superseded_by_snapshot_id": null
+      },
+      "caveat_ids": [
+        "synthetic_fixture_value",
+        "yac_context_and_definition_dependent"
+      ],
+      "warnings": [
+        "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
+        "yards after contact is affected by role, blocking, leverage, contact location, and the source definition"
+      ]
+    },
+    {
+      "observation_id": "p7-explosiveness",
+      "mechanism_id": "explosiveness",
+      "evidence_class": "derived",
+      "identity": {
+        "gsis_id": "00-0039361",
+        "identity_resolution": "canonical_gsis_id",
+        "provider_player_id": null,
+        "display_name_non_authoritative": "Bucky Irving"
+      },
+      "scope": {
+        "position_at_window": "RB",
+        "season": 2024,
+        "season_type": "REG",
+        "week": null,
+        "games_included": 17,
+        "window_completeness": "full_season",
+        "opportunity_class": "rushing"
+      },
+      "clocks": {
+        "window_start": "2024-09-05T00:00:00+00:00",
+        "window_end": "2025-01-06T00:00:00+00:00",
+        "source_observed_at": "2025-01-06T04:00:00+00:00",
+        "source_generated_at": "2025-01-07T12:00:00+00:00",
+        "source_available_at": "2025-01-08T09:00:00+00:00",
+        "retrieved_at": "2025-01-09T15:30:00+00:00",
+        "artifact_generated_at": "2026-08-24T00:00:00+00:00"
+      },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
+      "metric": {
+        "metric_id": "explosive_rushes_10_plus_per_rush_attempt",
+        "source_native_metric_name": "rushes of 10+ yards per rushing attempt",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
+        "unit": "explosive_rushes_per_rush_attempt",
+        "value_kind": "rate",
+        "directionality": "higher_is_more_of_mechanism",
+        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
+        "inclusion_exclusion_rules": [
+          "rushing attempts only",
+          "an explosive rush is a rush gaining 10 or more yards from scrimmage"
+        ],
+        "combined_component_disclosure": null
+      },
+      "measurement": {
+        "status": "observed",
+        "missingness_reason": null,
+        "value": 0.128,
+        "numerator": {
+          "metric_id": "explosive_rushes_10_plus_count",
+          "value": 26
+        },
+        "denominator": {
+          "metric_id": "rush_attempts",
+          "value": 203,
+          "opportunity_type": "rush_attempt"
+        },
+        "eligible_opportunities": 203
+      },
+      "cohort_scope": null,
+      "transform": {
+        "transform_version": "rb_contact_evasion_rate_v0.1.0",
+        "input_metric_ids": [
+          "explosive_rushes_10_plus_count",
+          "rush_attempts"
+        ]
+      },
+      "source": {
+        "owner": "example_open_provider",
+        "product": "synthetic_rushing_contact_summary",
+        "snapshot_id": "synthetic-snapshot-2025-01-07",
+        "access_class": "open_and_ingestible",
+        "acquisition_method": "synthetic_fixture",
+        "acquisition_notes": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "material_kind": "measured_observation",
+        "supported_opportunity_types": [
+          "rush_attempt",
+          "contact_event",
+          "touch",
+          "testing_trial"
+        ],
+        "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "required",
+          "retention_and_reproduction": "permitted",
+          "redistribution_and_display": "permitted",
+          "automated_access": "permitted"
+        },
+        "attribution_text": "synthetic attribution statement for example provider (contract fixture)",
+        "content_digest": null,
+        "promotable": false,
+        "provenance_mode": "fixture",
+        "superseded_by_snapshot_id": null
+      },
+      "caveat_ids": [
+        "synthetic_fixture_value",
+        "explosive_outcome_not_speed_or_agility"
+      ],
+      "warnings": [
+        "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
+        "explosive outcomes are not pure speed or agility measurements"
+      ]
+    },
+    {
+      "observation_id": "p7-speed-missing",
+      "mechanism_id": "speed",
+      "evidence_class": "direct",
+      "identity": {
+        "gsis_id": "00-0039361",
+        "identity_resolution": "canonical_gsis_id",
+        "provider_player_id": null,
+        "display_name_non_authoritative": "Bucky Irving"
+      },
+      "scope": {
+        "position_at_window": "RB",
+        "season": 2024,
+        "season_type": "REG",
+        "week": null,
+        "games_included": 17,
+        "window_completeness": "full_season",
+        "opportunity_class": "rushing"
+      },
+      "clocks": {
+        "window_start": "2024-09-05T00:00:00+00:00",
+        "window_end": "2025-01-06T00:00:00+00:00",
+        "source_observed_at": "2025-01-06T04:00:00+00:00",
+        "source_generated_at": "2025-01-07T12:00:00+00:00",
+        "source_available_at": "2025-01-08T09:00:00+00:00",
+        "retrieved_at": "2025-01-09T15:30:00+00:00",
+        "artifact_generated_at": "2026-08-24T00:00:00+00:00"
+      },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
+      "metric": {
+        "metric_id": "verified_max_game_speed_mph",
+        "source_native_metric_name": "verified maximum in-game speed",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
+        "unit": "miles_per_hour",
+        "value_kind": "speed_mph",
+        "directionality": "higher_is_more_of_mechanism",
+        "minimum_sample_rule_id": null,
+        "inclusion_exclusion_rules": [
+          "regular-season offensive snaps only"
+        ],
+        "combined_component_disclosure": null
+      },
+      "measurement": {
+        "status": "missing",
+        "missingness_reason": "source_unavailable",
+        "value": null,
+        "numerator": null,
+        "denominator": null,
+        "eligible_opportunities": null
+      },
+      "cohort_scope": null,
+      "transform": null,
+      "source": {
+        "owner": "example_unavailable_provider",
+        "product": "synthetic_game_speed_feed",
+        "snapshot_id": "synthetic-unavailable-snapshot-2025-01-07",
+        "access_class": "unavailable",
+        "acquisition_method": "not_acquired",
+        "acquisition_notes": "not acquired; no admitted verified game-speed source exists for this window",
+        "material_kind": "measured_observation",
+        "supported_opportunity_types": [
+          "rush_attempt",
+          "contact_event",
+          "touch",
+          "testing_trial"
+        ],
+        "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "unknown",
+          "retention_and_reproduction": "unknown",
+          "redistribution_and_display": "unknown",
+          "automated_access": "unknown"
+        },
+        "attribution_text": null,
+        "content_digest": null,
+        "promotable": false,
+        "provenance_mode": "fixture",
+        "superseded_by_snapshot_id": null
+      },
+      "caveat_ids": [
+        "synthetic_fixture_value"
+      ],
+      "warnings": [
+        "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
+        "no admitted verified game-speed source exists for this window; the speed mechanism stays missing and is never inferred from contact-avoidance evidence"
+      ]
+    },
+    {
+      "observation_id": "p7-agility-missing",
+      "mechanism_id": "agility_change_of_direction",
+      "evidence_class": "direct",
+      "identity": {
+        "gsis_id": "00-0039361",
+        "identity_resolution": "canonical_gsis_id",
+        "provider_player_id": null,
+        "display_name_non_authoritative": "Bucky Irving"
+      },
+      "scope": {
+        "position_at_window": "RB",
+        "season": 2024,
+        "season_type": "REG",
+        "week": null,
+        "games_included": 17,
+        "window_completeness": "full_season",
+        "opportunity_class": "rushing"
+      },
+      "clocks": {
+        "window_start": "2024-09-05T00:00:00+00:00",
+        "window_end": "2025-01-06T00:00:00+00:00",
+        "source_observed_at": "2025-01-06T04:00:00+00:00",
+        "source_generated_at": "2025-01-07T12:00:00+00:00",
+        "source_available_at": "2025-01-08T09:00:00+00:00",
+        "retrieved_at": "2025-01-09T15:30:00+00:00",
+        "artifact_generated_at": "2026-08-24T00:00:00+00:00"
+      },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
+      "metric": {
+        "metric_id": "tracking_change_of_direction_events_per_rush_attempt",
+        "source_native_metric_name": "tracked change-of-direction events per rushing attempt",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
+        "unit": "change_of_direction_events_per_rush_attempt",
+        "value_kind": "rate",
+        "directionality": "higher_is_more_of_mechanism",
+        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
+        "inclusion_exclusion_rules": [
+          "rushing attempts only"
+        ],
+        "combined_component_disclosure": null
+      },
+      "measurement": {
+        "status": "missing",
+        "missingness_reason": "rights_blocked",
+        "value": null,
+        "numerator": null,
+        "denominator": null,
+        "eligible_opportunities": null
+      },
+      "cohort_scope": null,
+      "transform": null,
+      "source": {
+        "owner": "example_gated_provider",
+        "product": "synthetic_tracking_movement_feed",
+        "snapshot_id": "synthetic-gated-snapshot-2025-01-07",
+        "access_class": "licensed_or_gated",
+        "acquisition_method": "not_acquired",
+        "acquisition_notes": "not acquired; the source is gated and no access was attempted for this contract fixture",
+        "material_kind": "measured_observation",
+        "supported_opportunity_types": [
+          "rush_attempt"
+        ],
+        "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "required",
+          "retention_and_reproduction": "prohibited",
+          "redistribution_and_display": "prohibited",
+          "automated_access": "prohibited"
+        },
+        "attribution_text": null,
+        "content_digest": null,
+        "promotable": false,
+        "provenance_mode": "fixture",
+        "superseded_by_snapshot_id": null
+      },
+      "caveat_ids": [
+        "synthetic_fixture_value"
+      ],
+      "warnings": [
+        "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
+        "agility evidence is rights-blocked and stays missing; the receipt is partial by construction"
+      ]
+    }
+  ]
+}

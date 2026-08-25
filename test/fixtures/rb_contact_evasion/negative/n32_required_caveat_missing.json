@@ -1,0 +1,105 @@
+{
+  "artifact_id": "rb_contact_evasion_observations_v0",
+  "schema_version": "rb_contact_evasion_observations_v0.4.0",
+  "artifact_position": "fixture_only",
+  "generated_at": "2026-08-24T00:00:00+00:00",
+  "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
+  "observations": [
+    {
+      "observation_id": "n32-testing-caveat-dropped",
+      "mechanism_id": "speed",
+      "evidence_class": "direct",
+      "identity": {
+        "gsis_id": "00-0000001",
+        "identity_resolution": "canonical_gsis_id",
+        "provider_player_id": "synthetic-provider-id-0001",
+        "display_name_non_authoritative": null
+      },
+      "scope": {
+        "position_at_window": "RB",
+        "season": 2024,
+        "season_type": "PRE",
+        "week": null,
+        "games_included": 0,
+        "window_completeness": "single_week",
+        "opportunity_class": "athletic_testing"
+      },
+      "clocks": {
+        "window_start": "2024-02-29T00:00:00+00:00",
+        "window_end": "2024-03-01T00:00:00+00:00",
+        "source_observed_at": "2024-03-01T18:00:00+00:00",
+        "source_generated_at": "2024-03-02T12:00:00+00:00",
+        "source_available_at": "2024-03-03T09:00:00+00:00",
+        "retrieved_at": "2024-03-04T15:30:00+00:00",
+        "artifact_generated_at": "2026-08-24T00:00:00+00:00"
+      },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
+      "metric": {
+        "metric_id": "forty_yard_dash_seconds",
+        "source_native_metric_name": "40-yard dash (electronic)",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
+        "unit": "seconds",
+        "value_kind": "duration_seconds",
+        "directionality": "lower_is_more_of_mechanism",
+        "minimum_sample_rule_id": null,
+        "inclusion_exclusion_rules": [
+          "single pre-draft testing trial"
+        ],
+        "combined_component_disclosure": null
+      },
+      "measurement": {
+        "status": "observed",
+        "missingness_reason": null,
+        "value": 4.55,
+        "numerator": null,
+        "denominator": null,
+        "eligible_opportunities": 1
+      },
+      "cohort_scope": null,
+      "transform": null,
+      "source": {
+        "owner": "example_open_provider",
+        "product": "synthetic_rushing_contact_summary",
+        "snapshot_id": "synthetic-snapshot-2025-01-07",
+        "access_class": "open_and_ingestible",
+        "acquisition_method": "synthetic_fixture",
+        "acquisition_notes": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "material_kind": "measured_observation",
+        "supported_opportunity_types": [
+          "rush_attempt",
+          "contact_event",
+          "touch",
+          "testing_trial"
+        ],
+        "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "required",
+          "retention_and_reproduction": "permitted",
+          "redistribution_and_display": "permitted",
+          "automated_access": "permitted"
+        },
+        "attribution_text": "synthetic attribution statement for example provider (contract fixture)",
+        "content_digest": null,
+        "promotable": false,
+        "provenance_mode": "fixture",
+        "superseded_by_snapshot_id": null
+      },
+      "caveat_ids": [
+        "synthetic_fixture_value"
+      ],
+      "warnings": [
+        "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
+        "negative fixture: the mandatory historical-testing caveat removed from a testing measurement"
+      ]
+    }
+  ]
+}

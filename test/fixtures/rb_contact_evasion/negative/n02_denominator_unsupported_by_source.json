@@ -1,0 +1,115 @@
+{
+  "artifact_id": "rb_contact_evasion_observations_v0",
+  "schema_version": "rb_contact_evasion_observations_v0.4.0",
+  "artifact_position": "fixture_only",
+  "generated_at": "2026-08-24T00:00:00+00:00",
+  "contract_ref": "docs/contracts/rb-contact-evasion-observations-v0.md",
+  "observations": [
+    {
+      "observation_id": "n02-touch-denominator-unsupported",
+      "mechanism_id": "contact_avoidance",
+      "evidence_class": "direct",
+      "identity": {
+        "gsis_id": "00-0000001",
+        "identity_resolution": "canonical_gsis_id",
+        "provider_player_id": "synthetic-provider-id-0001",
+        "display_name_non_authoritative": null
+      },
+      "scope": {
+        "position_at_window": "RB",
+        "season": 2024,
+        "season_type": "REG",
+        "week": null,
+        "games_included": 17,
+        "window_completeness": "full_season",
+        "opportunity_class": "combined_rushing_receiving"
+      },
+      "clocks": {
+        "window_start": "2024-09-05T00:00:00+00:00",
+        "window_end": "2025-01-06T00:00:00+00:00",
+        "source_observed_at": "2025-01-06T04:00:00+00:00",
+        "source_generated_at": "2025-01-07T12:00:00+00:00",
+        "source_available_at": "2025-01-08T09:00:00+00:00",
+        "retrieved_at": "2025-01-09T15:30:00+00:00",
+        "artifact_generated_at": "2026-08-24T00:00:00+00:00"
+      },
+      "clock_provenance": {
+        "window_start": "football_window",
+        "window_end": "football_window",
+        "source_observed_at": "source_supplied",
+        "source_generated_at": "source_supplied",
+        "source_available_at": "source_supplied",
+        "retrieved_at": "retrieval_clock",
+        "artifact_generated_at": "artifact_build_clock"
+      },
+      "metric": {
+        "metric_id": "forced_missed_tackles_per_touch",
+        "source_native_metric_name": "forced missed tackles per touch",
+        "definition_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary",
+        "definition_version": "synthetic-def-2024.1",
+        "unit": "forced_missed_tackles_per_touch",
+        "value_kind": "rate",
+        "directionality": "higher_is_more_of_mechanism",
+        "minimum_sample_rule_id": "rb_contact_evasion_fixture_only_minimum_sample_v0",
+        "inclusion_exclusion_rules": [
+          "rushing attempts and receptions"
+        ],
+        "combined_component_disclosure": {
+          "rushing_component_metric_id": "rush_attempts",
+          "receiving_component_metric_id": "receptions",
+          "disclosure": "the touch denominator combines rushing attempts and receptions; the components are named and not silently merged"
+        }
+      },
+      "measurement": {
+        "status": "observed",
+        "missingness_reason": null,
+        "value": 0.271,
+        "numerator": {
+          "metric_id": "forced_missed_tackles_count",
+          "value": 68
+        },
+        "denominator": {
+          "metric_id": "touches",
+          "value": 251,
+          "opportunity_type": "touch"
+        },
+        "eligible_opportunities": 251
+      },
+      "cohort_scope": null,
+      "transform": null,
+      "source": {
+        "owner": "example_open_provider",
+        "product": "synthetic_rushing_contact_summary",
+        "snapshot_id": "synthetic-snapshot-2025-01-07",
+        "access_class": "open_and_ingestible",
+        "acquisition_method": "synthetic_fixture",
+        "acquisition_notes": "in-repository synthetic contract fixture; no external source was accessed to produce it",
+        "material_kind": "measured_observation",
+        "supported_opportunity_types": [
+          "rush_attempt"
+        ],
+        "rights_review_ref": "docs/contracts/rb-contact-evasion-observations-v0.md#source-access-and-rights",
+        "permissions": {
+          "attribution": "required",
+          "retention_and_reproduction": "permitted",
+          "redistribution_and_display": "permitted",
+          "automated_access": "permitted"
+        },
+        "attribution_text": "synthetic attribution statement for example provider (contract fixture)",
+        "content_digest": null,
+        "promotable": false,
+        "provenance_mode": "fixture",
+        "superseded_by_snapshot_id": null
+      },
+      "caveat_ids": [
+        "synthetic_fixture_value",
+        "forced_missed_tackle_definitions_differ_by_source",
+        "combined_touch_denominator_disclosed"
+      ],
+      "warnings": [
+        "synthetic contract-fixture value; not acquired provider data and not evidence about any real player",
+        "negative fixture: the denominator says touches but the declared source supports only rush attempts"
+      ]
+    }
+  ]
+}
