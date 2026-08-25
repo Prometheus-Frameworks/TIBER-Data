@@ -55,12 +55,33 @@ there exporting the correct `artifact_id` and `schema_version` while returning
 what code does, so **the gate never reads `dist/` at all.**
 
 Instead it compiles the reviewed contract itself, on demand, with the
-repository's own `tsc` and the committed
-[`scripts/rb_contact_evasion_evaluator.tsconfig.json`](../../scripts/rb_contact_evasion_evaluator.tsconfig.json),
-into a private temporary directory the validating process owns. It then hands
-the bridge the path of what it just built **together with the sha256 of those
-exact bytes**; the bridge re-hashes and refuses to import anything that does not
-match, so a module swapped between build and import cannot be executed.
+**repository-local, lock-pinned** TypeScript compiler
+(`node node_modules/typescript/bin/tsc`) and the committed
+[`scripts/rb_contact_evasion_evaluator.tsconfig.json`](../../scripts/rb_contact_evasion_evaluator.tsconfig.json).
+`npx` is never invoked and `PATH` is never consulted for the compiler, so a
+poisoned `npx`/`tsc` earlier on `PATH` can never run and no package acquisition
+is ever attempted; if the local compiler is absent or its version differs from
+the `package-lock.json` pin, the gate fails closed **before** compiling.
+
+The compile is **race-free by construction**. A discovery pass asks the compiler
+which repo-local sources the contract transitively needs; those files, plus the
+tsconfigs and package manifests, are copied once into a private *immutable*
+snapshot the process owns; the snapshot is what gets compiled, with the snapshot
+as the working directory so repo-local resolution cannot reach the working tree;
+and the receipt hashes the **snapshot** bytes -- exactly the bytes compiled.
+Working-tree drift during compilation therefore cannot produce a module paired
+with a receipt describing different source. Discovery is not an authority: it
+only decides what to copy, and if it under-reports, the snapshot compile fails
+closed rather than reaching outside the snapshot.
+
+Execution is bound to the authenticated bytes with no reopen. The gate hands the
+bridge the built module path and the sha256 of its bytes. The bridge reads the
+module **once**, hashes it, refuses any mismatch, and then executes those
+already-in-memory bytes through a Node module-customization hook -- it never
+opens the path a second time. `zod`, the single runtime import, is resolved
+against the module's original directory. Because the file is authenticated and
+executed from one read, a swap between "hash" and "run" has no window to occupy:
+there is no second open to race.
 
 The build is memoized per process but the memo is *re-checked*, never assumed:
 the fingerprinted sources and the emitted module are re-hashed on every use, so
@@ -88,6 +109,17 @@ actually decides. A test asserts the barrel re-exports exactly that function, so
 If the build cannot be produced — no `npx`, a type error, a missing tsconfig —
 the gate fails closed with `BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE`. It never
 falls back to a build lying around.
+
+### The bridge response is admitted only if it is exactly well-formed
+
+The transport is fail-closed at every step. The bridge's answer is trusted only
+when it exits `0`, prints **exactly one** line, that line is a single strict JSON
+object with no duplicate keys, `ok` is a **real boolean** (never a truthy string
+or number), and the object's key set matches the envelope for the mode exactly:
+`{ok, artifact_id, schema_version}` for constants, `{ok, report}` for evaluate,
+`{ok, error, detail}` for a declared failure. A nonzero exit, no output, extra
+lines (a real refusal followed by a success line), trailing bytes, a mixed
+success/error shape, or any missing or extra field is refused.
 
 ### The evaluator's verdict is validated before it is acted on
 
@@ -318,10 +350,10 @@ does not claim to be one.
   on every payload regardless of how consistent its metadata looks.
 - **`generated_at` is diagnostic only.** It is never compared against, nor
   allowed to substitute for, any contract clock.
-- **The semantic stage compiles on demand.** The gate needs `node`, `npx` and
-  the repository's dev dependencies installed; the first validation in a process
-  spends a few seconds compiling. Without them it fails closed rather than
-  falling back to any build on disk.
+- **The semantic stage compiles on demand.** The gate needs `node` and the
+  repository-local, lock-pinned TypeScript compiler; the first validation in a
+  process spends a few seconds compiling. Without them it fails closed. It never
+  uses `npx` and never acquires a package.
 - **`node_modules` is not hashed.** The compiled evaluator imports `zod` at run
   time. The gate binds the TypeScript source it compiled and the declared
   dependency pin (`package-lock.json` records `zod`'s integrity hash, and the
@@ -329,9 +361,15 @@ does not claim to be one.
   installed contents of `node_modules`. A tampered dependency tree is outside
   this boundary — it is the same trust boundary every other consumer of the
   contract has.
-- **The build trusts `tsc`.** Identity means "deterministically produced from
-  this source by the repository's pinned compiler". A compromised toolchain is
-  not in scope.
+- **The build trusts the pinned `tsc` and `node`.** Identity means
+  "deterministically produced from this source by the repository's lock-pinned
+  compiler". The gate verifies the compiler's version against the lockfile, but
+  a compromised toolchain binary or a compromised Node is out of scope.
+- **Module execution uses a Node loader hook.** The authenticated bytes are run
+  from memory (never reopened), which closes the hash-then-reopen window. This
+  relies on Node's built-in `module.register` customization hooks -- no new
+  dependency and no bundler -- and on `zod` resolving from the module's original
+  directory.
 - **Four guards are redundant, and are recorded as such.** Mutation testing
   shows that disabling any one of them individually changes no outcome, because
   another rule already covers every case it would admit: the

@@ -25,6 +25,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -1417,68 +1418,55 @@ PERMISSIVE_MODULE = (
 )
 
 
-@pytest.fixture
-def poisoned_dist():
-    """Put a permissive compiled module where a build would normally sit.
+def test_permissive_stale_build_is_never_consulted(tmp_path: Path) -> None:
+    """The exact fail-open Codex first reproduced, in an isolated repository.
 
-    ``dist/`` is gitignored build output, never repository content, and the
-    committed tree is untouched. It is restored by rebuilding afterwards.
+    A permissive module exporting the correct constants sits where ``dist/``
+    would be, in a throwaway copy -- the checkout's ``dist/`` is never touched.
+    N11 must still be rejected for its own reason code, because the gate compiles
+    the reviewed source and never consults the build lying around.
     """
 
-    dist_entry = REPO_ROOT / "dist/src/index.js"
-    existed = dist_entry.exists()
-    previous = dist_entry.read_bytes() if existed else None
-    dist_entry.parent.mkdir(parents=True, exist_ok=True)
-    dist_entry.write_text(PERMISSIVE_MODULE)
-    try:
-        yield dist_entry
-    finally:
-        if previous is not None:
-            dist_entry.write_bytes(previous)
-        else:
-            dist_entry.unlink(missing_ok=True)
+    root = _isolated_repo(tmp_path, (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text())
+    assert "valid: true" in (root / "dist/src/index.js").read_text()
+    bundle = make_bundle(
+        tmp_path / "b",
+        {
+            "observations/a.json": _fixture_path(
+                "n11_canonical_identity_unresolved.json"
+            ).read_bytes()
+        },
+    )
+    result = _run_isolated_gate(root, bundle)
+    assert result["ok"] is False
+    assert result["reason_codes"] == ["CANONICAL_IDENTITY_UNRESOLVED"]
 
 
-def test_permissive_substituted_compiled_module_is_never_consulted(
-    tmp_path: Path, poisoned_dist: Path
+def test_stale_build_does_not_make_a_positive_fixture_pass_for_the_wrong_reason(
+    tmp_path: Path,
 ) -> None:
-    """The exact fail-open Codex reproduced, now closed.
+    """A permissive stale build present in an isolated repo changes nothing.
 
-    A module exporting the correct constants and calling everything valid is
-    sitting on disk. N11 must still be rejected for its own reason code.
+    P2 passes because the freshly compiled reviewed source accepts it, and the
+    receipt names that source -- its module digest is not the stale build's.
     """
 
-    assert "valid: true" in poisoned_dist.read_text(), "the poison really is permissive"
-    result = validate_bundle(
-        bundle_from_fixture(tmp_path / "b", "n11_canonical_identity_unresolved.json")
+    root = _isolated_repo(tmp_path, (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text())
+    stale_digest = hashlib.sha256((root / "dist/src/index.js").read_bytes()).hexdigest()
+    bundle = make_bundle(
+        tmp_path / "b",
+        {
+            "observations/a.json": _fixture_path(
+                "p2_raw_count_without_denominator.json"
+            ).read_bytes()
+        },
     )
-    assert not result.ok
-    assert codes(result) == ["CANONICAL_IDENTITY_UNRESOLVED"]
-    assert result.artifacts[0].contract == {
-        "valid": False,
-        "shape_valid": True,
-        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
-    }
-
-
-def test_stale_compiled_module_with_correct_constants_is_never_consulted(
-    tmp_path: Path, poisoned_dist: Path
-) -> None:
-    """A stale build cannot make a positive fixture pass for the wrong reason."""
-
-    result = validate_bundle(
-        bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
-    )
-    assert result.ok
-    # The pass came from a fresh build of the reviewed source, and the receipt
-    # names it -- not the module sitting in dist/.
-    assert result.evaluator is not None
-    assert result.evaluator["entry_source"] == EVALUATOR_ENTRY_SOURCE
-    built = {entry["path"] for entry in result.evaluator["source_files"]}
+    result = _run_isolated_gate(root, bundle)
+    assert result["ok"] is True
+    assert result["evaluator"]["entry_source"] == EVALUATOR_ENTRY_SOURCE
+    built = {entry["path"] for entry in result["evaluator"]["source_files"]}
     assert EVALUATOR_ENTRY_SOURCE in built
-    assert result.evaluator["module_digest"] != hashlib.sha256(
-        poisoned_dist.read_bytes()
-    ).hexdigest()
+    assert result["evaluator"]["module_digest"] != stale_digest
 
 
 def test_gate_never_reads_the_gitignored_build(tmp_path: Path) -> None:
@@ -1674,6 +1662,9 @@ def test_build_failure_fails_closed(tmp_path: Path, fresh_evaluator_cache) -> No
 
     broken_source = tmp_path / "broken"
     (broken_source / "src/contracts/v1").mkdir(parents=True)
+    os.symlink(REPO_ROOT / "node_modules", broken_source / "node_modules", target_is_directory=True)
+    for cfg in ("tsconfig.json", "package.json", "package-lock.json"):
+        (broken_source / cfg).write_bytes((REPO_ROOT / cfg).read_bytes())
     (broken_source / EVALUATOR_ENTRY_SOURCE).write_text(
         "export const oops: number = 'not a number';\n"
     )
@@ -1769,8 +1760,10 @@ def test_barrel_and_module_expose_the_same_evaluator(tmp_path: Path) -> None:
             }
         )
     )
+    # Use the repository-local compiler, invoked as `node <tsc>`, so this test
+    # never touches PATH's npx/tsc and never risks a registry fetch.
     built = subprocess.run(
-        ["npx", "tsc", "-p", str(tsconfig)],
+        ["node", str(REPO_ROOT / "node_modules/typescript/bin/tsc"), "-p", str(tsconfig)],
         cwd=str(REPO_ROOT),
         capture_output=True,
         check=False,
@@ -2104,6 +2097,9 @@ def test_build_surface_that_omits_the_contract_is_refused(tmp_path: Path) -> Non
 
     other = tmp_path / "elsewhere"
     (other / "src/contracts/v1").mkdir(parents=True)
+    os.symlink(REPO_ROOT / "node_modules", other / "node_modules", target_is_directory=True)
+    for cfg in ("tsconfig.json", "package.json", "package-lock.json"):
+        (other / cfg).write_bytes((REPO_ROOT / cfg).read_bytes())
     decoy = other / "src/contracts/v1/decoy.ts"
     decoy.write_text("export const unrelated = 1;\n")
     tsconfig = tmp_path / "decoy.tsconfig.json"
@@ -2123,7 +2119,13 @@ def test_build_surface_that_omits_the_contract_is_refused(tmp_path: Path) -> Non
     )
     build, error = build_evaluator(tsconfig_path=tsconfig, repo_root=other)
     assert build is None
-    assert error is not None and error["error"] == "evaluator_build_incomplete"
+    # tsc derives its output path from the input path, so a decoy under a
+    # different tree emits nothing at the expected location; the emitted-output
+    # or entry-not-compiled check refuses it before the module is trusted.
+    assert error is not None and error["error"] in {
+        "evaluator_build_incomplete",
+        "evaluator_entry_not_compiled",
+    }
 
 
 def test_a_bundle_declaring_no_artifact_can_never_pass(
@@ -2172,3 +2174,391 @@ def test_backstop_holds_if_the_envelope_check_ever_admits_a_rejection(
     )
     assert not result.ok
     assert codes(result) == ["BUNDLE_SEMANTIC_EVALUATOR_FAILED"]
+
+
+# ---------------------------------------------------------------------------
+# Convergence repair — lifecycle invariant across the whole chain
+# ---------------------------------------------------------------------------
+#
+# One invariant covers: captured reviewed source bytes -> local compiler ->
+# emitted module bytes -> bytes actually executed -> bridge transport ->
+# structurally admitted verdict. These controls exercise each seam.
+
+
+def _liar_bridge(tmp_path: Path, body: str) -> Path:
+    """A stand-in bridge whose behaviour is chosen per test.
+
+    ``body`` is JS that, given `mode`, produces the process's stdout and exit.
+    The constants response is always a well-formed success so the identity
+    stage passes and the test can reach the seam under test -- unless the test
+    is specifically about the constants path.
+    """
+
+    path = tmp_path / "liar_bridge.mjs"
+    path.write_text(body)
+    return path
+
+
+def _run_with_bridge(tmp_path: Path, bridge_body: str, fixture: str, monkeypatch) -> object:
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    bridge = _liar_bridge(tmp_path, bridge_body)
+    monkeypatch.setattr(gate, "BRIDGE_PATH", bridge)
+    root = bundle_from_fixture(tmp_path / "b", fixture)
+    return gate.validate_bundle(root)
+
+
+CONSTANTS_OK = (
+    "const c = JSON.stringify({ok: true, artifact_id: "
+    f"{PINNED_ARTIFACT_ID!r}, schema_version: {PINNED_SCHEMA_VERSION!r}}});\n"
+)
+
+
+# --- Transport: exit code, ok type, single-object, exact envelope -------------
+
+
+def test_transport_success_json_then_nonzero_exit_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A success-looking line followed by exit 9 must fail at the public gate."""
+
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: true, report: {valid: true, shape_valid: true, "
+        "reason_codes: [], violations: []}});\n"
+        "console.log(process.argv[2] === 'constants' ? c : e);\n"
+        "process.exit(9);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert not any(a.contract and a.contract["valid"] for a in result.artifacts)
+
+
+def test_transport_constants_ok_not_boolean_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`ok: "false"` (a truthy non-boolean) in the constants envelope must fail."""
+
+    body = (
+        "const c = JSON.stringify({ok: 'false', artifact_id: "
+        f"{PINNED_ARTIFACT_ID!r}, schema_version: {PINNED_SCHEMA_VERSION!r}}});\n"
+        "console.log(process.argv[2] === 'constants' ? c : '{}');\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE" in codes(result)
+
+
+def test_transport_evaluate_ok_not_boolean_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: 1, report: {valid: true, shape_valid: true, "
+        "reason_codes: [], violations: []}});\n"
+        "console.log(process.argv[2] === 'constants' ? c : e);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+def test_transport_duplicate_ok_key_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A response with a duplicate key must be refused (strict parse)."""
+
+    body = (
+        CONSTANTS_OK
+        + 'const e = \'{"ok": true, "ok": false, "report": {"valid": true, '
+        '"shape_valid": true, "reason_codes": [], "violations": []}}\';\n'
+        "console.log(process.argv[2] === 'constants' ? c : e);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+def test_transport_multiple_json_lines_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A real refusal line followed by a success line must not be admitted."""
+
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: true, report: {valid: true, shape_valid: true, "
+        "reason_codes: [], violations: []}});\n"
+        "if (process.argv[2] === 'constants') { console.log(c); }\n"
+        "else {\n"
+        "  console.log(JSON.stringify({ok: false, error: 'x', detail: 'real refusal'}));\n"
+        "  console.log(e);\n"
+        "}\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+def test_transport_extra_key_in_success_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An evaluate success carrying an extra field must be refused."""
+
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: true, report: {valid: true, shape_valid: true, "
+        "reason_codes: [], violations: []}, override: true});\n"
+        "console.log(process.argv[2] === 'constants' ? c : e);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+def test_transport_mixed_success_error_envelope_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`ok:true` carrying error/detail fields is neither envelope; refuse it."""
+
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: true, error: 'x', detail: 'y'});\n"
+        "console.log(process.argv[2] === 'constants' ? c : e);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+def test_transport_declared_failure_is_honoured(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A well-formed failure envelope fails closed (positive control)."""
+
+    body = (
+        CONSTANTS_OK
+        + "if (process.argv[2] === 'constants') { console.log(c); process.exit(0); }\n"
+        "console.log(JSON.stringify("
+        "{ok: false, error: 'boom', detail: 'the evaluator refused'}));\n"
+        "process.exit(3);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+# --- Toolchain: repo-local only, no npx, no acquisition -----------------------
+
+
+def test_missing_local_typescript_fails_closed_without_npx(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fresh_evaluator_cache
+) -> None:
+    """No local compiler => fail closed, and npx on PATH is never invoked."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    poison = tmp_path / "poison"
+    poison.mkdir()
+    marker = tmp_path / "NPX_RAN"
+    for name in ("npx", "tsc"):
+        exe = poison / name
+        exe.write_text(f"#!/bin/sh\ntouch {marker}\nexit 0\n")
+        exe.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{poison}:{os.environ['PATH']}")
+    monkeypatch.setattr(gate, "EVALUATOR_TS_COMPILER", tmp_path / "absent/tsc")
+
+    build, error = gate.build_evaluator()
+    assert build is None
+    assert error is not None and error["error"] == "evaluator_toolchain_unavailable"
+    assert not marker.exists(), "npx/tsc on PATH must never be executed"
+
+
+def test_version_mismatch_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fresh_evaluator_cache
+) -> None:
+    """An installed compiler whose version != the lockfile pin fails closed."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    fake_pkg = tmp_path / "typescript_package.json"
+    fake_pkg.write_text(json.dumps({"version": "0.0.0-not-pinned"}))
+    monkeypatch.setattr(gate, "EVALUATOR_TS_PACKAGE_JSON", fake_pkg)
+
+    build, error = gate.build_evaluator()
+    assert build is None
+    assert error is not None and error["error"] == "evaluator_toolchain_mismatch"
+
+
+def test_poisoned_npx_earlier_on_path_is_never_executed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fresh_evaluator_cache
+) -> None:
+    """With a working local compiler, a poisoned PATH npx/tsc still never runs."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    poison = tmp_path / "poison"
+    poison.mkdir()
+    marker = tmp_path / "POISON_RAN"
+    for name in ("npx", "tsc"):
+        exe = poison / name
+        exe.write_text(f"#!/bin/sh\ntouch {marker}\nexit 0\n")
+        exe.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{poison}:{os.environ['PATH']}")
+
+    build, error = gate.build_evaluator()
+    assert error is None and build is not None
+    assert not marker.exists(), "the repository-local compiler is used; PATH poison never runs"
+
+
+def test_gate_never_invokes_npx_in_source() -> None:
+    """Structural: no code path in the gate shells out to npx or bare tsc."""
+
+    source = GATE_SCRIPT.read_text()
+    for line in source.splitlines():
+        stripped = line.lstrip()
+        if stripped.startswith("#"):
+            continue
+        assert '"npx"' not in line, line
+        assert "'npx'" not in line, line
+
+
+# --- Source->module binding: race-free snapshot -------------------------------
+
+
+def test_working_tree_drift_during_compile_cannot_forge_the_receipt(
+    tmp_path: Path,
+) -> None:
+    """Finding 2: source drift during the compile window is not admissible.
+
+    An isolated repo is compiled while its working-tree source is rewritten
+    right before the compile pass reads. Because the compile reads an immutable
+    snapshot, the receipt describes the snapshot bytes, never the drifted ones.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    root = tmp_path / "repo"
+    (root / "src/contracts/v1").mkdir(parents=True)
+    (root / "scripts").mkdir()
+    os.symlink(REPO_ROOT / "node_modules", root / "node_modules", target_is_directory=True)
+    for cfg in (
+        "tsconfig.json",
+        "package.json",
+        "package-lock.json",
+        "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+    ):
+        (root / cfg).write_bytes((REPO_ROOT / cfg).read_bytes())
+    old = (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text()
+    drifted = old.replace(
+        "'rb_contact_evasion_observations_v0.4.0'",
+        "'rb_contact_evasion_observations_v9.9.9-drifted'",
+    )
+    (root / EVALUATOR_ENTRY_SOURCE).write_text(old)
+
+    real_run = subprocess.run
+    calls = {"n": 0}
+
+    def draining(argv, **kwargs):
+        if any("tsc" in str(a) for a in argv):
+            calls["n"] += 1
+            if calls["n"] == 2:  # right before the compile pass reads
+                (root / EVALUATOR_ENTRY_SOURCE).write_text(drifted)
+        return real_run(argv, **kwargs)
+
+    import unittest.mock
+
+    with unittest.mock.patch.object(gate.subprocess, "run", draining):
+        build, error = gate.build_evaluator(
+            tsconfig_path=root / "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+            repo_root=root,
+        )
+
+    assert error is None and build is not None
+    recorded = dict(build.source_files)[EVALUATOR_ENTRY_SOURCE]
+    assert recorded == hashlib.sha256(old.encode()).hexdigest()
+    assert recorded != hashlib.sha256(drifted.encode()).hexdigest()
+    module_text = build.module_path.read_text()
+    assert "v0.4.0" in module_text and "drifted" not in module_text
+    assert (root / EVALUATOR_ENTRY_SOURCE).read_text() == drifted  # tree did drift
+
+
+# --- Module->execution binding: single authenticated read --------------------
+
+
+def test_bridge_opens_the_module_exactly_once(tmp_path: Path) -> None:
+    """Finding 3: the module is read once (authentication); execution is in-memory.
+
+    strace shows exactly one openat of the module path across a whole bridge run,
+    so there is no hash-then-reopen window for a swap to exploit.
+    """
+
+    strace = shutil.which("strace")
+    if strace is None:  # pragma: no cover - environment dependent
+        pytest.skip("strace unavailable")
+
+    build, error = ensure_evaluator()
+    assert error is None and build is not None
+    log = tmp_path / "strace.log"
+    subprocess.run(
+        [
+            strace,
+            "-f",
+            "-e",
+            "trace=openat",
+            "-o",
+            str(log),
+            "node",
+            str(BRIDGE_SCRIPT),
+            "constants",
+            str(build.module_path),
+            build.module_digest,
+        ],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    module_name = build.module_path.name
+    opens = [
+        line
+        for line in log.read_text().splitlines()
+        if f'"{build.module_path}"' in line or f'{module_name}", ' in line
+    ]
+    # Exactly one open of the module full path.
+    full_path_opens = [line for line in opens if str(build.module_path) in line]
+    assert len(full_path_opens) == 1, full_path_opens
+
+
+def test_bridge_refuses_a_swapped_module_at_authentication(tmp_path: Path) -> None:
+    """A module whose bytes do not match the expected digest is never executed."""
+
+    module = tmp_path / "module.mjs"
+    module.write_text(PERMISSIVE_MODULE)
+    completed = subprocess.run(
+        ["node", str(BRIDGE_SCRIPT), "constants", str(module), "0" * 64],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode != 0
+    answer = json.loads(completed.stdout.decode().strip())
+    assert answer["ok"] is False
+    assert answer["error"] == "compiled_module_tampered"
+
+
+# --- Finding 5: no test touches the checkout's ambient dist/ ------------------
+
+
+def test_no_test_writes_to_the_checkout_dist(tmp_path: Path) -> None:
+    """The whole module must not reference the checkout's real dist/ as a target.
+
+    Every poisoned-build control lives in an isolated temporary repository. This
+    asserts the test source contains no write to ``REPO_ROOT / "dist"``.
+    """
+
+    source = (TESTS_DIR / "test_rb_contact_evasion_bundle_gate.py").read_text()
+    # Exclude this scanner's own body, which necessarily names the tokens.
+    marker = "def test_no_test_writes_to_the_checkout_dist("
+    scanned = source[: source.index(marker)]
+    needle = "REPO_ROOT" + ' / "' + "dist"  # assembled so it is not a literal here
+    assert needle not in scanned
+    assert ("poisoned" + "_dist") not in scanned

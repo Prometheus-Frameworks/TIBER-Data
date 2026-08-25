@@ -134,6 +134,15 @@ EVALUATOR_FINGERPRINT_EXTRA_PATHS = (
 )
 EVALUATOR_RUNTIME_DEPENDENCY = "zod"
 
+# The compiler is the repository-local, lock-governed TypeScript, invoked as
+# `node <this file>` so PATH is never consulted -- a poisoned `npx`/`tsc` earlier
+# on PATH can never be executed, and no package acquisition is ever attempted.
+EVALUATOR_TS_COMPILER = REPO_ROOT / "node_modules/typescript/bin/tsc"
+EVALUATOR_TS_PACKAGE_JSON = REPO_ROOT / "node_modules/typescript/package.json"
+EVALUATOR_LOCKFILE = REPO_ROOT / "package-lock.json"
+# The entry source, relative form, as tsc reports it.
+EVALUATOR_ENTRY_SOURCE_ABS = (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).as_posix()
+
 # Bounded reads. A declared size above the cap is rejected before anything is
 # read, so a hostile manifest cannot ask the gate to load an arbitrary file.
 MANIFEST_MAX_BYTES = 1_048_576
@@ -580,29 +589,155 @@ def _dependency_pins(repo_root: Path) -> tuple[tuple[str, str], ...]:
     return tuple(pins)
 
 
+def _resolve_toolchain() -> tuple[Path | None, dict[str, Any] | None]:
+    """Return the repository-local TypeScript compiler, or a fail-closed error.
+
+    The compiler must exist locally and its installed version must equal the
+    version pinned in ``package-lock.json``. If it is absent or inconsistent,
+    the gate fails **before** attempting compilation -- it never falls back to
+    ``npx`` or any path that could acquire a package from a registry.
+    """
+
+    if not EVALUATOR_TS_COMPILER.is_file():
+        return None, {
+            "error": "evaluator_toolchain_unavailable",
+            "detail": (
+                "the repository-local TypeScript compiler "
+                f"{_repo_relative(EVALUATOR_TS_COMPILER)} is absent; the gate refuses to acquire "
+                "one and fails closed"
+            ),
+        }
+    try:
+        installed = json.loads(EVALUATOR_TS_PACKAGE_JSON.read_text(encoding="utf-8")).get("version")
+    except (OSError, ValueError) as error:
+        return None, {
+            "error": "evaluator_toolchain_unavailable",
+            "detail": f"could not read the installed TypeScript version: {error}",
+        }
+    try:
+        locked = (
+            json.loads(EVALUATOR_LOCKFILE.read_text(encoding="utf-8"))
+            .get("packages", {})
+            .get("node_modules/typescript", {})
+            .get("version")
+        )
+    except (OSError, ValueError) as error:
+        return None, {
+            "error": "evaluator_toolchain_unavailable",
+            "detail": f"could not read the pinned TypeScript version from the lockfile: {error}",
+        }
+    if not locked:
+        return None, {
+            "error": "evaluator_toolchain_unavailable",
+            "detail": "the lockfile does not pin a TypeScript version",
+        }
+    if installed != locked:
+        return None, {
+            "error": "evaluator_toolchain_mismatch",
+            "detail": (
+                f"installed TypeScript {installed!r} does not match the lockfile pin {locked!r}; "
+                "the gate fails closed rather than compiling with an unpinned compiler"
+            ),
+        }
+    return EVALUATOR_TS_COMPILER, None
+
+
+def _run_local_tsc(
+    compiler: Path, argv: list[str], cwd: Path
+) -> tuple[subprocess.CompletedProcess[bytes] | None, dict[str, Any] | None]:
+    """Invoke the repository-local compiler as ``node <tsc>``.
+
+    PATH is deliberately not consulted for the compiler: the absolute compiler
+    path is passed to ``node``. The child environment carries no ``npm_*`` or
+    proxy configuration, so no registry access can be initiated.
+    """
+
+    env = {
+        "PATH": os.environ.get("PATH", ""),
+        "HOME": os.environ.get("HOME", ""),
+        # Belt and braces: even though tsc is invoked directly, deny npm any
+        # registry, offline-forbid, and silence update checks, in case a
+        # transitive tool ever shells out.
+        "npm_config_offline": "true",
+        "npm_config_registry": "http://127.0.0.1:0/",
+        "NO_UPDATE_NOTIFIER": "1",
+        "CI": "1",
+    }
+    try:
+        completed = subprocess.run(  # noqa: S603 - fixed argv, no shell, absolute compiler
+            ["node", str(compiler), *argv],
+            capture_output=True,
+            timeout=EVALUATOR_BUILD_TIMEOUT_SECONDS,
+            cwd=str(cwd),
+            env=env,
+            check=False,
+        )
+    except FileNotFoundError:
+        return None, {
+            "error": "evaluator_build_unavailable",
+            "detail": "'node' is not on PATH; the evaluator cannot be built from source",
+        }
+    except subprocess.TimeoutExpired:
+        return None, {
+            "error": "evaluator_build_timeout",
+            "detail": f"the build did not finish within {EVALUATOR_BUILD_TIMEOUT_SECONDS}s",
+        }
+    return completed, None
+
+
+def _tsc_repo_local_sources(
+    stdout: str, root: Path
+) -> tuple[list[str], list[str]]:
+    """Split a ``--listFiles`` stdout into (repo-local sources, escapes).
+
+    Repo-local means: under ``root`` and not under ``node_modules`` (which holds
+    only ``.d.ts`` declarations, erased at emit). An "escape" is a listed file
+    that is neither -- a repo-local read from outside the intended tree.
+    """
+
+    repo_local: list[str] = []
+    escapes: list[str] = []
+    for line in stdout.splitlines():
+        listed = line.strip()
+        if not listed.startswith("/"):
+            continue
+        listed_path = Path(listed)
+        try:
+            relative = listed_path.relative_to(root).as_posix()
+        except ValueError:
+            if f"{os.sep}node_modules{os.sep}" not in listed and "/node_modules/" not in listed:
+                escapes.append(listed)
+            continue
+        if relative.startswith("node_modules/"):
+            continue
+        repo_local.append(relative)
+    return repo_local, escapes
+
+
 def build_evaluator(
     tsconfig_path: Path | None = None, repo_root: Path | None = None
 ) -> tuple[EvaluatorBuild | None, dict[str, Any] | None]:
-    """Compile the reviewed contract source into a private directory.
+    """Compile the reviewed contract from an immutable snapshot of its source.
 
-    This is what establishes evaluator identity. Nothing under ``dist/`` is read:
-    a stale or substituted build there is simply never consulted, so it cannot
-    return a permissive verdict no matter which constants it exports.
+    This is what establishes evaluator identity, and it is race-free by
+    construction. The working tree is never the thing compiled or hashed:
 
-    What is hashed, exactly:
+    1. A discovery pass (``--noEmit --listFiles``) asks the local compiler which
+       repo-local source files the contract transitively needs. Discovery is not
+       an authority -- it only decides what to copy.
+    2. Those files, plus the tsconfigs and the package manifests, are copied
+       into a private snapshot directory this process owns. The snapshot is
+       written once and never touched again.
+    3. The snapshot bytes are compiled -- with the snapshot as the working
+       directory, so repo-local module resolution is confined to the snapshot
+       and cannot reach the working tree -- and the emitted module is hashed.
+    4. The receipt hashes the **snapshot** source bytes, i.e. exactly the bytes
+       that were compiled. Working-tree drift during compilation cannot change
+       the snapshot, so the receipt can never describe bytes the compiler did
+       not see.
 
-    * every **repo-local, non-``node_modules``** file the compiler reports it
-      read (``tsc --listFiles``). The list comes from the compiler rather than
-      from a guess here, so it is the true transitive source surface -- for the
-      committed tsconfig that is exactly the contract module, because it imports
-      nothing but ``zod``. If the contract later imports a sibling module, that
-      module joins the fingerprint automatically.
-    * the two tsconfigs, which decide how that source is compiled;
-    * ``package.json`` and ``package-lock.json``, which pin ``zod``.
-
-    ``node_modules`` entries in the compiler's file list are ``.d.ts`` type
-    declarations, erased at emit; they are counted, not hashed, and the
-    installed runtime version is recorded separately.
+    Nothing under ``dist/`` is read. The compiler is the repository-local,
+    lock-pinned TypeScript, never ``npx``.
 
     Returns ``(build, None)`` or ``(None, error)``. It never raises for an
     ordinary build failure: a build that cannot be produced is a gate failure.
@@ -617,118 +752,164 @@ def build_evaluator(
             "detail": f"{_repo_relative(tsconfig)} is absent; the build surface is not defined",
         }
 
-    build_dir = tempfile.TemporaryDirectory(prefix="rb-contact-evasion-evaluator-")
+    compiler, toolchain_error = _resolve_toolchain_for(root)
+    if toolchain_error is not None:
+        return None, toolchain_error
+
+    # 1. Discovery pass over the working tree. Not authoritative.
+    discovery, run_error = _run_local_tsc(
+        compiler, ["-p", str(tsconfig), "--noEmit", "--listFiles"], root
+    )
+    if run_error is not None:
+        return None, run_error
+    disc_stdout = discovery.stdout.decode("utf-8", errors="replace")
+    if discovery.returncode != 0:
+        diagnostics = "\n".join(
+            line for line in disc_stdout.splitlines() if not line.startswith("/")
+        ).strip()
+        return None, {
+            "error": "evaluator_build_failed",
+            "detail": (
+                f"discovery compile of {EVALUATOR_ENTRY_SOURCE} failed "
+                f"(exit {discovery.returncode}): "
+                f"{diagnostics[:600] or discovery.stderr.decode('utf-8', errors='replace')[:600]}"
+            ),
+        }
+    discovered, disc_escapes = _tsc_repo_local_sources(disc_stdout, root)
+    if disc_escapes:
+        return None, {
+            "error": "evaluator_source_escape",
+            "detail": f"discovery read repo-local files outside the tree: {disc_escapes[:4]}",
+        }
+    if EVALUATOR_ENTRY_SOURCE not in discovered:
+        return None, {
+            "error": "evaluator_entry_not_compiled",
+            "detail": (
+                f"discovery did not report reading {EVALUATOR_ENTRY_SOURCE}; the build surface "
+                "does not contain the canonical contract"
+            ),
+        }
+
+    snapshot_dir = tempfile.TemporaryDirectory(prefix="rb-contact-evasion-src-")
+    build_dir = tempfile.TemporaryDirectory(prefix="rb-contact-evasion-out-")
+    snap = Path(snapshot_dir.name)
     out_root = Path(build_dir.name)
 
-    # Node resolves `zod` by walking up from the emitted module, so the private
-    # build directory needs a link to the repository's installed dependencies
-    # and a package.json marking the output as ESM.
+    # 2. Snapshot every discovered source plus the config/lock surface. Copy the
+    #    bytes once; the snapshot is immutable from here on.
+    to_snapshot = sorted(set(discovered) | set(EVALUATOR_FINGERPRINT_EXTRA_PATHS))
+    for relative in to_snapshot:
+        source_path = root / relative
+        target = snap / relative
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(source_path.read_bytes())
+        except OSError as error:
+            snapshot_dir.cleanup()
+            build_dir.cleanup()
+            return None, {
+                "error": "evaluator_source_unreadable",
+                "detail": f"could not snapshot build input {relative}: {error}",
+            }
     try:
+        (snap / "node_modules").symlink_to(root / "node_modules", target_is_directory=True)
         (out_root / "node_modules").symlink_to(root / "node_modules", target_is_directory=True)
         (out_root / "package.json").write_text('{"type": "module"}\n', encoding="utf-8")
     except OSError as error:
+        snapshot_dir.cleanup()
         build_dir.cleanup()
         return None, {
             "error": "evaluator_build_setup_failed",
-            "detail": f"could not prepare the private build directory: {error}",
+            "detail": f"could not prepare the private build directories: {error}",
         }
 
-    try:
-        completed = subprocess.run(  # noqa: S603 - fixed argv, no shell
-            [
-                "npx",
-                "tsc",
-                "-p",
-                str(tsconfig),
-                "--outDir",
-                str(out_root),
-                "--listFiles",
-            ],
-            capture_output=True,
-            timeout=EVALUATOR_BUILD_TIMEOUT_SECONDS,
-            cwd=str(root),
-            env={"PATH": os.environ.get("PATH", ""), "HOME": os.environ.get("HOME", "")},
-            check=False,
-        )
-    except FileNotFoundError:
-        build_dir.cleanup()
-        return None, {
-            "error": "evaluator_build_unavailable",
-            "detail": "'npx' is not on PATH; the evaluator cannot be built from source",
-        }
-    except subprocess.TimeoutExpired:
-        build_dir.cleanup()
-        return None, {
-            "error": "evaluator_build_timeout",
-            "detail": f"the build did not finish within {EVALUATOR_BUILD_TIMEOUT_SECONDS}s",
-        }
+    # 3. Hash the snapshot bytes: this is the authority.
+    source_entries: list[tuple[str, str]] = []
+    for relative in to_snapshot:
+        try:
+            source_entries.append((relative, sha256_hex((snap / relative).read_bytes())))
+        except OSError as error:  # pragma: no cover - just written above
+            snapshot_dir.cleanup()
+            build_dir.cleanup()
+            return None, {
+                "error": "evaluator_source_unreadable",
+                "detail": f"could not hash snapshot input {relative}: {error}",
+            }
 
-    stdout = completed.stdout.decode("utf-8", errors="replace")
-    if completed.returncode != 0:
+    # 4. Compile from the snapshot, confined to it.
+    snap_tsconfig = snap / "scripts/rb_contact_evasion_evaluator.tsconfig.json"
+    if not snap_tsconfig.is_file():
+        snapshot_dir.cleanup()
+        build_dir.cleanup()
+        return None, {
+            "error": "evaluator_tsconfig_missing",
+            "detail": "the snapshot does not contain the evaluator tsconfig",
+        }
+    compile_run, run_error = _run_local_tsc(
+        compiler,
+        ["-p", str(snap_tsconfig), "--outDir", str(out_root), "--listFiles"],
+        snap,
+    )
+    if run_error is not None:
+        snapshot_dir.cleanup()
+        build_dir.cleanup()
+        return None, run_error
+    comp_stdout = compile_run.stdout.decode("utf-8", errors="replace")
+    if compile_run.returncode != 0:
         diagnostics = "\n".join(
-            line for line in stdout.splitlines() if not line.startswith("/")
+            line for line in comp_stdout.splitlines() if not line.startswith("/")
         ).strip()
+        snapshot_dir.cleanup()
         build_dir.cleanup()
         return None, {
             "error": "evaluator_build_failed",
             "detail": (
-                f"compiling {EVALUATOR_ENTRY_SOURCE} failed (exit {completed.returncode}): "
-                f"{diagnostics[:600] or completed.stderr.decode('utf-8', errors='replace')[:600]}"
+                f"compiling {EVALUATOR_ENTRY_SOURCE} from snapshot failed (exit "
+                f"{compile_run.returncode}): "
+                f"{diagnostics[:600] or compile_run.stderr.decode('utf-8', errors='replace')[:600]}"
+            ),
+        }
+
+    # The snapshot compile must have read only snapshot files for repo-local
+    # sources, and every repo-local file it read must have been snapshotted.
+    compiled_local, comp_escapes = _tsc_repo_local_sources(comp_stdout, snap)
+    if comp_escapes:
+        snapshot_dir.cleanup()
+        build_dir.cleanup()
+        return None, {
+            "error": "evaluator_source_escape",
+            "detail": f"the snapshot compile read files outside the snapshot: {comp_escapes[:4]}",
+        }
+    snapshotted = {relative for relative, _ in source_entries}
+    unsnapshotted = sorted(set(compiled_local) - snapshotted)
+    if unsnapshotted:
+        snapshot_dir.cleanup()
+        build_dir.cleanup()
+        return None, {
+            "error": "evaluator_source_escape",
+            "detail": (
+                "the snapshot compile read un-snapshotted repo-local files: "
+                f"{unsnapshotted[:4]}"
+            ),
+        }
+    if EVALUATOR_ENTRY_SOURCE not in compiled_local:
+        snapshot_dir.cleanup()
+        build_dir.cleanup()
+        return None, {
+            "error": "evaluator_entry_not_compiled",
+            "detail": (
+                f"the snapshot compile did not report reading {EVALUATOR_ENTRY_SOURCE}"
             ),
         }
 
     module_path = out_root / EVALUATOR_ENTRY_OUTPUT
     if not module_path.is_file():
+        snapshot_dir.cleanup()
         build_dir.cleanup()
         return None, {
             "error": "evaluator_build_incomplete",
             "detail": f"the build emitted no {EVALUATOR_ENTRY_OUTPUT}",
         }
-
-    source_entries: list[tuple[str, str]] = []
-    node_modules_declarations = 0
-    for line in stdout.splitlines():
-        listed = line.strip()
-        if not listed.startswith("/"):
-            continue
-        listed_path = Path(listed)
-        try:
-            relative = listed_path.relative_to(root).as_posix()
-        except ValueError:
-            node_modules_declarations += 1
-            continue
-        if relative.startswith("node_modules/"):
-            node_modules_declarations += 1
-            continue
-        try:
-            source_entries.append((relative, sha256_hex(listed_path.read_bytes())))
-        except OSError as error:
-            build_dir.cleanup()
-            return None, {
-                "error": "evaluator_source_unreadable",
-                "detail": f"could not hash compiled source {relative}: {error}",
-            }
-
-    if not any(path == EVALUATOR_ENTRY_SOURCE for path, _ in source_entries):
-        build_dir.cleanup()
-        return None, {
-            "error": "evaluator_entry_not_compiled",
-            "detail": (
-                f"the compiler did not report reading {EVALUATOR_ENTRY_SOURCE}; the build surface "
-                "does not contain the canonical contract"
-            ),
-        }
-
-    for extra in EVALUATOR_FINGERPRINT_EXTRA_PATHS:
-        extra_path = root / extra
-        try:
-            source_entries.append((extra, sha256_hex(extra_path.read_bytes())))
-        except OSError as error:
-            build_dir.cleanup()
-            return None, {
-                "error": "evaluator_source_unreadable",
-                "detail": f"could not hash build input {extra}: {error}",
-            }
 
     build = EvaluatorBuild(
         module_path=module_path,
@@ -737,20 +918,41 @@ def build_evaluator(
         source_files=tuple(sorted(source_entries)),
         dependency_pins=_dependency_pins(root),
     )
+    # The snapshot must outlive the build only long enough to have been compiled;
+    # it is retained alongside the output so a reviewer could inspect it, and is
+    # released with the build.
+    build.retained_dir = (snapshot_dir, build_dir)
 
     global _EVALUATOR_BUILD_DIR
     if tsconfig_path is None and repo_root is None:
-        # Only the default build is retained for reuse; the directory must
-        # outlive this function, so the handle is held at module scope.
         if _EVALUATOR_BUILD_DIR is not None:
-            _EVALUATOR_BUILD_DIR.cleanup()
-        _EVALUATOR_BUILD_DIR = build_dir
-    else:
-        # Caller-supplied builds are one-shot; the returned object owns the
-        # directory and releases it when it is garbage collected.
-        build.retained_dir = build_dir
+            for handle in _iter_dir_handles(_EVALUATOR_BUILD_DIR):
+                handle.cleanup()
+        _EVALUATOR_BUILD_DIR = (snapshot_dir, build_dir)
+        build.retained_dir = None
 
     return build, None
+
+
+def _iter_dir_handles(handle: Any):
+    if isinstance(handle, tuple):
+        yield from handle
+    elif handle is not None:
+        yield handle
+
+
+def _resolve_toolchain_for(root: Path) -> tuple[Path | None, dict[str, Any] | None]:
+    """Toolchain resolution scoped to a given repository root (for isolated tests)."""
+
+    if root == REPO_ROOT:
+        return _resolve_toolchain()
+    compiler = root / "node_modules/typescript/bin/tsc"
+    if not compiler.is_file():
+        return None, {
+            "error": "evaluator_toolchain_unavailable",
+            "detail": f"no repository-local TypeScript compiler under {root}",
+        }
+    return compiler, None
 
 
 def ensure_evaluator() -> tuple[EvaluatorBuild | None, dict[str, Any] | None]:
@@ -800,7 +1002,7 @@ def canonical_contract_constants() -> dict[str, Any]:
     build, error = ensure_evaluator()
     if build is None:
         return {"ok": False, **(error or {"error": "evaluator_unavailable", "detail": ""})}
-    return _run_bridge(["constants"], stdin_bytes=b"", build=build)
+    return _run_bridge("constants", stdin_bytes=b"", build=build)
 
 
 def check_contract_identity(manifest: dict[str, Any], failures: list[Failure]) -> bool:
@@ -1342,28 +1544,42 @@ def check_manifest_payload_agreement(
 # ---------------------------------------------------------------------------
 
 
-def _run_bridge(
-    args: list[str], stdin_bytes: bytes, build: EvaluatorBuild
-) -> dict[str, Any]:
-    """Invoke the Node bridge with a minimal environment and no network use.
+# Exact, mutually exclusive bridge response envelopes. A response is admitted
+# only if its key set matches one of these exactly and `ok` is the matching
+# real boolean -- never a truthy non-boolean, never with extra or mixed fields.
+_BRIDGE_CONSTANTS_KEYS = frozenset({"ok", "artifact_id", "schema_version"})
+_BRIDGE_EVALUATE_KEYS = frozenset({"ok", "report"})
+_BRIDGE_FAILURE_KEYS = frozenset({"ok", "error", "detail"})
 
-    The module to import and the digest it must hash to are both supplied by
-    this side, from the build it just produced. The bridge re-hashes before
-    importing, so a module swapped between build and import is refused.
+
+def _bridge_failure(error: str, detail: str) -> dict[str, Any]:
+    return {"ok": False, "error": error, "detail": detail}
+
+
+def _run_bridge(mode: str, stdin_bytes: bytes, build: EvaluatorBuild) -> dict[str, Any]:
+    """Invoke the Node bridge and admit exactly one strict, well-formed response.
+
+    The transport is fail-closed at every step. A response is trusted only when
+    the bridge exits 0, prints exactly one line, that line is a single strict
+    JSON object with no duplicate keys, ``ok`` is a real boolean, and the object's
+    key set matches the envelope for ``mode`` exactly. Anything else -- a nonzero
+    exit, no output, extra lines, trailing bytes, a truthy non-boolean ``ok``,
+    missing or extra fields, a mixed success/error shape -- is refused.
+
+    The module path and its expected digest come from ``build``; the bridge
+    re-hashes and refuses a mismatch, and executes the authenticated bytes
+    in-memory without reopening the path.
     """
 
     if not BRIDGE_PATH.exists():
-        return {
-            "ok": False,
-            "error": "bridge_missing",
-            "detail": f"{_repo_relative(BRIDGE_PATH)} is absent",
-        }
+        return _bridge_failure("bridge_missing", f"{_repo_relative(BRIDGE_PATH)} is absent")
+
     try:
         completed = subprocess.run(  # noqa: S603 - fixed argv, no shell
             [
                 "node",
                 str(BRIDGE_PATH),
-                *args,
+                mode,
                 str(build.module_path),
                 build.module_digest,
             ],
@@ -1375,38 +1591,82 @@ def _run_bridge(
             check=False,
         )
     except FileNotFoundError:
-        return {
-            "ok": False,
-            "error": "node_unavailable",
-            "detail": "the 'node' executable is not on PATH",
-        }
+        return _bridge_failure("node_unavailable", "the 'node' executable is not on PATH")
     except subprocess.TimeoutExpired:
-        return {
-            "ok": False,
-            "error": "bridge_timeout",
-            "detail": f"the bridge did not answer within {BRIDGE_TIMEOUT_SECONDS}s",
-        }
+        return _bridge_failure(
+            "bridge_timeout", f"the bridge did not answer within {BRIDGE_TIMEOUT_SECONDS}s"
+        )
 
-    stdout = completed.stdout.decode("utf-8", errors="replace").strip()
-    if not stdout:
-        return {
-            "ok": False,
-            "error": "bridge_silent",
-            "detail": (
-                f"the bridge exited {completed.returncode} with no output: "
-                f"{completed.stderr.decode('utf-8', errors='replace').strip()[:400]}"
-            ),
-        }
+    stderr_tail = completed.stderr.decode("utf-8", errors="replace").strip()[:400]
+
+    # 1. Exit code must be success. A bridge that prints a success-looking line
+    #    and then exits nonzero is refused here, before its output is trusted.
+    if completed.returncode != 0:
+        return _bridge_failure(
+            "bridge_exit_nonzero",
+            f"the bridge exited {completed.returncode}; its output is not trusted: {stderr_tail}",
+        )
+
+    # 2. Exactly one line of output. No output, or more than one line (a real
+    #    refusal followed by a success line, say), is refused.
     try:
-        payload = json.loads(stdout.splitlines()[-1])
+        text = completed.stdout.decode("utf-8")
+    except UnicodeDecodeError as error:
+        return _bridge_failure(
+            "bridge_unreadable", f"the bridge output is not valid UTF-8: {error}"
+        )
+    lines = [line for line in text.split("\n") if line != ""]
+    if len(lines) == 0:
+        return _bridge_failure(
+            "bridge_silent", f"the bridge exited 0 with no output: {stderr_tail}"
+        )
+    if len(lines) != 1:
+        return _bridge_failure(
+            "bridge_multiple_responses",
+            f"the bridge emitted {len(lines)} lines; exactly one JSON object is required",
+        )
+
+    # 3. Exactly one strict JSON object, no duplicate keys, no JSON constants.
+    try:
+        payload = parse_json_strictly(lines[0].encode("utf-8"))
     except ValueError as error:
-        return {"ok": False, "error": "bridge_unreadable", "detail": f"{error}"}
+        reason = (
+            "bridge_duplicate_key"
+            if "duplicate object key" in str(error)
+            else "bridge_unreadable"
+        )
+        return _bridge_failure(reason, f"the bridge response is not strict JSON: {error}")
     if not isinstance(payload, dict):
-        return {
-            "ok": False,
-            "error": "bridge_unreadable",
-            "detail": "bridge did not answer with an object",
-        }
+        return _bridge_failure("bridge_unreadable", "the bridge response is not a JSON object")
+
+    # 4. `ok` must be a real boolean -- never a truthy string or number.
+    ok = payload.get("ok")
+    if ok is not True and ok is not False:
+        return _bridge_failure(
+            "bridge_ok_not_boolean",
+            f"the bridge response 'ok' is {type(ok).__name__} {ok!r}, not a boolean",
+        )
+
+    keys = frozenset(payload)
+
+    # 5. A declared failure must match the failure envelope exactly.
+    if ok is False:
+        if keys != _BRIDGE_FAILURE_KEYS:
+            return _bridge_failure(
+                "bridge_envelope_invalid",
+                f"failure response keys {sorted(keys)} are not exactly "
+                f"{sorted(_BRIDGE_FAILURE_KEYS)}",
+            )
+        return payload
+
+    # 6. A success must match the envelope for this mode exactly -- never a
+    #    mixed success/error shape, never extra fields.
+    expected = _BRIDGE_CONSTANTS_KEYS if mode == "constants" else _BRIDGE_EVALUATE_KEYS
+    if keys != expected:
+        return _bridge_failure(
+            "bridge_envelope_invalid",
+            f"{mode} success keys {sorted(keys)} are not exactly {sorted(expected)}",
+        )
     return payload
 
 
@@ -1577,7 +1837,7 @@ def evaluate_semantics(artifacts: list[ArtifactState], failures: list[Failure]) 
             artifact.block()
             continue
 
-        answer = _run_bridge(["evaluate"], stdin_bytes=raw, build=build)
+        answer = _run_bridge("evaluate", stdin_bytes=raw, build=build)
         if answer.get("ok") is not True:
             error = answer.get("error")
             reason = (
