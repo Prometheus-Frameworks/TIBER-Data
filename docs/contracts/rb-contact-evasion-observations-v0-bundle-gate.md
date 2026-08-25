@@ -26,7 +26,8 @@ repository allowed to judge whether an observation row is contract-valid.
 bundle bytes
     ↓  manifest gate            (Python, scripts/validate_rb_contact_evasion_bundle.py)
     ↓  committed JSON Schema    (schemas/rb_contact_evasion_observations_v0.schema.json)
-    ↓  canonical evaluator      (src/contracts/v1/rbContactEvasionObservationsV0.ts, compiled)
+    ↓  canonical evaluator      (src/contracts/v1/rbContactEvasionObservationsV0.ts,
+    ↓                            compiled from source by the gate itself)
 verdict
 ```
 
@@ -46,6 +47,71 @@ between digest verification and semantic evaluation in which the file could
 change, and no opportunity for this gate's JSON writer to decide what the
 evaluator sees.
 
+### Evaluator identity is established by building, not by asking
+
+`dist/` is gitignored, so a stale, substituted or permissive module could sit
+there exporting the correct `artifact_id` and `schema_version` while returning
+`valid: true` for every payload. Self-reported constants prove nothing about
+what code does, so **the gate never reads `dist/` at all.**
+
+Instead it compiles the reviewed contract itself, on demand, with the
+repository's own `tsc` and the committed
+[`scripts/rb_contact_evasion_evaluator.tsconfig.json`](../../scripts/rb_contact_evasion_evaluator.tsconfig.json),
+into a private temporary directory the validating process owns. It then hands
+the bridge the path of what it just built **together with the sha256 of those
+exact bytes**; the bridge re-hashes and refuses to import anything that does not
+match, so a module swapped between build and import cannot be executed.
+
+The build is memoized per process but the memo is *re-checked*, never assumed:
+the fingerprinted sources and the emitted module are re-hashed on every use, so
+a source edit or a swapped module forces a rebuild rather than reusing a verdict
+from code that is no longer there.
+
+**Exactly what is hashed**, recorded in the `evaluator` receipt of every result:
+
+| Input | Why |
+|---|---|
+| every repo-local, non-`node_modules` file `tsc --listFiles` reports it read | the true transitive source surface, taken from the compiler rather than guessed. For the committed tsconfig that is exactly `src/contracts/v1/rbContactEvasionObservationsV0.ts`, because it imports nothing but `zod`. If the contract later imports a sibling module, that module joins the fingerprint automatically |
+| `tsconfig.json` and `scripts/rb_contact_evasion_evaluator.tsconfig.json` | they decide how that source is compiled |
+| `package.json` and `package-lock.json` | they pin `zod`, the one runtime dependency the evaluator imports |
+| the emitted `.js` itself | so a reviewer can rebuild and compare digests |
+
+`node_modules` entries in the compiler's file list are `.d.ts` type
+declarations, erased at emit; they are not hashed, and the installed `zod`
+version is recorded separately as a dependency pin.
+
+The gate compiles the module that *defines* the evaluator rather than the
+`src/index.ts` barrel, which keeps the identity-bound surface to the code that
+actually decides. A test asserts the barrel re-exports exactly that function, so
+"the canonical public evaluator" means the same thing it did before.
+
+If the build cannot be produced — no `npx`, a type error, a missing tsconfig —
+the gate fails closed with `BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE`. It never
+falls back to a build lying around.
+
+### The evaluator's verdict is validated before it is acted on
+
+A verdict is the one thing this gate cannot re-derive, so it is read exactly as
+given: no `bool()`, no `list()`, no `or []`. `parse_evaluator_report` requires
+the report's key set to be exactly `{valid, shape_valid, violations,
+reason_codes}`; `valid` and `shape_valid` to be actual booleans (`0`, `1` and
+`"false"` are all refused); `reason_codes` to be a list of unique non-empty
+strings; each violation to be an object with exactly `{reason_code, path,
+detail}`; and the report to agree with itself — a rejection must name at least
+one violation and one reason code, an acceptance must name neither, the reason
+codes must equal the violation codes, and a payload that could not be parsed
+cannot be `valid`.
+
+Anything malformed or self-contradictory produces
+`BUNDLE_SEMANTIC_EVALUATOR_FAILED` and the payload stays unvalidated.
+
+Requiring the exact key set is deliberate: if Slice A's report grows a field,
+this gate fails closed and gets re-reviewed rather than quietly ignoring it.
+
+Finally, success is not "the failure list is empty". A bundle passes only when
+every declared artifact **completed** the semantic stage, and an artifact that
+did not, with no failure explaining why, becomes a failure itself.
+
 ### Why the gate is Python and the evaluator is not
 
 The shape gate is the committed JSON Schema, applied with `jsonschema`, which is
@@ -63,10 +129,8 @@ rules in exactly one place.
 ## Running it
 
 ```bash
-# once, so the compiled contract exists
-npm run build
-
-# human-readable diagnostics; exit 0 pass, 1 fail
+# human-readable diagnostics; exit 0 pass, 1 fail.
+# No build step: the gate compiles the contract itself.
 python3 scripts/validate_rb_contact_evasion_bundle.py <bundle-root>
 
 # machine-readable result on stdout, for CI
@@ -76,11 +140,13 @@ python3 scripts/validate_rb_contact_evasion_bundle.py <bundle-root> --json
 python3 scripts/validate_rb_contact_evasion_bundle.py <bundle-root> --json-out result.json
 ```
 
-Or, building and validating in one step:
+Or through the package script:
 
 ```bash
 npm run check:rb-contact-evasion-bundle -- <bundle-root>
 ```
+
+Both entry points behave identically. Neither trusts an existing build.
 
 Exit codes: `0` the bundle passed every stage, `1` the bundle failed the gate,
 `2` the invocation itself was invalid.
@@ -215,8 +281,9 @@ canonical evaluator.
 | `BUNDLE_ARTIFACT_DUPLICATE_KEY` | the payload repeats an object key |
 | `BUNDLE_ARTIFACT_SCHEMA_INVALID` | the payload fails the committed contract schema |
 | `BUNDLE_MANIFEST_PAYLOAD_DISAGREEMENT` | manifest and payload disagree on identity or position |
-| `BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE` | the canonical evaluator could not be reached |
-| `BUNDLE_SEMANTIC_EVALUATOR_FAILED` | the canonical evaluator returned no readable verdict |
+| `BUNDLE_CONTRACT_IDENTITY_DRIFT` | the compiled contract reports an identity the gate does not pin |
+| `BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE` | the evaluator could not be built from the reviewed source |
+| `BUNDLE_SEMANTIC_EVALUATOR_FAILED` | the evaluator returned no verdict, or a malformed or self-contradictory one |
 
 ## Determinism
 
@@ -251,6 +318,17 @@ does not claim to be one.
   on every payload regardless of how consistent its metadata looks.
 - **`generated_at` is diagnostic only.** It is never compared against, nor
   allowed to substitute for, any contract clock.
-- **The semantic stage needs a build.** `dist/` is gitignored, so a fresh
-  checkout must run `npm run build` before the gate can reach the canonical
-  evaluator. Without it the gate fails closed rather than passing.
+- **The semantic stage compiles on demand.** The gate needs `node`, `npx` and
+  the repository's dev dependencies installed; the first validation in a process
+  spends a few seconds compiling. Without them it fails closed rather than
+  falling back to any build on disk.
+- **`node_modules` is not hashed.** The compiled evaluator imports `zod` at run
+  time. The gate binds the TypeScript source it compiled and the declared
+  dependency pin (`package-lock.json` records `zod`'s integrity hash, and the
+  installed version is recorded in the receipt), but it does not hash the
+  installed contents of `node_modules`. A tampered dependency tree is outside
+  this boundary — it is the same trust boundary every other consumer of the
+  contract has.
+- **The build trusts `tsc`.** Identity means "deterministically produced from
+  this source by the repository's pinned compiler". A compromised toolchain is
+  not in scope.

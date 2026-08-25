@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "sourceMap": false
+  },
+  "files": ["../src/contracts/v1/rbContactEvasionObservationsV0.ts"],
+  "include": []
+}

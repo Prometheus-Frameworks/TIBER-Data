@@ -47,14 +47,18 @@ import test_rb_contact_evasion_observations_v0 as slice_a  # noqa: E402
 
 from scripts.validate_rb_contact_evasion_bundle import (  # noqa: E402
     ADMITTED_DIGEST_ALGORITHMS,
+    EVALUATOR_ENTRY_SOURCE,
     FORBIDDEN_MANIFEST_KEYS,
     MANIFEST_FILENAME,
     PINNED_ARTIFACT_ID,
     PINNED_MANIFEST_VERSION,
     PINNED_SCHEMA_VERSION,
     GateUsageError,
+    build_evaluator,
     canonical_contract_constants,
+    ensure_evaluator,
     main,
+    parse_evaluator_report,
     validate_bundle,
 )
 
@@ -73,22 +77,30 @@ MANDATED_NEGATIVE_FIXTURES = dict(slice_a.MANDATED_NEGATIVE_FIXTURES)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def compiled_contract() -> None:
-    """Ensure the compiled Slice A contract exists, building it if necessary.
+def evaluator_is_buildable() -> None:
+    """The gate compiles the contract itself; prove that works before anything else.
 
-    ``dist/`` is a build output, not repository content, so building it mutates
-    nothing the gate validates.
+    Nothing here touches ``dist/``. If the build cannot be produced the tests
+    fail rather than skip, because a skipped semantic stage is exactly the false
+    pass the gate exists to prevent.
     """
 
-    compiled = REPO_ROOT / "dist/src/index.js"
-    if not compiled.exists():
-        subprocess.run(  # noqa: S603 - fixed argv, no shell
-            ["npm", "run", "build"], cwd=str(REPO_ROOT), check=True, capture_output=True
-        )
-    assert compiled.exists(), (
-        "the compiled Slice A contract is required: the gate delegates every semantic "
-        "judgment to it, and a run without it is a failure, never a skip"
+    build, error = ensure_evaluator()
+    assert build is not None, (
+        "the gate must be able to compile the canonical contract from source; "
+        f"it could not: {error}"
     )
+
+
+@pytest.fixture
+def fresh_evaluator_cache():
+    """Clear the per-process build memo around a test that perturbs the build."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    gate._EVALUATOR_BUILD = None
+    yield
+    gate._EVALUATOR_BUILD = None
 
 
 # ---------------------------------------------------------------------------
@@ -1285,19 +1297,22 @@ def test_cli_usage_error_exit_code(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_unreachable_evaluator_fails_closed(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+def test_unbuildable_evaluator_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fresh_evaluator_cache
 ) -> None:
     """No evaluator, no pass. A missing authority is never a silent skip."""
 
     import scripts.validate_rb_contact_evasion_bundle as gate
 
-    monkeypatch.setattr(gate, "COMPILED_CONTRACT_PATH", tmp_path / "absent.js")
+    monkeypatch.setattr(gate, "EVALUATOR_TSCONFIG_PATH", tmp_path / "absent.tsconfig.json")
     root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
     result = gate.validate_bundle(root)
     assert not result.ok
-    assert "BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE" in codes(result)
+    # One code, not two: the manifest-scoped identity failure already explains
+    # why no artifact reached the semantic stage.
+    assert codes(result) == ["BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE"]
     assert all(artifact.contract is None for artifact in result.artifacts)
+    assert result.evaluator is None, "no receipt is emitted when nothing was built"
 
 
 def test_broken_bridge_fails_closed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1379,3 +1394,779 @@ def test_slice_b_did_not_modify_slice_a_contract_files() -> None:
 
 def test_admitted_digest_algorithms_are_exactly_sha256() -> None:
     assert ADMITTED_DIGEST_ALGORITHMS == frozenset({"sha256"})
+
+
+# ---------------------------------------------------------------------------
+# Review repair 1: evaluator identity is established by build, never asserted
+# ---------------------------------------------------------------------------
+#
+# Codex reproduced a fail-open at 0b48acf: a permissive module under the
+# gitignored ``dist/`` exporting the correct artifact id and schema version made
+# the gate return ok:true for the committed, shape-valid N11 fixture. Identity
+# is now established by compiling the reviewed source, so a compiled module on
+# disk -- stale, substituted or permissive -- is never consulted at all.
+
+
+PERMISSIVE_MODULE = (
+    'export const RB_CONTACT_EVASION_ARTIFACT_ID = "rb_contact_evasion_observations_v0";\n'
+    'export const RB_CONTACT_EVASION_SCHEMA_VERSION = '
+    '"rb_contact_evasion_observations_v0.4.0";\n'
+    "export function evaluateRbContactEvasionObservationsV0() {\n"
+    "  return { valid: true, shape_valid: true, violations: [], reason_codes: [] };\n"
+    "}\n"
+)
+
+
+@pytest.fixture
+def poisoned_dist():
+    """Put a permissive compiled module where a build would normally sit.
+
+    ``dist/`` is gitignored build output, never repository content, and the
+    committed tree is untouched. It is restored by rebuilding afterwards.
+    """
+
+    dist_entry = REPO_ROOT / "dist/src/index.js"
+    existed = dist_entry.exists()
+    previous = dist_entry.read_bytes() if existed else None
+    dist_entry.parent.mkdir(parents=True, exist_ok=True)
+    dist_entry.write_text(PERMISSIVE_MODULE)
+    try:
+        yield dist_entry
+    finally:
+        if previous is not None:
+            dist_entry.write_bytes(previous)
+        else:
+            dist_entry.unlink(missing_ok=True)
+
+
+def test_permissive_substituted_compiled_module_is_never_consulted(
+    tmp_path: Path, poisoned_dist: Path
+) -> None:
+    """The exact fail-open Codex reproduced, now closed.
+
+    A module exporting the correct constants and calling everything valid is
+    sitting on disk. N11 must still be rejected for its own reason code.
+    """
+
+    assert "valid: true" in poisoned_dist.read_text(), "the poison really is permissive"
+    result = validate_bundle(
+        bundle_from_fixture(tmp_path / "b", "n11_canonical_identity_unresolved.json")
+    )
+    assert not result.ok
+    assert codes(result) == ["CANONICAL_IDENTITY_UNRESOLVED"]
+    assert result.artifacts[0].contract == {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+    }
+
+
+def test_stale_compiled_module_with_correct_constants_is_never_consulted(
+    tmp_path: Path, poisoned_dist: Path
+) -> None:
+    """A stale build cannot make a positive fixture pass for the wrong reason."""
+
+    result = validate_bundle(
+        bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    )
+    assert result.ok
+    # The pass came from a fresh build of the reviewed source, and the receipt
+    # names it -- not the module sitting in dist/.
+    assert result.evaluator is not None
+    assert result.evaluator["entry_source"] == EVALUATOR_ENTRY_SOURCE
+    built = {entry["path"] for entry in result.evaluator["source_files"]}
+    assert EVALUATOR_ENTRY_SOURCE in built
+    assert result.evaluator["module_digest"] != hashlib.sha256(
+        poisoned_dist.read_bytes()
+    ).hexdigest()
+
+
+def test_gate_never_reads_the_gitignored_build(tmp_path: Path) -> None:
+    """Structural backstop: no code path in the gate or bridge opens dist/."""
+
+    for source in (GATE_SCRIPT.read_text(), BRIDGE_SCRIPT.read_text()):
+        code_lines = [
+            line
+            for line in source.splitlines()
+            if "dist" in line
+            and not line.lstrip().startswith(("#", "*", "//"))
+            and "``dist" not in line
+        ]
+        assert code_lines == [], code_lines
+
+
+def test_receipt_records_the_compiled_source_surface() -> None:
+    """The receipt says exactly what was hashed, and is stable across runs."""
+
+    build, error = ensure_evaluator()
+    assert error is None and build is not None
+    receipt = build.receipt()
+
+    paths = [entry["path"] for entry in receipt["source_files"]]
+    assert EVALUATOR_ENTRY_SOURCE in paths
+    for required in (
+        "tsconfig.json",
+        "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+        "package.json",
+        "package-lock.json",
+    ):
+        assert required in paths, required
+    assert paths == sorted(paths)
+    assert all(len(entry["sha256"]) == 64 for entry in receipt["source_files"])
+    assert len(receipt["source_fingerprint"]) == 64
+    assert len(receipt["module_digest"]) == 64
+    assert [pin["name"] for pin in receipt["dependency_pins"]] == ["zod"]
+
+    # Repo-relative only: two machines validating one source must agree.
+    assert str(REPO_ROOT) not in json.dumps(receipt)
+
+
+def test_receipt_matches_the_committed_contract_source() -> None:
+    """The hash in the receipt is the hash of the file a reviewer can read."""
+
+    build, _ = ensure_evaluator()
+    assert build is not None
+    recorded = {entry[0]: entry[1] for entry in build.source_files}
+    on_disk = hashlib.sha256((REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_bytes()).hexdigest()
+    assert recorded[EVALUATOR_ENTRY_SOURCE] == on_disk
+
+
+def _isolated_repo(tmp_path: Path, contract_source: str) -> Path:
+    """A minimal repository copy whose contract source has been modified.
+
+    The committed contract is never touched: everything here is a copy, and the
+    modification exists only to prove the verdict follows the source that was
+    compiled rather than any build lying around.
+    """
+
+    root = tmp_path / "repo"
+    (root / "src/contracts/v1").mkdir(parents=True)
+    (root / "scripts").mkdir()
+    (root / "schemas").mkdir()
+    (root / "dist/src").mkdir(parents=True)
+
+    for relative in (
+        "tsconfig.json",
+        "package.json",
+        "package-lock.json",
+        "scripts/validate_rb_contact_evasion_bundle.py",
+        "scripts/rb_contact_evasion_contract_bridge.mjs",
+        "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+        "schemas/rb_contact_evasion_observations_v0.schema.json",
+        "schemas/rb_contact_evasion_observations_bundle_manifest_v0.schema.json",
+    ):
+        (root / relative).write_bytes((REPO_ROOT / relative).read_bytes())
+
+    (root / EVALUATOR_ENTRY_SOURCE).write_text(contract_source)
+    os.symlink(REPO_ROOT / "node_modules", root / "node_modules", target_is_directory=True)
+    # A stale, correct-constants build already sitting where dist/ would be.
+    (root / "dist/src/index.js").write_text(PERMISSIVE_MODULE)
+    return root
+
+
+def _run_isolated_gate(root: Path, bundle: Path) -> dict:
+    completed = subprocess.run(
+        [sys.executable, str(root / "scripts/validate_rb_contact_evasion_bundle.py"),
+         str(bundle), "--json"],
+        cwd=str(root),
+        capture_output=True,
+        check=False,
+    )
+    assert completed.stdout, completed.stderr.decode()
+    return json.loads(completed.stdout)
+
+
+def test_modified_contract_source_changes_the_verdict_despite_a_stale_build(
+    tmp_path: Path,
+) -> None:
+    """Control 3: modified canonical source, unchanged existing dist.
+
+    The isolated copy carries a permissive ``dist/`` *and* a contract whose
+    declared schema version has been altered. If the gate were trusting the
+    build on disk it would report the pinned version and pass; instead it
+    reports drift, which can only come from compiling the modified source.
+    """
+
+    source = (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text()
+    altered = source.replace(
+        "'rb_contact_evasion_observations_v0.4.0'",
+        "'rb_contact_evasion_observations_v0.9.9-modified'",
+    )
+    assert altered != source
+
+    root = _isolated_repo(tmp_path, altered)
+    bundle = make_bundle(
+        tmp_path / "bundle",
+        {
+            "observations/a.json": _fixture_path(
+                "p2_raw_count_without_denominator.json"
+            ).read_bytes()
+        },
+    )
+    result = _run_isolated_gate(root, bundle)
+    assert result["ok"] is False
+    assert "BUNDLE_CONTRACT_IDENTITY_DRIFT" in result["reason_codes"]
+    assert any(
+        "0.9.9-modified" in failure["detail"] for failure in result["failures"]
+    ), result["failures"]
+
+
+def test_modified_contract_behaviour_changes_the_verdict_despite_a_stale_build(
+    tmp_path: Path,
+) -> None:
+    """Control 3, behavioural half: a source edit changes what is accepted.
+
+    Again in an isolated copy with a permissive ``dist/``. The edit inverts one
+    existing guard, so the normally-valid ``fixture_only`` P2 fixture is refused
+    instead of ``promoted``. If the stale build were being used, P2 would pass.
+    """
+
+    source = (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text()
+    altered = source.replace(
+        "if (artifact.artifact_position === 'promoted') {",
+        "if (artifact.artifact_position !== 'promoted') {",
+    )
+    assert altered != source
+
+    root = _isolated_repo(tmp_path, altered)
+    bundle = make_bundle(
+        tmp_path / "bundle",
+        {
+            "observations/a.json": _fixture_path(
+                "p2_raw_count_without_denominator.json"
+            ).read_bytes()
+        },
+    )
+    result = _run_isolated_gate(root, bundle)
+    assert result["ok"] is False
+    assert result["reason_codes"] == ["PROMOTED_POSITION_REQUIRES_PROMOTION_GATE"]
+
+
+def test_correctly_rebuilt_current_evaluator_passes(tmp_path: Path) -> None:
+    """Control 4: an unmodified isolated copy reproduces the committed verdicts."""
+
+    root = _isolated_repo(tmp_path, (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text())
+    positive = make_bundle(
+        tmp_path / "pos",
+        {
+            "observations/a.json": _fixture_path(
+                "p2_raw_count_without_denominator.json"
+            ).read_bytes()
+        },
+    )
+    assert _run_isolated_gate(root, positive)["ok"] is True
+
+    negative = make_bundle(
+        tmp_path / "neg",
+        {
+            "observations/a.json": _fixture_path(
+                "n11_canonical_identity_unresolved.json"
+            ).read_bytes()
+        },
+    )
+    rejected = _run_isolated_gate(root, negative)
+    assert rejected["ok"] is False
+    assert rejected["reason_codes"] == ["CANONICAL_IDENTITY_UNRESOLVED"]
+
+
+def test_build_failure_fails_closed(tmp_path: Path, fresh_evaluator_cache) -> None:
+    """Control 5: a contract source that does not compile yields no verdict."""
+
+    broken_source = tmp_path / "broken"
+    (broken_source / "src/contracts/v1").mkdir(parents=True)
+    (broken_source / EVALUATOR_ENTRY_SOURCE).write_text(
+        "export const oops: number = 'not a number';\n"
+    )
+    tsconfig = tmp_path / "broken.tsconfig.json"
+    tsconfig.write_text(
+        json.dumps(
+            {
+                "extends": str(REPO_ROOT / "tsconfig.json"),
+                "compilerOptions": {"declaration": False, "rootDir": str(broken_source)},
+                "files": [str(broken_source / EVALUATOR_ENTRY_SOURCE)],
+                "include": [],
+            }
+        )
+    )
+    build, error = build_evaluator(tsconfig_path=tsconfig, repo_root=broken_source)
+    assert build is None
+    assert error is not None
+    assert error["error"] in {"evaluator_build_failed", "evaluator_source_unreadable"}
+
+
+def test_missing_build_surface_fails_closed(tmp_path: Path) -> None:
+    build, error = build_evaluator(tsconfig_path=tmp_path / "nope.json")
+    assert build is None
+    assert error is not None and error["error"] == "evaluator_tsconfig_missing"
+
+
+def test_bridge_refuses_a_module_that_does_not_match_its_digest(tmp_path: Path) -> None:
+    """The bridge re-hashes before importing, closing the build-to-import window."""
+
+    module = tmp_path / "module.mjs"
+    module.write_text(PERMISSIVE_MODULE)
+    completed = subprocess.run(
+        [
+            "node",
+            str(BRIDGE_SCRIPT),
+            "constants",
+            str(module),
+            "0" * 64,
+        ],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    answer = json.loads(completed.stdout.decode().strip().splitlines()[-1])
+    assert answer["ok"] is False
+    assert answer["error"] == "compiled_module_tampered"
+
+
+def test_bridge_requires_a_module_and_a_digest() -> None:
+    completed = subprocess.run(
+        ["node", str(BRIDGE_SCRIPT), "constants"],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    answer = json.loads(completed.stdout.decode().strip().splitlines()[-1])
+    assert answer["ok"] is False
+    assert answer["error"] == "usage"
+
+
+def test_barrel_and_module_expose_the_same_evaluator(tmp_path: Path) -> None:
+    """The narrowed build surface is still Slice A's public evaluator.
+
+    The gate compiles the module that *defines* the evaluator rather than the
+    ``src/index.ts`` barrel. This proves the barrel is a re-export of exactly
+    that function, so nothing about which surface is "public" changed.
+
+    Compiled into a temporary directory on purpose: this test must not depend on
+    -- or be fooled by -- whatever happens to be sitting in the gitignored
+    ``dist/``.
+    """
+
+    barrel = (REPO_ROOT / "src/index.ts").read_text()
+    contracts_barrel = (REPO_ROOT / "src/contracts/v1/index.ts").read_text()
+    assert "export * from './contracts/v1/index.js';" in barrel
+    assert "export * from './rbContactEvasionObservationsV0.js';" in contracts_barrel
+
+    out = tmp_path / "out"
+    tsconfig = tmp_path / "barrel.tsconfig.json"
+    tsconfig.write_text(
+        json.dumps(
+            {
+                "extends": str(REPO_ROOT / "tsconfig.json"),
+                "compilerOptions": {
+                    "declaration": False,
+                    "outDir": str(out),
+                    # The tsconfig lives outside the repo, so ambient @types
+                    # would not resolve from here.
+                    "typeRoots": [str(REPO_ROOT / "node_modules/@types")],
+                },
+                "files": [str(REPO_ROOT / "src/index.ts")],
+                "include": [],
+            }
+        )
+    )
+    built = subprocess.run(
+        ["npx", "tsc", "-p", str(tsconfig)],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    assert built.returncode == 0, built.stdout.decode()[-2000:]
+
+    os.symlink(REPO_ROOT / "node_modules", out / "node_modules", target_is_directory=True)
+    (out / "package.json").write_text('{"type": "module"}\n')
+
+    completed = subprocess.run(
+        [
+            "node",
+            "--input-type=module",
+            "-e",
+            "const a = await import('./src/index.js');"
+            "const b = await import('./src/contracts/v1/"
+            "rbContactEvasionObservationsV0.js');"
+            "console.log(a.evaluateRbContactEvasionObservationsV0 === "
+            "b.evaluateRbContactEvasionObservationsV0);",
+        ],
+        cwd=str(out),
+        capture_output=True,
+        check=False,
+    )
+    assert completed.stdout.decode().strip() == "true", completed.stderr.decode()
+
+
+# ---------------------------------------------------------------------------
+# Review repair 2: an invalid verdict can never produce a passing bundle
+# ---------------------------------------------------------------------------
+#
+# Codex reproduced a fail-open at 0b48acf: a report of
+# {"valid": false, "reason_codes": [...], "violations": []} recorded
+# contract.valid=false on the artifact, appended nothing to the failure list,
+# and the gate computed ok = not failures -> true.
+
+
+def _report_bundle(tmp_path: Path, report, monkeypatch) -> object:
+    """Run a real bundle against a bridge that returns a chosen report."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    liar = tmp_path / "liar.mjs"
+    liar.write_text(
+        "const answer = process.argv[2] === 'constants'\n"
+        f"  ? {{ok: true, artifact_id: {PINNED_ARTIFACT_ID!r},"
+        f" schema_version: {PINNED_SCHEMA_VERSION!r}}}\n"
+        f"  : {{ok: true, report: {json.dumps(report)}}};\n"
+        "console.log(JSON.stringify(answer));\n"
+    )
+    monkeypatch.setattr(gate, "BRIDGE_PATH", liar)
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    return gate.validate_bundle(root)
+
+
+VIOLATION = {
+    "reason_code": "CANONICAL_IDENTITY_UNRESOLVED",
+    "path": "observations[0]",
+    "detail": "d",
+}
+
+CONTRADICTORY_REPORTS = {
+    # The exact report Codex used.
+    "invalid_with_no_violations": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [],
+    },
+    "invalid_with_no_codes_and_no_violations": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": [],
+        "violations": [],
+    },
+    "invalid_with_violations_but_no_codes": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": [],
+        "violations": [VIOLATION],
+    },
+    "valid_string": {
+        "valid": "false",
+        "shape_valid": True,
+        "reason_codes": [],
+        "violations": [],
+    },
+    "valid_numeric_falsy": {"valid": 0, "shape_valid": True, "reason_codes": [], "violations": []},
+    "valid_numeric_truthy": {"valid": 1, "shape_valid": True, "reason_codes": [], "violations": []},
+    "shape_valid_not_boolean": {
+        "valid": True,
+        "shape_valid": 1,
+        "reason_codes": [],
+        "violations": [],
+    },
+    "valid_with_violations": {
+        "valid": True,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [VIOLATION],
+    },
+    "valid_with_reason_codes": {
+        "valid": True,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [],
+    },
+    "codes_disagree_with_violations": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["MINIMUM_SAMPLE_NOT_MET_RATE_EMITTED"],
+        "violations": [VIOLATION],
+    },
+    "malformed_violation_entry": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": ["CANONICAL_IDENTITY_UNRESOLVED"],
+    },
+    "violation_missing_detail": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [{"reason_code": "CANONICAL_IDENTITY_UNRESOLVED", "path": "p"}],
+    },
+    "violation_code_not_a_string": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [{"reason_code": 7, "path": "p", "detail": "d"}],
+    },
+    "reason_codes_not_a_list": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": "CANONICAL_IDENTITY_UNRESOLVED",
+        "violations": [VIOLATION],
+    },
+    "duplicate_reason_codes": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED", "CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [VIOLATION],
+    },
+    "unparseable_but_valid": {
+        "valid": True,
+        "shape_valid": False,
+        "reason_codes": [],
+        "violations": [],
+    },
+    "unexpected_extra_key": {
+        "valid": True,
+        "shape_valid": True,
+        "reason_codes": [],
+        "violations": [],
+        "override": True,
+    },
+    "missing_key": {"valid": True, "shape_valid": True, "reason_codes": []},
+    "not_an_object": "everything is fine",
+}
+
+
+@pytest.mark.parametrize("label", sorted(CONTRADICTORY_REPORTS))
+def test_contradictory_evaluator_report_never_passes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, label: str
+) -> None:
+    """Every malformed or self-contradictory verdict fails closed, with one code."""
+
+    result = _report_bundle(tmp_path, CONTRADICTORY_REPORTS[label], monkeypatch)
+    assert not result.ok, label
+    assert codes(result) == ["BUNDLE_SEMANTIC_EVALUATOR_FAILED"], label
+    assert result.artifacts[0].contract is None, label
+    assert "semantic" not in result.artifacts[0].stages_passed, label
+
+
+@pytest.mark.parametrize("label", sorted(CONTRADICTORY_REPORTS))
+def test_parse_evaluator_report_rejects_each_contradiction(label: str) -> None:
+    """The envelope check is the thing doing it, and it explains itself."""
+
+    report, reason = parse_evaluator_report(CONTRADICTORY_REPORTS[label])
+    assert report is None, label
+    assert isinstance(reason, str) and reason, label
+
+
+def test_parse_evaluator_report_accepts_a_real_rejection() -> None:
+    """Slice A's own negative report shape is untouched by the new strictness."""
+
+    report, reason = parse_evaluator_report(
+        {
+            "valid": False,
+            "shape_valid": True,
+            "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+            "violations": [VIOLATION],
+        }
+    )
+    assert reason is None
+    assert report is not None and report["valid"] is False
+
+
+def test_parse_evaluator_report_accepts_a_real_acceptance() -> None:
+    report, reason = parse_evaluator_report(
+        {"valid": True, "shape_valid": True, "reason_codes": [], "violations": []}
+    )
+    assert reason is None
+    assert report is not None and report["valid"] is True
+
+
+def test_parse_evaluator_report_accepts_a_shape_failure() -> None:
+    """Slice A reports shape_valid:false with SCHEMA_SHAPE_INVALID; still admitted."""
+
+    report, reason = parse_evaluator_report(
+        {
+            "valid": False,
+            "shape_valid": False,
+            "reason_codes": ["SCHEMA_SHAPE_INVALID"],
+            "violations": [
+                {"reason_code": "SCHEMA_SHAPE_INVALID", "path": "<root>", "detail": "d"}
+            ],
+        }
+    )
+    assert reason is None
+    assert report is not None
+
+
+def test_every_real_slice_a_report_is_admitted_by_the_envelope_check(tmp_path: Path) -> None:
+    """The corpus is the regression: no committed fixture's verdict is refused."""
+
+    for name in [*POSITIVE_FIXTURES, *sorted(NEGATIVE_FIXTURES)]:
+        result = validate_bundle(bundle_from_fixture(tmp_path / name, name))
+        assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" not in codes(result), name
+        assert result.artifacts[0].contract is not None, name
+
+
+def test_blocked_artifact_without_a_recorded_failure_cannot_pass(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The closing sweep: an unexplained block is itself a failure.
+
+    ``evaluate_semantics`` is replaced by one that silently blocks without
+    recording anything -- the shape of any future bug that forgets a failure.
+    The bundle must not pass.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    def silent_block(artifacts, failures):
+        for artifact in artifacts:
+            artifact.block()
+
+    monkeypatch.setattr(gate, "evaluate_semantics", silent_block)
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    result = gate.validate_bundle(root)
+    assert not result.ok
+    assert codes(result) == ["BUNDLE_SEMANTIC_EVALUATOR_FAILED"]
+
+
+def test_success_requires_every_artifact_to_complete_the_semantic_stage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An empty failure list alone is never enough to report a pass."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    def do_nothing(artifacts, failures):
+        return None
+
+    monkeypatch.setattr(gate, "evaluate_semantics", do_nothing)
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    result = gate.validate_bundle(root)
+    assert not result.ok
+    assert all("semantic" not in a.stages_passed for a in result.artifacts)
+
+
+def test_module_swapped_after_the_build_forces_a_rebuild(fresh_evaluator_cache) -> None:
+    """The per-process memo is re-checked, not assumed.
+
+    Overwriting the module the gate built -- the shape of a swap between one
+    validation and the next -- must not be reused. The memo is discarded and the
+    source is compiled again.
+    """
+
+    first, error = ensure_evaluator()
+    assert error is None and first is not None
+    assert REPO_ROOT not in first.module_path.parents, (
+        "the gate must build into a private directory outside the repository; "
+        f"it built into {first.module_path}"
+    )
+    original_digest = first.module_digest
+    original_bytes = first.module_path.read_bytes()
+
+    first.module_path.write_text(PERMISSIVE_MODULE)
+    assert first.module_path.read_bytes() != original_bytes
+
+    second, error = ensure_evaluator()
+    assert error is None and second is not None
+    # Rebuilt from the same unchanged source, so the digest is reproduced, and
+    # the permissive bytes are gone.
+    assert second.module_digest == original_digest
+    assert second.source_fingerprint == first.source_fingerprint
+    assert second.module_path.read_bytes() != PERMISSIVE_MODULE.encode()
+
+
+def test_swapped_module_cannot_deliver_a_verdict(tmp_path: Path, fresh_evaluator_cache) -> None:
+    """End to end: a swapped module never yields a passing N11."""
+
+    build, _ = ensure_evaluator()
+    assert build is not None
+    assert REPO_ROOT not in build.module_path.parents, (
+        "refusing to tamper with a module inside the repository; "
+        f"the gate built into {build.module_path}"
+    )
+    build.module_path.write_text(PERMISSIVE_MODULE)
+
+    result = validate_bundle(
+        bundle_from_fixture(tmp_path / "b", "n11_canonical_identity_unresolved.json")
+    )
+    assert not result.ok
+    assert codes(result) == ["CANONICAL_IDENTITY_UNRESOLVED"]
+
+
+def test_build_surface_that_omits_the_contract_is_refused(tmp_path: Path) -> None:
+    """A build that never compiled the canonical contract is not an evaluator.
+
+    Without this check a tsconfig pointing anywhere else would still produce a
+    "build", and the gate would run whatever it emitted.
+    """
+
+    other = tmp_path / "elsewhere"
+    (other / "src/contracts/v1").mkdir(parents=True)
+    decoy = other / "src/contracts/v1/decoy.ts"
+    decoy.write_text("export const unrelated = 1;\n")
+    tsconfig = tmp_path / "decoy.tsconfig.json"
+    tsconfig.write_text(
+        json.dumps(
+            {
+                "extends": str(REPO_ROOT / "tsconfig.json"),
+                "compilerOptions": {
+                    "declaration": False,
+                    "rootDir": str(other),
+                    "typeRoots": [str(REPO_ROOT / "node_modules/@types")],
+                },
+                "files": [str(decoy)],
+                "include": [],
+            }
+        )
+    )
+    build, error = build_evaluator(tsconfig_path=tsconfig, repo_root=other)
+    assert build is None
+    assert error is not None and error["error"] in {
+        "evaluator_entry_not_compiled",
+        "evaluator_build_incomplete",
+    }
+
+
+def test_a_bundle_declaring_no_artifact_can_never_pass(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Success requires artifacts, not merely an empty failure list.
+
+    The committed manifest schema already refuses an empty ``artifacts`` list, so
+    this bypasses the shape gate to reach the condition underneath it: if that
+    schema were ever widened, a bundle validating nothing must still not pass.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    monkeypatch.setattr(gate, "check_manifest_shape", lambda manifest, failures: True)
+    root = make_bundle(tmp_path / "b", {}, artifacts_override=[])
+    result = gate.validate_bundle(root)
+    assert result.artifacts == []
+    assert not result.ok, "a bundle that validated nothing is not a bundle that passed"
+
+
+def test_backstop_holds_if_the_envelope_check_ever_admits_a_rejection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Layering, proven: the two guards on an invalid verdict are independent.
+
+    ``parse_evaluator_report`` normally refuses a rejection that names no
+    violation. Here it is replaced by one that admits it -- the shape of a future
+    weakening of that check -- and the gate must still refuse the bundle rather
+    than record ``valid: false`` and report a pass, which is the exact fail-open
+    the review found.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    monkeypatch.setattr(gate, "parse_evaluator_report", lambda report: (report, None))
+    result = _report_bundle(
+        tmp_path,
+        {
+            "valid": False,
+            "shape_valid": True,
+            "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+            "violations": [],
+        },
+        monkeypatch,
+    )
+    assert not result.ok
+    assert codes(result) == ["BUNDLE_SEMANTIC_EVALUATOR_FAILED"]

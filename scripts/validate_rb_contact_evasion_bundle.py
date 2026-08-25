@@ -16,20 +16,43 @@ machine-readable reason codes are reproduced verbatim. Shape judgment is
 delegated to the committed JSON Schema. Porting either into Python would create
 a second, competing authority, so neither is ported.
 
+Evaluator identity
+------------------
+The gate never trusts a pre-existing compiled build. ``dist/`` is gitignored, so
+a stale, substituted or permissive module could sit there exporting the correct
+artifact id and schema version while returning ``valid: true`` for everything --
+self-reported constants prove nothing about what the code does.
+
+So identity is established by **construction**: on first use the gate compiles
+the reviewed TypeScript contract itself, with the repository's own ``tsc`` and a
+committed tsconfig naming exactly one entry point, into a private temporary
+directory this process owns. It then hands the bridge the path of what it just
+built together with the sha256 of those exact bytes, and the bridge refuses to
+import anything that does not hash to it. Nothing under ``dist/`` is read at any
+point.
+
+The receipt of that build -- the fingerprint of every repo-local source file the
+compiler actually read, the digest of the emitted module, and the dependency
+pins -- is reported in the machine-readable result, so a reviewer can confirm
+which source produced a verdict. See ``build_evaluator`` for exactly what is
+hashed.
+
 What this gate does own
 -----------------------
 Everything that has to be true *before* a payload claim can be trusted:
 
 1. the manifest is readable, parses, and matches the committed manifest schema;
 2. the declared contract identity equals the identity pinned **in this file**,
-   which is itself cross-checked against the canonical contract;
+   which is itself cross-checked against a contract compiled from reviewed
+   source;
 3. every declared path is relative, contained, and a real regular file;
 4. the manifest and the bundle are in exact bijection;
 5. byte size and SHA-256 are verified **before** any parse or evaluation;
 6. the payload parses strictly (a matching digest never excuses malformed JSON);
 7. the committed JSON Schema shape gate is applied;
 8. the manifest agrees with the payload it describes, and can never weaken it;
-9. the canonical evaluator judges the exact verified bytes.
+9. the canonical evaluator judges the exact verified bytes, and returns a
+   structurally well-formed, internally consistent verdict.
 
 Stages run in that order and the result is fail-closed at every one: a stage
 that cannot run is a failure, never a skip. The gate performs no network access
@@ -44,9 +67,9 @@ Usage::
 Exit codes: ``0`` the bundle passed, ``1`` the bundle failed the gate, ``2`` the
 invocation itself was invalid.
 
-The semantic stage requires the compiled contract under ``dist/`` (run
-``npm run build``). If it is absent the gate fails closed rather than reporting
-a pass it could not establish.
+The semantic stage compiles the contract on demand and therefore needs ``node``
+and the repository's dev dependencies installed. If the build cannot be produced
+the gate fails closed rather than reporting a pass it could not establish.
 """
 
 from __future__ import annotations
@@ -57,6 +80,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -91,13 +115,31 @@ MANIFEST_SCHEMA_PATH = (
 )
 ARTIFACT_SCHEMA_PATH = REPO_ROOT / "schemas/rb_contact_evasion_observations_v0.schema.json"
 BRIDGE_PATH = REPO_ROOT / "scripts/rb_contact_evasion_contract_bridge.mjs"
-COMPILED_CONTRACT_PATH = REPO_ROOT / "dist/src/index.js"
+
+# The build surface. The tsconfig names exactly one entry point -- the module
+# that defines the canonical evaluator -- so the compiler resolves the true
+# transitive source surface rather than this file guessing at it.
+EVALUATOR_TSCONFIG_PATH = REPO_ROOT / "scripts/rb_contact_evasion_evaluator.tsconfig.json"
+EVALUATOR_ENTRY_SOURCE = "src/contracts/v1/rbContactEvasionObservationsV0.ts"
+EVALUATOR_ENTRY_OUTPUT = "src/contracts/v1/rbContactEvasionObservationsV0.js"
+
+# Hashed alongside the compiled sources: the two tsconfigs decide how the source
+# is compiled, and the package manifests pin the one runtime dependency the
+# evaluator imports.
+EVALUATOR_FINGERPRINT_EXTRA_PATHS = (
+    "tsconfig.json",
+    "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+    "package.json",
+    "package-lock.json",
+)
+EVALUATOR_RUNTIME_DEPENDENCY = "zod"
 
 # Bounded reads. A declared size above the cap is rejected before anything is
 # read, so a hostile manifest cannot ask the gate to load an arbitrary file.
 MANIFEST_MAX_BYTES = 1_048_576
 ARTIFACT_MAX_BYTES = 67_108_864
 BRIDGE_TIMEOUT_SECONDS = 120
+EVALUATOR_BUILD_TIMEOUT_SECONDS = 600
 
 # Ordered stages. The order is part of the contract: integrity is established
 # before any parse, and parsing before any semantic claim.
@@ -240,6 +282,9 @@ class GateResult:
     ok: bool
     failures: list[Failure]
     artifacts: list[ArtifactState]
+    # Receipt of the build that produced the verdict, so a reviewer can confirm
+    # which source the semantic stage actually ran. None when no build was made.
+    evaluator: dict[str, Any] | None = None
 
     @property
     def reason_codes(self) -> list[str]:
@@ -256,6 +301,7 @@ class GateResult:
                 "schema_version": PINNED_SCHEMA_VERSION,
                 "digest_algorithms": sorted(ADMITTED_DIGEST_ALGORITHMS),
             },
+            "evaluator": self.evaluator,
             "reason_codes": self.reason_codes,
             "failures": [failure.as_dict() for failure in self.failures],
             "artifacts": [
@@ -466,23 +512,295 @@ def check_manifest_shape(manifest: Any, failures: list[Failure]) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Stage 4: pinned contract identity
+# Evaluator identity: compiled from reviewed source, never trusted from disk
 # ---------------------------------------------------------------------------
 
 
-def canonical_contract_constants() -> dict[str, Any]:
-    """Ask the canonical contract what it is. Never trusted from the manifest."""
+@dataclass
+class EvaluatorBuild:
+    """A compiled evaluator plus the receipt of what produced it."""
 
-    if not COMPILED_CONTRACT_PATH.exists():
+    module_path: Path
+    module_digest: str
+    source_fingerprint: str
+    source_files: tuple[tuple[str, str], ...]
+    dependency_pins: tuple[tuple[str, str], ...]
+    # Keeps a caller-supplied build's temporary directory alive for as long as
+    # the build object itself is referenced.
+    retained_dir: Any = None
+
+    def receipt(self) -> dict[str, Any]:
+        """Repo-relative, clock-free, so two runs over one source agree exactly."""
+
         return {
-            "ok": False,
-            "error": "compiled_contract_unavailable",
+            "entry_source": EVALUATOR_ENTRY_SOURCE,
+            "source_fingerprint": self.source_fingerprint,
+            "module_digest": self.module_digest,
+            "source_files": [
+                {"path": path, "sha256": digest} for path, digest in self.source_files
+            ],
+            "dependency_pins": [
+                {"name": name, "version": version} for name, version in self.dependency_pins
+            ],
+        }
+
+
+# One build per process, revalidated against the source on every use.
+_EVALUATOR_BUILD: EvaluatorBuild | None = None
+_EVALUATOR_BUILD_DIR: Any = None
+
+
+def _fingerprint(entries: list[tuple[str, str]]) -> str:
+    """Fold a sorted (path, digest) list into one hash."""
+
+    joined = "\n".join(f"{path} {digest}" for path, digest in sorted(entries))
+    return hashlib.sha256(joined.encode("utf-8")).hexdigest()
+
+
+def _dependency_pins(repo_root: Path) -> tuple[tuple[str, str], ...]:
+    """Record the installed version of the evaluator's one runtime dependency.
+
+    The compiled module imports ``zod`` at run time from ``node_modules``, whose
+    contents this gate does not hash (see the residual note in the contract
+    doc). Recording the installed version against the lockfile at least makes a
+    substituted major version visible rather than silent.
+    """
+
+    pins: list[tuple[str, str]] = []
+    installed = repo_root / "node_modules" / EVALUATOR_RUNTIME_DEPENDENCY / "package.json"
+    try:
+        pins.append(
+            (
+                EVALUATOR_RUNTIME_DEPENDENCY,
+                str(json.loads(installed.read_text(encoding="utf-8")).get("version", "unknown")),
+            )
+        )
+    except (OSError, ValueError):
+        pins.append((EVALUATOR_RUNTIME_DEPENDENCY, "unresolved"))
+    return tuple(pins)
+
+
+def build_evaluator(
+    tsconfig_path: Path | None = None, repo_root: Path | None = None
+) -> tuple[EvaluatorBuild | None, dict[str, Any] | None]:
+    """Compile the reviewed contract source into a private directory.
+
+    This is what establishes evaluator identity. Nothing under ``dist/`` is read:
+    a stale or substituted build there is simply never consulted, so it cannot
+    return a permissive verdict no matter which constants it exports.
+
+    What is hashed, exactly:
+
+    * every **repo-local, non-``node_modules``** file the compiler reports it
+      read (``tsc --listFiles``). The list comes from the compiler rather than
+      from a guess here, so it is the true transitive source surface -- for the
+      committed tsconfig that is exactly the contract module, because it imports
+      nothing but ``zod``. If the contract later imports a sibling module, that
+      module joins the fingerprint automatically.
+    * the two tsconfigs, which decide how that source is compiled;
+    * ``package.json`` and ``package-lock.json``, which pin ``zod``.
+
+    ``node_modules`` entries in the compiler's file list are ``.d.ts`` type
+    declarations, erased at emit; they are counted, not hashed, and the
+    installed runtime version is recorded separately.
+
+    Returns ``(build, None)`` or ``(None, error)``. It never raises for an
+    ordinary build failure: a build that cannot be produced is a gate failure.
+    """
+
+    root = repo_root or REPO_ROOT
+    tsconfig = tsconfig_path or EVALUATOR_TSCONFIG_PATH
+
+    if not tsconfig.exists():
+        return None, {
+            "error": "evaluator_tsconfig_missing",
+            "detail": f"{_repo_relative(tsconfig)} is absent; the build surface is not defined",
+        }
+
+    build_dir = tempfile.TemporaryDirectory(prefix="rb-contact-evasion-evaluator-")
+    out_root = Path(build_dir.name)
+
+    # Node resolves `zod` by walking up from the emitted module, so the private
+    # build directory needs a link to the repository's installed dependencies
+    # and a package.json marking the output as ESM.
+    try:
+        (out_root / "node_modules").symlink_to(root / "node_modules", target_is_directory=True)
+        (out_root / "package.json").write_text('{"type": "module"}\n', encoding="utf-8")
+    except OSError as error:
+        build_dir.cleanup()
+        return None, {
+            "error": "evaluator_build_setup_failed",
+            "detail": f"could not prepare the private build directory: {error}",
+        }
+
+    try:
+        completed = subprocess.run(  # noqa: S603 - fixed argv, no shell
+            [
+                "npx",
+                "tsc",
+                "-p",
+                str(tsconfig),
+                "--outDir",
+                str(out_root),
+                "--listFiles",
+            ],
+            capture_output=True,
+            timeout=EVALUATOR_BUILD_TIMEOUT_SECONDS,
+            cwd=str(root),
+            env={"PATH": os.environ.get("PATH", ""), "HOME": os.environ.get("HOME", "")},
+            check=False,
+        )
+    except FileNotFoundError:
+        build_dir.cleanup()
+        return None, {
+            "error": "evaluator_build_unavailable",
+            "detail": "'npx' is not on PATH; the evaluator cannot be built from source",
+        }
+    except subprocess.TimeoutExpired:
+        build_dir.cleanup()
+        return None, {
+            "error": "evaluator_build_timeout",
+            "detail": f"the build did not finish within {EVALUATOR_BUILD_TIMEOUT_SECONDS}s",
+        }
+
+    stdout = completed.stdout.decode("utf-8", errors="replace")
+    if completed.returncode != 0:
+        diagnostics = "\n".join(
+            line for line in stdout.splitlines() if not line.startswith("/")
+        ).strip()
+        build_dir.cleanup()
+        return None, {
+            "error": "evaluator_build_failed",
             "detail": (
-                f"{_repo_relative(COMPILED_CONTRACT_PATH)} is absent; run 'npm run build' so the "
-                "canonical evaluator can be reached"
+                f"compiling {EVALUATOR_ENTRY_SOURCE} failed (exit {completed.returncode}): "
+                f"{diagnostics[:600] or completed.stderr.decode('utf-8', errors='replace')[:600]}"
             ),
         }
-    return _run_bridge(["constants"], stdin_bytes=b"")
+
+    module_path = out_root / EVALUATOR_ENTRY_OUTPUT
+    if not module_path.is_file():
+        build_dir.cleanup()
+        return None, {
+            "error": "evaluator_build_incomplete",
+            "detail": f"the build emitted no {EVALUATOR_ENTRY_OUTPUT}",
+        }
+
+    source_entries: list[tuple[str, str]] = []
+    node_modules_declarations = 0
+    for line in stdout.splitlines():
+        listed = line.strip()
+        if not listed.startswith("/"):
+            continue
+        listed_path = Path(listed)
+        try:
+            relative = listed_path.relative_to(root).as_posix()
+        except ValueError:
+            node_modules_declarations += 1
+            continue
+        if relative.startswith("node_modules/"):
+            node_modules_declarations += 1
+            continue
+        try:
+            source_entries.append((relative, sha256_hex(listed_path.read_bytes())))
+        except OSError as error:
+            build_dir.cleanup()
+            return None, {
+                "error": "evaluator_source_unreadable",
+                "detail": f"could not hash compiled source {relative}: {error}",
+            }
+
+    if not any(path == EVALUATOR_ENTRY_SOURCE for path, _ in source_entries):
+        build_dir.cleanup()
+        return None, {
+            "error": "evaluator_entry_not_compiled",
+            "detail": (
+                f"the compiler did not report reading {EVALUATOR_ENTRY_SOURCE}; the build surface "
+                "does not contain the canonical contract"
+            ),
+        }
+
+    for extra in EVALUATOR_FINGERPRINT_EXTRA_PATHS:
+        extra_path = root / extra
+        try:
+            source_entries.append((extra, sha256_hex(extra_path.read_bytes())))
+        except OSError as error:
+            build_dir.cleanup()
+            return None, {
+                "error": "evaluator_source_unreadable",
+                "detail": f"could not hash build input {extra}: {error}",
+            }
+
+    build = EvaluatorBuild(
+        module_path=module_path,
+        module_digest=sha256_hex(module_path.read_bytes()),
+        source_fingerprint=_fingerprint(source_entries),
+        source_files=tuple(sorted(source_entries)),
+        dependency_pins=_dependency_pins(root),
+    )
+
+    global _EVALUATOR_BUILD_DIR
+    if tsconfig_path is None and repo_root is None:
+        # Only the default build is retained for reuse; the directory must
+        # outlive this function, so the handle is held at module scope.
+        if _EVALUATOR_BUILD_DIR is not None:
+            _EVALUATOR_BUILD_DIR.cleanup()
+        _EVALUATOR_BUILD_DIR = build_dir
+    else:
+        # Caller-supplied builds are one-shot; the returned object owns the
+        # directory and releases it when it is garbage collected.
+        build.retained_dir = build_dir
+
+    return build, None
+
+
+def ensure_evaluator() -> tuple[EvaluatorBuild | None, dict[str, Any] | None]:
+    """Return a build known to correspond to the source as it is right now.
+
+    Memoized per process, but the memo is re-checked rather than assumed: the
+    fingerprinted files are re-hashed and the emitted module re-hashed on every
+    use, so a source edit or a swapped module forces a rebuild instead of
+    silently reusing a verdict from code that is no longer there.
+    """
+
+    global _EVALUATOR_BUILD
+
+    cached = _EVALUATOR_BUILD
+    if cached is not None:
+        try:
+            current = [
+                (path, sha256_hex((REPO_ROOT / path).read_bytes()))
+                for path, _ in cached.source_files
+            ]
+            module_unchanged = (
+                cached.module_path.is_file()
+                and sha256_hex(cached.module_path.read_bytes()) == cached.module_digest
+            )
+        except OSError:
+            current, module_unchanged = [], False
+        if module_unchanged and _fingerprint(current) == cached.source_fingerprint:
+            return cached, None
+        _EVALUATOR_BUILD = None
+
+    build, error = build_evaluator()
+    if error is not None:
+        return None, error
+    _EVALUATOR_BUILD = build
+    return build, None
+
+
+def canonical_contract_constants() -> dict[str, Any]:
+    """Ask a freshly built contract what it is.
+
+    The answer is an *agreement check* against this file's pins, never proof of
+    identity: a substituted module can report anything. Identity comes from the
+    build in :func:`build_evaluator`, which is what makes this question
+    meaningful at all.
+    """
+
+    build, error = ensure_evaluator()
+    if build is None:
+        return {"ok": False, **(error or {"error": "evaluator_unavailable", "detail": ""})}
+    return _run_bridge(["constants"], stdin_bytes=b"", build=build)
 
 
 def check_contract_identity(manifest: dict[str, Any], failures: list[Failure]) -> bool:
@@ -1024,8 +1342,15 @@ def check_manifest_payload_agreement(
 # ---------------------------------------------------------------------------
 
 
-def _run_bridge(args: list[str], stdin_bytes: bytes) -> dict[str, Any]:
-    """Invoke the Node bridge with a minimal environment and no network use."""
+def _run_bridge(
+    args: list[str], stdin_bytes: bytes, build: EvaluatorBuild
+) -> dict[str, Any]:
+    """Invoke the Node bridge with a minimal environment and no network use.
+
+    The module to import and the digest it must hash to are both supplied by
+    this side, from the build it just produced. The bridge re-hashes before
+    importing, so a module swapped between build and import is refused.
+    """
 
     if not BRIDGE_PATH.exists():
         return {
@@ -1035,7 +1360,13 @@ def _run_bridge(args: list[str], stdin_bytes: bytes) -> dict[str, Any]:
         }
     try:
         completed = subprocess.run(  # noqa: S603 - fixed argv, no shell
-            ["node", str(BRIDGE_PATH), *args],
+            [
+                "node",
+                str(BRIDGE_PATH),
+                *args,
+                str(build.module_path),
+                build.module_digest,
+            ],
             input=stdin_bytes,
             capture_output=True,
             timeout=BRIDGE_TIMEOUT_SECONDS,
@@ -1079,13 +1410,128 @@ def _run_bridge(args: list[str], stdin_bytes: bytes) -> dict[str, Any]:
     return payload
 
 
+# The exact top-level shape Slice A's evaluator returns. Requiring the key set
+# rather than a subset is deliberate: if the contract grows a field, this gate
+# fails closed and gets re-reviewed instead of quietly ignoring it.
+EVALUATOR_REPORT_KEYS = frozenset({"valid", "shape_valid", "violations", "reason_codes"})
+EVALUATOR_VIOLATION_KEYS = frozenset({"reason_code", "path", "detail"})
+
+
+def parse_evaluator_report(report: Any) -> tuple[dict[str, Any] | None, str | None]:
+    """Validate the evaluator's verdict structurally, without coercion.
+
+    A verdict is the one thing this gate cannot re-derive, so it has to be read
+    exactly as given: no ``bool()``, no ``list()``, no ``or []``. Coercion is
+    what let a report claiming ``valid: false`` with an empty ``violations``
+    list produce a passing bundle -- the falsity was recorded on the artifact
+    and then nothing was appended to the failure list.
+
+    Returns ``(report, None)`` or ``(None, reason)``. Any malformed or
+    internally contradictory report is a reason, and the caller turns it into
+    ``BUNDLE_SEMANTIC_EVALUATOR_FAILED``.
+    """
+
+    if not isinstance(report, dict):
+        return None, "the evaluator did not return an object"
+
+    keys = set(report)
+    if keys != EVALUATOR_REPORT_KEYS:
+        missing = sorted(EVALUATOR_REPORT_KEYS - keys)
+        unexpected = sorted(keys - EVALUATOR_REPORT_KEYS)
+        return None, (
+            f"the report's keys are {sorted(keys)}; expected exactly "
+            f"{sorted(EVALUATOR_REPORT_KEYS)} (missing={missing}, unexpected={unexpected})"
+        )
+
+    valid = report["valid"]
+    shape_valid = report["shape_valid"]
+    # `isinstance(x, bool)` is exact here: it rejects 0/1 and "false" alike,
+    # which truthiness would silently accept in opposite directions.
+    if not isinstance(valid, bool):
+        return None, f"'valid' is {type(valid).__name__} {valid!r}, not a boolean"
+    if not isinstance(shape_valid, bool):
+        return None, f"'shape_valid' is {type(shape_valid).__name__} {shape_valid!r}, not a boolean"
+
+    reason_codes = report["reason_codes"]
+    if not isinstance(reason_codes, list) or not all(
+        isinstance(code, str) and code for code in reason_codes
+    ):
+        return None, "'reason_codes' is not a list of non-empty strings"
+    if len(set(reason_codes)) != len(reason_codes):
+        return None, "'reason_codes' repeats a code"
+
+    violations = report["violations"]
+    if not isinstance(violations, list):
+        return None, "'violations' is not a list"
+    for index, violation in enumerate(violations):
+        if not isinstance(violation, dict) or set(violation) != EVALUATOR_VIOLATION_KEYS:
+            return None, (
+                f"violation {index} is not an object with exactly "
+                f"{sorted(EVALUATOR_VIOLATION_KEYS)}"
+            )
+        if not isinstance(violation["reason_code"], str) or not violation["reason_code"]:
+            return None, f"violation {index} has no non-empty reason_code"
+        if not isinstance(violation["path"], str) or not isinstance(violation["detail"], str):
+            return None, f"violation {index} has a non-string path or detail"
+
+    violation_codes = {violation["reason_code"] for violation in violations}
+
+    if valid:
+        if violations:
+            return None, "the report claims 'valid' while carrying violations"
+        if reason_codes:
+            return None, "the report claims 'valid' while carrying reason codes"
+    else:
+        if not violations:
+            return None, "the report rejects the payload but names no violation"
+        if not reason_codes:
+            return None, "the report rejects the payload but names no reason code"
+
+    if violation_codes != set(reason_codes):
+        return None, (
+            f"'reason_codes' {sorted(set(reason_codes))} disagrees with the violation codes "
+            f"{sorted(violation_codes)}"
+        )
+
+    if not shape_valid and valid:
+        return None, "the report claims 'valid' for a payload it could not parse"
+
+    return report, None
+
+
 def evaluate_semantics(artifacts: list[ArtifactState], failures: list[Failure]) -> None:
     """Hand the verified bytes to Slice A and reproduce its verdict verbatim.
 
     No reason code is invented, renamed, filtered or ranked here. The evaluator's
     own ``reason_codes`` are what a consumer reads, so a downstream CI check sees
     exactly the codes Slice A's tests pin.
+
+    An invalid verdict always produces at least one failure. That is guaranteed
+    structurally -- :func:`parse_evaluator_report` refuses a rejection that names
+    no violation -- and then asserted again after the loop, so no path can mark
+    an artifact rejected while leaving the failure list empty.
     """
+
+    build, build_error = ensure_evaluator()
+    if build is None:
+        detail = (build_error or {}).get("detail", "")
+        error = (build_error or {}).get("error", "evaluator_unavailable")
+        for artifact in artifacts:
+            if artifact.blocked or artifact.payload is UNPARSED:
+                continue
+            failures.append(
+                Failure(
+                    "semantic",
+                    "BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE",
+                    artifact.path,
+                    (
+                        "the canonical evaluator could not be built from the reviewed source, so "
+                        f"no verdict can be established: {error}: {detail}"
+                    ),
+                )
+            )
+            artifact.block()
+        return
 
     for artifact in artifacts:
         if artifact.blocked or artifact.payload is UNPARSED:
@@ -1131,12 +1577,12 @@ def evaluate_semantics(artifacts: list[ArtifactState], failures: list[Failure]) 
             artifact.block()
             continue
 
-        answer = _run_bridge(["evaluate"], stdin_bytes=raw)
-        if not answer.get("ok"):
+        answer = _run_bridge(["evaluate"], stdin_bytes=raw, build=build)
+        if answer.get("ok") is not True:
             error = answer.get("error")
             reason = (
                 "BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE"
-                if error in {"compiled_contract_unavailable", "node_unavailable", "bridge_missing"}
+                if error in {"node_unavailable", "bridge_missing", "compiled_module_unreadable"}
                 else "BUNDLE_SEMANTIC_EVALUATOR_FAILED"
             )
             failures.append(
@@ -1153,33 +1599,46 @@ def evaluate_semantics(artifacts: list[ArtifactState], failures: list[Failure]) 
             artifact.block()
             continue
 
-        report = answer.get("report")
-        if not isinstance(report, dict) or "valid" not in report:
+        report, malformed = parse_evaluator_report(answer.get("report"))
+        if report is None:
             failures.append(
                 Failure(
                     "semantic",
                     "BUNDLE_SEMANTIC_EVALUATOR_FAILED",
                     artifact.path,
-                    "the canonical evaluator returned an unreadable report",
+                    (
+                        "the canonical evaluator returned a report this gate will not act on, so "
+                        f"the payload stays unvalidated: {malformed}"
+                    ),
                 )
             )
             artifact.block()
             continue
 
         artifact.contract = {
-            "valid": bool(report.get("valid")),
-            "shape_valid": bool(report.get("shape_valid")),
-            "reason_codes": list(report.get("reason_codes") or []),
+            "valid": report["valid"],
+            "shape_valid": report["shape_valid"],
+            "reason_codes": list(report["reason_codes"]),
         }
 
-        if not report.get("valid"):
-            for violation in report.get("violations") or []:
+        if not report["valid"]:
+            before = len(failures)
+            for violation in report["violations"]:
                 failures.append(
                     Failure(
                         "semantic",
-                        str(violation.get("reason_code")),
+                        violation["reason_code"],
                         artifact.path,
-                        f"{violation.get('path')}: {violation.get('detail')}",
+                        f"{violation['path']}: {violation['detail']}",
+                    )
+                )
+            if len(failures) == before:  # pragma: no cover - structurally unreachable
+                failures.append(
+                    Failure(
+                        "semantic",
+                        "BUNDLE_SEMANTIC_EVALUATOR_FAILED",
+                        artifact.path,
+                        "the payload was rejected but no violation was recorded",
                     )
                 )
             artifact.block()
@@ -1255,10 +1714,44 @@ def validate_bundle(bundle_root: Path) -> GateResult:
         for artifact in artifacts:
             artifact.block()
 
+    # Closing sweep. An empty failure list is not, on its own, evidence that
+    # anything was validated: an artifact could have been blocked by a path that
+    # forgot to record why. Success therefore requires every declared artifact to
+    # have *completed* the semantic stage, and any artifact that did not without
+    # an explaining failure becomes one.
+    # A manifest-scoped failure (an unreachable evaluator, a rejected identity)
+    # already explains every artifact at once; the sweep is for the case where
+    # nothing explains one.
+    bundle_level_failure = any(failure.path == MANIFEST_FILENAME for failure in failures)
+    for artifact in artifacts:
+        if "semantic" in artifact.stages_passed:
+            continue
+        if not bundle_level_failure and not any(
+            failure.path == artifact.path for failure in failures
+        ):
+            failures.append(
+                Failure(
+                    "semantic",
+                    "BUNDLE_SEMANTIC_EVALUATOR_FAILED",
+                    artifact.path,
+                    (
+                        "this artifact did not complete semantic evaluation and no failure "
+                        "explains why; the gate refuses to report a pass it cannot account for"
+                    ),
+                )
+            )
+
+    complete = bool(artifacts) and all(
+        "semantic" in artifact.stages_passed for artifact in artifacts
+    )
+
+    build, _ = ensure_evaluator()
+
     return GateResult(
-        ok=not failures,
+        ok=not failures and complete,
         failures=sorted(failures, key=Failure.sort_key),
         artifacts=artifacts,
+        evaluator=build.receipt() if build is not None else None,
     )
 
 
@@ -1271,6 +1764,14 @@ def render_human_report(bundle_root: Path, result: GateResult) -> str:
         f"manifest:    {MANIFEST_FILENAME}",
         f"pinned:      {PINNED_ARTIFACT_ID} / {PINNED_SCHEMA_VERSION} / "
         f"{'|'.join(sorted(ADMITTED_DIGEST_ALGORITHMS))}",
+        (
+            "evaluator:   built from "
+            f"{result.evaluator['entry_source']}, source fingerprint "
+            f"{result.evaluator['source_fingerprint'][:16]}..., module "
+            f"{result.evaluator['module_digest'][:16]}..."
+            if result.evaluator is not None
+            else "evaluator:   NOT BUILT - no semantic verdict was established"
+        ),
         "",
     ]
     if result.artifacts:
