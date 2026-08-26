@@ -2235,6 +2235,95 @@ def render_human_report(bundle_root: Path, result: GateResult) -> str:
     return "\n".join(lines)
 
 
+def publish_json_out(out_path: Path, data: str) -> None:
+    """Write ``data`` to ``out_path`` without ever opening an existing output inode.
+
+    The gate promises never to mutate the bundle it validates. A naive
+    ``out_path.write_text()`` breaks that promise: if ``out_path`` is a hard link
+    that shares a bundle file's inode, or a symlink into the bundle (possibly
+    swapped in after any pathname check), ``write_text`` follows the shared inode
+    or the link and truncates the validated file. This publishes safely instead:
+
+    - The intended output parent is opened once with ``O_NOFOLLOW | O_DIRECTORY``
+      and every operation is done **relative to that descriptor**, so a parent
+      pathname swapped to a symlink after the open cannot redirect the write into
+      the bundle (the pinned directory inode is what we write into), and a parent
+      that is *already* a symlink is refused (``O_NOFOLLOW``).
+    - A **fresh staging inode** is created in that directory with
+      ``O_CREAT | O_EXCL | O_WRONLY | O_NOFOLLOW`` -- ``O_EXCL`` guarantees we
+      never open an existing inode for truncation, and ``O_NOFOLLOW`` refuses a
+      symlink planted at the staging name. The data is written and ``fsync``ed to
+      that new inode.
+    - Publication is a single ``os.replace`` (``rename``) of the staging entry
+      onto the destination **entry**. ``rename`` never follows the destination:
+      if the destination is a hard link or a symlink, the *directory entry* is
+      atomically repointed at the new inode and the old (possibly bundle-shared)
+      inode keeps its bytes. So no existing output or bundle inode is ever
+      opened, truncated, or followed.
+
+    On any failure the staging inode is unlinked (relative to the same pinned
+    directory, so cleanup never touches an unrelated path) and no partial or
+    truncated output is left behind; the bundle and any pre-existing output byte
+    are unchanged. Output bytes are exactly ``data`` (deterministic).
+    """
+
+    parent = out_path.parent if str(out_path.parent) else Path(".")
+    leaf = out_path.name
+    if not leaf or leaf in (".", ".."):
+        raise GateUsageError(f"--json-out is not a writable file name: {out_path}")
+
+    # Creating the intended output directory is fine (it is the caller's chosen
+    # location, not the bundle). The safety comes from the O_NOFOLLOW open below.
+    os.makedirs(parent, exist_ok=True)
+
+    dir_flags = os.O_RDONLY | _O_DIRECTORY | _O_NOFOLLOW | _O_CLOEXEC
+    try:
+        dir_fd = os.open(parent, dir_flags)
+    except OSError as error:
+        if error.errno in (errno.ELOOP, errno.ENOTDIR):
+            raise GateUsageError(
+                f"--json-out parent {parent} is a symlink or not a directory; refusing to "
+                "publish through it (it could redirect the write into the validated bundle)"
+            ) from error
+        raise GateUsageError(f"could not open --json-out parent {parent}: {error}") from error
+
+    staging = f".{leaf}.rbce-stage.{os.getpid()}"
+    staged = False
+    try:
+        create_flags = (
+            os.O_CREAT | os.O_EXCL | os.O_WRONLY | _O_NOFOLLOW | _O_CLOEXEC
+        )
+        try:
+            fd = os.open(staging, create_flags, 0o644, dir_fd=dir_fd)
+        except FileExistsError:
+            # A stale or planted entry at the staging name. Remove it (relative to
+            # the pinned directory only) and retry once; never open it.
+            os.unlink(staging, dir_fd=dir_fd)
+            fd = os.open(staging, create_flags, 0o644, dir_fd=dir_fd)
+        staged = True
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                handle.write(data)
+                handle.flush()
+                os.fsync(handle.fileno())
+        except BaseException:
+            # fdopen/close owns fd; if fdopen raised before taking ownership the
+            # bare fd is closed here.
+            raise
+        # Atomically replace the destination ENTRY. rename does not follow the
+        # destination, so a hard-linked or symlinked destination is repointed,
+        # never truncated.
+        os.replace(staging, leaf, src_dir_fd=dir_fd, dst_dir_fd=dir_fd)
+        staged = False
+    finally:
+        if staged:
+            try:
+                os.unlink(staging, dir_fd=dir_fd)
+            except OSError:  # pragma: no cover - best-effort cleanup
+                pass
+        os.close(dir_fd)
+
+
 def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -2259,6 +2348,12 @@ def main(argv: list[str] | None = None) -> int:
     bundle_root = args.bundle_root
 
     if args.json_out is not None:
+        # A fast, obvious-case policy guard: the gate never writes where its own
+        # output would land inside the bundle it validates. This is a usability
+        # refusal, NOT the safety mechanism -- realpath cannot see a hard link
+        # that shares a bundle inode, and a pathname check is raceable. The real
+        # protection is publish_json_out below, which never opens, truncates, or
+        # follows an existing output inode.
         try:
             root_real = Path(os.path.realpath(bundle_root))
             out_real = Path(os.path.realpath(args.json_out))
@@ -2273,8 +2368,7 @@ def main(argv: list[str] | None = None) -> int:
     machine = json.dumps(result.as_dict(), indent=2, sort_keys=True) + "\n"
 
     if args.json_out is not None:
-        args.json_out.parent.mkdir(parents=True, exist_ok=True)
-        args.json_out.write_text(machine, encoding="utf-8")
+        publish_json_out(args.json_out, machine)
 
     if args.json:
         sys.stdout.write(machine)

@@ -322,3 +322,68 @@ Comments and governance text only; gate behavior unchanged. Focused Slice B suit
 passed. Full Python suite: 1009 passed, 3 skipped. `py_compile`, Ruff, JSON validation, `git diff --check`
 clean. Slice A untouched; nothing under `exports/**`; reference bundle byte-identical. Final exact-head
 audit status remains **pending fresh Codex review of the repaired head**.
+
+---
+
+## Fifth review round — 2026-08-26 (`--json-out` output-publication safety)
+
+An **independent GitHub Codex review** at head `e68fc176304699ed5ed815f22836f6b9bb56aea6` produced **one
+P2 finding** (thread `r3864788150`). Unlike the second through fourth rounds, this is a genuine
+`chatgpt-codex-connector` review thread on PR #260 — the first connector thread since the three
+first-round threads.
+
+### P2 — `--json-out` could follow an existing output inode and truncate a validated bundle file
+
+The `--json-out` writer used `Path.write_text()`, guarded only by a pathname `realpath` check. **Reproduced**
+against the real gate on temporary reference-bundle copies — three windows, each ending with exit 0 and a
+corrupted bundle:
+
+- **(A) hard link.** `--json-out` an external hard link sharing `manifest.json`'s inode. The `realpath`
+  preflight accepted it — the link's own name is outside the bundle, and `realpath` does not resolve a hard
+  link elsewhere — and `write_text()` followed the shared inode, truncating `manifest.json` from 1086 to
+  2913 bytes.
+- **(B) leaf symlink swap.** `--json-out` swapped to a symlink into the bundle after the preflight but
+  before publication; `write_text` followed it.
+- **(C) parent symlink swap.** `--json-out`'s parent directory swapped to a symlink into the bundle's
+  `observations/` dir before publication; `write_text` wrote onto the artifact
+  `p2_raw_count_without_denominator.json` (4144 → 2913 bytes).
+
+**Repair — one output-publication invariant (`publish_json_out`).** The gate never opens, truncates, or
+follows an existing output inode:
+
+- The intended output **parent** is opened once with `O_NOFOLLOW | O_DIRECTORY` and every step is done
+  **relative to that descriptor**. A parent that is (or is swapped to) a symlink is refused / pinned, so it
+  cannot redirect the write into the bundle.
+- A **fresh staging inode** is created relative to that `dir_fd` with
+  `O_CREAT | O_EXCL | O_WRONLY | O_NOFOLLOW` — never opening an existing inode, refusing a symlink planted
+  at the staging name — then the data is written and `fsync`ed.
+- Publication is a single `os.replace` (rename) of the staging entry onto the destination **entry**.
+  `rename` never follows the destination: a hard-linked or symlinked destination has its directory entry
+  atomically repointed at the new inode while the old (possibly bundle-shared) inode keeps its bytes.
+- On any failure the staging inode is unlinked relative to the pinned `dir_fd` only, so cleanup never
+  touches an unrelated path and no partial or truncated output is left behind.
+
+The `realpath` "points inside the bundle" refusal is kept but demoted to a usability guard (it cannot see a
+hard link and is raceable); the publication mechanism is the safety. Output bytes and exit codes are
+unchanged. Re-running all three windows leaves every bundle file byte-identical: **A** and **B** publish the
+result to the intended name, **C** is refused.
+
+**Negative controls** (committed; each snapshots SHA-256 and size of every bundle file before and after, on
+temporary copies): hard link to `manifest.json`; hard link to the artifact class; symlink to a bundle file
+(caught by the `realpath` guard or safely republished, target byte-identical either way); leaf swapped to a
+symlink after preflight (rename replaces the symlink entry); reachable parent-directory symlink swap
+(`O_NOFOLLOW` parent open refuses); publication (`os.replace`) failure (staging cleaned up, bundle and prior
+output byte-for-byte unchanged); ordinary new output and replacement of an unrelated prior output (both
+succeed with a fresh inode); and a symlink planted at the staging name pointing into the bundle (not
+followed). Plus a structural test pinning the invariant (`O_EXCL`/`O_NOFOLLOW` create, `os.replace`
+publish, no `.write_text(`, no `O_TRUNC`).
+
+### Fifth-round verification
+
+Focused Slice B suite: **297 collected, 297 passed** (288 + 9 new: 8 `--json-out` controls + 1 structural).
+Full Python suite: **1018 passed, 3 skipped**. `py_compile`, Ruff, JSON validation, `git diff --check`
+clean. Mutation testing: **5 mutations** against the real publication (reinstate `write_text`; truncate the
+leaf pathname; drop the parent `O_NOFOLLOW`; make the staging create non-exclusive; skip staging cleanup),
+**all killed, no degenerate, gate restored byte-for-byte**. No Slice A change; nothing under `exports/**`;
+reference bundle byte-identical. Final exact-head audit status remains **pending fresh Codex review of the
+repaired head**.

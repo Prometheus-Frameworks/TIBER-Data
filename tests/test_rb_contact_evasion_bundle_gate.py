@@ -24,6 +24,7 @@ stage is exactly the false pass the gate exists to prevent.
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import os
@@ -3403,3 +3404,252 @@ def test_growth_and_short_read_still_detected_with_single_buffer(
         os.close(fd)
     assert grew is False
     assert len(data) == 10  # fewer bytes than any declared size -> caller rejects
+
+
+# ---------------------------------------------------------------------------
+# Fifth independent-review repair --- safe --json-out publication (P2)
+#
+# The gate must never open, truncate, or follow an existing output inode. It
+# publishes through a fresh staging inode in a dir-fd-pinned parent, then
+# atomically replaces the destination entry. Every control snapshots SHA-256 and
+# size of every bundle file before and compares after; temporary bundle copies
+# only.
+# ---------------------------------------------------------------------------
+
+
+def _bundle_snapshot(root: Path) -> dict:
+    snap = {}
+    for path in sorted(root.rglob("*")):
+        if path.is_file() and not path.is_symlink():
+            raw = path.read_bytes()
+            snap[path.relative_to(root).as_posix()] = (hashlib.sha256(raw).hexdigest(), len(raw))
+    return snap
+
+
+def _two_artifact_bundle(root: Path) -> Path:
+    return make_bundle(
+        root,
+        {
+            "observations/p2_raw_count_without_denominator.json": _fixture_path(
+                "p2_raw_count_without_denominator.json"
+            ).read_bytes(),
+        },
+    )
+
+
+def test_json_out_hard_link_to_manifest_does_not_truncate_it(tmp_path: Path) -> None:
+    """Control 1: --json-out is a hard link sharing manifest.json's inode."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "outside.json"
+    os.link(root / "manifest.json", out)  # shares the manifest inode
+    before = _bundle_snapshot(root)
+    manifest_ino = os.stat(root / "manifest.json").st_ino
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+
+    after = _bundle_snapshot(root)
+    assert before == after, "the validated bundle must be byte-identical"
+    # manifest.json keeps its own bytes; the hard-linked entry now holds the result.
+    assert json.loads((root / "manifest.json").read_text())["artifact_id"]
+    assert json.loads(out.read_text())["ok"] is True
+    # The output entry was repointed to a NEW inode (rename), not the shared one.
+    assert os.stat(out).st_ino != manifest_ino
+
+
+@pytest.mark.parametrize("artifact", ["observations/p2_raw_count_without_denominator.json"])
+def test_json_out_hard_link_to_artifact_does_not_truncate_it(tmp_path: Path, artifact: str) -> None:
+    """Control 2: --json-out is a hard link sharing an artifact's inode."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "outside.json"
+    os.link(root / artifact, out)
+    before = _bundle_snapshot(root)
+    artifact_ino = os.stat(root / artifact).st_ino
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+
+    after = _bundle_snapshot(root)
+    assert before == after, "the validated bundle must be byte-identical"
+    assert json.loads(out.read_text())["ok"] is True
+    assert os.stat(out).st_ino != artifact_ino
+
+
+def test_json_out_symlink_to_bundle_file_never_truncates_it(tmp_path: Path) -> None:
+    """Control 3: --json-out is a symlink pointing at a bundle file.
+
+    A pre-existing symlink into the bundle is caught by the realpath policy guard
+    (it resolves inside the bundle); whether refused there or safely republished,
+    the bundle file it points at must never be truncated.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "link.json"
+    out.symlink_to(root / "manifest.json")
+    before = _bundle_snapshot(root)
+
+    refused = False
+    try:
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+    except GateUsageError:
+        refused = True
+
+    after = _bundle_snapshot(root)
+    assert before == after, "the symlink's bundle target must be byte-identical"
+    # Either outcome is safe; assert it did not corrupt the manifest.
+    assert json.loads((root / "manifest.json").read_text())["artifact_id"]
+    if not refused:
+        assert json.loads(out.read_text())["ok"] is True
+
+
+def test_json_out_leaf_swapped_to_symlink_after_preflight(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Control 4: the leaf is swapped to a symlink into the bundle after preflight.
+
+    Publication happens after validate_bundle; wrapping that stage swaps the
+    output leaf to a symlink into the bundle in the window before the write.
+    Because publication renames a fresh inode onto the destination entry (never
+    opening it), the symlink is replaced, not followed, and the bundle is intact.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "out.json"
+    before = _bundle_snapshot(root)
+
+    real_validate = _gate.validate_bundle
+
+    def swapping_validate(bundle_root):
+        result = real_validate(bundle_root)
+        if out.exists() or out.is_symlink():
+            out.unlink()
+        out.symlink_to(root / "manifest.json")
+        return result
+
+    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+
+    after = _bundle_snapshot(root)
+    assert before == after, "a post-preflight leaf swap must not touch the bundle"
+    assert not out.is_symlink(), "the destination entry is now a regular file, not the symlink"
+    assert json.loads(out.read_text())["ok"] is True
+
+
+def test_json_out_parent_swapped_to_symlink_after_preflight(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Control 5: a reachable parent directory is swapped to a symlink into the bundle."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    parent = tmp_path / "outdir"
+    parent.mkdir()
+    out = parent / "p2_raw_count_without_denominator.json"  # would land on the artifact name
+    before = _bundle_snapshot(root)
+
+    real_validate = _gate.validate_bundle
+
+    def swapping_validate(bundle_root):
+        result = real_validate(bundle_root)
+        shutil.rmtree(parent)
+        parent.symlink_to(root / "observations")
+        return result
+
+    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
+    with pytest.raises(GateUsageError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+
+    after = _bundle_snapshot(root)
+    assert before == after, "a parent swapped to a symlink into the bundle must be refused"
+
+
+def test_json_out_publication_failure_leaves_bundle_and_prior_output_intact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Control 6: a failed atomic replace preserves the bundle and prior output."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "prior.json"
+    prior_bytes = b'{"prior":"output","keep":true}\n'
+    out.write_bytes(prior_bytes)
+    before_bundle = _bundle_snapshot(root)
+
+    real_replace = _gate.os.replace
+
+    def failing_replace(*args, **kwargs):
+        raise OSError(errno.EIO, "induced publication failure")
+
+    monkeypatch.setattr(_gate.os, "replace", failing_replace)
+    with pytest.raises(OSError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+    monkeypatch.setattr(_gate.os, "replace", real_replace)
+
+    assert _bundle_snapshot(root) == before_bundle, "the bundle must be byte-identical"
+    assert out.read_bytes() == prior_bytes, "the prior output must be byte-identical"
+    # No staging litter is left behind.
+    leftovers = [p.name for p in tmp_path.iterdir() if "rbce-stage" in p.name]
+    assert leftovers == [], f"staging files must be cleaned up: {leftovers}"
+
+
+def test_json_out_ordinary_new_and_replacement_still_succeed(tmp_path: Path) -> None:
+    """Control 7: a new output, and replacement of an unrelated prior output, both succeed."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    before = _bundle_snapshot(root)
+
+    # New output (no prior file).
+    fresh = tmp_path / "fresh.json"
+    assert _gate.main([str(root), "--json", "--json-out", str(fresh)]) == 0
+    assert json.loads(fresh.read_text())["ok"] is True
+
+    # Replacement of an unrelated prior regular file.
+    prior = tmp_path / "prior.json"
+    prior.write_text('{"stale":true}\n')
+    prior_ino = os.stat(prior).st_ino
+    assert _gate.main([str(root), "--json", "--json-out", str(prior)]) == 0
+    assert json.loads(prior.read_text())["ok"] is True
+    assert os.stat(prior).st_ino != prior_ino, "replacement is a fresh inode, not a truncate"
+
+    assert _bundle_snapshot(root) == before, "the bundle is untouched by ordinary publication"
+    leftovers = [p.name for p in tmp_path.iterdir() if "rbce-stage" in p.name]
+    assert leftovers == [], f"staging files must be cleaned up: {leftovers}"
+
+
+def test_json_out_staging_name_symlink_into_bundle_is_never_followed(tmp_path: Path) -> None:
+    """A symlink planted at the staging name (pointing into the bundle) is not followed.
+
+    The staging inode is created with O_CREAT|O_EXCL|O_NOFOLLOW: an existing entry
+    at the staging name raises, and the publisher unlinks the symlink (which
+    removes the link, not its target) and creates a fresh inode. A truncating,
+    symlink-following create here would corrupt the bundle file the link targets.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "out.json"
+    staging_name = f".{out.name}.rbce-stage.{os.getpid()}"
+    planted = tmp_path / staging_name
+    planted.symlink_to(root / "manifest.json")  # staging name -> a bundle file
+    before = _bundle_snapshot(root)
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+
+    assert _bundle_snapshot(root) == before, "the staging-name symlink target must be intact"
+    assert json.loads(out.read_text())["ok"] is True
+    assert not planted.exists() or not planted.is_symlink()
+
+
+def test_publish_json_out_never_opens_destination_for_writing() -> None:
+    """Structural: publication renames onto the destination; it never opens the leaf.
+
+    The only write-opening ``os.open`` in the publisher creates the staging inode
+    with O_CREAT|O_EXCL|O_NOFOLLOW; publication is an ``os.replace``. Guards
+    against a regression that reintroduces a truncating open of the destination.
+    """
+
+    src = GATE_SCRIPT.read_text()
+    body = src[src.index("def publish_json_out(") : src.index("def _parse_args(")]
+    # Drop the docstring so prose that mentions the unsafe forms is not matched.
+    code = body[body.index('"""', body.index('"""') + 3) + 3 :]
+    assert "O_EXCL" in code and "O_NOFOLLOW" in code
+    assert "os.replace(" in code
+    assert ".write_text(" not in code, "publication must not write_text into an existing path"
+    assert "O_TRUNC" not in code
