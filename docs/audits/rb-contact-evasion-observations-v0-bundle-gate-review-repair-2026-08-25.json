@@ -328,11 +328,13 @@
     "audit_date": "2026-08-26",
     "reviewed_head": "58c69f62728e0c6cf99e5840816a747f0b37d3e6",
     "review_source": {
-      "review_kind": "codex_exact_head_review_relayed_by_operator",
+      "review_kind": "codex_exact_head_review_relayed_via_operator_authorized_pr_comment",
       "relayed_by": "operator",
       "github_review_object": null,
       "github_review_comment_ids": [],
-      "identity_note": "The finding was produced by a Codex exact-head review of 58c69f6 and relayed by the operator in condensed form because elaborating the finding tripped a content filter on the operator's Codex account (the operator is separately contacting support). No GitHub connector review object or thread exists for this round; the connector is not claimed as its author. The relayed handoff named: commit 58c69f6, P2, file scripts/validate_rb_contact_evasion_bundle.py, unmet requirement 'Output publication can still be redirected through an ancestor symlink, and collision cleanup can delete an unrelated pre-existing entry.'"
+      "github_issue_comment_id": "5431528233",
+      "github_issue_comment_url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/260#issuecomment-5431528233",
+      "identity_note": "The finding was produced by a Codex exact-head review of 58c69f6 performed in the operator session. It first reached the repair agent as an operator-relayed condensed handoff (elaborating it in the operator's Codex chat tripped a content filter; the operator separately contacted support); the FULL handoff was then durably recorded as operator-authorized PR comment 5431528233 (2026-08-26T21:49:53Z), which states its own provenance and instructs that the findings not be attributed to the connector. No chatgpt-codex-connector review object or inline thread exists for this round. A provenance line in an earlier version of this block said no GitHub object existed for this round; the posted comment supersedes that -- corrected here without rewriting the round's history."
     },
     "verdict_on_prior_round": "prior_json_out_repair_incomplete_in_two_ways",
     "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
@@ -347,19 +349,21 @@
         "disposition": "component_by_component_nofollow_walk_and_unique_nondestructive_staging",
         "disposition_detail": "The output parent is now resolved by _open_output_parent_nofollow: a component-by-component walk from a trusted anchor (/ absolute, cwd relative), each component opened O_NOFOLLOW | O_DIRECTORY relative to the previous, so a symlink at ANY level (parent or ancestor, present or swapped in after the preflight) is refused; missing components are created with mkdir relative to the pinned parent, never through a symlink. Staging now uses a uniquely random name ('.{leaf}.rbce-stage.{os.urandom(8).hex()}') created O_CREAT|O_EXCL|O_WRONLY|O_NOFOLLOW; a name collision is resolved by trying a NEW random name -- an existing entry is never unlinked, so publication never deletes or mutates an unrelated pre-existing path, and the finally cleanup only removes the uniquely named inode the gate itself created. os.replace publication, digest/hard-link/symlink-destination safety, refusal/failed-publish preservation, deterministic output, and exit codes are all unchanged. Re-running both windows: the ancestor swap is refused (GateUsageError) with the bundle byte-identical; the collision leaves the unrelated file byte-identical and still publishes the result.",
         "negative_controls": [
-          "ancestor (grandparent) swapped to a symlink into the bundle after preflight: refused, bundle byte-identical",
+          "ancestor (grandparent) swapped to a symlink into the bundle after preflight, with two parent levels: refused, bundle byte-identical",
           "static ancestor symlink even resolving OUTSIDE the bundle: refused (no output-path symlink is followed at any level)",
-          "staging-name collision forced via os.urandom: the unrelated pre-existing entry survives byte-for-byte and the result still publishes",
+          "staging-name collision with a pre-existing REGULAR FILE forced via os.urandom: the unrelated entry survives byte-for-byte and the result still publishes",
+          "staging-name collision with a pre-existing SYMLINK forced via os.urandom: the symlink keeps its name and target, its target's bytes are intact, and the result still publishes (added per the full posted handoff)",
+          "ordinary nested-parent creation: two missing parent levels created by the walk's dir_fd-relative mkdir (no full-path makedirs exists), publication and atomic replacement both succeed, bundle byte-identical, no staging litter (added per the full posted handoff)",
           "the prior round's controls (hard link to manifest and artifact, symlink to a bundle file, leaf swap, parent swap, publication failure, ordinary new + replacement, structural) all still pass"
         ],
-        "mutation_evidence": "5 mutations against the real publication, all killed, no degenerate, gate restored byte-for-byte: single_parent_open_follows_ancestor (3 kills: ancestor-swap, parent-swap, static-ancestor), blind_unlink_on_collision (1: collision control), reinstate_write_text_publication (7), publish_truncates_leaf_pathname (6), no_staging_cleanup_on_failure (1)."
+        "mutation_evidence": "5 mutations against the real publication, all killed, no degenerate, gate restored byte-for-byte: single_parent_open_follows_ancestor (4 kills: ancestor-swap, parent-swap, static-ancestor, nested-parent-creation), blind_unlink_on_collision (2: regular-file and symlink collision controls -- a behavioural kill of the unlink-on-collision reinstatement, not textual), reinstate_write_text_publication (8), publish_truncates_leaf_pathname (7), no_staging_cleanup_on_failure (1)."
       }
     ],
     "verification": {
-      "focused_slice_b_tests_collected": 299,
-      "focused_slice_b_tests_passed": 299,
-      "focused_lineage": "297 (58c69f6 prior) - 1 (deterministic-staging-name control removed, superseded by the collision control) + 3 new (ancestor-swap, static-ancestor, collision) = 299",
-      "full_python_suite_passed": 1020,
+      "focused_slice_b_tests_collected": 301,
+      "focused_slice_b_tests_passed": 301,
+      "focused_lineage": "297 (58c69f6 prior) - 1 (deterministic-staging-name control removed, superseded by the collision controls) + 3 (ancestor-swap, static-ancestor, regular-file collision, at 090cdea) + 2 (symlink collision, nested-parent creation; completion pass per the full posted handoff) = 301",
+      "full_python_suite_passed": 1022,
       "full_python_suite_skipped": 3,
       "mutation_count": 5,
       "mutations_all_killed": true,

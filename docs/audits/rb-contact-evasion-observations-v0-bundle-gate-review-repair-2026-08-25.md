@@ -447,3 +447,38 @@ cleanup), **all killed, no degenerate, gate restored byte-for-byte** — `single
 and `blind_unlink_on_collision` each have a dedicated behavioural kill. No Slice A change; nothing under
 `exports/**`; reference bundle byte-identical. Final exact-head audit status remains **pending fresh Codex
 review of the repaired head**.
+
+### Sixth-round addendum — full handoff posted as a PR comment (same date)
+
+After the condensed relay, the **full sixth-round handoff** was durably recorded on GitHub as
+operator-authorized PR comment
+[`issuecomment-5431528233`](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/260#issuecomment-5431528233)
+(2026-08-26T21:49:53Z). The comment states its own provenance — a Codex exact-head review of `58c69f6`
+performed in the operator session, relayed through that operator-authorized comment — and instructs that
+the findings **not** be attributed to the connector. The earlier statement in this round's record that no
+GitHub object existed for the round is superseded by that comment and corrected in the JSON companion
+without rewriting the round's history.
+
+Diffing the completed repair against the full handoff showed the core invariants already satisfied
+(component-by-component no-follow parent binding with `makedirs` removed and dir_fd-relative `mkdir`;
+collision-resistant `O_CREAT | O_EXCL | O_NOFOLLOW` staging with no unlink-on-collision; staging,
+replacement, and cleanup only relative to the final pinned descriptor; `os.replace` publication and all
+prior guarantees preserved) and **two required controls missing**, both added in a completion pass:
+
+- **Symlink collider at the staging name:** a pre-existing symlink at the first staging candidate (forced
+  via `os.urandom`) keeps its name and its target, the target's bytes are intact, and the result still
+  publishes — the publisher moves to a new candidate, never unlinking or following the collider.
+- **Ordinary nested-parent creation/replacement:** two missing parent levels are created by the walk's
+  dir_fd-relative `mkdir` (no full-path `makedirs` exists), publication succeeds, and a second run
+  atomically replaces the first output; the bundle stays byte-identical and no staging litter remains.
+
+Re-run mutation matrix (real publication, byte-for-byte restore, no degenerate):
+`single_parent_open_follows_ancestor` 4 kills (now including the nested-parent control),
+`blind_unlink_on_collision` 2 kills (regular-file **and** symlink collision controls — a behavioural kill
+of the unlink-on-collision reinstatement), `reinstate_write_text_publication` 8,
+`publish_truncates_leaf_pathname` 7, `no_staging_cleanup_on_failure` 1.
+
+Completion-pass verification: focused Slice B suite **301 collected, 301 passed** (299 + 2); full Python
+suite **1022 passed, 3 skipped**; `py_compile`, Ruff, JSON validation, `git diff --check` clean; no Slice A
+change; nothing under `exports/**`; reference bundle byte-identical. Final exact-head audit status remains
+**pending fresh Codex review of the repaired head**.

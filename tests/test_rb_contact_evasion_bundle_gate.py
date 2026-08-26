@@ -3709,6 +3709,79 @@ def test_json_out_staging_collision_never_deletes_unrelated_entry(
     assert leftovers == [], f"our own staging files must be cleaned up: {leftovers}"
 
 
+def test_json_out_staging_symlink_collider_is_preserved_not_followed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A pre-existing SYMLINK at the first staging candidate survives with its target.
+
+    O_CREAT|O_EXCL fails with EEXIST on a symlink (dangling or not), so the
+    publisher must move to a new candidate name -- never unlink the symlink,
+    never follow it. Its name and target must be unchanged afterwards, its
+    target's bytes intact, and the result still published.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "out.json"
+
+    first_token = bytes(8)
+    second_token = b"\x22" * 8
+    tokens = [first_token, second_token]
+    calls = {"i": 0}
+
+    def fake_urandom(n: int) -> bytes:
+        token = tokens[min(calls["i"], len(tokens) - 1)]
+        calls["i"] += 1
+        return token
+
+    monkeypatch.setattr(_gate.os, "urandom", fake_urandom)
+
+    target = tmp_path / "link_target.json"
+    target_bytes = b'{"symlink":"target"}\n'
+    target.write_bytes(target_bytes)
+    collide_name = f".{out.name}.rbce-stage.{first_token.hex()}"
+    collider = tmp_path / collide_name
+    collider.symlink_to(target)
+    before = _bundle_snapshot(root)
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+
+    assert collider.is_symlink(), "the symlink collider must keep its name"
+    assert os.readlink(collider) == str(target), "the symlink collider must keep its target"
+    assert target.read_bytes() == target_bytes, "the symlink target must be byte-identical"
+    assert json.loads(out.read_text())["ok"] is True
+    assert _bundle_snapshot(root) == before
+
+
+def test_json_out_creates_missing_nested_parents_and_replaces(tmp_path: Path) -> None:
+    """Ordinary nested-parent creation and replacement through the no-follow walk.
+
+    Two missing parent levels are created by the walk's dir_fd-relative mkdir
+    (there is no full-path makedirs), publication succeeds, and a second run
+    atomically replaces the first output. The bundle stays byte-identical.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "new_a" / "new_b" / "out.json"
+    assert not (tmp_path / "new_a").exists()
+    before = _bundle_snapshot(root)
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+    assert json.loads(out.read_text())["ok"] is True
+    first_ino = os.stat(out).st_ino
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+    assert json.loads(out.read_text())["ok"] is True
+    assert os.stat(out).st_ino != first_ino, "replacement publishes a fresh inode"
+
+    assert _bundle_snapshot(root) == before
+    leftovers = [
+        p.name
+        for p in (tmp_path / "new_a" / "new_b").iterdir()
+        if "rbce-stage" in p.name
+    ]
+    assert leftovers == [], f"staging files must be cleaned up: {leftovers}"
+
+
 def test_publish_json_out_never_opens_destination_for_writing() -> None:
     """Structural: publication renames onto the destination; it never opens the leaf.
 
