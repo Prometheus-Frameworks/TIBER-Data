@@ -137,10 +137,21 @@ descriptor**:
 - The type is validated by `fstat` **on the opened descriptor**: a regular file is required; a FIFO,
   device, socket, or directory is refused without being read.
 - The cap is enforced against that descriptor's `fstat` size, and the read is a bounded read from the
-  **same** descriptor that never buffers more than the cap plus one byte. An oversized replacement or
+  **same** descriptor that reads at most the cap plus one byte in total. An oversized replacement or
   growth after the size check is detected without allocating unbounded memory.
+- The read accumulates into **one** growing buffer (peak payload ownership is a single buffer of at most
+  the cap plus one byte, plus one small reusable read chunk) — not a list of chunks that is then joined,
+  which would hold two payload-sized representations at once. The caller consumes that buffer directly
+  (it is a bytes-like object), so no whole-payload copy is made.
 - The exact verified bytes are carried in memory to the semantic stage. The artifact pathname is **not**
   reopened there, so a swap after integrity cannot change what the evaluator judges.
+
+**No degraded fallback.** These primitives — `O_NOFOLLOW`, `O_PATH`, `O_NONBLOCK`, and `dir_fd` support on
+`os.open` — are required to *prove* no-follow, component-relative access. If the platform cannot provide
+them, the gate **fails closed before reading any bundle bytes** (`BUNDLE_DESCRIPTOR_UNSUPPORTED`); it never
+falls back to a full-path open, which would follow a symlink to bytes outside the bundle. (Manifest reading
+happens before path-safety normalization, and a path check followed by a later full-path open would itself
+be raceable — so a fallback could not be made safe.) On Linux all four primitives are present.
 
 Size and digest bind to the exact bytes that one descriptor yielded, preserving the digest and
 declared-size semantics. All the path-normalization, bijection, manifest, shape, evaluator-identity, and

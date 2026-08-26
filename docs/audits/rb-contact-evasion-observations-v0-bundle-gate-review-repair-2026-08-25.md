@@ -80,8 +80,9 @@ read (the manifest and each artifact) and to the semantic stage:
 - Type is validated by `fstat` on the opened descriptor — a regular file is required; FIFOs, devices,
   sockets, and directories are refused without reading.
 - The cap is enforced against that descriptor's `fstat` size, and the read is a bounded read from the
-  **same** descriptor that never buffers more than the cap plus one byte, so an oversized file or growth
-  after the size check is detected without unbounded memory.
+  **same** descriptor that reads at most the cap plus one byte in total, accumulating into one growing
+  buffer (see the 2026-08-26 correction below), so an oversized file or growth after the size check is
+  detected without unbounded memory.
 - The exact verified bytes are carried in memory to the semantic stage; the artifact pathname is **not**
   reopened there, so a post-integrity swap cannot change what the evaluator judges.
 
@@ -115,3 +116,52 @@ evaluator-identity, and lifecycle guarantees are preserved.
 
 This record authorizes no source access, collection, ingestion, candidate row, artifact, promotion, or
 consumer activation. #234 remains open; PR #260 remains draft and unmerged.
+
+---
+
+## Second review round — 2026-08-26
+
+A follow-up independent Codex review at head `96c332149e6411c51ecd6839afbe922a5a1ca499` produced **two
+findings**, both accepted and repaired. Final exact-head audit status remains **pending fresh Codex review
+of the repaired head**.
+
+### P1 — required descriptor capabilities failed open
+
+`read_bundle_file` had a fallback branch (used when `O_PATH`, `O_NOFOLLOW`, or `os.open(dir_fd=...)`
+support was unavailable) that opened the full path. **Reproduced**: with those capabilities disabled and
+`manifest.json` made a symlink to a file outside the bundle, the helper returned OK and read the external
+bytes. The fallback's stated rationale was invalid — manifest reading occurs before `check_path_safety`,
+and an artifact path-check followed by a later full-path open is itself raceable.
+
+**Disposition:** the fallback is removed. `descriptor_primitives_available()` gates the read: if
+`O_NOFOLLOW`, `O_PATH`, `O_NONBLOCK`, or `dir_fd` support is missing, `read_bundle_file` returns
+`UNSUPPORTED` and `validate_bundle` fails the whole gate closed with `BUNDLE_DESCRIPTOR_UNSUPPORTED`
+**before reading any bundle bytes**. No pathname-check-then-open substitute is introduced. A capability
+matrix (drop `O_PATH`, `O_NOFOLLOW`, `dir_fd`, `O_NONBLOCK`, and combinations, against manifest,
+final-component, and intermediate-component external symlinks) proves external/symlinked bytes are never
+read. The earlier document/audit claim that "per-component symlink safety is still enforced by
+`check_path_safety` upstream" was wrong and is corrected here and in the contract doc.
+
+### P2 — cap-plus-one memory claim was false
+
+`_read_fd_capped` accumulated a list of byte chunks and then `join`ed them; both representations coexisted
+during the join, peaking at roughly twice the payload. **Reproduced**: a 4 MiB read peaked at ~8 MiB, so
+the 64 MiB cap could require ~128 MiB of payload storage.
+
+**Disposition:** the reader now accumulates into **one** growing `bytearray` and returns it directly (a
+bytes-like object the caller hashes, decodes, and sends to the bridge), with no chunk list and no
+whole-payload `join`. Peak payload ownership is a single buffer of at most the cap plus one byte, plus one
+small reusable read chunk — measured with `tracemalloc` at ~1.25× the payload (payload plus one read
+chunk), versus ~2× before. Post-`fstat` growth (trips the cap+1 bound) and short reads (fewer bytes for
+the caller's size/digest checks) are both preserved. Every "never buffers more than the cap plus one byte"
+statement in the code comments, the contract document, this audit, the JSON audit, and `HANDOFF.md` is
+corrected to the accurate single-buffer / peak-ownership claim.
+
+### Second-round verification
+
+Focused Slice B suite: 284 passed (+21 controls: capability matrix, `tracemalloc` peak-ownership,
+single-buffer structural, growth/short-read). Full Python suite and Slice A suites unchanged. Mutation
+testing: 6 mutations against the real gate (reinstating the fallback, disabling the preflight, weakening
+the capability check, reinstating the chunk-join, unbounded read, dropping growth detection), all killed,
+no degenerate, gate restored byte-for-byte. No Slice A change; nothing under `exports/**`; reference
+bundle byte-identical. Repaired head recorded on PR #260.

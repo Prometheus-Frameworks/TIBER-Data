@@ -2962,3 +2962,218 @@ def test_descriptor_read_does_not_mutate_committed_fixtures() -> None:
         for path in sorted(FIXTURE_ROOT.rglob("*.json"))
     }
     assert before == after
+
+
+# ---------------------------------------------------------------------------
+# Second independent-review repair — capability fail-closed (P1) and true
+# single-buffer memory (P2)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def _capability_matrix(monkeypatch: pytest.MonkeyPatch):
+    """Helper to drop one or more descriptor primitives on the gate module."""
+
+    def drop(*, o_path=False, o_nofollow=False, o_nonblock=False, dir_fd=False):
+        if o_path:
+            monkeypatch.setattr(_gate, "_O_PATH", 0)
+        if o_nofollow:
+            monkeypatch.setattr(_gate, "_O_NOFOLLOW", 0)
+        if o_nonblock:
+            monkeypatch.setattr(_gate, "_O_NONBLOCK", 0)
+        if dir_fd:
+            class _NoDirFd:
+                def __contains__(self, item):  # noqa: ANN001
+                    return False
+
+            monkeypatch.setattr(_gate.os, "supports_dir_fd", _NoDirFd())
+
+    return drop
+
+
+def _external_symlink_bundle(tmp_path: Path, which: str) -> tuple[Path, bytes]:
+    """A bundle whose manifest or artifact (final or intermediate) links outside.
+
+    Returns (bundle_root, external_secret_bytes). The secret must never be read.
+    """
+
+    secret = tmp_path / "outside_secret.json"
+    secret_bytes = b'{"external":"MUST-NEVER-BE-READ"}\n'
+    secret.write_bytes(secret_bytes)
+    secret_dir = tmp_path / "outside_dir"
+    secret_dir.mkdir()
+    (secret_dir / "a.json").write_bytes(secret_bytes)
+
+    root = tmp_path / "bundle"
+    (root / "observations").mkdir(parents=True)
+    (root / "observations/a.json").write_bytes(b"{}\n")
+    good_manifest = {
+        "manifest_version": PINNED_MANIFEST_VERSION,
+        "artifact_id": PINNED_ARTIFACT_ID,
+        "schema_version": PINNED_SCHEMA_VERSION,
+        "artifact_position": "fixture_only",
+        "digest_algorithm": "sha256",
+        "generated_at": "2026-08-25T00:00:00+00:00",
+        "artifacts": [
+            {
+                "path": "observations/a.json",
+                "size_bytes": 3,
+                "digest": hashlib.sha256(b"{}\n").hexdigest(),
+            }
+        ],
+    }
+    if which == "manifest":
+        (root / "manifest.json").symlink_to(secret)
+    else:
+        (root / "manifest.json").write_text(
+            json.dumps(good_manifest, indent=2, sort_keys=True) + "\n"
+        )
+        if which == "final":
+            (root / "observations/a.json").unlink()
+            (root / "observations/a.json").symlink_to(secret)
+        elif which == "intermediate":
+            (root / "observations/a.json").unlink()
+            (root / "observations").rmdir()
+            (root / "observations").symlink_to(secret_dir)
+    return root, secret_bytes
+
+
+@pytest.mark.parametrize("which", ["manifest", "final", "intermediate"])
+@pytest.mark.parametrize(
+    "drop_kwargs",
+    [
+        {"o_path": True},
+        {"o_nofollow": True},
+        {"dir_fd": True},
+        {"o_nonblock": True},
+        {"o_path": True, "o_nofollow": True, "dir_fd": True},
+    ],
+)
+def test_dropping_any_primitive_never_reads_external_bytes(
+    tmp_path: Path, _capability_matrix, which: str, drop_kwargs: dict
+) -> None:
+    """Capability matrix: with any required primitive missing, the gate fails
+    closed before reading, for manifest, final-component, and intermediate cases.
+
+    A symlink to bytes outside the bundle is present in each case; those bytes
+    must never appear anywhere in the result, and the gate must refuse.
+    """
+
+    root, secret = _external_symlink_bundle(tmp_path, which)
+    _capability_matrix(**drop_kwargs)
+    assert not _gate.descriptor_primitives_available()
+    result = _gate.validate_bundle(root)
+    assert not result.ok
+    assert "BUNDLE_DESCRIPTOR_UNSUPPORTED" in codes(result)
+    rendered = json.dumps(result.as_dict())
+    assert b"MUST-NEVER-BE-READ" not in secret[:0] + rendered.encode()
+    assert "MUST-NEVER-BE-READ" not in rendered
+    for artifact in result.artifacts:
+        assert artifact.verified_bytes is None
+
+
+def test_read_helper_fails_closed_when_primitives_unavailable(
+    tmp_path: Path, _capability_matrix
+) -> None:
+    """The helper itself refuses (UNSUPPORTED) and never opens the path."""
+
+    secret = tmp_path / "secret.json"
+    secret.write_bytes(b"EXTERNAL\n")
+    (tmp_path / "manifest.json").symlink_to(secret)
+    _capability_matrix(o_path=True)
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "manifest.json", 4096)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.UNSUPPORTED
+
+
+def test_no_full_path_fallback_open_remains_in_the_source() -> None:
+    """Structural: the helper has no full-path open fallback branch."""
+
+    src = GATE_SCRIPT.read_text()
+    # The only os.open calls in read_bundle_file must pass dir_fd (component
+    # walk) or open the bundle root; none opens a joined full relative path.
+    assert "bundle_root / PurePosixPath(relative_posix)" not in src
+
+
+def test_full_gate_with_all_primitives_present_still_passes(tmp_path: Path) -> None:
+    """Sanity: on this platform (all primitives present) the gate works."""
+
+    assert _gate.descriptor_primitives_available()
+    root = _one_artifact_bundle(
+        tmp_path / "b", _fixture_path("p2_raw_count_without_denominator.json").read_bytes()
+    )
+    assert _gate.validate_bundle(root).ok
+
+
+def test_read_peak_payload_ownership_is_single_buffer(tmp_path: Path) -> None:
+    """P2: peak payload ownership is ~one buffer, not two.
+
+    Measures actual traced peak memory during the read (not merely the size of
+    each os.read request). The old chunk-list-then-join peaked at ~2x the
+    payload; the single growing buffer peaks at the payload plus one small read
+    chunk. Asserts the peak is well under 2x — distinguishing real peak
+    ownership from request sizing.
+    """
+
+    import tracemalloc
+
+    cap = 8 * 1024 * 1024  # 8 MiB
+    payload = tmp_path / "payload.bin"
+    payload.write_bytes(b"a" * cap)
+
+    fd = os.open(str(payload), os.O_RDONLY)
+    try:
+        tracemalloc.start()
+        base = tracemalloc.get_traced_memory()[0]
+        data, grew = _gate._read_fd_capped(fd, cap)
+        peak = tracemalloc.get_traced_memory()[1]
+        tracemalloc.stop()
+    finally:
+        os.close(fd)
+
+    assert not grew
+    assert len(data) == cap
+    peak_over_payload = peak - base - cap
+    # Peak beyond the payload is bounded by a small constant (one read chunk plus
+    # bytearray growth headroom), never a second payload-sized copy.
+    assert peak_over_payload < 4 * _gate._READ_CHUNK, (
+        f"peak {peak - base} exceeds payload {cap} by {peak_over_payload}, "
+        "which indicates a second payload-sized representation"
+    )
+
+
+def test_read_helper_returns_a_single_growing_buffer_not_a_join(tmp_path: Path) -> None:
+    """Structural: the reader owns one buffer and never joins a chunk list."""
+
+    src = GATE_SCRIPT.read_text()
+    reader = src[src.index("def _read_fd_capped(") : src.index("def read_bundle_file(")]
+    assert 'b"".join' not in reader
+    assert "chunks" not in reader
+    assert "buf += chunk" in reader
+
+
+def test_growth_and_short_read_still_detected_with_single_buffer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The single-buffer reader keeps post-fstat growth and short-read behaviour."""
+
+    cap = 4096
+    grew_file = tmp_path / "grew.bin"
+    grew_file.write_bytes(b"x" * (cap * 8))
+    fd = os.open(str(grew_file), os.O_RDONLY)
+    try:
+        data, grew = _gate._read_fd_capped(fd, cap)
+    finally:
+        os.close(fd)
+    assert grew is True
+    assert len(data) == 0  # oversize buffer is dropped, not returned
+
+    short_file = tmp_path / "short.bin"
+    short_file.write_bytes(b"y" * 10)
+    fd = os.open(str(short_file), os.O_RDONLY)
+    try:
+        data, grew = _gate._read_fd_capped(fd, cap)
+    finally:
+        os.close(fd)
+    assert grew is False
+    assert len(data) == 10  # fewer bytes than any declared size -> caller rejects

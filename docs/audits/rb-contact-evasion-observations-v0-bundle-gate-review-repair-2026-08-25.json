@@ -62,7 +62,7 @@
       "accepted": true,
       "agents_md_reference": "AGENTS.md:L98-L107",
       "disposition": "handoff_md_updated",
-      "disposition_detail": "Added a '## Current handoff — #234 Slice B' section to HANDOFF.md in the existing format: active task, files touched, what is now true, what remains missing, what must not be assumed, audit-trigger status."
+      "disposition_detail": "Added a '## Current handoff \u2014 #234 Slice B' section to HANDOFF.md in the existing format: active task, files touched, what is now true, what remains missing, what must not be assumed, audit-trigger status."
     },
     {
       "id": "r3856050637",
@@ -86,11 +86,12 @@
         "leaf_O_NONBLOCK_fifo_cannot_hang",
         "fstat_requires_regular_file",
         "cap_enforced_against_same_descriptor_fstat_size",
-        "bounded_read_never_buffers_more_than_cap_plus_one",
         "growth_after_fstat_detected_without_unbounded_memory",
         "semantic_stage_receives_verified_in_memory_bytes_no_reopen",
         "exact_digest_and_declared_size_semantics_preserved",
-        "existing_path_bijection_manifest_shape_identity_lifecycle_guarantees_preserved"
+        "existing_path_bijection_manifest_shape_identity_lifecycle_guarantees_preserved",
+        "bounded_read_reads_at_most_cap_plus_one_total_into_one_growing_buffer",
+        "single_buffer_peak_ownership_no_second_payload_sized_representation"
       ],
       "disposition": "code_repaired_with_reproduction_negative_controls_and_mutation_evidence"
     }
@@ -109,5 +110,46 @@
     "consumer_activation": false,
     "issue_234_state": "open",
     "pr_260_state": "draft_unmerged"
+  },
+  "second_review_round": {
+    "audit_date": "2026-08-26",
+    "reviewed_head": "96c332149e6411c51ecd6839afbe922a5a1ca499",
+    "reviewer_identity": "chatgpt-codex-connector",
+    "auditor_identity_fabricated": false,
+    "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+    "findings": [
+      {
+        "severity": "P1",
+        "title": "Required descriptor capabilities failed open",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "With O_PATH/O_NOFOLLOW/dir_fd support disabled and manifest.json made a symlink to a file outside the bundle, read_bundle_file returned OK and read the external bytes via the full-path fallback.",
+        "defect_class": "silent_capability_degradation_to_full_path_open",
+        "disposition": "removed_fallback_fail_closed_before_reading",
+        "disposition_detail": "descriptor_primitives_available() gates the read; a missing O_NOFOLLOW/O_PATH/O_NONBLOCK/dir_fd yields UNSUPPORTED and validate_bundle fails the whole gate closed with BUNDLE_DESCRIPTOR_UNSUPPORTED before reading any bundle bytes. No pathname-check-then-open substitute. Capability matrix (drop each primitive and combinations, against manifest/final/intermediate external symlinks) proves external bytes are never read.",
+        "corrected_prior_claim": "per_component_symlink_safety_still_enforced_by_check_path_safety_upstream_was_wrong"
+      },
+      {
+        "severity": "P2",
+        "title": "cap-plus-one memory claim was false",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "_read_fd_capped accumulated a chunk list then joined; both coexist during join. A 4 MiB read peaked at ~8 MiB via tracemalloc; a 64 MiB cap would peak ~128 MiB.",
+        "defect_class": "second_payload_sized_representation_during_join",
+        "disposition": "single_growing_bytearray_returned_directly_no_join",
+        "disposition_detail": "One growing bytearray, returned as a bytes-like object; no chunk list, no whole-payload join. tracemalloc peak measured ~1.25x payload (payload plus one read chunk) versus ~2x. Post-fstat growth and short reads preserved. Every 'never buffers more than cap+1' statement corrected in code comments, contract doc, this JSON, the Markdown audit, and HANDOFF.md.",
+        "regression_distinguishes_peak_ownership_from_os_read_request_size": true
+      }
+    ],
+    "verification": {
+      "focused_slice_b_tests_passed": 284,
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true,
+      "mutation_count": 6,
+      "mutations_all_killed": true,
+      "degenerate_evidence": false,
+      "gate_restored_byte_for_byte": true
+    }
   }
 }

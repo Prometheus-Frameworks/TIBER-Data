@@ -273,8 +273,8 @@ class ArtifactState:
     stages_passed: list[str] = field(default_factory=list)
     observed_size: int | None = None
     observed_digest: str | None = None
-    raw_bytes: bytes | None = None
-    verified_bytes: bytes | None = None
+    raw_bytes: bytes | bytearray | None = None
+    verified_bytes: bytes | bytearray | None = None
     payload: Any = UNPARSED
     contract: dict[str, Any] | None = None
     blocked: bool = False
@@ -395,6 +395,7 @@ class _ReadOutcome:
     NOT_REGULAR = "not_regular"
     TOO_LARGE = "too_large"
     UNREADABLE = "unreadable"
+    UNSUPPORTED = "unsupported"
 
 
 _O_CLOEXEC = getattr(os, "O_CLOEXEC", 0)
@@ -405,58 +406,89 @@ _O_PATH = getattr(os, "O_PATH", 0)
 _READ_CHUNK = 1 << 20
 
 
-def _read_fd_capped(fd: int, cap: int) -> tuple[bytes, bool]:
-    """Read at most ``cap + 1`` bytes from ``fd``. Second value is "grew past cap".
+def descriptor_primitives_available() -> bool:
+    """Whether the platform can prove no-follow, component-relative access.
 
-    Never buffers more than ``cap + 1`` bytes, so an arbitrarily large file
-    cannot exhaust memory. If the descriptor yields more than ``cap`` bytes the
-    bytes are discarded and ``(b"", True)`` is returned.
+    The descriptor-bound read requires ``O_NOFOLLOW`` and ``O_PATH`` (to open an
+    inode without following a link and without I/O), ``O_NONBLOCK`` (so a FIFO
+    leaf cannot hang the open), and ``dir_fd`` support on ``os.open`` (to walk
+    components relative to an already-opened directory). If any is missing the
+    gate cannot prove safe access and MUST fail closed rather than fall back to a
+    full-path open, which would follow a symlink to bytes outside the bundle.
+    """
+
+    return bool(
+        _O_NOFOLLOW
+        and _O_PATH
+        and _O_NONBLOCK
+        and os.open in getattr(os, "supports_dir_fd", set())
+    )
+
+
+def _read_fd_capped(fd: int, cap: int) -> tuple[bytearray, bool]:
+    """Read at most ``cap + 1`` bytes from ``fd`` into ONE growing buffer.
+
+    Peak payload ownership is a single ``bytearray`` of at most ``cap + 1``
+    bytes, plus one small reusable read chunk -- there is never a second
+    payload-sized representation (the old chunk-list-then-``join`` held both the
+    list and the joined result, peaking at roughly twice the payload). The
+    caller consumes the ``bytearray`` directly (it is a bytes-like object for
+    hashing, decoding, and subprocess input), so no ``bytes(...)`` copy of the
+    whole payload is ever made.
+
+    Reads at most ``cap + 1`` bytes total, so an arbitrarily large file cannot
+    exhaust memory. The second value is "grew past cap": if the descriptor
+    yields more than ``cap`` bytes the buffer is dropped and
+    ``(bytearray(), True)`` is returned. Post-``fstat`` growth and short reads
+    are both detected -- growth trips the ``cap + 1`` limit, a short read simply
+    yields fewer bytes for the caller's size/digest checks to reject.
     """
 
     limit = cap + 1
-    chunks: list[bytes] = []
-    total = 0
-    while total < limit:
+    buf = bytearray()
+    while len(buf) < limit:
         try:
-            chunk = os.read(fd, min(_READ_CHUNK, limit - total))
+            chunk = os.read(fd, min(_READ_CHUNK, limit - len(buf)))
         except BlockingIOError:  # pragma: no cover - regular files do not block
             break
         if not chunk:
             break
-        chunks.append(chunk)
-        total += len(chunk)
-    data = b"".join(chunks)
-    if len(data) > cap:
-        return b"", True
-    return data, False
+        buf += chunk  # `chunk` is at most _READ_CHUNK bytes and freed next iteration
+    if len(buf) > cap:
+        buf.clear()
+        return bytearray(), True
+    return buf, False
 
 
 def read_bundle_file(
     bundle_root: Path, relative_posix: str, cap: int
-) -> tuple[bytes | None, tuple[str, str]]:
+) -> tuple[bytearray | None, tuple[str, str]]:
     """Open a bundle-relative path safely and return its bytes, or an outcome.
 
     Walks each path component descriptor-relatively with ``O_NOFOLLOW`` (refusing
     a symlink at any level), opens the leaf ``O_NONBLOCK`` (so a FIFO cannot
     hang), requires a regular file by ``fstat`` on the opened descriptor, caps by
     that descriptor's size, and reads at most ``cap + 1`` bytes from it. Returns
-    ``(bytes, ("ok", ""))`` on success or ``(None, (outcome, detail))``.
+    ``(bytes-like, ("ok", ""))`` on success or ``(None, (outcome, detail))``.
 
-    When the platform lacks ``dir_fd``/``O_NOFOLLOW`` support the walk degrades
-    to a single ``O_NOFOLLOW`` open of the full path; the fstat, cap, and bounded
-    read still bind to that one descriptor, and per-component symlink safety is
-    still enforced by ``check_path_safety`` upstream.
+    If the platform cannot provide the primitives required to prove no-follow,
+    component-relative access, the read **fails closed** with ``UNSUPPORTED``
+    before opening anything -- it never degrades to a full-path open, which would
+    follow a symlink to bytes outside the bundle.
     """
 
     segments = [segment for segment in relative_posix.split("/") if segment]
     if not segments:
         return None, (_ReadOutcome.UNREADABLE, "empty relative path")
 
-    use_dir_fd = (
-        _O_NOFOLLOW
-        and _O_PATH
-        and os.open in getattr(os, "supports_dir_fd", set())
-    )
+    if not descriptor_primitives_available():
+        return None, (
+            _ReadOutcome.UNSUPPORTED,
+            "the platform lacks the descriptor primitives (O_NOFOLLOW, O_PATH, "
+            "O_NONBLOCK, dir_fd) required to prove no-follow component-relative "
+            "access; the gate fails closed rather than reading bundle bytes",
+        )
+
     open_flags = os.O_RDONLY | _O_CLOEXEC
     fds: list[int] = []
 
@@ -470,47 +502,42 @@ def read_bundle_file(
         return None, (_ReadOutcome.UNREADABLE, f"could not open {what}: {error}")
 
     try:
-        if use_dir_fd:
-            # Intermediate components are opened O_PATH|O_NOFOLLOW: this resolves
-            # the inode without I/O (so a FIFO or device can never block) and
-            # without following a link (a symlink opens AS a symlink, detected by
-            # fstat), then each must be a real directory. Deterministic across
-            # kernels, unlike relying on ELOOP vs ENOTDIR from O_DIRECTORY.
+        # Intermediate components are opened O_PATH|O_NOFOLLOW: this resolves the
+        # inode without I/O (so a FIFO or device can never block) and without
+        # following a link (a symlink opens AS a symlink, detected by fstat),
+        # then each must be a real directory. Deterministic across kernels,
+        # unlike relying on ELOOP vs ENOTDIR from O_DIRECTORY. There is no
+        # full-path fallback: without these primitives the read already returned
+        # UNSUPPORTED above.
+        try:
+            current = os.open(bundle_root, open_flags | _O_PATH | _O_NOFOLLOW)
+        except OSError as error:
+            return _classify(error, "the bundle root")
+        fds.append(current)
+        for segment in segments[:-1]:
             try:
-                current = os.open(bundle_root, open_flags | _O_PATH | _O_NOFOLLOW)
+                nxt = os.open(segment, open_flags | _O_PATH | _O_NOFOLLOW, dir_fd=current)
             except OSError as error:
-                return _classify(error, "the bundle root")
-            fds.append(current)
-            for segment in segments[:-1]:
-                try:
-                    nxt = os.open(segment, open_flags | _O_PATH | _O_NOFOLLOW, dir_fd=current)
-                except OSError as error:
-                    return _classify(error, f"path component {segment!r}")
-                fds.append(nxt)
-                mode = os.fstat(nxt).st_mode
-                if stat.S_ISLNK(mode):
-                    return None, (
-                        _ReadOutcome.SYMLINK,
-                        f"path component {segment!r} is a symlink; the gate follows no link",
-                    )
-                if not stat.S_ISDIR(mode):
-                    return None, (
-                        _ReadOutcome.NOT_REGULAR,
-                        f"path component {segment!r} is not a directory",
-                    )
-                current = nxt
-            try:
-                leaf_fd = os.open(
-                    segments[-1], open_flags | _O_NOFOLLOW | _O_NONBLOCK, dir_fd=current
+                return _classify(error, f"path component {segment!r}")
+            fds.append(nxt)
+            mode = os.fstat(nxt).st_mode
+            if stat.S_ISLNK(mode):
+                return None, (
+                    _ReadOutcome.SYMLINK,
+                    f"path component {segment!r} is a symlink; the gate follows no link",
                 )
-            except OSError as error:
-                return _classify(error, "the artifact")
-        else:  # pragma: no cover - Linux supports dir_fd + O_PATH
-            full = bundle_root / PurePosixPath(relative_posix)
-            try:
-                leaf_fd = os.open(str(full), open_flags | _O_NOFOLLOW | _O_NONBLOCK)
-            except OSError as error:
-                return _classify(error, "the artifact")
+            if not stat.S_ISDIR(mode):
+                return None, (
+                    _ReadOutcome.NOT_REGULAR,
+                    f"path component {segment!r} is not a directory",
+                )
+            current = nxt
+        try:
+            leaf_fd = os.open(
+                segments[-1], open_flags | _O_NOFOLLOW | _O_NONBLOCK, dir_fd=current
+            )
+        except OSError as error:
+            return _classify(error, "the artifact")
         fds.append(leaf_fd)
 
         st = os.fstat(leaf_fd)
@@ -1506,6 +1533,7 @@ def check_integrity(
                 _ReadOutcome.NOT_REGULAR: "BUNDLE_PATH_NOT_REGULAR_FILE",
                 _ReadOutcome.TOO_LARGE: "BUNDLE_ARTIFACT_TOO_LARGE",
                 _ReadOutcome.UNREADABLE: "BUNDLE_ARTIFACT_MISSING",
+                _ReadOutcome.UNSUPPORTED: "BUNDLE_DESCRIPTOR_UNSUPPORTED",
             }[outcome]
             failures.append(Failure("integrity", reason, artifact.path, detail))
             artifact.block()
@@ -2018,6 +2046,23 @@ def validate_bundle(bundle_root: Path) -> GateResult:
 
     failures: list[Failure] = []
     artifacts: list[ArtifactState] = []
+
+    # Preflight: the descriptor-bound read is the gate's only safe read path.
+    # If the platform cannot provide its primitives, fail closed before opening
+    # anything -- never fall back to a full-path open that could follow a symlink
+    # out of the bundle.
+    if not descriptor_primitives_available():
+        failures.append(
+            Failure(
+                "manifest_read",
+                "BUNDLE_DESCRIPTOR_UNSUPPORTED",
+                ".",
+                "the platform lacks the descriptor primitives (O_NOFOLLOW, O_PATH, "
+                "O_NONBLOCK, dir_fd) required to prove no-follow component-relative "
+                "access; the gate fails closed rather than reading bundle bytes",
+            )
+        )
+        return GateResult(ok=False, failures=failures, artifacts=artifacts)
 
     if not bundle_root.exists() or not bundle_root.is_dir() or bundle_root.is_symlink():
         failures.append(
