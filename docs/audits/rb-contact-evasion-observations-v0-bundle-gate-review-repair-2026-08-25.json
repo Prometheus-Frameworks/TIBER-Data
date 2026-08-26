@@ -1,0 +1,113 @@
+{
+  "artifact_version": "rb_contact_evasion_bundle_gate_review_repair_v1",
+  "audit_date": "2026-08-25",
+  "evidence_cutoff_date": "2026-08-25",
+  "record_type": "independent_review_repair_record",
+  "not_an_independent_audit_of_repaired_head": true,
+  "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+  "tracking_issue": {
+    "repository": "Prometheus-Frameworks/TIBER-Data",
+    "number": 234,
+    "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/issues/234"
+  },
+  "pull_request": {
+    "repository": "Prometheus-Frameworks/TIBER-Data",
+    "number": 260,
+    "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/260"
+  },
+  "task_classification": [
+    "repo_governance_documentation",
+    "contract_adjacent_validation_tooling"
+  ],
+  "reviewed_head": "4f9591af3ebbcabea965b689e7b95ab8b821d4c1",
+  "authorized_base": "4498d5efd053e6bbc87f5f28214b0509550ad653",
+  "review_source": {
+    "reviewer_identity": "chatgpt-codex-connector",
+    "review_kind": "independent_review_triggered_by_ready_for_review",
+    "created_at": "2026-08-25T18:31:26Z",
+    "auditor_identity_fabricated": false,
+    "review_comment_ids": [
+      "r3856050625",
+      "r3856050632",
+      "r3856050637"
+    ]
+  },
+  "scope": {
+    "source_bytes_retrieved": false,
+    "sources_admitted": false,
+    "source_access_authorized": false,
+    "ingestion_authorized": false,
+    "candidate_rows_authorized": false,
+    "artifact_created": false,
+    "promotion_authorized": false,
+    "consumer_activation_authorized": false,
+    "slice_a_changed": false,
+    "exports_changed": false,
+    "committed_fixtures_mutated_by_tests": false
+  },
+  "findings": [
+    {
+      "id": "r3856050625",
+      "severity": "P1",
+      "title": "Commit the required auditor review artifact",
+      "accepted": true,
+      "agents_md_reference": "AGENTS.md:L41-L45",
+      "disposition": "committed_paired_audit_record_under_docs_audits",
+      "disposition_detail": "This paired .md/.json record follows the repository dated-paired convention. It records that the Codex independent review produced the findings; it does not fabricate an independent auditor identity, and it leaves final exact-head audit status pending fresh Codex review of the repaired head."
+    },
+    {
+      "id": "r3856050632",
+      "severity": "P1",
+      "title": "Record the material handoff",
+      "accepted": true,
+      "agents_md_reference": "AGENTS.md:L98-L107",
+      "disposition": "handoff_md_updated",
+      "disposition_detail": "Added a '## Current handoff — #234 Slice B' section to HANDOFF.md in the existing format: active task, files touched, what is now true, what remains missing, what must not be assumed, audit-trigger status."
+    },
+    {
+      "id": "r3856050637",
+      "severity": "P2",
+      "title": "Bind the size/type checks to the exact bytes read",
+      "accepted": true,
+      "agents_md_reference": "AGENTS.md:L35-L36",
+      "reproduced_at_reviewed_head": true,
+      "reproduction_detail": "After the size check sampled the original inode, the pathname was reopened by read_bytes() and an oversized replacement of 75497472 bytes (72 MiB) was read in full, 8388608 bytes past the 67108864-byte cap, unbounded.",
+      "defect_class": "time_of_check_time_of_use_pathname_stat_then_reopen",
+      "repaired_sites": [
+        "read_manifest",
+        "check_integrity",
+        "evaluate_semantics"
+      ],
+      "invariant": "descriptor_bound_read",
+      "invariant_properties": [
+        "components_opened_descriptor_relative_O_NOFOLLOW",
+        "intermediate_components_O_PATH_require_real_directory_by_fstat",
+        "final_and_intermediate_symlink_refused",
+        "leaf_O_NONBLOCK_fifo_cannot_hang",
+        "fstat_requires_regular_file",
+        "cap_enforced_against_same_descriptor_fstat_size",
+        "bounded_read_never_buffers_more_than_cap_plus_one",
+        "growth_after_fstat_detected_without_unbounded_memory",
+        "semantic_stage_receives_verified_in_memory_bytes_no_reopen",
+        "exact_digest_and_declared_size_semantics_preserved",
+        "existing_path_bijection_manifest_shape_identity_lifecycle_guarantees_preserved"
+      ],
+      "disposition": "code_repaired_with_reproduction_negative_controls_and_mutation_evidence"
+    }
+  ],
+  "residual_boundaries": [
+    "the_gate_proves_bytes_and_file_identity_not_football_truth",
+    "node_modules_pinned_toolchain_binary_and_node_remain_trusted_out_of_scope",
+    "admitted_source_registry_unimplemented_no_source_admitted",
+    "this_record_is_not_an_independent_audit_of_the_repaired_head"
+  ],
+  "authorization": {
+    "source_access": false,
+    "ingestion": false,
+    "candidate_build": false,
+    "promotion": false,
+    "consumer_activation": false,
+    "issue_234_state": "open",
+    "pr_260_state": "draft_unmerged"
+  }
+}

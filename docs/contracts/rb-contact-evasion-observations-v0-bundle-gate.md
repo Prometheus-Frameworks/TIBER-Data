@@ -121,6 +121,31 @@ or number), and the object's key set matches the envelope for the mode exactly:
 lines (a real refusal followed by a success line), trailing bytes, a mixed
 success/error shape, or any missing or extra field is refused.
 
+### Every bundle file is read through one descriptor, bounded and typed
+
+The gate never does a pathname `stat()` followed by a separate pathname read: that is a
+time-of-check/time-of-use race in which an entry can be swapped between the two operations for an
+oversized file (bypassing the cap, unbounded read), a FIFO (a blocking read that hangs), a device, or a
+symlink. Instead every bundle file — the manifest and each declared artifact — is read through **one
+descriptor**:
+
+- Each path component is opened descriptor-relatively with `O_NOFOLLOW`. Intermediate components are
+  opened `O_PATH | O_NOFOLLOW` (which resolves the inode without I/O, so a FIFO or device cannot block)
+  and required to be real directories by `fstat`; a symlink at any component — final or intermediate — is
+  refused. This is deterministic across kernels rather than relying on `ELOOP`/`ENOTDIR` nuances.
+- The leaf is opened `O_NONBLOCK` so a FIFO cannot make the open hang.
+- The type is validated by `fstat` **on the opened descriptor**: a regular file is required; a FIFO,
+  device, socket, or directory is refused without being read.
+- The cap is enforced against that descriptor's `fstat` size, and the read is a bounded read from the
+  **same** descriptor that never buffers more than the cap plus one byte. An oversized replacement or
+  growth after the size check is detected without allocating unbounded memory.
+- The exact verified bytes are carried in memory to the semantic stage. The artifact pathname is **not**
+  reopened there, so a swap after integrity cannot change what the evaluator judges.
+
+Size and digest bind to the exact bytes that one descriptor yielded, preserving the digest and
+declared-size semantics. All the path-normalization, bijection, manifest, shape, evaluator-identity, and
+lifecycle guarantees above are preserved.
+
 ### The evaluator's verdict is validated before it is acted on
 
 A verdict is the one thing this gate cannot re-derive, so it is read exactly as

@@ -2669,3 +2669,296 @@ def test_tsc_listfiles_escape_detector() -> None:
     sources, escapes = gate._tsc_repo_local_sources(stdout, root)
     assert sources == ["src/contracts/v1/rbContactEvasionObservationsV0.ts"]
     assert set(escapes) == {"/etc/passwd", "/some/other/repo/evil.ts"}
+
+
+# ---------------------------------------------------------------------------
+# Independent-review repair — descriptor-bound file reads (P2)
+# ---------------------------------------------------------------------------
+#
+# Every bundle file is opened once, without following symlinks; its type and
+# size are validated by fstat on that descriptor; and it is read with a bounded
+# read from the same descriptor. There is no stat()-then-reopen window an
+# oversized file, FIFO, device, or symlink can slip through, and no unbounded
+# read. These controls exercise the boundary through the public gate and the
+# read helper directly. All temp copies; no committed file is mutated.
+
+import scripts.validate_rb_contact_evasion_bundle as _gate  # noqa: E402
+
+
+def _one_artifact_bundle(root: Path, raw: bytes, name: str = "observations/a.json") -> Path:
+    return make_bundle(root, {name: raw})
+
+
+def test_read_helper_refuses_oversized_file_without_reading_it(tmp_path: Path) -> None:
+    """fstat size > cap => TOO_LARGE, and the file is never read into memory."""
+
+    big = tmp_path / "big.bin"
+    big.write_bytes(b"x" * (2048 + 1))
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "big.bin", 2048)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.TOO_LARGE
+
+
+def test_read_helper_bounded_read_never_exceeds_cap_plus_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Growth after fstat is caught by the bounded read, not by unbounded memory.
+
+    fstat is forced to report a within-cap size while the file on disk is far
+    larger; the bounded read must stop at cap+1 and report growth, never buffer
+    the whole file.
+    """
+
+    cap = 4096
+    big = tmp_path / "grows.bin"
+    big.write_bytes(b"y" * (cap * 64))  # 256 KiB actual
+
+    real_fstat = os.fstat
+    reads = {"max_single": 0}
+    real_read = os.read
+
+    def small_fstat(fd):
+        st = real_fstat(fd)
+        return os.stat_result(
+            (st.st_mode, st.st_ino, st.st_dev, st.st_nlink, st.st_uid, st.st_gid, cap)
+            + st[7:]
+        )
+
+    def counting_read(fd, n):
+        reads["max_single"] = max(reads["max_single"], n)
+        return real_read(fd, n)
+
+    monkeypatch.setattr(_gate.os, "fstat", small_fstat)
+    monkeypatch.setattr(_gate.os, "read", counting_read)
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "grows.bin", cap)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.TOO_LARGE
+    # No single read request ever asked for more than cap+1 bytes total budget.
+    assert reads["max_single"] <= cap + 1
+
+
+def test_read_helper_refuses_a_fifo_without_hanging(tmp_path: Path) -> None:
+    """A FIFO with no writer is refused promptly, never blocking the open."""
+
+    fifo = tmp_path / "pipe"
+    os.mkfifo(fifo)
+    # If the open blocked this would hang; the test process would time out.
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "pipe", 4096)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.NOT_REGULAR
+
+
+def test_read_helper_refuses_a_directory(tmp_path: Path) -> None:
+    (tmp_path / "adir").mkdir()
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "adir", 4096)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.NOT_REGULAR
+
+
+def test_read_helper_refuses_a_final_component_symlink(tmp_path: Path) -> None:
+    real = tmp_path / "real.json"
+    real.write_bytes(b"{}\n")
+    os.symlink(real, tmp_path / "link.json")
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "link.json", 4096)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.SYMLINK
+
+
+def test_read_helper_refuses_an_intermediate_component_symlink(tmp_path: Path) -> None:
+    real_dir = tmp_path / "realdir"
+    real_dir.mkdir()
+    (real_dir / "a.json").write_bytes(b"{}\n")
+    os.symlink(real_dir, tmp_path / "linkdir")
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "linkdir/a.json", 4096)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.SYMLINK
+
+
+def test_read_helper_reads_a_regular_file_exactly(tmp_path: Path) -> None:
+    payload = b'{"hello": "world"}\n'
+    (tmp_path / "ok.json").write_bytes(payload)
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "ok.json", 4096)
+    assert outcome == _gate._ReadOutcome.OK
+    assert data == payload
+
+
+def test_gate_refuses_oversized_replacement_between_check_and_read(tmp_path: Path) -> None:
+    """Public gate: an artifact whose on-disk size exceeds the cap is refused.
+
+    The size is validated by fstat on the opened descriptor, so an oversized
+    file is caught before its bytes are read -- the cap binds the read.
+    """
+
+    root = tmp_path / "b"
+    (root / "observations").mkdir(parents=True)
+    oversized = b"x" * (_gate.ARTIFACT_MAX_BYTES + 4096)
+    target = root / "observations/a.json"
+    target.write_bytes(oversized)
+    manifest = {
+        "manifest_version": PINNED_MANIFEST_VERSION,
+        "artifact_id": PINNED_ARTIFACT_ID,
+        "schema_version": PINNED_SCHEMA_VERSION,
+        "artifact_position": "fixture_only",
+        "digest_algorithm": "sha256",
+        "generated_at": "2026-08-25T00:00:00+00:00",
+        "artifacts": [
+            {
+                "path": "observations/a.json",
+                "size_bytes": len(oversized),
+                "digest": hashlib.sha256(oversized).hexdigest(),
+            }
+        ],
+    }
+    (root / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    result = validate_bundle(root)
+    assert not result.ok
+    assert "BUNDLE_ARTIFACT_TOO_LARGE" in codes(result)
+
+
+def test_gate_refuses_a_fifo_artifact_without_hanging(tmp_path: Path) -> None:
+    """Public gate: a FIFO in artifact position is refused, promptly."""
+
+    raw = _fixture_path("p2_raw_count_without_denominator.json").read_bytes()
+    root = tmp_path / "b"
+    (root / "observations").mkdir(parents=True)
+    manifest = {
+        "manifest_version": PINNED_MANIFEST_VERSION,
+        "artifact_id": PINNED_ARTIFACT_ID,
+        "schema_version": PINNED_SCHEMA_VERSION,
+        "artifact_position": "fixture_only",
+        "digest_algorithm": "sha256",
+        "generated_at": "2026-08-25T00:00:00+00:00",
+        "artifacts": [
+            {
+                "path": "observations/a.json",
+                "size_bytes": len(raw),
+                "digest": hashlib.sha256(raw).hexdigest(),
+            }
+        ],
+    }
+    (root / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    os.mkfifo(root / "observations/a.json")
+    result = validate_bundle(root)
+    assert not result.ok
+    assert "BUNDLE_PATH_NOT_REGULAR_FILE" in codes(result)
+
+
+def test_gate_refuses_a_fifo_manifest_without_hanging(tmp_path: Path) -> None:
+    """Public gate: a FIFO manifest is refused, promptly."""
+
+    root = tmp_path / "b"
+    (root / "observations").mkdir(parents=True)
+    (root / "observations/a.json").write_bytes(b"{}\n")
+    os.mkfifo(root / "manifest.json")
+    result = validate_bundle(root)
+    assert not result.ok
+    assert "BUNDLE_MANIFEST_UNREADABLE" in codes(result)
+
+
+def test_gate_refuses_symlinked_manifest_via_descriptor(tmp_path: Path) -> None:
+    real = tmp_path / "real_manifest.json"
+    real.write_text("{}")
+    root = tmp_path / "b"
+    root.mkdir()
+    (root / "observations").mkdir()
+    (root / "observations/a.json").write_bytes(b"{}\n")
+    os.symlink(real, root / "manifest.json")
+    result = validate_bundle(root)
+    assert not result.ok
+    assert "BUNDLE_MANIFEST_UNREADABLE" in codes(result)
+
+
+def test_semantic_stage_uses_verified_bytes_not_a_reopen(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Replacing the artifact after integrity must not change what the evaluator sees.
+
+    The file is swapped in the window between integrity and the semantic stage
+    (by wrapping the stage that runs just before it). The bytes captured at
+    integrity are what the bridge receives, so the evaluator still judges the
+    original N11 bytes; if the semantic stage reopened the pathname it would read
+    the swapped, permissive-looking payload and the bundle would wrongly pass.
+    """
+
+    root = _one_artifact_bundle(
+        tmp_path / "b", _fixture_path("n11_canonical_identity_unresolved.json").read_bytes()
+    )
+    target = root / "observations/a.json"
+    swap = _fixture_path("p2_raw_count_without_denominator.json").read_bytes()
+
+    real_stage = _gate.check_manifest_payload_agreement
+    fired = {"done": False}
+
+    def swapping_stage(manifest, artifacts, failures):
+        real_stage(manifest, artifacts, failures)
+        # After the last pre-semantic stage, replace the file on disk. A reopen
+        # at the semantic stage would read this; verified-bytes must not.
+        if not fired["done"]:
+            fired["done"] = True
+            target.write_bytes(swap)
+
+    monkeypatch.setattr(_gate, "check_manifest_payload_agreement", swapping_stage)
+    result = _gate.validate_bundle(root)
+    assert fired["done"]
+    assert target.read_bytes() == swap, "the on-disk file was swapped after integrity"
+    # The verdict is the original N11's, proving the evaluator saw the verified bytes.
+    assert not result.ok
+    assert codes(result) == ["CANONICAL_IDENTITY_UNRESOLVED"]
+    (artifact,) = result.artifacts
+    assert artifact.contract == {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+    }
+
+
+def test_oversized_file_is_refused_without_reading_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """fstat's size cap refuses an oversized file before any byte is read.
+
+    This distinguishes the fstat cap from the bounded read: both would yield
+    TOO_LARGE, but the fstat cap must refuse *without* an os.read, so a huge file
+    is never streamed at all.
+    """
+
+    cap = 4096
+    big = tmp_path / "big.bin"
+    big.write_bytes(b"z" * (cap * 32))
+
+    real_read = os.read
+    reads = {"count": 0}
+
+    def counting_read(fd, n):
+        reads["count"] += 1
+        return real_read(fd, n)
+
+    monkeypatch.setattr(_gate.os, "read", counting_read)
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "big.bin", cap)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.TOO_LARGE
+    assert reads["count"] == 0, "an oversized file must be refused by fstat, never read"
+
+
+def test_normal_manifest_and_artifact_reads_are_deterministic(tmp_path: Path) -> None:
+    """The descriptor read returns the same bytes as a plain read, repeatably."""
+
+    payload = _fixture_path("p2_raw_count_without_denominator.json").read_bytes()
+    (tmp_path / "a.json").write_bytes(payload)
+    for _ in range(3):
+        data, (outcome, _) = _gate.read_bundle_file(tmp_path, "a.json", _gate.ARTIFACT_MAX_BYTES)
+        assert outcome == _gate._ReadOutcome.OK
+        assert data == payload
+
+
+def test_descriptor_read_does_not_mutate_committed_fixtures() -> None:
+    before = {
+        path.relative_to(REPO_ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(FIXTURE_ROOT.rglob("*.json"))
+    }
+    assert validate_bundle(REFERENCE_BUNDLE).ok
+    after = {
+        path.relative_to(REPO_ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(FIXTURE_ROOT.rglob("*.json"))
+    }
+    assert before == after

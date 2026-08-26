@@ -75,9 +75,11 @@ the gate fails closed rather than reporting a pass it could not establish.
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import json
 import os
+import stat
 import subprocess
 import sys
 import tempfile
@@ -272,6 +274,7 @@ class ArtifactState:
     observed_size: int | None = None
     observed_digest: str | None = None
     raw_bytes: bytes | None = None
+    verified_bytes: bytes | None = None
     payload: Any = UNPARSED
     contract: dict[str, Any] | None = None
     blocked: bool = False
@@ -367,6 +370,176 @@ def sha256_hex(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
+# ---------------------------------------------------------------------------
+# Descriptor-bound file reads
+# ---------------------------------------------------------------------------
+# Every file the gate reads out of a bundle -- the manifest and each declared
+# artifact -- is read through ONE descriptor whose type and size are validated
+# with fstat() on that same descriptor, then read with a bounded read from it.
+# The gate never does a pathname stat() followed by a separate pathname read:
+# that is a time-of-check/time-of-use race in which the entry can be swapped for
+# an oversized file, a FIFO, a device, or a symlink between the two operations.
+# Instead, each path component is opened descriptor-relatively with O_NOFOLLOW,
+# so a symlink at any component (final or intermediate) is refused atomically;
+# the leaf is opened O_NONBLOCK so a FIFO cannot make the open hang; fstat on the
+# descriptor requires a regular file; the cap is enforced against that
+# descriptor; and the bounded read never buffers more than the cap plus one
+# byte, so an oversized replacement or post-fstat growth is detected without
+# unbounded memory. The bytes returned are the exact bytes those checks bound.
+
+
+class _ReadOutcome:
+    OK = "ok"
+    MISSING = "missing"
+    SYMLINK = "symlink"
+    NOT_REGULAR = "not_regular"
+    TOO_LARGE = "too_large"
+    UNREADABLE = "unreadable"
+
+
+_O_CLOEXEC = getattr(os, "O_CLOEXEC", 0)
+_O_NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
+_O_DIRECTORY = getattr(os, "O_DIRECTORY", 0)
+_O_NONBLOCK = getattr(os, "O_NONBLOCK", 0)
+_O_PATH = getattr(os, "O_PATH", 0)
+_READ_CHUNK = 1 << 20
+
+
+def _read_fd_capped(fd: int, cap: int) -> tuple[bytes, bool]:
+    """Read at most ``cap + 1`` bytes from ``fd``. Second value is "grew past cap".
+
+    Never buffers more than ``cap + 1`` bytes, so an arbitrarily large file
+    cannot exhaust memory. If the descriptor yields more than ``cap`` bytes the
+    bytes are discarded and ``(b"", True)`` is returned.
+    """
+
+    limit = cap + 1
+    chunks: list[bytes] = []
+    total = 0
+    while total < limit:
+        try:
+            chunk = os.read(fd, min(_READ_CHUNK, limit - total))
+        except BlockingIOError:  # pragma: no cover - regular files do not block
+            break
+        if not chunk:
+            break
+        chunks.append(chunk)
+        total += len(chunk)
+    data = b"".join(chunks)
+    if len(data) > cap:
+        return b"", True
+    return data, False
+
+
+def read_bundle_file(
+    bundle_root: Path, relative_posix: str, cap: int
+) -> tuple[bytes | None, tuple[str, str]]:
+    """Open a bundle-relative path safely and return its bytes, or an outcome.
+
+    Walks each path component descriptor-relatively with ``O_NOFOLLOW`` (refusing
+    a symlink at any level), opens the leaf ``O_NONBLOCK`` (so a FIFO cannot
+    hang), requires a regular file by ``fstat`` on the opened descriptor, caps by
+    that descriptor's size, and reads at most ``cap + 1`` bytes from it. Returns
+    ``(bytes, ("ok", ""))`` on success or ``(None, (outcome, detail))``.
+
+    When the platform lacks ``dir_fd``/``O_NOFOLLOW`` support the walk degrades
+    to a single ``O_NOFOLLOW`` open of the full path; the fstat, cap, and bounded
+    read still bind to that one descriptor, and per-component symlink safety is
+    still enforced by ``check_path_safety`` upstream.
+    """
+
+    segments = [segment for segment in relative_posix.split("/") if segment]
+    if not segments:
+        return None, (_ReadOutcome.UNREADABLE, "empty relative path")
+
+    use_dir_fd = (
+        _O_NOFOLLOW
+        and _O_PATH
+        and os.open in getattr(os, "supports_dir_fd", set())
+    )
+    open_flags = os.O_RDONLY | _O_CLOEXEC
+    fds: list[int] = []
+
+    def _classify(error: OSError, what: str) -> tuple[None, tuple[str, str]]:
+        if error.errno == errno.ELOOP:
+            return None, (_ReadOutcome.SYMLINK, f"{what} is a symlink; the gate follows no link")
+        if error.errno == errno.ENOENT:
+            return None, (_ReadOutcome.MISSING, f"{what} is absent")
+        if error.errno == errno.ENOTDIR:
+            return None, (_ReadOutcome.NOT_REGULAR, f"{what} is not a directory")
+        return None, (_ReadOutcome.UNREADABLE, f"could not open {what}: {error}")
+
+    try:
+        if use_dir_fd:
+            # Intermediate components are opened O_PATH|O_NOFOLLOW: this resolves
+            # the inode without I/O (so a FIFO or device can never block) and
+            # without following a link (a symlink opens AS a symlink, detected by
+            # fstat), then each must be a real directory. Deterministic across
+            # kernels, unlike relying on ELOOP vs ENOTDIR from O_DIRECTORY.
+            try:
+                current = os.open(bundle_root, open_flags | _O_PATH | _O_NOFOLLOW)
+            except OSError as error:
+                return _classify(error, "the bundle root")
+            fds.append(current)
+            for segment in segments[:-1]:
+                try:
+                    nxt = os.open(segment, open_flags | _O_PATH | _O_NOFOLLOW, dir_fd=current)
+                except OSError as error:
+                    return _classify(error, f"path component {segment!r}")
+                fds.append(nxt)
+                mode = os.fstat(nxt).st_mode
+                if stat.S_ISLNK(mode):
+                    return None, (
+                        _ReadOutcome.SYMLINK,
+                        f"path component {segment!r} is a symlink; the gate follows no link",
+                    )
+                if not stat.S_ISDIR(mode):
+                    return None, (
+                        _ReadOutcome.NOT_REGULAR,
+                        f"path component {segment!r} is not a directory",
+                    )
+                current = nxt
+            try:
+                leaf_fd = os.open(
+                    segments[-1], open_flags | _O_NOFOLLOW | _O_NONBLOCK, dir_fd=current
+                )
+            except OSError as error:
+                return _classify(error, "the artifact")
+        else:  # pragma: no cover - Linux supports dir_fd + O_PATH
+            full = bundle_root / PurePosixPath(relative_posix)
+            try:
+                leaf_fd = os.open(str(full), open_flags | _O_NOFOLLOW | _O_NONBLOCK)
+            except OSError as error:
+                return _classify(error, "the artifact")
+        fds.append(leaf_fd)
+
+        st = os.fstat(leaf_fd)
+        if not stat.S_ISREG(st.st_mode):
+            return None, (
+                _ReadOutcome.NOT_REGULAR,
+                "the opened descriptor is not a regular file (a FIFO, device, "
+                "socket, or directory is refused without reading it)",
+            )
+        if st.st_size > cap:
+            return None, (
+                _ReadOutcome.TOO_LARGE,
+                f"the file is {st.st_size} bytes, above the {cap}-byte cap; it is not read",
+            )
+        data, grew = _read_fd_capped(leaf_fd, cap)
+        if grew:
+            return None, (
+                _ReadOutcome.TOO_LARGE,
+                f"the file grew past the {cap}-byte cap while being read",
+            )
+        return data, (_ReadOutcome.OK, "")
+    finally:
+        for fd in reversed(fds):
+            try:
+                os.close(fd)
+            except OSError:  # pragma: no cover - best-effort close
+                pass
+
+
 def _repo_relative(path: Path) -> str:
     """Render a path relative to the repo when it is inside it, else verbatim."""
 
@@ -397,60 +570,20 @@ def _schema_errors(payload: Any, schema: dict[str, Any]) -> list[str]:
 
 
 def read_manifest(bundle_root: Path, failures: list[Failure]) -> bytes | None:
-    manifest_path = bundle_root / MANIFEST_FILENAME
-    if manifest_path.is_symlink():
+    """Read the manifest through one O_NOFOLLOW descriptor, bounded and typed.
+
+    A symlink, FIFO, device, directory, oversized replacement, or growth during
+    reading all fail closed as ``BUNDLE_MANIFEST_UNREADABLE`` without a pathname
+    stat-then-reopen and without an unbounded read.
+    """
+
+    data, (outcome, detail) = read_bundle_file(bundle_root, MANIFEST_FILENAME, MANIFEST_MAX_BYTES)
+    if outcome != _ReadOutcome.OK:
         failures.append(
-            Failure(
-                "manifest_read",
-                "BUNDLE_MANIFEST_UNREADABLE",
-                MANIFEST_FILENAME,
-                "the manifest is a symlink; the gate reads regular files only",
-            )
+            Failure("manifest_read", "BUNDLE_MANIFEST_UNREADABLE", MANIFEST_FILENAME, detail)
         )
         return None
-    if not manifest_path.exists():
-        failures.append(
-            Failure(
-                "manifest_read",
-                "BUNDLE_MANIFEST_UNREADABLE",
-                MANIFEST_FILENAME,
-                f"no {MANIFEST_FILENAME} at the bundle root; the manifest name is pinned in code",
-            )
-        )
-        return None
-    if not manifest_path.is_file():
-        failures.append(
-            Failure(
-                "manifest_read",
-                "BUNDLE_MANIFEST_UNREADABLE",
-                MANIFEST_FILENAME,
-                "the manifest is not a regular file",
-            )
-        )
-        return None
-    size = manifest_path.stat().st_size
-    if size > MANIFEST_MAX_BYTES:
-        failures.append(
-            Failure(
-                "manifest_read",
-                "BUNDLE_MANIFEST_UNREADABLE",
-                MANIFEST_FILENAME,
-                f"manifest is {size} bytes, above the {MANIFEST_MAX_BYTES}-byte cap",
-            )
-        )
-        return None
-    try:
-        return manifest_path.read_bytes()
-    except OSError as error:  # pragma: no cover - environment dependent
-        failures.append(
-            Failure(
-                "manifest_read",
-                "BUNDLE_MANIFEST_UNREADABLE",
-                MANIFEST_FILENAME,
-                f"could not read the manifest: {error}",
-            )
-        )
-        return None
+    return data
 
 
 def parse_manifest(raw: bytes, failures: list[Failure]) -> Any:
@@ -1307,14 +1440,20 @@ def check_bundle_bijection(
 
 
 def check_integrity(
-    manifest: dict[str, Any], artifacts: list[ArtifactState], failures: list[Failure]
+    bundle_root: Path,
+    manifest: dict[str, Any],
+    artifacts: list[ArtifactState],
+    failures: list[Failure],
 ) -> None:
-    """Verify byte length and digest of the exact bytes on disk.
+    """Verify type, byte length, and digest of one descriptor's exact bytes.
 
-    Size is checked first and from ``stat``, so an oversized or wrong-length
-    file is rejected without reading it. The digest is then computed over the
-    bytes actually read, and those same bytes -- not a re-read of the path --
-    are what later stages parse and evaluate.
+    Each artifact is opened once, descriptor-relatively and without following
+    symlinks; its type and size are validated by ``fstat`` on that descriptor
+    and its bytes read from it with a bounded read. Type, cap, size, and digest
+    all bind to the same bytes, and those exact bytes -- never a re-read of the
+    pathname -- are what later stages parse and evaluate. There is no
+    stat-then-reopen window an oversized file, FIFO, device, or symlink could
+    slip through, and the read never buffers more than the cap.
     """
 
     algorithm = manifest.get("digest_algorithm")
@@ -1355,19 +1494,25 @@ def check_integrity(
             artifact.block()
             continue
 
-        try:
-            observed_size = artifact.absolute.stat().st_size
-        except OSError as error:
-            failures.append(
-                Failure(
-                    "integrity",
-                    "BUNDLE_ARTIFACT_MISSING",
-                    artifact.path,
-                    f"the declared artifact became unreadable during validation: {error}",
-                )
-            )
+        # One descriptor: open (no symlink follow), fstat (regular + cap), read
+        # bounded. Type, size, and the bytes hashed all bind to the same inode.
+        raw, (outcome, detail) = read_bundle_file(
+            bundle_root, artifact.path, ARTIFACT_MAX_BYTES
+        )
+        if outcome != _ReadOutcome.OK:
+            reason = {
+                _ReadOutcome.MISSING: "BUNDLE_ARTIFACT_MISSING",
+                _ReadOutcome.SYMLINK: "BUNDLE_PATH_NOT_REGULAR_FILE",
+                _ReadOutcome.NOT_REGULAR: "BUNDLE_PATH_NOT_REGULAR_FILE",
+                _ReadOutcome.TOO_LARGE: "BUNDLE_ARTIFACT_TOO_LARGE",
+                _ReadOutcome.UNREADABLE: "BUNDLE_ARTIFACT_MISSING",
+            }[outcome]
+            failures.append(Failure("integrity", reason, artifact.path, detail))
             artifact.block()
             continue
+        assert raw is not None
+
+        observed_size = len(raw)
         artifact.observed_size = observed_size
         if observed_size != artifact.declared_size:
             failures.append(
@@ -1382,31 +1527,6 @@ def check_integrity(
             artifact.block()
             continue
 
-        if observed_size > ARTIFACT_MAX_BYTES:  # pragma: no cover - unreachable via declared size
-            failures.append(
-                Failure(
-                    "integrity",
-                    "BUNDLE_ARTIFACT_TOO_LARGE",
-                    artifact.path,
-                    f"file is {observed_size} bytes, above the {ARTIFACT_MAX_BYTES}-byte cap",
-                )
-            )
-            artifact.block()
-            continue
-
-        try:
-            raw = artifact.absolute.read_bytes()
-        except OSError as error:
-            failures.append(
-                Failure(
-                    "integrity",
-                    "BUNDLE_ARTIFACT_MISSING",
-                    artifact.path,
-                    f"the declared artifact became unreadable during validation: {error}",
-                )
-            )
-            artifact.block()
-            continue
         observed_digest = sha256_hex(raw)
         artifact.observed_digest = observed_digest
         if observed_digest != digest:
@@ -1424,7 +1544,10 @@ def check_integrity(
             artifact.block()
             continue
 
-        artifact.raw_bytes = raw  # verified bytes; parsed in the next stage
+        # The exact verified bytes, retained for the semantic stage so it never
+        # reopens the pathname.
+        artifact.verified_bytes = raw
+        artifact.raw_bytes = raw  # parsed in the next stage
         artifact.passed("integrity")
 
 
@@ -1797,41 +1920,19 @@ def evaluate_semantics(artifacts: list[ArtifactState], failures: list[Failure]) 
         if artifact.blocked or artifact.payload is UNPARSED:
             continue
 
-        # Re-serialising the parsed payload would let this gate's serializer
-        # decide what the evaluator sees. The verified bytes are sent instead.
-        if artifact.absolute is None:
+        # The exact bytes integrity verified are sent to the evaluator. The
+        # pathname is NOT reopened here: reopening would reintroduce a
+        # time-of-use window and let a post-integrity swap decide what the
+        # evaluator sees. Re-serialising the parsed payload would likewise let
+        # this gate's serializer decide. Only the in-memory verified bytes go.
+        raw = artifact.verified_bytes
+        if raw is None:
             failures.append(
                 Failure(
                     "semantic",
                     "BUNDLE_SEMANTIC_EVALUATOR_FAILED",
                     artifact.path,
-                    "no verified path reached the semantic stage; refusing to evaluate",
-                )
-            )
-            artifact.block()
-            continue
-
-        try:
-            raw = artifact.absolute.read_bytes()
-        except OSError as error:
-            failures.append(
-                Failure(
-                    "semantic",
-                    "BUNDLE_DIGEST_MISMATCH",
-                    artifact.path,
-                    f"the artifact became unreadable between verification and evaluation: {error}",
-                )
-            )
-            artifact.block()
-            continue
-
-        if sha256_hex(raw) != artifact.declared_digest:
-            failures.append(
-                Failure(
-                    "semantic",
-                    "BUNDLE_DIGEST_MISMATCH",
-                    artifact.path,
-                    "the file changed between integrity verification and semantic evaluation",
+                    "no verified bytes reached the semantic stage; refusing to evaluate",
                 )
             )
             artifact.block()
@@ -1960,7 +2061,7 @@ def validate_bundle(bundle_root: Path) -> GateResult:
 
     check_path_safety(bundle_root, artifacts, failures)
     check_bundle_bijection(bundle_root, artifacts, failures)
-    check_integrity(manifest, artifacts, failures)
+    check_integrity(bundle_root, manifest, artifacts, failures)
     parse_payloads(artifacts, failures)
     check_payload_schema(artifacts, failures)
     check_manifest_payload_agreement(manifest, artifacts, failures)
