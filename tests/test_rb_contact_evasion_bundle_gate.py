@@ -14,10 +14,12 @@ parsing, the committed JSON Schema -- is exercised against tampering, always on
 temporary copies. No test in this module writes to a committed fixture, contract
 file or schema.
 
-The gate delegates semantic judgment to the compiled contract under ``dist/``.
-The session fixture below builds it if it is absent; if it cannot be built the
-tests fail rather than skip, because a skipped semantic stage is exactly the
-false pass the gate exists to prevent.
+The gate delegates semantic judgment to the canonical contract, which it
+compiles itself from an immutable snapshot of the reviewed source into a
+private temporary build -- it never trusts an ambient ``dist/``. The session
+fixture below proves that build works before anything else; if the evaluator
+cannot be built the tests fail rather than skip, because a skipped semantic
+stage is exactly the false pass the gate exists to prevent.
 """
 
 from __future__ import annotations

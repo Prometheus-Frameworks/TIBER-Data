@@ -385,9 +385,11 @@ def sha256_hex(raw: bytes) -> str:
 # so a symlink at any component (final or intermediate) is refused atomically;
 # the leaf is opened O_NONBLOCK so a FIFO cannot make the open hang; fstat on the
 # descriptor requires a regular file; the cap is enforced against that
-# descriptor; and the bounded read never buffers more than the cap plus one
-# byte, so an oversized replacement or post-fstat growth is detected without
-# unbounded memory. The bytes returned are the exact bytes those checks bound.
+# descriptor; and the bounded read reads at most cap + 1 bytes in total (peak
+# reader ownership is one growing buffer plus one bounded read chunk and
+# allocation headroom), so an oversized replacement or post-fstat growth is
+# detected without unbounded memory. The bytes returned are the exact bytes
+# those checks bound.
 
 
 class _ReadOutcome:
@@ -1482,8 +1484,10 @@ def check_integrity(
 
     Each artifact is opened once, descriptor-relatively and without following
     symlinks; its type and size are validated by ``fstat`` on that descriptor
-    and its bytes read from it with a bounded read that buffers at most the cap
-    plus one byte. Type, cap, size, and digest all bind to the same bytes. Once
+    and its bytes read from it with a bounded read that reads at most ``cap + 1``
+    bytes in total (peak reader ownership is one growing buffer plus one bounded
+    read chunk and allocation headroom -- see ``_read_fd_capped``).
+    Type, cap, size, and digest all bind to the same bytes. Once
     the digest matches, those bytes are frozen into an immutable ``bytes`` object
     -- the exact subject the digest authorized -- and it is that frozen object,
     never a re-read of the pathname and never a mutable alias, that later stages

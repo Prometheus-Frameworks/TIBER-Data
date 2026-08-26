@@ -2,7 +2,7 @@
   "artifact_version": "rb_contact_evasion_bundle_gate_review_repair_v1",
   "audit_date": "2026-08-25",
   "evidence_cutoff_date": "2026-08-26",
-  "evidence_cutoff_note": "This paired record now spans three review-repair rounds; the latest evidence (the third round's identity/immutability repair) was produced on 2026-08-26, so the cutoff includes that date.",
+  "evidence_cutoff_note": "This paired record now spans four review-repair rounds; the latest evidence (the fourth round's evidence-reconciliation correction) was produced on 2026-08-26, so the cutoff includes that date.",
   "record_type": "independent_review_repair_record",
   "not_an_independent_audit_of_repaired_head": true,
   "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
@@ -144,6 +144,7 @@
         "defect_class": "second_payload_sized_representation_during_join",
         "disposition": "single_growing_bytearray_returned_directly_no_join",
         "disposition_detail": "One growing bytearray, returned as a bytes-like object; no chunk list, no whole-payload join. tracemalloc peak measured ~1.25x payload (payload plus one read chunk) versus ~2x. Post-fstat growth and short reads preserved. Every 'never buffers more than cap+1' statement corrected in code comments, contract doc, this JSON, the Markdown audit, and HANDOFF.md.",
+        "correction_note_fourth_round": "The 'every statement corrected' claim above was itself incomplete: two occurrences survived it (the gate's descriptor-reads module comment and the check_integrity docstring, both still saying the read 'buffers no more than the cap plus one byte'). They were corrected in the fourth round; see fourth_review_round.",
         "regression_distinguishes_peak_ownership_from_os_read_request_size": true
       }
     ],
@@ -209,7 +210,7 @@
         "accepted": true,
         "disposition": "corrected_stale_wording_counts_and_cutoff",
         "disposition_detail": "Stale cap/pathname-stat wording reconciled across changed files: the contract stage table row 7 now says byte size and type from fstat on the opened descriptor (never a pathname stat) then SHA-256 then freeze; the check_integrity docstring and the reader docstring are corrected; the 'no whole-payload copy' claim is scoped to the bounded reader with the freeze copy disclosed. The evidence cutoff is corrected to include 2026-08-26.",
-        "focused_test_count_reconciliation": "pytest --collect-only reports 288 node IDs at the repaired head. That equals 284 (the actual collected count at the prior head 8d2b9ca, verified with --collect-only) plus 4 new tests this round (1 open/read instrumentation control + 3 P1 identity regressions). The prior audit annotated the second round as '262 + 21', which sums to 283, not the claimed 284; the true second-round collected count was 284 (a +22 delta over the first round's 262, not +21). The headline 284 was correct; the '+21' label undercounted the delta by one. This record uses the collect-only figures: first round 262, second round 284 (+22), third round 288 (+4)."
+        "focused_test_count_reconciliation": "pytest --collect-only reports 288 node IDs at the repaired head. That equals 284 (the actual collected count at the prior head 8d2b9ca, verified with --collect-only) plus 4 new tests this round (1 open/read instrumentation control + 3 P1 identity regressions). CORRECTED IN THE FOURTH ROUND (2026-08-26): this field originally gave the lineage as '262 -> 284 (+22) -> 288 (+4)', which was false. Collect-only runs in isolated worktrees at each historical head establish: 4f9591af 248, 96c33214 263, 8d2b9cad 284, 8c484931 288 -- so the true lineage is 248 -> 263 (+15) -> 284 (+21: 15 parametrized matrix cases + 6 standalone tests) -> 288 (+4). The first repair round had undercounted its 15 additions as 14 (recording 262 instead of 263), and this round's attempted reconciliation compounded the error by trusting the recorded 262 and re-deriving the second-round delta as +22 instead of re-counting the base. The second round's original '+21' was correct all along; the error was in the recorded base, not the delta."
       }
     ],
     "verification": {
@@ -227,6 +228,50 @@
       "mutations_all_killed": true,
       "degenerate_evidence": false,
       "gate_restored_byte_for_byte": true
+    }
+  },
+  "fourth_review_round": {
+    "audit_date": "2026-08-26",
+    "reviewed_head": "8c484931255ea5edb4de7923a30b2d8434b8ebfa",
+    "review_source": {
+      "review_kind": "codex_exact_head_review_performed_in_operator_session",
+      "relayed_by": "operator",
+      "github_review_object": null,
+      "github_review_comment_ids": [],
+      "identity_note": "As with the second and third rounds, relayed by the operator; no GitHub connector review object or thread exists for this round and the connector is not claimed as its author."
+    },
+    "verdict_on_prior_round": "functional_repairs_accepted",
+    "verdict_detail": "The mutable-alias P1 freeze, the capability no-access instrumentation, and the corrected reviewer provenance were accepted. This round is limited to one P2 evidence-reconciliation finding; no gate behavior changed.",
+    "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+    "findings": [
+      {
+        "severity": "P2",
+        "title": "Evidence reconciliation: false test-count lineage and remaining stale wording",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "pytest --collect-only in isolated git worktrees at each historical head reports: 4f9591af 248, 96c33214 263, 8d2b9cad 284, 8c484931 288. The audit trail instead recorded 262 for the first repair round (its 15 additions undercounted as 14) and the third round's reconciliation propagated that error, deriving a '262 -> 284 (+22)' lineage instead of re-counting the base.",
+        "defect_class": "propagated_recorded_count_instead_of_remeasuring",
+        "disposition": "corrected_lineage_and_remaining_stale_wording_no_behavior_change",
+        "disposition_detail": "Corrected lineage everywhere it appears (PR body, HANDOFF.md, Markdown audit, this JSON) to 248 -> 263 (+15) -> 284 (+21: 15 parametrized matrix cases + 6 standalone tests) -> 288 (+4), with the propagation error explained rather than silently rewritten (historical commits untouched; corrections annotated in place). Also corrected the remaining stale wording the second round's 'every statement corrected' claim had missed: the gate's module comment and check_integrity docstring still said the bounded read 'never buffers more than the cap plus one byte' -- corrected to 'reads at most cap + 1 bytes in total; peak reader ownership is one growing buffer plus one bounded read chunk and allocation headroom'. The test module docstring still said semantic judgment is delegated to the compiled contract under dist/ -- corrected: the gate compiles reviewed source into its private temporary build and never trusts ambient dist/. The Markdown audit's top-level evidence cutoff (2026-08-25) corrected to 2026-08-26. The freeze-memory wording in the PR body, HANDOFF.md, and the third-round audit section is made precise: the chunk-list/join double representation is gone from the reader, while the integrity freeze deliberately and transiently owns the bytearray and immutable bytes copy together -- a disclosed, momentary, per-artifact double-payload peak at the freeze."
+      }
+    ],
+    "verification": {
+      "behavior_changed": false,
+      "comments_and_governance_text_only": true,
+      "mutation_evidence": "not_manufactured_for_prose_changes",
+      "focused_slice_b_tests_collected": 288,
+      "focused_slice_b_tests_passed": 288,
+      "lineage_collect_only_isolated_worktrees": {
+        "4f9591af": 248,
+        "96c33214": 263,
+        "8d2b9cad": 284,
+        "8c484931": 288
+      },
+      "full_python_suite_passed": 1009,
+      "full_python_suite_skipped": 3,
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true
     }
   }
 }

@@ -5,7 +5,7 @@
 > Pull request: TIBER-Data #260
 > Reviewed head (findings produced): `4f9591af3ebbcabea965b689e7b95ab8b821d4c1`
 > Authorized base: `4498d5efd053e6bbc87f5f28214b0509550ad653`
-> Evidence cutoff: 2026-08-25
+> Evidence cutoff: 2026-08-26 (this record spans multiple review rounds; the latest evidence is dated 2026-08-26)
 
 ## Answer first
 
@@ -92,7 +92,9 @@ evaluator-identity, and lifecycle guarantees are preserved.
 
 ## Verification summary (repaired head)
 
-- Focused Slice B suite: 262 passed (248 prior + 14 new descriptor-read controls).
+- Focused Slice B suite: 263 passed (248 prior + 15 new descriptor-read controls). [Corrected 2026-08-26:
+  this line originally read "262 passed (248 prior + 14 new)" — the round's 15 additions were undercounted
+  as 14. `pytest --collect-only` in an isolated worktree at `96c33214` reports 263 node IDs.]
 - Full Python suite, Slice A contract (748) and schema (81) suites: unchanged and passing.
 - TypeScript typecheck, Ruff, syntax checks: clean. No TypeScript source changed.
 - Vitest: unchanged versus the authorized baseline (this repair changes no TypeScript source); the single
@@ -164,14 +166,20 @@ small reusable read chunk — measured with `tracemalloc` at ~1.25× the payload
 chunk), versus ~2× before. Post-`fstat` growth (trips the cap+1 bound) and short reads (fewer bytes for
 the caller's size/digest checks) are both preserved. Every "never buffers more than the cap plus one byte"
 statement in the code comments, the contract document, this audit, the JSON audit, and `HANDOFF.md` is
-corrected to the accurate single-buffer / peak-ownership claim.
+corrected to the accurate single-buffer / peak-ownership claim. [Corrected 2026-08-26, fourth round: that
+"every statement" claim was itself incomplete — two occurrences survived it (the gate's descriptor-reads
+module comment and the `check_integrity` docstring) and were corrected in the fourth round below.]
 
 ### Second-round verification
 
-Focused Slice B suite: 284 passed (verified with `pytest --collect-only`), a +22 delta over the first
-round's 262 (capability matrix, `tracemalloc` peak-ownership, single-buffer structural, growth/short-read).
-An earlier note here read "+21", which does not reconcile (262 + 21 = 283); the collected count was 284,
-so the true delta was +22. Full Python suite and Slice A suites unchanged. Mutation testing: 6 mutations
+Focused Slice B suite: 284 passed (verified with `pytest --collect-only`), a +21 delta over the first
+round's 263: 15 parametrized capability-matrix cases plus 6 standalone tests (`tracemalloc`
+peak-ownership, single-buffer structural, growth/short-read, and companions). [Corrected 2026-08-26: an
+earlier version of this section said the first round's count was 262 and re-derived the delta as +22; both
+were wrong. The first round had undercounted its 15 additions as 14, so its true count was 263, and this
+round's "+21" was correct all along — the error was in the base, not the delta. Verified by
+`pytest --collect-only` in isolated worktrees: `4f9591af` 248, `96c33214` 263, `8d2b9cad` 284.]
+Full Python suite and Slice A suites unchanged. Mutation testing: 6 mutations
 against the real gate (reinstating the fallback, disabling the preflight, weakening the capability check,
 reinstating the chunk-join, unbounded read, dropping growth detection), all killed, no degenerate, gate
 restored byte-for-byte. No Slice A change; nothing under `exports/**`; reference bundle byte-identical.
@@ -207,12 +215,14 @@ are byte-for-byte the ones integrity bound. Re-running the reproduction: `verifi
 the in-place flip is refused (`'bytes' object does not support item assignment`), and the evaluator
 receives bytes whose SHA-256 equals the manifest digests.
 
-**Memory reconciliation (honest).** The freeze is a deliberate, one-time, per-artifact second
-payload-sized allocation — the `bytearray` and its `bytes` copy coexist for the duration of that copy, then
-the `bytearray` is released. This does **not** reinstate the round-2 chunk-list double-peak: the bounded
-reader still owns a single buffer and makes no whole-payload copy. That "no whole-payload copy" property is
-now scoped explicitly to the bounded reader (in the reader docstring and the contract doc), not claimed for
-the whole lifecycle, and the freeze copy is disclosed.
+**Memory reconciliation (honest).** The old chunk-list/`join` double representation is gone **from the
+reader**: the bounded read owns one growing buffer and makes no whole-payload copy. The integrity freeze,
+by contrast, **deliberately and transiently owns two payload-sized representations together** — the
+`bytearray` and its immutable `bytes` copy coexist for the duration of the copy, then the `bytearray` is
+released. So there *is* a momentary double-payload peak, per artifact, at the freeze; what is repaired is
+that it is a disclosed, bounded, deliberate copy at the integrity boundary rather than an undisclosed
+structural double held by the reader. The "no whole-payload copy" property is scoped explicitly to the
+bounded reader (in the reader docstring and the contract doc), not claimed for the whole lifecycle.
 
 **Regression + mutation evidence.** Public-gate regressions added:
 `test_verified_bytes_are_frozen_immutable_after_integrity` (both fields are the same immutable `bytes`
@@ -253,8 +263,14 @@ disclosed. The evidence cutoff is corrected to include 2026-08-26.
 
 **Focused test count.** `pytest --collect-only` reports **288** node IDs at the repaired head. That is 284
 (the actual collected count at `8d2b9ca`, verified with `--collect-only`) + 4 new tests this round (1
-open/read instrumentation control + 3 P1 identity regressions). The count lineage, all via collect-only:
-first round 262 → second round 284 (+22) → third round 288 (+4).
+open/read instrumentation control + 3 P1 identity regressions). The count lineage, all via
+`--collect-only` in isolated worktrees at each historical head:
+`4f9591af` 248 → `96c33214` 263 (+15) → `8d2b9cad` 284 (+21: 15 parametrized matrix cases + 6 standalone)
+→ `8c484931` 288 (+4). [Corrected in the fourth round, 2026-08-26: this paragraph originally gave the
+lineage as "262 → 284 (+22) → 288 (+4)". That was false: the first repair round had undercounted its 15
+additions as 14 (reporting 262 instead of 263), and this round's attempted reconciliation compounded the
+error by trusting the recorded 262 and re-deriving the second-round delta as +22 instead of re-counting
+the base. The second round's original "+21" was correct.]
 
 ### Third-round verification
 
@@ -265,3 +281,44 @@ identical to baseline by construction. Mutation testing: 4 mutations against the
 freeze / bytearray alias; leave `raw_bytes` a distinct mutable bytearray; reinstate the full-path fallback;
 disable the gate preflight), all killed, no degenerate, gate restored byte-for-byte. No Slice A change;
 nothing under `exports/**`; reference bundle byte-identical. Repaired head recorded on PR #260.
+
+---
+
+## Fourth review round — 2026-08-26 (evidence reconciliation only)
+
+A Codex exact-head review at head `8c484931255ea5edb4de7923a30b2d8434b8ebfa` **accepted the functional
+repairs** (the mutable-alias freeze, the capability no-access instrumentation, the corrected reviewer
+provenance) and found **one P2 evidence-reconciliation defect**. This round changes comments and
+governance text only — no gate behavior — so no mutation evidence is manufactured for it. As with the
+second and third rounds, the review was performed in the operator session and relayed by the operator; no
+GitHub connector review object or thread exists for it.
+
+### P2 — false test-count lineage and remaining stale wording
+
+**The lineage was false.** `pytest --collect-only` in isolated git worktrees at each historical head
+establishes: `4f9591af` **248** → `96c33214` **263** (+15) → `8d2b9cad` **284** (+21: 15 parametrized
+capability-matrix cases + 6 standalone tests) → `8c484931` **288** (+4). The audit trail instead recorded
+262 for the first repair round — that round undercounted its 15 additions as 14 — and the third round's
+attempted reconciliation **compounded** the error by trusting the recorded 262 and re-deriving the
+second-round delta as +22 instead of re-counting the base. The second round's original "+21" was correct
+all along. Every occurrence (PR body, `HANDOFF.md`, this audit pair) is corrected, with the propagation
+error annotated in place; historical commits are untouched.
+
+**Remaining stale wording**, which the second round's "every statement corrected" claim had missed, is
+corrected: the gate's descriptor-reads module comment and the `check_integrity` docstring still said the
+bounded read "never buffers more than the cap plus one byte" — the accurate statement is that it *reads*
+at most `cap + 1` bytes in total, while peak reader ownership is one growing buffer plus one bounded read
+chunk and allocation headroom. The test module docstring still said semantic judgment is delegated to "the
+compiled contract under `dist/`" — the gate compiles reviewed source into its private temporary build and
+never trusts an ambient `dist/`. This record's top-level evidence cutoff (previously 2026-08-25) is
+corrected to 2026-08-26. The freeze-memory wording in the PR body, `HANDOFF.md`, and the third-round
+section above is made precise: the chunk-list/`join` double representation is gone **from the reader**,
+while the integrity freeze **deliberately and transiently owns the `bytearray` and immutable `bytes` copy
+together** — a disclosed, momentary, per-artifact double-payload peak at the freeze.
+
+### Fourth-round verification
+
+Comments and governance text only; gate behavior unchanged. Focused Slice B suite: 288 collected, 288
+passed. Full Python suite: 1009 passed, 3 skipped. `py_compile`, Ruff, JSON validation, `git diff --check`
+clean. Slice A untouched; nothing under `exports/**`; reference bundle byte-identical. Final exact-head
+audit status remains **pending fresh Codex review of the repaired head**.
