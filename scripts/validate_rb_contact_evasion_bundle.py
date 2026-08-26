@@ -2235,6 +2235,61 @@ def render_human_report(bundle_root: Path, result: GateResult) -> str:
     return "\n".join(lines)
 
 
+def _open_output_parent_nofollow(parent: Path) -> int:
+    """Open ``parent`` as a directory fd reached through NO symlink at any level.
+
+    ``os.open(path, O_NOFOLLOW)`` refuses a symlink only at the *final* component;
+    an ancestor in ``path`` is still followed during resolution. So the output
+    parent is walked one component at a time from a trusted anchor (``/`` for an
+    absolute path, the current directory for a relative one), each component
+    opened ``O_NOFOLLOW | O_DIRECTORY`` **relative to the previous one**. A symlink
+    at *any* component -- final or intermediate -- is refused, so no ancestor
+    symlink (even one swapped in after the pathname preflight) can redirect the
+    write into the validated bundle. Missing components are created with ``mkdir``
+    relative to the already-opened parent, so directory creation likewise never
+    traverses a symlink. Returns a directory fd the caller must close.
+    """
+
+    step_flags = os.O_RDONLY | _O_DIRECTORY | _O_NOFOLLOW | _O_CLOEXEC
+    if parent.is_absolute():
+        anchor, parts = "/", parent.parts[1:]
+    else:
+        anchor, parts = ".", parent.parts
+
+    cur = os.open(anchor, step_flags)
+    try:
+        for part in parts:
+            if part in ("", "."):
+                continue
+            if part == "..":
+                raise GateUsageError(
+                    f"--json-out parent {parent} contains '..'; refusing to publish through it"
+                )
+            try:
+                nxt = os.open(part, step_flags, dir_fd=cur)
+            except FileNotFoundError:
+                # Create the missing component relative to the pinned parent, then
+                # open it the same no-follow way -- never through a pathname.
+                os.mkdir(part, 0o755, dir_fd=cur)
+                nxt = os.open(part, step_flags, dir_fd=cur)
+            except OSError as error:
+                if error.errno in (errno.ELOOP, errno.ENOTDIR):
+                    raise GateUsageError(
+                        f"--json-out parent component {part!r} is a symlink or not a directory; "
+                        "refusing to publish through it (an ancestor symlink could redirect the "
+                        "write into the validated bundle)"
+                    ) from error
+                raise GateUsageError(
+                    f"could not open --json-out parent component {part!r}: {error}"
+                ) from error
+            os.close(cur)
+            cur = nxt
+        return cur
+    except BaseException:
+        os.close(cur)
+        raise
+
+
 def publish_json_out(out_path: Path, data: str) -> None:
     """Write ``data`` to ``out_path`` without ever opening an existing output inode.
 
@@ -2244,16 +2299,19 @@ def publish_json_out(out_path: Path, data: str) -> None:
     swapped in after any pathname check), ``write_text`` follows the shared inode
     or the link and truncates the validated file. This publishes safely instead:
 
-    - The intended output parent is opened once with ``O_NOFOLLOW | O_DIRECTORY``
-      and every operation is done **relative to that descriptor**, so a parent
-      pathname swapped to a symlink after the open cannot redirect the write into
-      the bundle (the pinned directory inode is what we write into), and a parent
-      that is *already* a symlink is refused (``O_NOFOLLOW``).
-    - A **fresh staging inode** is created in that directory with
-      ``O_CREAT | O_EXCL | O_WRONLY | O_NOFOLLOW`` -- ``O_EXCL`` guarantees we
-      never open an existing inode for truncation, and ``O_NOFOLLOW`` refuses a
-      symlink planted at the staging name. The data is written and ``fsync``ed to
-      that new inode.
+    - The intended output parent is resolved with a component-by-component
+      ``O_NOFOLLOW`` walk (:func:`_open_output_parent_nofollow`) and every
+      operation is done **relative to that descriptor**. A symlink at any path
+      component -- the parent or any ancestor, whether already present or swapped
+      in after the pathname preflight -- is refused, so nothing can redirect the
+      write into the validated bundle.
+    - A **fresh, uniquely named staging inode** is created in that directory with
+      ``O_CREAT | O_EXCL | O_WRONLY | O_NOFOLLOW``. ``O_EXCL`` guarantees we never
+      open an existing inode for truncation and ``O_NOFOLLOW`` refuses a symlink
+      at the staging name; the name carries an unpredictable random token, and a
+      collision is resolved by trying a **new** name -- an existing entry is never
+      unlinked, so publication never deletes or mutates an unrelated pre-existing
+      path. The data is written and ``fsync``ed to the new inode.
     - Publication is a single ``os.replace`` (``rename``) of the staging entry
       onto the destination **entry**. ``rename`` never follows the destination:
       if the destination is a hard link or a symlink, the *directory entry* is
@@ -2261,62 +2319,56 @@ def publish_json_out(out_path: Path, data: str) -> None:
       inode keeps its bytes. So no existing output or bundle inode is ever
       opened, truncated, or followed.
 
-    On any failure the staging inode is unlinked (relative to the same pinned
-    directory, so cleanup never touches an unrelated path) and no partial or
-    truncated output is left behind; the bundle and any pre-existing output byte
-    are unchanged. Output bytes are exactly ``data`` (deterministic).
+    On any failure only the staging inode WE created is unlinked (relative to the
+    pinned directory), so cleanup never touches an unrelated path and no partial
+    or truncated output is left behind; the bundle and any pre-existing output
+    byte are unchanged. Output bytes are exactly ``data`` (deterministic); the
+    random staging name affects nothing the caller observes.
     """
 
-    parent = out_path.parent if str(out_path.parent) else Path(".")
     leaf = out_path.name
     if not leaf or leaf in (".", ".."):
         raise GateUsageError(f"--json-out is not a writable file name: {out_path}")
 
-    # Creating the intended output directory is fine (it is the caller's chosen
-    # location, not the bundle). The safety comes from the O_NOFOLLOW open below.
-    os.makedirs(parent, exist_ok=True)
-
-    dir_flags = os.O_RDONLY | _O_DIRECTORY | _O_NOFOLLOW | _O_CLOEXEC
+    dir_fd = _open_output_parent_nofollow(out_path.parent)
+    create_flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY | _O_NOFOLLOW | _O_CLOEXEC
+    stage_leaf = leaf[:100]
+    staging: str | None = None
+    fd: int | None = None
     try:
-        dir_fd = os.open(parent, dir_flags)
-    except OSError as error:
-        if error.errno in (errno.ELOOP, errno.ENOTDIR):
+        # A UNIQUE staging name per attempt. O_EXCL makes an existing entry at the
+        # name raise; rather than unlink it (which could delete an unrelated
+        # pre-existing file), a fresh random name is tried. Nothing we did not
+        # create is ever removed.
+        for _ in range(1000):
+            candidate = f".{stage_leaf}.rbce-stage.{os.urandom(8).hex()}"
+            try:
+                fd = os.open(candidate, create_flags, 0o600, dir_fd=dir_fd)
+            except FileExistsError:
+                continue
+            staging = candidate
+            break
+        if fd is None or staging is None:
             raise GateUsageError(
-                f"--json-out parent {parent} is a symlink or not a directory; refusing to "
-                "publish through it (it could redirect the write into the validated bundle)"
-            ) from error
-        raise GateUsageError(f"could not open --json-out parent {parent}: {error}") from error
-
-    staging = f".{leaf}.rbce-stage.{os.getpid()}"
-    staged = False
-    try:
-        create_flags = (
-            os.O_CREAT | os.O_EXCL | os.O_WRONLY | _O_NOFOLLOW | _O_CLOEXEC
-        )
+                "could not create a unique --json-out staging file after many attempts"
+            )
         try:
-            fd = os.open(staging, create_flags, 0o644, dir_fd=dir_fd)
-        except FileExistsError:
-            # A stale or planted entry at the staging name. Remove it (relative to
-            # the pinned directory only) and retry once; never open it.
-            os.unlink(staging, dir_fd=dir_fd)
-            fd = os.open(staging, create_flags, 0o644, dir_fd=dir_fd)
-        staged = True
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8") as handle:
-                handle.write(data)
-                handle.flush()
-                os.fsync(handle.fileno())
+            handle = os.fdopen(fd, "w", encoding="utf-8")
         except BaseException:
-            # fdopen/close owns fd; if fdopen raised before taking ownership the
-            # bare fd is closed here.
+            os.close(fd)
             raise
+        with handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
         # Atomically replace the destination ENTRY. rename does not follow the
-        # destination, so a hard-linked or symlinked destination is repointed,
-        # never truncated.
+        # destination, so a hard-linked or symlinked destination is repointed at
+        # this fresh inode, never truncated.
         os.replace(staging, leaf, src_dir_fd=dir_fd, dst_dir_fd=dir_fd)
-        staged = False
+        staging = None
     finally:
-        if staged:
+        if staging is not None:
+            # Only ever the uniquely named inode we created; never a pre-existing path.
             try:
                 os.unlink(staging, dir_fd=dir_fd)
             except OSError:  # pragma: no cover - best-effort cleanup

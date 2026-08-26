@@ -3614,27 +3614,99 @@ def test_json_out_ordinary_new_and_replacement_still_succeed(tmp_path: Path) -> 
     assert leftovers == [], f"staging files must be cleaned up: {leftovers}"
 
 
-def test_json_out_staging_name_symlink_into_bundle_is_never_followed(tmp_path: Path) -> None:
-    """A symlink planted at the staging name (pointing into the bundle) is not followed.
+def test_json_out_ancestor_symlink_swapped_after_preflight_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A grandparent swapped to a symlink into the bundle after preflight is refused.
 
-    The staging inode is created with O_CREAT|O_EXCL|O_NOFOLLOW: an existing entry
-    at the staging name raises, and the publisher unlinks the symlink (which
-    removes the link, not its target) and creates a fresh inode. A truncating,
-    symlink-following create here would corrupt the bundle file the link targets.
+    O_NOFOLLOW on the immediate parent guards only the final component; an
+    ancestor above it is still followed. The component-by-component O_NOFOLLOW
+    walk refuses a symlink at *any* level, so a post-preflight ancestor swap
+    cannot redirect the write into the bundle.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    gp = tmp_path / "gp"
+    (gp / "observations").mkdir(parents=True)  # real dirs at preflight
+    out = gp / "observations" / "p2_raw_count_without_denominator.json"
+    before = _bundle_snapshot(root)
+
+    real_validate = _gate.validate_bundle
+
+    def swapping_validate(bundle_root):
+        result = real_validate(bundle_root)
+        shutil.rmtree(gp)
+        gp.symlink_to(root)  # gp -> bundle root; gp/observations -> bundle/observations
+        return result
+
+    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
+    with pytest.raises(GateUsageError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+
+    assert _bundle_snapshot(root) == before, "an ancestor symlink into the bundle must be refused"
+
+
+def test_json_out_static_ancestor_symlink_is_refused(tmp_path: Path) -> None:
+    """Any symlink on the output path — even one resolving outside the bundle — is refused.
+
+    The publisher does not follow a symlink at any output-path component; a
+    symlinked ancestor is a usage error, not a path it silently traverses.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    real_dir = tmp_path / "real_out"
+    real_dir.mkdir()
+    linked = tmp_path / "linked"
+    linked.symlink_to(real_dir)  # an innocuous symlink, outside the bundle
+    out = linked / "result.json"
+    before = _bundle_snapshot(root)
+
+    with pytest.raises(GateUsageError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+
+    assert _bundle_snapshot(root) == before
+    assert not (real_dir / "result.json").exists(), "no write through a symlinked ancestor"
+
+
+def test_json_out_staging_collision_never_deletes_unrelated_entry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A staging-name collision retries with a new name; it never deletes the entry.
+
+    ``os.urandom`` is forced to collide the first staging name with an unrelated
+    pre-existing file. The publisher must preserve that file (O_EXCL fails, a new
+    random name is tried) rather than unlink it, and still publish the result.
     """
 
     root = _two_artifact_bundle(tmp_path / "b")
     out = tmp_path / "out.json"
-    staging_name = f".{out.name}.rbce-stage.{os.getpid()}"
-    planted = tmp_path / staging_name
-    planted.symlink_to(root / "manifest.json")  # staging name -> a bundle file
+
+    first_token = bytes(8)  # eight zero bytes
+    second_token = b"\x11" * 8
+    tokens = [first_token, second_token]
+    calls = {"i": 0}
+
+    def fake_urandom(n: int) -> bytes:
+        token = tokens[min(calls["i"], len(tokens) - 1)]
+        calls["i"] += 1
+        return token
+
+    monkeypatch.setattr(_gate.os, "urandom", fake_urandom)
+
+    first_hex = first_token.hex()
+    collide_name = f".{out.name}.rbce-stage.{first_hex}"
+    unrelated = tmp_path / collide_name
+    unrelated.write_bytes(b"UNRELATED-DO-NOT-DELETE\n")
     before = _bundle_snapshot(root)
 
     assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
 
-    assert _bundle_snapshot(root) == before, "the staging-name symlink target must be intact"
+    assert unrelated.read_bytes() == b"UNRELATED-DO-NOT-DELETE\n", "unrelated entry must survive"
     assert json.loads(out.read_text())["ok"] is True
-    assert not planted.exists() or not planted.is_symlink()
+    assert _bundle_snapshot(root) == before
+    # The second (distinct) token's staging file was renamed away, not left behind.
+    leftovers = [p.name for p in tmp_path.iterdir() if "rbce-stage" in p.name and p != unrelated]
+    assert leftovers == [], f"our own staging files must be cleaned up: {leftovers}"
 
 
 def test_publish_json_out_never_opens_destination_for_writing() -> None:

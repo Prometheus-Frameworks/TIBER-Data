@@ -387,3 +387,63 @@ leaf pathname; drop the parent `O_NOFOLLOW`; make the staging create non-exclusi
 **all killed, no degenerate, gate restored byte-for-byte**. No Slice A change; nothing under `exports/**`;
 reference bundle byte-identical. Final exact-head audit status remains **pending fresh Codex review of the
 repaired head**.
+
+---
+
+## Sixth review round — 2026-08-26 (`--json-out` ancestor-symlink and collision-cleanup hardening)
+
+A Codex exact-head review at head `58c69f62728e0c6cf99e5840816a747f0b37d3e6` found that the round-5
+`--json-out` publication repair was **incomplete in two ways**. The finding was **relayed by the operator
+in condensed form** because elaborating it tripped a content filter on the operator's Codex account (the
+operator is separately contacting support); there is no GitHub connector review object or thread for this
+round, and the connector is not claimed as its author. The relayed handoff named: commit `58c69f6`, P2,
+`scripts/validate_rb_contact_evasion_bundle.py`, unmet requirement *"Output publication can still be
+redirected through an ancestor symlink, and collision cleanup can delete an unrelated pre-existing entry."*
+Both sub-findings were reproduced against the real gate before editing (temporary bundle copies only). This
+round changes no TypeScript source.
+
+### P2(a) — publication redirectable through an ancestor symlink
+
+The round-5 publisher opened only the **immediate** parent with `O_NOFOLLOW | O_DIRECTORY`, but `O_NOFOLLOW`
+guards only the *final* component of a single `open` — an ancestor above the parent is still followed.
+**Reproduced:** with `out = gp/observations/<artifact>` where `gp` and `observations` are real directories
+at the realpath preflight (so the preflight passed, seeing a path outside the bundle), then `gp` swapped to
+a symlink to the bundle root before publication, `os.open('gp/observations', O_NOFOLLOW)` followed the `gp`
+symlink and opened `bundle/observations`; publication overwrote
+`observations/p2_raw_count_without_denominator.json` (4144 → 2913 bytes).
+
+**Repair:** `_open_output_parent_nofollow` walks the output parent **one component at a time** from a
+trusted anchor (`/` for an absolute path, the current directory for a relative one), each component opened
+`O_NOFOLLOW | O_DIRECTORY` relative to the previous. A symlink at *any* level — parent or ancestor, present
+or swapped in after the preflight — is refused; missing components are created with `mkdir` relative to the
+pinned parent, never through a symlink.
+
+### P2(b) — collision cleanup deletes an unrelated entry
+
+The staging name was deterministic (`.{leaf}.rbce-stage.{pid}`), and a `FileExistsError` at that name was
+resolved by `os.unlink(staging)` then retry — so an unrelated pre-existing file that happened to sit at that
+name was **deleted**. **Reproduced:** a pre-created unrelated file at the deterministic staging name was
+removed by a successful `--json-out` run.
+
+**Repair:** the staging name now carries an unpredictable random token
+(`.{leaf}.rbce-stage.{os.urandom(8).hex()}`), created `O_CREAT | O_EXCL | O_WRONLY | O_NOFOLLOW`; a name
+collision is resolved by trying a **new** random name — an existing entry is never unlinked, so publication
+never deletes or mutates an unrelated pre-existing path, and the failure cleanup only removes the uniquely
+named inode the gate itself created.
+
+`os.replace` publication, the hard-link / symlink-destination safety, refusal / failed-publish
+preservation, deterministic output, and exit codes are all unchanged. Re-running both windows: the ancestor
+swap is refused (`GateUsageError`) with the bundle byte-identical; the collision leaves the unrelated file
+byte-identical and still publishes the result.
+
+### Sixth-round verification
+
+Focused Slice B suite: **299 collected, 299 passed** (297 − 1 deterministic-staging-name control removed,
+superseded by the collision control, + 3 new: ancestor-swap, static-ancestor, collision). Full Python
+suite: **1020 passed, 3 skipped**. `py_compile`, Ruff, JSON validation, `git diff --check` clean. Mutation
+testing: **5 mutations** against the real publication (reinstate the single-parent ancestor-following open;
+reinstate blind unlink on collision; reinstate `write_text`; truncate the leaf pathname; skip staging
+cleanup), **all killed, no degenerate, gate restored byte-for-byte** — `single_parent_open_follows_ancestor`
+and `blind_unlink_on_collision` each have a dedicated behavioural kill. No Slice A change; nothing under
+`exports/**`; reference bundle byte-identical. Final exact-head audit status remains **pending fresh Codex
+review of the repaired head**.

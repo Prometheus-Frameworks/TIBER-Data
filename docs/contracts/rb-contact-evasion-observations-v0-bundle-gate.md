@@ -234,18 +234,26 @@ It never writes into the bundle it is validating. `--json-out` pointing inside
 the bundle is refused as a usage error, but that pathname check is only a
 usability guard: it cannot see a hard link that shares a bundle file's inode and
 it is raceable. The safety is in how the result is published. `--json-out` never
-opens, truncates, or follows an existing output inode. Instead the intended
-output parent is opened once with `O_NOFOLLOW | O_DIRECTORY` (a parent that is or
-becomes a symlink is refused, so it cannot redirect the write into the bundle); a
-fresh staging inode is created relative to that descriptor with
-`O_CREAT | O_EXCL | O_WRONLY | O_NOFOLLOW`, written, and `fsync`ed; and
-publication is a single `os.replace` (rename) of the staging entry onto the
+opens, truncates, or follows an existing output inode. The intended output parent
+is resolved by a **component-by-component `O_NOFOLLOW` walk** from a trusted
+anchor (`/` for an absolute path, the current directory for a relative one), each
+component opened relative to the previous one. Because `O_NOFOLLOW` guards only
+the final component of any single `open`, walking every level is what refuses a
+symlink at *any* component — the parent **or any ancestor**, whether already
+present or swapped in after the pathname preflight — so nothing can redirect the
+write into the bundle; missing components are created with `mkdir` relative to
+the pinned parent, never through a symlink. A **fresh, uniquely named** staging
+inode is then created relative to that descriptor with
+`O_CREAT | O_EXCL | O_WRONLY | O_NOFOLLOW`, written, and `fsync`ed; a name
+collision is resolved by trying a new random name, so an existing entry is never
+unlinked and publication never deletes or mutates an unrelated pre-existing path.
+Publication is a single `os.replace` (rename) of the staging entry onto the
 destination entry. Because `rename` never follows the destination, a hard-linked
 or symlinked output has its directory entry atomically repointed at the new inode
 while the old (possibly bundle-shared) inode keeps its bytes — so a successful
 `--json-out` can never corrupt the bundle. A refusal or a failed publication
-leaves every bundle byte and any pre-existing output byte unchanged, and staging
-files are cleaned up without touching unrelated paths.
+leaves every bundle byte and any pre-existing output byte unchanged, and only the
+uniquely named staging inode the gate created is cleaned up.
 
 ## Bundle layout and manifest contract
 

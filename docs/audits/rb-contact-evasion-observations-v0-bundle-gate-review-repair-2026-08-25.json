@@ -2,7 +2,7 @@
   "artifact_version": "rb_contact_evasion_bundle_gate_review_repair_v1",
   "audit_date": "2026-08-25",
   "evidence_cutoff_date": "2026-08-26",
-  "evidence_cutoff_note": "This paired record now spans five review-repair rounds; the latest evidence (the fifth round's safe --json-out publication repair) was produced on 2026-08-26, so the cutoff includes that date.",
+  "evidence_cutoff_note": "This paired record now spans six review-repair rounds; the latest evidence (the sixth round's --json-out ancestor-symlink and collision-cleanup hardening) was produced on 2026-08-26, so the cutoff includes that date.",
   "record_type": "independent_review_repair_record",
   "not_an_independent_audit_of_repaired_head": true,
   "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
@@ -313,6 +313,53 @@
       "focused_slice_b_tests_passed": 297,
       "focused_lineage": "288 (e68fc17 prior) + 9 new (8 --json-out controls + 1 structural) = 297",
       "full_python_suite_passed": 1018,
+      "full_python_suite_skipped": 3,
+      "mutation_count": 5,
+      "mutations_all_killed": true,
+      "degenerate_evidence": false,
+      "gate_restored_byte_for_byte": true,
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true,
+      "superseded_note_sixth_round": "The single-parent-open mechanism and the deterministic-staging-name control described here were superseded in the sixth round: the parent open is now a component-by-component O_NOFOLLOW walk (an immediate-parent open still followed ancestor symlinks), and the staging name is uniquely randomized so a collision is never resolved by unlinking (the prior FileExistsError handler could delete an unrelated entry). See sixth_review_round."
+    }
+  },
+  "sixth_review_round": {
+    "audit_date": "2026-08-26",
+    "reviewed_head": "58c69f62728e0c6cf99e5840816a747f0b37d3e6",
+    "review_source": {
+      "review_kind": "codex_exact_head_review_relayed_by_operator",
+      "relayed_by": "operator",
+      "github_review_object": null,
+      "github_review_comment_ids": [],
+      "identity_note": "The finding was produced by a Codex exact-head review of 58c69f6 and relayed by the operator in condensed form because elaborating the finding tripped a content filter on the operator's Codex account (the operator is separately contacting support). No GitHub connector review object or thread exists for this round; the connector is not claimed as its author. The relayed handoff named: commit 58c69f6, P2, file scripts/validate_rb_contact_evasion_bundle.py, unmet requirement 'Output publication can still be redirected through an ancestor symlink, and collision cleanup can delete an unrelated pre-existing entry.'"
+    },
+    "verdict_on_prior_round": "prior_json_out_repair_incomplete_in_two_ways",
+    "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+    "findings": [
+      {
+        "severity": "P2",
+        "title": "--json-out publication redirectable through an ancestor symlink; collision cleanup deletes an unrelated entry",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "Two sub-findings, both reproduced against the real gate on temporary reference-bundle copies. (1) Ancestor symlink: the round-5 publisher opened only the IMMEDIATE parent with O_NOFOLLOW | O_DIRECTORY, but O_NOFOLLOW guards only the final path component. With out = gp/observations/<artifact>, gp and observations real directories at the realpath preflight (so the preflight passed, seeing a path outside the bundle), then gp swapped to a symlink to the bundle root before publication, os.open('gp/observations', O_NOFOLLOW) followed the gp symlink and opened bundle/observations; publication overwrote observations/p2_raw_count_without_denominator.json (4144 -> 2913 bytes). (2) Collision cleanup: the staging name was deterministic ('.{leaf}.rbce-stage.{pid}') and a FileExistsError at that name was resolved by os.unlink(staging) then retry -- so an unrelated pre-existing file at that name was deleted. Reproduced: a pre-created unrelated file at the deterministic staging name was removed by a successful --json-out run.",
+        "defect_class": "ancestor_symlink_followed_by_final_component_nofollow_only; deterministic_staging_name_blind_unlink_deletes_unrelated_entry",
+        "disposition": "component_by_component_nofollow_walk_and_unique_nondestructive_staging",
+        "disposition_detail": "The output parent is now resolved by _open_output_parent_nofollow: a component-by-component walk from a trusted anchor (/ absolute, cwd relative), each component opened O_NOFOLLOW | O_DIRECTORY relative to the previous, so a symlink at ANY level (parent or ancestor, present or swapped in after the preflight) is refused; missing components are created with mkdir relative to the pinned parent, never through a symlink. Staging now uses a uniquely random name ('.{leaf}.rbce-stage.{os.urandom(8).hex()}') created O_CREAT|O_EXCL|O_WRONLY|O_NOFOLLOW; a name collision is resolved by trying a NEW random name -- an existing entry is never unlinked, so publication never deletes or mutates an unrelated pre-existing path, and the finally cleanup only removes the uniquely named inode the gate itself created. os.replace publication, digest/hard-link/symlink-destination safety, refusal/failed-publish preservation, deterministic output, and exit codes are all unchanged. Re-running both windows: the ancestor swap is refused (GateUsageError) with the bundle byte-identical; the collision leaves the unrelated file byte-identical and still publishes the result.",
+        "negative_controls": [
+          "ancestor (grandparent) swapped to a symlink into the bundle after preflight: refused, bundle byte-identical",
+          "static ancestor symlink even resolving OUTSIDE the bundle: refused (no output-path symlink is followed at any level)",
+          "staging-name collision forced via os.urandom: the unrelated pre-existing entry survives byte-for-byte and the result still publishes",
+          "the prior round's controls (hard link to manifest and artifact, symlink to a bundle file, leaf swap, parent swap, publication failure, ordinary new + replacement, structural) all still pass"
+        ],
+        "mutation_evidence": "5 mutations against the real publication, all killed, no degenerate, gate restored byte-for-byte: single_parent_open_follows_ancestor (3 kills: ancestor-swap, parent-swap, static-ancestor), blind_unlink_on_collision (1: collision control), reinstate_write_text_publication (7), publish_truncates_leaf_pathname (6), no_staging_cleanup_on_failure (1)."
+      }
+    ],
+    "verification": {
+      "focused_slice_b_tests_collected": 299,
+      "focused_slice_b_tests_passed": 299,
+      "focused_lineage": "297 (58c69f6 prior) - 1 (deterministic-staging-name control removed, superseded by the collision control) + 3 new (ancestor-swap, static-ancestor, collision) = 299",
+      "full_python_suite_passed": 1020,
       "full_python_suite_skipped": 3,
       "mutation_count": 5,
       "mutations_all_killed": true,
