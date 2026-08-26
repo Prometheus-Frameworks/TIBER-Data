@@ -1,7 +1,8 @@
 {
   "artifact_version": "rb_contact_evasion_bundle_gate_review_repair_v1",
   "audit_date": "2026-08-25",
-  "evidence_cutoff_date": "2026-08-25",
+  "evidence_cutoff_date": "2026-08-26",
+  "evidence_cutoff_note": "This paired record now spans three review-repair rounds; the latest evidence (the third round's identity/immutability repair) was produced on 2026-08-26, so the cutoff includes that date.",
   "record_type": "independent_review_repair_record",
   "not_an_independent_audit_of_repaired_head": true,
   "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
@@ -114,8 +115,13 @@
   "second_review_round": {
     "audit_date": "2026-08-26",
     "reviewed_head": "96c332149e6411c51ecd6839afbe922a5a1ca499",
-    "reviewer_identity": "chatgpt-codex-connector",
-    "auditor_identity_fabricated": false,
+    "review_source": {
+      "review_kind": "codex_exact_head_review_performed_in_operator_session",
+      "relayed_by": "operator",
+      "github_review_object": null,
+      "github_review_comment_ids": [],
+      "identity_correction": "A prior version of this block recorded reviewer_identity as chatgpt-codex-connector. That was incorrect: no GitHub connector review object or review thread exists for this round. The findings were produced by a Codex exact-head review performed in the operator session and relayed by the operator into PR #260 (as a follow-up comment on the existing first-round thread r3856050637, comment id r3859172198). The connector is NOT the author of this round. The only genuine chatgpt-codex-connector review threads on PR #260 are the three first-round threads created 2026-08-25T18:31:26Z (r3856050625, r3856050632, r3856050637)."
+    },
     "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
     "findings": [
       {
@@ -147,6 +153,77 @@
       "exports_changed": false,
       "reference_bundle_byte_identical": true,
       "mutation_count": 6,
+      "mutations_all_killed": true,
+      "degenerate_evidence": false,
+      "gate_restored_byte_for_byte": true
+    }
+  },
+  "third_review_round": {
+    "audit_date": "2026-08-26",
+    "reviewed_head": "8d2b9cad0488d649657b43d6b1339a6c92bcc0c7",
+    "review_source": {
+      "review_kind": "codex_exact_head_review_performed_in_operator_session",
+      "relayed_by": "operator",
+      "github_review_object": null,
+      "github_review_comment_ids": [],
+      "identity_note": "As with the second round, these findings were produced by a Codex exact-head review performed in the operator session and relayed by the operator. There is no GitHub connector review object or thread for this round; the connector is not claimed as its author."
+    },
+    "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+    "findings": [
+      {
+        "severity": "P1",
+        "title": "Mutable verified-byte identity: evaluator could receive bytes whose digest no longer matched",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "_read_fd_capped returned a bytearray; check_integrity hashed it, then aliased the SAME mutable object into both verified_bytes and raw_bytes; evaluate_semantics sent that object to the evaluator without re-proving the digest. Reproduced through the real gate on a copy of the reference bundle: a hook on the stage immediately before semantic evaluation flipped one JSON-insignificant space (0x20) to a tab (0x09) in verified_bytes in place; the gate returned ok=True and the bridge received bytes whose SHA-256 (8f99..., cc71...) differed from both the observed digest and the manifest digests (f16a..., ffab...).",
+        "defect_class": "mutable_alias_breaks_digest_to_evaluated_subject_binding",
+        "disposition": "freeze_verified_bytes_to_immutable_bytes_at_the_integrity_boundary",
+        "disposition_detail": "At the point the digest promise is made (digest match in check_integrity), the verified bytes are frozen into an immutable bytes object (frozen = bytes(raw); del raw) and both verified_bytes and raw_bytes reference that single immutable object. An immutable bytes object cannot be mutated in place by any alias, so the bytes parsed, schema-checked, and evaluated are byte-for-byte the ones integrity bound. Re-running the reproduction through the real gate: verified_bytes is now bytes, the in-place mutation is refused ('bytes' object does not support item assignment), and the evaluator receives bytes whose SHA-256 equals the manifest digests.",
+        "memory_reconciliation": "The freeze is a deliberate, one-time, per-artifact second payload-sized allocation: the bytearray and its bytes copy coexist for the duration of the copy, then the bytearray is released. This does NOT reinstate the round-2 chunk-list double-peak: the bounded reader still owns a single buffer and makes no whole-payload copy (that property is scoped to the reader). The 'no whole-payload copy' claim is corrected in the reader docstring, the contract doc, and this record to be reader-scoped, not whole-lifecycle, and the freeze copy is disclosed.",
+        "regression_and_mutation_evidence": "Public-gate regressions added: test_verified_bytes_are_frozen_immutable_after_integrity (verified_bytes/raw_bytes are the same immutable bytes object; in-place assignment raises), test_evaluator_receives_bytes_matching_the_manifest_digest (bridge boundary instrumented; every payload sent hashes to a declared manifest digest), test_pre_semantic_mutation_cannot_alter_the_evaluated_subject (the reproduction, as a regression: the in-place whitespace flip is refused and the evaluator still receives digest-matching bytes). A mutation removing the freeze (restoring the bytearray alias) is killed by these tests: the mutation attempt succeeds and the evaluator receives non-matching bytes."
+      },
+      {
+        "severity": "P1",
+        "title": "Incorrect reviewer identity in the second-round audit artifacts",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "The second_review_round block attributed the operator-relayed Codex findings to reviewer_identity chatgpt-codex-connector and asserted the identity was not fabricated, but no GitHub connector review object or thread exists for that round. The only genuine connector threads on PR #260 are the three first-round threads created 2026-08-25T18:31:26Z.",
+        "defect_class": "misattributed_review_provenance",
+        "disposition": "corrected_both_audit_artifacts_to_record_actual_provenance",
+        "disposition_detail": "The second-round block now records: a Codex exact-head review performed in the operator session, relayed by the operator, with github_review_object null and no review-comment id, and does not claim the connector authored it. The Markdown audit's second-round section is corrected to match. The first-round attribution to chatgpt-codex-connector is unchanged because those three threads are genuine GitHub review objects."
+      },
+      {
+        "severity": "P2",
+        "title": "Capability matrix did not prove no read (vacuous secret[:0] assertion)",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "The capability-matrix tests only asserted the external secret text was absent from GateResult, and one term (secret[:0]) checked zero secret bytes, so it was vacuous. Absence from the rendered result does not prove the external bytes were never opened or read.",
+        "defect_class": "vacuous_no_read_assertion",
+        "disposition": "instrument_the_actual_open_read_boundary_and_prove_zero_access",
+        "disposition_detail": "The 15-case capability matrix (manifest, final-, and intermediate-component external symlink x each dropped primitive and the combined case) now instruments the gate's real os.open/os.read boundary and asserts zero opens and zero reads after the capability preflight fails. A control test (test_open_read_instrumentation_observes_reads_and_preserves_detection) proves the spies leave descriptor_primitives_available() intact when primitives are present and actually observe a real open and read, so a zero count in the matrix is a genuine no-access, not a broken detector. The instrumentation preserves the dir_fd view (registers the spy in supports_dir_fd when dir_fd is meant to be supported) so the preflight fails only because of the dropped O_* flag, never because os.open was replaced.",
+        "instrumentation_does_not_break_capability_detection": true
+      },
+      {
+        "severity": "P2",
+        "title": "Reconcile all evidence text and counts",
+        "accepted": true,
+        "disposition": "corrected_stale_wording_counts_and_cutoff",
+        "disposition_detail": "Stale cap/pathname-stat wording reconciled across changed files: the contract stage table row 7 now says byte size and type from fstat on the opened descriptor (never a pathname stat) then SHA-256 then freeze; the check_integrity docstring and the reader docstring are corrected; the 'no whole-payload copy' claim is scoped to the bounded reader with the freeze copy disclosed. The evidence cutoff is corrected to include 2026-08-26.",
+        "focused_test_count_reconciliation": "pytest --collect-only reports 288 node IDs at the repaired head. That equals 284 (the actual collected count at the prior head 8d2b9ca, verified with --collect-only) plus 4 new tests this round (1 open/read instrumentation control + 3 P1 identity regressions). The prior audit annotated the second round as '262 + 21', which sums to 283, not the claimed 284; the true second-round collected count was 284 (a +22 delta over the first round's 262, not +21). The headline 284 was correct; the '+21' label undercounted the delta by one. This record uses the collect-only figures: first round 262, second round 284 (+22), third round 288 (+4)."
+      }
+    ],
+    "verification": {
+      "focused_slice_b_tests_collected": 288,
+      "focused_slice_b_tests_passed": 288,
+      "prior_head_focused_tests_collected": 284,
+      "full_python_suite_passed": 1009,
+      "full_python_suite_skipped": 3,
+      "full_python_suite_prior_head_passed": 1005,
+      "full_python_suite_delta_note": "1005 at the prior head + 4 new focused tests this round = 1009.",
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true,
+      "mutation_count": 4,
       "mutations_all_killed": true,
       "degenerate_evidence": false,
       "gate_restored_byte_for_byte": true

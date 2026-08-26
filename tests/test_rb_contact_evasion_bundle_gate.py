@@ -2912,6 +2912,145 @@ def test_semantic_stage_uses_verified_bytes_not_a_reopen(
     }
 
 
+def test_verified_bytes_are_frozen_immutable_after_integrity(tmp_path: Path) -> None:
+    """P1: integrity freezes the digest-authorized bytes into an immutable object.
+
+    After the integrity stage, ``verified_bytes`` and ``raw_bytes`` are the SAME
+    immutable ``bytes`` object (not a mutable ``bytearray`` alias), so no later
+    stage can flip a byte in place and change what the evaluator judges. The read
+    helper still yields a ``bytearray``; the promise is made when the digest
+    matches, and that is where the freeze happens.
+    """
+
+    raw = _fixture_path("p2_raw_count_without_denominator.json").read_bytes()
+    root = _one_artifact_bundle(tmp_path / "b", raw)
+
+    manifest = json.loads((root / MANIFEST_FILENAME).read_text())
+    artifacts = [
+        _gate.ArtifactState(
+            path=entry["path"],
+            declared_size=entry["size_bytes"],
+            declared_digest=entry["digest"],
+        )
+        for entry in manifest["artifacts"]
+    ]
+    failures: list = []
+    _gate.check_path_safety(root, artifacts, failures)
+    _gate.check_bundle_bijection(root, artifacts, failures)
+    _gate.check_integrity(root, manifest, artifacts, failures)
+    assert failures == []
+
+    (artifact,) = artifacts
+    assert type(artifact.verified_bytes) is bytes, "verified bytes must be frozen immutable bytes"
+    assert type(artifact.raw_bytes) is bytes
+    assert artifact.verified_bytes is artifact.raw_bytes, "both fields share one immutable object"
+    assert artifact.verified_bytes == raw
+    assert hashlib.sha256(artifact.verified_bytes).hexdigest() == artifact.declared_digest
+    # In-place mutation is impossible: bytes rejects item assignment. A bytearray
+    # alias (the pre-fix behaviour) would accept it and silently change the subject.
+    with pytest.raises(TypeError):
+        artifact.verified_bytes[0] = artifact.verified_bytes[0]  # type: ignore[index]
+
+
+def test_evaluator_receives_bytes_matching_the_manifest_digest(tmp_path: Path) -> None:
+    """P1 behavioural: the bytes the evaluator receives hash to the manifest digest.
+
+    The whole gate runs on a copy of the reference bundle; the bridge boundary is
+    instrumented to capture exactly what is sent to the evaluator. Every captured
+    payload's SHA-256 must equal a digest the manifest declared -- proving the
+    subject the evaluator judged is byte-for-byte the subject integrity authorized.
+    """
+
+    root = tmp_path / "bundle"
+    shutil.copytree(REFERENCE_BUNDLE, root)
+    manifest = json.loads((root / MANIFEST_FILENAME).read_text())
+    declared_digests = {entry["digest"] for entry in manifest["artifacts"]}
+
+    captured: list[str] = []
+    real_run_bridge = _gate._run_bridge
+
+    def capturing_bridge(mode, stdin_bytes, build):  # noqa: ANN001
+        if mode == "evaluate":
+            captured.append(hashlib.sha256(bytes(stdin_bytes)).hexdigest())
+        return real_run_bridge(mode, stdin_bytes=stdin_bytes, build=build)
+
+    original = _gate._run_bridge
+    _gate._run_bridge = capturing_bridge
+    try:
+        result = _gate.validate_bundle(root)
+    finally:
+        _gate._run_bridge = original
+
+    assert result.ok
+    assert len(captured) == len(manifest["artifacts"]) >= 1
+    for sent_digest in captured:
+        assert sent_digest in declared_digests, (
+            "the evaluator received bytes whose SHA-256 is not a declared manifest digest"
+        )
+
+
+def test_pre_semantic_mutation_cannot_alter_the_evaluated_subject(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """P1 regression: an in-place whitespace flip between integrity and the
+    semantic stage cannot change the evaluated bytes.
+
+    This reproduces the original defect through the real gate: the stage that
+    runs just before semantic evaluation attempts a JSON-equivalent space->tab
+    swap on ``verified_bytes``. With the freeze in place the object is immutable,
+    so the attempt raises and the evaluator still receives digest-matching bytes.
+    Remove the freeze (restore the mutable ``bytearray`` alias) and the swap
+    succeeds -- the evaluator then receives bytes whose SHA-256 differs from the
+    manifest digest, and this test fails on both counts.
+    """
+
+    root = tmp_path / "bundle"
+    shutil.copytree(REFERENCE_BUNDLE, root)
+    manifest = json.loads((root / MANIFEST_FILENAME).read_text())
+    declared_digests = {entry["digest"] for entry in manifest["artifacts"]}
+
+    attempts = {"tried": 0, "refused": 0}
+    real_stage = _gate.check_manifest_payload_agreement
+
+    def mutating_stage(manifest_arg, artifacts, failures):  # noqa: ANN001
+        real_stage(manifest_arg, artifacts, failures)
+        for artifact in artifacts:
+            vb = artifact.verified_bytes
+            if vb is None:
+                continue
+            index = vb.find(b" ")  # a JSON insignificant space
+            if index < 0:
+                continue
+            attempts["tried"] += 1
+            try:
+                vb[index] = 0x09  # space -> tab, JSON-equivalent; refused if immutable
+            except TypeError:
+                attempts["refused"] += 1
+
+    captured: list[str] = []
+    real_run_bridge = _gate._run_bridge
+
+    def capturing_bridge(mode, stdin_bytes, build):  # noqa: ANN001
+        if mode == "evaluate":
+            captured.append(hashlib.sha256(bytes(stdin_bytes)).hexdigest())
+        return real_run_bridge(mode, stdin_bytes=stdin_bytes, build=build)
+
+    monkeypatch.setattr(_gate, "check_manifest_payload_agreement", mutating_stage)
+    monkeypatch.setattr(_gate, "_run_bridge", capturing_bridge)
+    result = _gate.validate_bundle(root)
+
+    assert attempts["tried"] >= 1, "the mutation hook must have run on the verified bytes"
+    assert attempts["refused"] == attempts["tried"], (
+        "every in-place mutation attempt must be refused -- verified_bytes must be immutable"
+    )
+    assert captured, "the evaluator must have been reached"
+    for sent_digest in captured:
+        assert sent_digest in declared_digests, (
+            "the evaluator received mutated bytes: the digest no longer binds the evaluated subject"
+        )
+    assert result.ok
+
+
 def test_oversized_file_is_refused_without_reading_it(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -3038,6 +3177,65 @@ def _external_symlink_bundle(tmp_path: Path, which: str) -> tuple[Path, bytes]:
     return root, secret_bytes
 
 
+def _instrument_open_read(monkeypatch: pytest.MonkeyPatch, *, dir_fd_supported: bool):
+    """Spy on the gate's actual open/read boundary and record every call.
+
+    Returns ``(opens, reads)`` lists that fill as the gate opens paths and reads
+    bytes. The spies wrap the real ``os.open``/``os.read`` so behaviour is
+    unchanged; they merely observe.
+
+    The one subtlety is ``descriptor_primitives_available()``, which tests
+    ``os.open in os.supports_dir_fd`` by *identity*. Replacing ``os.open`` with a
+    spy would make that membership test False and could make the preflight fail
+    for an unrelated reason (the spy), masking a real read. So when ``dir_fd`` is
+    meant to be supported we register the spy in a patched ``supports_dir_fd`` set
+    -- capability detection then still sees dir_fd support, and the only thing
+    that can make the preflight fail is a genuinely dropped ``O_*`` flag, never
+    the instrumentation itself.
+    """
+
+    opens: list = []
+    reads: list = []
+    real_open = _gate.os.open
+    real_read = _gate.os.read
+
+    def spy_open(path, flags, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        opens.append(path)
+        return real_open(path, flags, *args, **kwargs)
+
+    def spy_read(fd, n):  # noqa: ANN001
+        reads.append(n)
+        return real_read(fd, n)
+
+    monkeypatch.setattr(_gate.os, "read", spy_read)
+    if dir_fd_supported:
+        monkeypatch.setattr(
+            _gate.os, "supports_dir_fd", {spy_open, *_gate.os.supports_dir_fd}
+        )
+    monkeypatch.setattr(_gate.os, "open", spy_open)
+    return opens, reads
+
+
+def test_open_read_instrumentation_observes_reads_and_preserves_detection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Control for the capability matrix: the open/read spies must (a) leave
+    capability detection intact when the primitives are present, and (b) actually
+    observe a real open and read. Otherwise a zero count in the matrix below would
+    prove a broken detector, not a genuine no-access.
+    """
+
+    payload = b'{"ok":true}\n'
+    (tmp_path / "a.json").write_bytes(payload)
+    opens, reads = _instrument_open_read(monkeypatch, dir_fd_supported=True)
+    assert _gate.descriptor_primitives_available() is True
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "a.json", 4096)
+    assert outcome == _gate._ReadOutcome.OK
+    assert bytes(data) == payload
+    assert opens, "the open spy must observe the real component open(s)"
+    assert reads, "the read spy must observe the real leaf read"
+
+
 @pytest.mark.parametrize("which", ["manifest", "final", "intermediate"])
 @pytest.mark.parametrize(
     "drop_kwargs",
@@ -3050,23 +3248,49 @@ def _external_symlink_bundle(tmp_path: Path, which: str) -> tuple[Path, bytes]:
     ],
 )
 def test_dropping_any_primitive_never_reads_external_bytes(
-    tmp_path: Path, _capability_matrix, which: str, drop_kwargs: dict
+    tmp_path: Path,
+    _capability_matrix,
+    monkeypatch: pytest.MonkeyPatch,
+    which: str,
+    drop_kwargs: dict,
 ) -> None:
     """Capability matrix: with any required primitive missing, the gate fails
-    closed before reading, for manifest, final-component, and intermediate cases.
+    closed before opening or reading anything, for manifest, final-component, and
+    intermediate cases.
 
-    A symlink to bytes outside the bundle is present in each case; those bytes
-    must never appear anywhere in the result, and the gate must refuse.
+    A symlink to bytes outside the bundle is present in each case. The proof is
+    behavioural: the actual ``os.open``/``os.read`` boundary is instrumented, and
+    after the capability preflight fails the gate must open zero paths and read
+    zero bytes -- so the external symlink target is never touched. (The earlier
+    version only checked the external marker was absent from ``GateResult`` text,
+    with a vacuous ``secret[:0]`` term; absence from the rendered result does not
+    prove the bytes were never read.)
     """
 
     root, secret = _external_symlink_bundle(tmp_path, which)
     _capability_matrix(**drop_kwargs)
     assert not _gate.descriptor_primitives_available()
+
+    opens, reads = _instrument_open_read(
+        monkeypatch, dir_fd_supported=not drop_kwargs.get("dir_fd", False)
+    )
+    # Instrumentation must not itself be the reason the preflight fails: with the
+    # dir_fd view preserved (above), detection still fails only because of the
+    # dropped O_* flag.
+    assert not _gate.descriptor_primitives_available()
+
     result = _gate.validate_bundle(root)
+
+    # Behavioural no-access proof: nothing was opened, nothing was read.
+    assert opens == [], f"gate opened path(s) after preflight failure: {opens}"
+    assert reads == [], f"gate read byte(s) after preflight failure: {reads}"
+
     assert not result.ok
     assert "BUNDLE_DESCRIPTOR_UNSUPPORTED" in codes(result)
     rendered = json.dumps(result.as_dict())
-    assert b"MUST-NEVER-BE-READ" not in secret[:0] + rendered.encode()
+    # The marker really is in the external bytes (the fixture is genuine), and it
+    # is absent from the result because those bytes were never opened or read.
+    assert b"MUST-NEVER-BE-READ" in secret
     assert "MUST-NEVER-BE-READ" not in rendered
     for artifact in result.artifacts:
         assert artifact.verified_bytes is None

@@ -273,8 +273,10 @@ class ArtifactState:
     stages_passed: list[str] = field(default_factory=list)
     observed_size: int | None = None
     observed_digest: str | None = None
-    raw_bytes: bytes | bytearray | None = None
-    verified_bytes: bytes | bytearray | None = None
+    # Both hold the SAME immutable ``bytes`` object once integrity freezes it, so
+    # the digest-authorized subject cannot be mutated in place before evaluation.
+    raw_bytes: bytes | None = None
+    verified_bytes: bytes | None = None
     payload: Any = UNPARSED
     contract: dict[str, Any] | None = None
     blocked: bool = False
@@ -428,13 +430,17 @@ def descriptor_primitives_available() -> bool:
 def _read_fd_capped(fd: int, cap: int) -> tuple[bytearray, bool]:
     """Read at most ``cap + 1`` bytes from ``fd`` into ONE growing buffer.
 
-    Peak payload ownership is a single ``bytearray`` of at most ``cap + 1``
-    bytes, plus one small reusable read chunk -- there is never a second
-    payload-sized representation (the old chunk-list-then-``join`` held both the
-    list and the joined result, peaking at roughly twice the payload). The
-    caller consumes the ``bytearray`` directly (it is a bytes-like object for
-    hashing, decoding, and subprocess input), so no ``bytes(...)`` copy of the
-    whole payload is ever made.
+    Within this reader, peak payload ownership is a single ``bytearray`` of at
+    most ``cap + 1`` bytes, plus one small reusable read chunk -- there is never
+    a second payload-sized representation here (the old chunk-list-then-``join``
+    held both the list and the joined result, peaking at roughly twice the
+    payload). This "no whole-payload copy" property is scoped to the read: the
+    reader returns the ``bytearray`` without copying it. It is NOT a
+    whole-lifecycle claim -- once the digest matches, ``check_integrity``
+    deliberately freezes these bytes into an immutable ``bytes`` object (one
+    per-artifact copy, made once) so no later stage can mutate the
+    digest-authorized subject. See ``check_integrity`` and the contract doc for
+    that honest per-stage accounting.
 
     Reads at most ``cap + 1`` bytes total, so an arbitrarily large file cannot
     exhaust memory. The second value is "grew past cap": if the descriptor
@@ -1476,11 +1482,14 @@ def check_integrity(
 
     Each artifact is opened once, descriptor-relatively and without following
     symlinks; its type and size are validated by ``fstat`` on that descriptor
-    and its bytes read from it with a bounded read. Type, cap, size, and digest
-    all bind to the same bytes, and those exact bytes -- never a re-read of the
-    pathname -- are what later stages parse and evaluate. There is no
-    stat-then-reopen window an oversized file, FIFO, device, or symlink could
-    slip through, and the read never buffers more than the cap.
+    and its bytes read from it with a bounded read that buffers at most the cap
+    plus one byte. Type, cap, size, and digest all bind to the same bytes. Once
+    the digest matches, those bytes are frozen into an immutable ``bytes`` object
+    -- the exact subject the digest authorized -- and it is that frozen object,
+    never a re-read of the pathname and never a mutable alias, that later stages
+    parse and evaluate. There is no stat-then-reopen window an oversized file,
+    FIFO, device, or symlink could slip through, and no post-integrity in-place
+    mutation window an alias could use to change what the evaluator judges.
     """
 
     algorithm = manifest.get("digest_algorithm")
@@ -1572,10 +1581,23 @@ def check_integrity(
             artifact.block()
             continue
 
-        # The exact verified bytes, retained for the semantic stage so it never
-        # reopens the pathname.
-        artifact.verified_bytes = raw
-        artifact.raw_bytes = raw  # parsed in the next stage
+        # The digest promise is made HERE: these exact bytes hash to the
+        # manifest digest. Freeze them into an immutable ``bytes`` object at that
+        # boundary so no later stage can alter the subject the digest authorized.
+        # ``raw`` is a mutable ``bytearray`` from the bounded reader; aliasing it
+        # into both fields (as the prior code did) let any holder flip a byte in
+        # place -- e.g. a JSON-equivalent whitespace swap -- so the evaluator
+        # could receive bytes whose SHA-256 no longer matched the digest just
+        # proved. An immutable ``bytes`` copy cannot be mutated in place by any
+        # alias, so the bytes parsed, schema-checked, and evaluated are byte-for-
+        # byte the ones integrity bound. This copy is a deliberate second
+        # payload-sized allocation made once, at the freeze; the mutable read
+        # buffer is released immediately after (see ``_read_fd_capped`` and the
+        # contract doc for the honest per-stage memory accounting).
+        frozen = bytes(raw)
+        del raw
+        artifact.verified_bytes = frozen
+        artifact.raw_bytes = frozen  # parsed in the next stage; same immutable object
         artifact.passed("integrity")
 
 
@@ -1952,7 +1974,9 @@ def evaluate_semantics(artifacts: list[ArtifactState], failures: list[Failure]) 
         # pathname is NOT reopened here: reopening would reintroduce a
         # time-of-use window and let a post-integrity swap decide what the
         # evaluator sees. Re-serialising the parsed payload would likewise let
-        # this gate's serializer decide. Only the in-memory verified bytes go.
+        # this gate's serializer decide. Only the in-memory verified bytes go --
+        # and they are the immutable ``bytes`` object integrity froze, so no
+        # alias could have altered them in place since the digest was proved.
         raw = artifact.verified_bytes
         if raw is None:
             failures.append(

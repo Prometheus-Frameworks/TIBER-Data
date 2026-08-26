@@ -139,12 +139,22 @@ descriptor**:
 - The cap is enforced against that descriptor's `fstat` size, and the read is a bounded read from the
   **same** descriptor that reads at most the cap plus one byte in total. An oversized replacement or
   growth after the size check is detected without allocating unbounded memory.
-- The read accumulates into **one** growing buffer (peak payload ownership is a single buffer of at most
-  the cap plus one byte, plus one small reusable read chunk) — not a list of chunks that is then joined,
-  which would hold two payload-sized representations at once. The caller consumes that buffer directly
-  (it is a bytes-like object), so no whole-payload copy is made.
-- The exact verified bytes are carried in memory to the semantic stage. The artifact pathname is **not**
-  reopened there, so a swap after integrity cannot change what the evaluator judges.
+- The read accumulates into **one** growing buffer — not a list of chunks that is then joined, which would
+  hold two payload-sized representations at once. **Within the bounded reader** peak payload ownership is a
+  single `bytearray` of at most the cap plus one byte, plus one small reusable read chunk, and the reader
+  makes no whole-payload copy. The "no whole-payload copy" claim is scoped to the reader: it is *not* a
+  whole-lifecycle claim, because the integrity stage below deliberately makes one copy.
+- Once the digest matches, the integrity stage **freezes** the verified bytes into an immutable `bytes`
+  object and releases the mutable read buffer. This is a deliberate, one-time, per-artifact second
+  payload-sized allocation (the `bytearray` and its `bytes` copy coexist for the duration of that copy,
+  then the `bytearray` is dropped), not a whole-payload copy inside the read. It exists so the
+  digest-authorized subject cannot be altered in place before evaluation: a mutable `bytearray` aliased
+  into the parse and semantic stages (the earlier behaviour) let any holder flip a byte — for example a
+  JSON-equivalent whitespace swap — so the evaluator could receive bytes whose SHA-256 no longer matched
+  the digest just proved. An immutable `bytes` object cannot be mutated in place by any alias.
+- The exact frozen bytes are carried in memory to the parse and semantic stages. The artifact pathname is
+  **not** reopened there, and the frozen object cannot be mutated there, so neither a swap after integrity
+  nor an in-place edit can change what the evaluator judges.
 
 **No degraded fallback.** These primitives — `O_NOFOLLOW`, `O_PATH`, `O_NONBLOCK`, and `dir_fd` support on
 `os.open` — are required to *prove* no-follow, component-relative access. If the platform cannot provide
@@ -296,7 +306,7 @@ with `BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE`.
 | 4 | `contract_identity` | declared identity equals the code pins, and the code pins equal the canonical contract's |
 | 5 | `path_safety` | each declared path is relative, POSIX, normalized, contained, and a real regular file |
 | 6 | `bundle_bijection` | declared files and present regular files are the same set, each declared once |
-| 7 | `integrity` | byte size (from `stat`, before reading) then SHA-256 of the exact bytes |
+| 7 | `integrity` | byte size and type from `fstat` **on the opened descriptor** (never a pathname `stat`), then SHA-256 of the exact bytes read from that descriptor, then those bytes frozen into an immutable object |
 | 8 | `payload_parse` | strict JSON — a matching digest never excuses malformed bytes |
 | 9 | `payload_shape` | matches the committed `rb_contact_evasion_observations_v0` JSON Schema |
 | 10 | `manifest_payload_agreement` | manifest and payload agree on `artifact_id`, `schema_version`, `artifact_position` |
