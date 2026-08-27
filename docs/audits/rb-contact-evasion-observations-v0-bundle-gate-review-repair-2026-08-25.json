@@ -1,7 +1,7 @@
 {
   "artifact_version": "rb_contact_evasion_bundle_gate_review_repair_v1",
   "audit_date": "2026-08-25",
-  "evidence_cutoff_date": "2026-08-26",
+  "evidence_cutoff_date": "2026-08-27",
   "evidence_cutoff_note": "This paired record now spans seven review-repair rounds; the latest evidence (the seventh round's --json-out write-side capability invariant) was produced on 2026-08-27, so the cutoff includes that date.",
   "record_type": "independent_review_repair_record",
   "not_an_independent_audit_of_repaired_head": true,
