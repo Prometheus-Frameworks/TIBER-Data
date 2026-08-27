@@ -2235,6 +2235,39 @@ def render_human_report(bundle_root: Path, result: GateResult) -> str:
     return "\n".join(lines)
 
 
+def publication_primitives_available() -> bool:
+    """Whether the platform can prove no-follow, descriptor-relative publication.
+
+    Deliberately separate from :func:`descriptor_primitives_available`: read
+    safety and publication safety need different primitive sets. The read side
+    needs ``O_PATH``/``O_NONBLOCK`` (publication does not); publication needs
+    ``O_DIRECTORY`` and the descriptor-relative forms of every operation the
+    publisher performs -- component ``open``, ``mkdir`` for missing components,
+    atomic ``replace``, and ``unlink`` for staging cleanup -- plus a nonzero
+    ``O_NOFOLLOW``, without which the component walk would silently lose its
+    no-follow protection and an ancestor symlink could redirect the write into
+    the validated bundle.
+
+    The atomic-replace test accepts EITHER ``os.replace`` or ``os.rename``
+    membership in ``os.supports_dir_fd``: both are implemented by ``renameat``
+    and share dir_fd support, but CPython registers only ``os.rename`` in the
+    set on some builds (observed: Linux/CPython 3.11 has ``os.rename`` in the
+    set and ``os.replace`` absent while ``os.replace(..., src_dir_fd=...)``
+    works). Requiring ``os.replace`` membership alone would fail closed
+    spuriously on those builds; accepting either is the honest portable test.
+    """
+
+    supports = getattr(os, "supports_dir_fd", set())
+    return bool(
+        _O_NOFOLLOW
+        and _O_DIRECTORY
+        and os.open in supports
+        and os.mkdir in supports
+        and os.unlink in supports
+        and (os.replace in supports or os.rename in supports)
+    )
+
+
 def _open_output_parent_nofollow(parent: Path) -> int:
     """Open ``parent`` as a directory fd reached through NO symlink at any level.
 
@@ -2325,6 +2358,23 @@ def publish_json_out(out_path: Path, data: str) -> None:
     byte are unchanged. Output bytes are exactly ``data`` (deterministic); the
     random staging name affects nothing the caller observes.
     """
+
+    # Write-side capability preflight, independent of the read side. It runs
+    # BEFORE any output-side operation -- no anchor open, no component open or
+    # mkdir, no staging create, no replace, no unlink. Without it, a platform
+    # (or a degraded flag such as _O_NOFOLLOW == 0) that already made
+    # validate_bundle fail closed would still reach this publisher, whose
+    # component walk would silently lose its no-follow protection -- so the
+    # failure report itself could be redirected into the validated bundle by a
+    # post-preflight ancestor swap. Read-only primitives (O_PATH, O_NONBLOCK)
+    # are deliberately NOT required here: when only those are missing the gate
+    # may still safely publish its failure report.
+    if not publication_primitives_available():
+        raise GateUsageError(
+            "--json-out requires the descriptor publication primitives (O_NOFOLLOW, "
+            "O_DIRECTORY, and dir_fd support for open/mkdir/replace/unlink) to prove "
+            "the write cannot be redirected; refusing to publish rather than degrade"
+        )
 
     leaf = out_path.name
     if not leaf or leaf in (".", ".."):

@@ -234,7 +234,28 @@ It never writes into the bundle it is validating. `--json-out` pointing inside
 the bundle is refused as a usage error, but that pathname check is only a
 usability guard: it cannot see a hard link that shares a bundle file's inode and
 it is raceable. The safety is in how the result is published. `--json-out` never
-opens, truncates, or follows an existing output inode. The intended output parent
+opens, truncates, or follows an existing output inode.
+
+Before any output-side operation, publication runs its **own** capability
+preflight (`publication_primitives_available()`), separate from the read side's
+`descriptor_primitives_available()` because the two need different primitive
+sets. The read side would fail closed and refuse to read the bundle if a read
+primitive were missing — but `main` would still go on to publish the failure
+report, and if the no-follow flag were degraded to `0` the walk below would
+silently lose its protection. So publication independently requires a nonzero
+`O_NOFOLLOW` and `O_DIRECTORY` plus `dir_fd` support for every operation it uses
+(`open`, `mkdir`, atomic replace, `unlink`); if any is missing it raises a usage
+error and exits `2` **before** opening an anchor, creating a parent, staging,
+replacing, or cleaning up — touching no output path and no bundle byte. (The
+atomic-replace capability is proved by `os.replace` **or** `os.rename` membership
+in `os.supports_dir_fd`: both are `renameat`, but CPython registers only
+`os.rename` on some builds — Linux/CPython 3.11 among them — while
+`os.replace(..., src_dir_fd=…)` works, so requiring `os.replace` membership alone
+would fail closed spuriously.) When only a *read*-specific primitive (`O_PATH`,
+`O_NONBLOCK`) is missing, publication capability is intact, so the gate still
+safely publishes the `BUNDLE_DESCRIPTOR_UNSUPPORTED` failure report and exits `1`.
+
+The intended output parent
 is resolved by a **component-by-component `O_NOFOLLOW` walk** from a trusted
 anchor (`/` for an absolute path, the current directory for a relative one), each
 component opened relative to the previous one. Because `O_NOFOLLOW` guards only

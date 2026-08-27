@@ -5,7 +5,7 @@
 > Pull request: TIBER-Data #260
 > Reviewed head (findings produced): `4f9591af3ebbcabea965b689e7b95ab8b821d4c1`
 > Authorized base: `4498d5efd053e6bbc87f5f28214b0509550ad653`
-> Evidence cutoff: 2026-08-26 (this record spans multiple review rounds; the latest evidence is dated 2026-08-26)
+> Evidence cutoff: 2026-08-27 (this record spans multiple review rounds; the latest evidence is dated 2026-08-27)
 
 ## Answer first
 
@@ -482,3 +482,65 @@ Completion-pass verification: focused Slice B suite **301 collected, 301 passed*
 suite **1022 passed, 3 skipped**; `py_compile`, Ruff, JSON validation, `git diff --check` clean; no Slice A
 change; nothing under `exports/**`; reference bundle byte-identical. Final exact-head audit status remains
 **pending fresh Codex review of the repaired head**.
+
+---
+
+## Seventh review round — 2026-08-27 (`--json-out` write-side capability invariant)
+
+A Codex exact-head review at head `73c89a05bd57ec6e01d6a2c09eb7d66703a1faef`, performed in the operator
+session and durably posted through operator-authorized PR comment
+[`issuecomment-5434054902`](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/260#issuecomment-5434054902)
+(referencing an operator-authored inline thread
+[`r3867337268`](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/260#discussion_r3867337268)),
+**accepted the sixth-round completion pass** and raised **one blocking P1**. Both GitHub objects are
+authored by the operator account, not the connector; the connector is not claimed as author. Reproduced
+against the real gate before editing; no TypeScript changed.
+
+### P1 — `--json-out` publication degraded when its own descriptor primitives were unavailable
+
+`descriptor_primitives_available()` gates the bundle **read** path, but `main()` still calls
+`publish_json_out` after `validate_bundle` returns `BUNDLE_DESCRIPTOR_UNSUPPORTED`, and the publisher had
+**no independent capability preflight**. **Reproduced** through the exact public `main()` path on a
+temporary reference-bundle copy: with `_O_NOFOLLOW = 0`, `validate_bundle` returned `ok:false`
+(`BUNDLE_DESCRIPTOR_UNSUPPORTED`); an output ancestor was swapped to a symlink into the temporary bundle
+after the realpath preflight; `_open_output_parent_nofollow` silently built its `step_flags` **without**
+no-follow protection (because `_O_NOFOLLOW` was `0`) and followed the swapped ancestor; `main()` published
+the failure report through it — exit code `1`, but the targeted artifact
+`observations/p2_raw_count_without_denominator.json` was replaced by the gate report and its SHA-256 changed
+(4144 → 832 bytes). The read side failed closed while the write side corrupted the object being protected.
+
+**Repair — a write-side capability invariant, separate from the read side.** New
+`publication_primitives_available()` requires a nonzero `O_NOFOLLOW` and `O_DIRECTORY` plus `dir_fd` support
+for every operation the publisher uses (`os.open`, `os.mkdir`, atomic replace, `os.unlink`).
+`publish_json_out` calls it **first** — before opening an anchor, creating a parent, staging, replacing, or
+cleaning up — and raises `GateUsageError` (exit `2`) if any primitive is missing, touching no output path
+and no bundle byte. Read-only primitives (`O_PATH`, `O_NONBLOCK`) are deliberately **not** required by the
+publication check, so when only those are missing the gate still safely publishes the
+`BUNDLE_DESCRIPTOR_UNSUPPORTED` failure report and returns `1`. All accepted round-5/round-6 properties are
+preserved.
+
+**Portability (the trap the review flagged).** The atomic-replace capability is proved by `os.replace`
+**or** `os.rename` membership in `os.supports_dir_fd`. Both are `renameat` and share `dir_fd` support, but
+CPython registers only `os.rename` on some builds — verified on this platform: `os.replace in
+os.supports_dir_fd` is **False** while `os.rename` is **True** and `os.replace(..., src_dir_fd=…)` works.
+Requiring `os.replace` membership alone would fail closed spuriously; accepting either is the honest test,
+and a mutation requiring `os.replace` membership only is killed by every ordinary `--json-out` control.
+
+**Negative controls** (temporary copies; SHA-256 + size snapshot of every bundle file): public-gate
+regression (`_O_NOFOLLOW = 0`, real validation `BUNDLE_DESCRIPTOR_UNSUPPORTED`, ancestor swapped into the
+bundle after preflight, publication refused, bundle unchanged); direct publication regression (a missing
+write-side capability refuses **before any** output-side `open`/`mkdir`/staging/`replace`/`unlink` —
+behavioural, every op spied, spies kept in `supports_dir_fd` so the guard fails only on the dropped flag,
+zero recorded ops); a six-case capability matrix (each write-side primitive/op dropped in isolation);
+separation control (missing `O_PATH` fails reads closed but publishes the report at exit 1); and no-output
+control (missing publication-only capability with `--json-out` omitted leaves a passing bundle at exit 0).
+
+### Seventh-round verification
+
+Focused Slice B suite: **311 collected, 311 passed** (301 + 10 new). Full Python suite: **1032 passed, 3
+skipped**. `py_compile`, Ruff, JSON validation, `git diff --check` clean. Mutation testing: **3 mutations**
+against the real capability guard (disable the preflight; make the guard always true; require `os.replace`
+membership only), **all killed, no degenerate, gate restored byte-for-byte** — the two guard-bypass
+mutations are killed *behaviourally* by the public corruption control, and the portability mutation by every
+ordinary `--json-out` control. No Slice A change; nothing under `exports/**`; reference bundle
+byte-identical. Final exact-head audit status remains **pending fresh Codex review of the repaired head**.

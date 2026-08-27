@@ -3782,6 +3782,208 @@ def test_json_out_creates_missing_nested_parents_and_replaces(tmp_path: Path) ->
     assert leftovers == [], f"staging files must be cleaned up: {leftovers}"
 
 
+# ---------------------------------------------------------------------------
+# Seventh independent-review repair --- write-side capability invariant (P1)
+#
+# validate_bundle fails closed when read primitives are missing, but main() still
+# calls publish_json_out afterwards. If _O_NOFOLLOW == 0 the publisher's component
+# walk silently loses no-follow protection and a post-preflight ancestor swap can
+# redirect the write into the bundle. publish_json_out must independently prove
+# its OWN publication primitives before touching the output path.
+# ---------------------------------------------------------------------------
+
+
+def _spy_write_ops(monkeypatch: pytest.MonkeyPatch):
+    """Spy on every output-side FS op and record calls, WITHOUT breaking the
+    publication capability check.
+
+    ``publication_primitives_available()`` tests dir_fd support by identity
+    (``os.open in os.supports_dir_fd`` etc.). Replacing those functions with
+    spies would drop them from the set and make the guard fail for an unrelated
+    reason, so the spies are registered in a patched ``supports_dir_fd`` -- the
+    guard then fails only on a genuinely dropped flag, and the spies still
+    observe whether any output-side op was attempted.
+    """
+
+    calls: dict[str, list] = {"open": [], "mkdir": [], "replace": [], "unlink": [], "rename": []}
+    real = {
+        "open": _gate.os.open,
+        "mkdir": _gate.os.mkdir,
+        "replace": _gate.os.replace,
+        "unlink": _gate.os.unlink,
+        "rename": _gate.os.rename,
+    }
+
+    def make(name):
+        def spy(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+            calls[name].append((args, kwargs))
+            return real[name](*args, **kwargs)
+
+        return spy
+
+    spies = {name: make(name) for name in real}
+    monkeypatch.setattr(
+        _gate.os,
+        "supports_dir_fd",
+        {spies["open"], spies["mkdir"], spies["replace"], spies["unlink"], spies["rename"],
+         *_gate.os.supports_dir_fd},
+    )
+    for name, spy in spies.items():
+        monkeypatch.setattr(_gate.os, name, spy)
+    return calls
+
+
+def test_json_out_refused_through_main_when_nofollow_unavailable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Public-gate regression for the round-7 P1.
+
+    With ``_O_NOFOLLOW == 0`` the real validation fails closed
+    (``BUNDLE_DESCRIPTOR_UNSUPPORTED``); an output ancestor is swapped into the
+    bundle after the realpath preflight. The write-side capability preflight must
+    refuse publication so the failure report is never written through the swapped
+    ancestor, and every bundle byte must remain unchanged.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    gp = tmp_path / "gp"
+    (gp / "observations").mkdir(parents=True)
+    out = gp / "observations" / "p2_raw_count_without_denominator.json"
+    before = _bundle_snapshot(root)
+
+    real_validate = _gate.validate_bundle
+
+    def swapping_validate(bundle_root):
+        result = real_validate(bundle_root)
+        shutil.rmtree(gp)
+        gp.symlink_to(root)  # ancestor -> bundle, after preflight
+        return result
+
+    monkeypatch.setattr(_gate, "_O_NOFOLLOW", 0)
+    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
+    with pytest.raises(GateUsageError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+
+    assert _bundle_snapshot(root) == before, "no bundle byte may change when publication is refused"
+
+
+def test_publish_json_out_refuses_before_any_output_side_op(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Direct publication regression: a missing write-side capability refuses
+    BEFORE any output-side open, mkdir, staging creation, replace, or unlink.
+
+    Behavioural and non-vacuous: every output-side FS op is spied (and the spies
+    are kept in ``supports_dir_fd`` so the guard fails only on the dropped
+    ``_O_NOFOLLOW``). The refusal must happen with zero recorded ops.
+    """
+
+    calls = _spy_write_ops(monkeypatch)
+    monkeypatch.setattr(_gate, "_O_NOFOLLOW", 0)
+    assert not _gate.publication_primitives_available()
+
+    out = tmp_path / "sub" / "result.json"
+    with pytest.raises(GateUsageError):
+        _gate.publish_json_out(out, '{"ok":true}\n')
+
+    assert calls["open"] == [], "no output-side open before the capability refusal"
+    assert calls["mkdir"] == [], "no mkdir before the capability refusal"
+    assert calls["replace"] == [], "no replace before the capability refusal"
+    assert calls["unlink"] == [], "no unlink before the capability refusal"
+    assert not out.exists() and not (tmp_path / "sub").exists(), "no output path created"
+
+
+@pytest.mark.parametrize(
+    "drop",
+    [
+        "o_nofollow",
+        "o_directory",
+        "open_dirfd",
+        "mkdir_dirfd",
+        "unlink_dirfd",
+        "replace_rename_dirfd",
+    ],
+)
+def test_publication_capability_matrix_refuses_and_preserves_bundle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, drop: str
+) -> None:
+    """Each safety-critical write-side primitive/operation, dropped in isolation,
+    makes ``publication_primitives_available()`` false and publication refuse,
+    with the bundle byte-identical."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "result.json"
+    before = _bundle_snapshot(root)
+    supports = set(_gate.os.supports_dir_fd)
+
+    if drop == "o_nofollow":
+        monkeypatch.setattr(_gate, "_O_NOFOLLOW", 0)
+    elif drop == "o_directory":
+        monkeypatch.setattr(_gate, "_O_DIRECTORY", 0)
+    elif drop == "open_dirfd":
+        monkeypatch.setattr(_gate.os, "supports_dir_fd", supports - {_gate.os.open})
+    elif drop == "mkdir_dirfd":
+        monkeypatch.setattr(_gate.os, "supports_dir_fd", supports - {_gate.os.mkdir})
+    elif drop == "unlink_dirfd":
+        monkeypatch.setattr(_gate.os, "supports_dir_fd", supports - {_gate.os.unlink})
+    elif drop == "replace_rename_dirfd":
+        monkeypatch.setattr(
+            _gate.os, "supports_dir_fd", supports - {_gate.os.replace, _gate.os.rename}
+        )
+
+    assert not _gate.publication_primitives_available()
+    with pytest.raises(GateUsageError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+    assert not out.exists(), "no output written when publication capability is missing"
+    assert _bundle_snapshot(root) == before
+
+
+def test_readonly_primitive_missing_still_publishes_failure_report(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """Separation control: a missing READ-only primitive (O_PATH) fails the read
+    side closed but leaves publication capability intact, so the gate safely
+    publishes the ``BUNDLE_DESCRIPTOR_UNSUPPORTED`` failure report and returns 1.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "result.json"
+    before = _bundle_snapshot(root)
+
+    monkeypatch.setattr(_gate, "_O_PATH", 0)
+    assert not _gate.descriptor_primitives_available()
+    assert _gate.publication_primitives_available()
+
+    code = _gate.main([str(root), "--json", "--json-out", str(out)])
+    capsys.readouterr()
+
+    assert code == 1, "read failure reports exit 1, not a publication usage error"
+    published = json.loads(out.read_text())
+    assert published["ok"] is False
+    assert "BUNDLE_DESCRIPTOR_UNSUPPORTED" in published["reason_codes"]
+    assert _bundle_snapshot(root) == before
+
+
+def test_missing_publication_primitive_without_json_out_is_inert(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """No-output control: with ``--json-out`` omitted, a missing publication-only
+    capability (dir_fd support for replace/rename) does not alter ordinary
+    validation/stdout behaviour -- a passing bundle still exits 0.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    reduced = set(_gate.os.supports_dir_fd) - {_gate.os.replace, _gate.os.rename}
+    monkeypatch.setattr(_gate.os, "supports_dir_fd", reduced)
+    assert not _gate.publication_primitives_available()
+    assert _gate.descriptor_primitives_available()  # read side unaffected
+
+    code = _gate.main([str(root), "--json"])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert json.loads(out)["ok"] is True
+
+
 def test_publish_json_out_never_opens_destination_for_writing() -> None:
     """Structural: publication renames onto the destination; it never opens the leaf.
 

@@ -2,7 +2,7 @@
   "artifact_version": "rb_contact_evasion_bundle_gate_review_repair_v1",
   "audit_date": "2026-08-25",
   "evidence_cutoff_date": "2026-08-26",
-  "evidence_cutoff_note": "This paired record now spans six review-repair rounds; the latest evidence (the sixth round's --json-out ancestor-symlink and collision-cleanup hardening) was produced on 2026-08-26, so the cutoff includes that date.",
+  "evidence_cutoff_note": "This paired record now spans seven review-repair rounds; the latest evidence (the seventh round's --json-out write-side capability invariant) was produced on 2026-08-27, so the cutoff includes that date.",
   "record_type": "independent_review_repair_record",
   "not_an_independent_audit_of_repaired_head": true,
   "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
@@ -366,6 +366,58 @@
       "full_python_suite_passed": 1022,
       "full_python_suite_skipped": 3,
       "mutation_count": 5,
+      "mutations_all_killed": true,
+      "degenerate_evidence": false,
+      "gate_restored_byte_for_byte": true,
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true
+    }
+  },
+  "seventh_review_round": {
+    "audit_date": "2026-08-27",
+    "reviewed_head": "73c89a05bd57ec6e01d6a2c09eb7d66703a1faef",
+    "review_source": {
+      "review_kind": "codex_exact_head_review_posted_via_operator_authorized_pr_comment",
+      "relayed_by": "operator",
+      "github_review_object": null,
+      "github_review_comment_ids": ["r3867337268"],
+      "github_issue_comment_id": "5434054902",
+      "github_issue_comment_url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/260#issuecomment-5434054902",
+      "inline_thread_url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/260#discussion_r3867337268",
+      "identity_note": "A Codex exact-head review of 73c89a0, performed in the operator session and durably posted through operator-authorized PR comment 5434054902 (2026-08-27T03:38:11Z), which references an operator-authored inline review thread r3867337268 (2026-08-26T22:53:37Z) raising the same P1. Both are authored by the operator account (Prometheus-Frameworks), not the chatgpt-codex-connector; the connector is not claimed as author. The review accepted the sixth-round completion pass and raised one blocking P1."
+    },
+    "verdict_on_prior_round": "sixth_round_controls_accepted_one_write_side_capability_blocker",
+    "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+    "findings": [
+      {
+        "severity": "P1",
+        "title": "--json-out publication degraded when its own descriptor primitives were unavailable",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "descriptor_primitives_available() gates the bundle READ path, but main() still calls publish_json_out after validate_bundle returns BUNDLE_DESCRIPTOR_UNSUPPORTED, and publish_json_out had no independent capability preflight. Reproduced through the exact public main() path on a temporary reference-bundle copy: forced _O_NOFOLLOW = 0; validate_bundle returned ok:false with BUNDLE_DESCRIPTOR_UNSUPPORTED; after the realpath preflight an output ancestor (gp) was swapped to a symlink into the temporary bundle; _open_output_parent_nofollow silently built step_flags without no-follow protection (since _O_NOFOLLOW was 0) and followed the swapped ancestor; main() published the failure report through it -- exit code was 1 but the targeted bundle artifact observations/p2_raw_count_without_denominator.json was replaced by the gate report and its SHA-256 changed (4144 -> 832 bytes). The read side failed closed while the write side corrupted the object being protected.",
+        "defect_class": "write_side_publication_lacked_independent_capability_preflight",
+        "disposition": "write_side_capability_invariant_separate_from_read_side",
+        "disposition_detail": "New publication_primitives_available() -- deliberately separate from descriptor_primitives_available() because read safety and publication safety need different primitive sets -- requires a nonzero O_NOFOLLOW and O_DIRECTORY plus dir_fd support for every operation the publisher uses (os.open, os.mkdir, os.replace/os.rename, os.unlink). publish_json_out calls it FIRST, before opening an anchor, creating a parent, staging, replacing, or cleaning up; if any primitive is missing it raises GateUsageError (exit 2) and touches no output path and no bundle byte. Read-only primitives (O_PATH, O_NONBLOCK) are intentionally NOT required by the publication check, so when only those are missing the gate still safely publishes the BUNDLE_DESCRIPTOR_UNSUPPORTED failure report and returns 1. All accepted round-5/round-6 properties (component-by-component parent binding, no existing-inode truncation, non-destructive collision handling, atomic replacement, deterministic bytes, staging-owned cleanup, exit behavior) are preserved.",
+        "portability_note": "The atomic-replace capability is proved by os.replace OR os.rename membership in os.supports_dir_fd. Both are implemented by renameat and share dir_fd support, but CPython registers only os.rename in the set on some builds -- verified on this platform: os.replace in os.supports_dir_fd is False while os.rename in os.supports_dir_fd is True and os.replace(..., src_dir_fd=...) works. Requiring os.replace membership alone would fail closed spuriously on those builds; accepting either is the honest portable test, and a mutation that requires os.replace membership only is killed by every ordinary --json-out control.",
+        "negative_controls": [
+          "public-gate regression: _O_NOFOLLOW = 0, real validation returns BUNDLE_DESCRIPTOR_UNSUPPORTED, output ancestor swapped into the bundle after preflight, publication refused, every bundle byte unchanged",
+          "direct publication regression: missing write-side capability refuses before any output-side open/mkdir/staging/replace/unlink -- behavioural, every output-side op is spied (spies kept in supports_dir_fd so the guard fails only on the dropped flag), zero recorded ops",
+          "capability matrix: each of O_NOFOLLOW, O_DIRECTORY, and dir_fd support for open/mkdir/unlink/(replace-and-rename) dropped in isolation makes the guard false and publication refuse, bundle byte-identical",
+          "separation control: a missing READ-only primitive (O_PATH) fails the read side closed but leaves publication capability intact, so the failure report is safely published at exit 1, bundle byte-identical",
+          "no-output control: with --json-out omitted, a missing publication-only capability (dir_fd support for replace/rename) does not alter ordinary validation/stdout; a passing bundle still exits 0",
+          "all round-5/round-6 controls (hard link, symlink destination, ancestor/parent/leaf swaps, both collider classes, publication failure, ordinary new + nested creation + replacement, structural) remain green"
+        ],
+        "mutation_evidence": "3 mutations against the real capability guard, all killed, no degenerate, gate restored byte-for-byte: bypass_publication_preflight (8 kills, incl. the public corruption control behaviourally), guard_always_true (9 kills, incl. the public corruption control), require_os_replace_membership_only (10 kills -- proves the OR-portability handling is load-bearing: requiring os.replace membership alone spuriously refuses ALL --json-out on this platform)."
+      }
+    ],
+    "verification": {
+      "focused_slice_b_tests_collected": 311,
+      "focused_slice_b_tests_passed": 311,
+      "focused_lineage": "301 (73c89a0 prior) + 10 new (public-gate regression, direct-refuse regression, 6-case capability matrix, read-only separation, no-output) = 311",
+      "full_python_suite_passed": 1032,
+      "full_python_suite_skipped": 3,
+      "mutation_count": 3,
       "mutations_all_killed": true,
       "degenerate_evidence": false,
       "gate_restored_byte_for_byte": true,
