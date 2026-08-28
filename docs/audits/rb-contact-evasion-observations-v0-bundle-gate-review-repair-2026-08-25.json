@@ -425,5 +425,40 @@
       "exports_changed": false,
       "reference_bundle_byte_identical": true
     }
+  },
+  "post_merge_containment_round": {
+    "audit_date": "2026-08-28",
+    "base_main": "6762665fefdbc81963f3d0a5708078de6cfba981",
+    "merged_pr_head": "660edb1587780242188ce3ebf49caa117c59cc8d",
+    "reviewed_ancestor": "48cb35264bf63b8cde522ede650fa6933ce039df",
+    "review_source": {
+      "review_kind": "independent_post_merge_exact_state_review",
+      "github_review_object": null,
+      "identity_note": "The publication race was independently reproduced after merge. No connector-authored review object exists for the containment branch yet."
+    },
+    "finding": {
+      "severity": "P1",
+      "title": "real-directory substitution can redirect --json-out into the validated bundle",
+      "accepted": true,
+      "reproduced": true,
+      "defect_class": "real_output_parent_entry_replaced_by_real_validated_bundle_directory",
+      "disposition": "remove_json_out_and_retain_deterministic_stdout",
+      "disposition_detail": "--json-out returns usage error 2 before validation or output-path inspection; all publisher helpers are removed; --json stdout remains deterministic."
+    },
+    "verification": {
+      "focused_tests_collected": 292,
+      "environment_independent_tests_passed": 291,
+      "environment_specific_existing_failures": 1,
+      "environment_specific_failure": "existing strace path-format assertion observed zero matched module opens",
+      "new_disablement_controls": 4,
+      "ruff_clean": true,
+      "py_compile_clean": true,
+      "json_valid": true,
+      "diff_check_clean": true,
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true
+    },
+    "final_exact_head_audit_status": "pending_independent_review_of_containment_branch"
   }
 }

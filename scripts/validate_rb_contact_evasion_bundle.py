@@ -62,7 +62,9 @@ Usage::
 
     python3 scripts/validate_rb_contact_evasion_bundle.py <bundle-root>
     python3 scripts/validate_rb_contact_evasion_bundle.py <bundle-root> --json
-    python3 scripts/validate_rb_contact_evasion_bundle.py <bundle-root> --json-out result.json
+
+``--json-out`` is intentionally disabled. Machine-readable output is emitted
+only to stdout so this validation gate never owns a write capability.
 
 Exit codes: ``0`` the bundle passed, ``1`` the bundle failed the gate, ``2`` the
 invocation itself was invalid.
@@ -2235,197 +2237,6 @@ def render_human_report(bundle_root: Path, result: GateResult) -> str:
     return "\n".join(lines)
 
 
-def publication_primitives_available() -> bool:
-    """Whether the platform can prove no-follow, descriptor-relative publication.
-
-    Deliberately separate from :func:`descriptor_primitives_available`: read
-    safety and publication safety need different primitive sets. The read side
-    needs ``O_PATH``/``O_NONBLOCK`` (publication does not); publication needs
-    ``O_DIRECTORY`` and the descriptor-relative forms of every operation the
-    publisher performs -- component ``open``, ``mkdir`` for missing components,
-    atomic ``replace``, and ``unlink`` for staging cleanup -- plus a nonzero
-    ``O_NOFOLLOW``, without which the component walk would silently lose its
-    no-follow protection and an ancestor symlink could redirect the write into
-    the validated bundle.
-
-    The atomic-replace test accepts EITHER ``os.replace`` or ``os.rename``
-    membership in ``os.supports_dir_fd``: both are implemented by ``renameat``
-    and share dir_fd support, but CPython registers only ``os.rename`` in the
-    set on some builds (observed: Linux/CPython 3.11 has ``os.rename`` in the
-    set and ``os.replace`` absent while ``os.replace(..., src_dir_fd=...)``
-    works). Requiring ``os.replace`` membership alone would fail closed
-    spuriously on those builds; accepting either is the honest portable test.
-    """
-
-    supports = getattr(os, "supports_dir_fd", set())
-    return bool(
-        _O_NOFOLLOW
-        and _O_DIRECTORY
-        and os.open in supports
-        and os.mkdir in supports
-        and os.unlink in supports
-        and (os.replace in supports or os.rename in supports)
-    )
-
-
-def _open_output_parent_nofollow(parent: Path) -> int:
-    """Open ``parent`` as a directory fd reached through NO symlink at any level.
-
-    ``os.open(path, O_NOFOLLOW)`` refuses a symlink only at the *final* component;
-    an ancestor in ``path`` is still followed during resolution. So the output
-    parent is walked one component at a time from a trusted anchor (``/`` for an
-    absolute path, the current directory for a relative one), each component
-    opened ``O_NOFOLLOW | O_DIRECTORY`` **relative to the previous one**. A symlink
-    at *any* component -- final or intermediate -- is refused, so no ancestor
-    symlink (even one swapped in after the pathname preflight) can redirect the
-    write into the validated bundle. Missing components are created with ``mkdir``
-    relative to the already-opened parent, so directory creation likewise never
-    traverses a symlink. Returns a directory fd the caller must close.
-    """
-
-    step_flags = os.O_RDONLY | _O_DIRECTORY | _O_NOFOLLOW | _O_CLOEXEC
-    if parent.is_absolute():
-        anchor, parts = "/", parent.parts[1:]
-    else:
-        anchor, parts = ".", parent.parts
-
-    cur = os.open(anchor, step_flags)
-    try:
-        for part in parts:
-            if part in ("", "."):
-                continue
-            if part == "..":
-                raise GateUsageError(
-                    f"--json-out parent {parent} contains '..'; refusing to publish through it"
-                )
-            try:
-                nxt = os.open(part, step_flags, dir_fd=cur)
-            except FileNotFoundError:
-                # Create the missing component relative to the pinned parent, then
-                # open it the same no-follow way -- never through a pathname.
-                os.mkdir(part, 0o755, dir_fd=cur)
-                nxt = os.open(part, step_flags, dir_fd=cur)
-            except OSError as error:
-                if error.errno in (errno.ELOOP, errno.ENOTDIR):
-                    raise GateUsageError(
-                        f"--json-out parent component {part!r} is a symlink or not a directory; "
-                        "refusing to publish through it (an ancestor symlink could redirect the "
-                        "write into the validated bundle)"
-                    ) from error
-                raise GateUsageError(
-                    f"could not open --json-out parent component {part!r}: {error}"
-                ) from error
-            os.close(cur)
-            cur = nxt
-        return cur
-    except BaseException:
-        os.close(cur)
-        raise
-
-
-def publish_json_out(out_path: Path, data: str) -> None:
-    """Write ``data`` to ``out_path`` without ever opening an existing output inode.
-
-    The gate promises never to mutate the bundle it validates. A naive
-    ``out_path.write_text()`` breaks that promise: if ``out_path`` is a hard link
-    that shares a bundle file's inode, or a symlink into the bundle (possibly
-    swapped in after any pathname check), ``write_text`` follows the shared inode
-    or the link and truncates the validated file. This publishes safely instead:
-
-    - The intended output parent is resolved with a component-by-component
-      ``O_NOFOLLOW`` walk (:func:`_open_output_parent_nofollow`) and every
-      operation is done **relative to that descriptor**. A symlink at any path
-      component -- the parent or any ancestor, whether already present or swapped
-      in after the pathname preflight -- is refused, so nothing can redirect the
-      write into the validated bundle.
-    - A **fresh, uniquely named staging inode** is created in that directory with
-      ``O_CREAT | O_EXCL | O_WRONLY | O_NOFOLLOW``. ``O_EXCL`` guarantees we never
-      open an existing inode for truncation and ``O_NOFOLLOW`` refuses a symlink
-      at the staging name; the name carries an unpredictable random token, and a
-      collision is resolved by trying a **new** name -- an existing entry is never
-      unlinked, so publication never deletes or mutates an unrelated pre-existing
-      path. The data is written and ``fsync``ed to the new inode.
-    - Publication is a single ``os.replace`` (``rename``) of the staging entry
-      onto the destination **entry**. ``rename`` never follows the destination:
-      if the destination is a hard link or a symlink, the *directory entry* is
-      atomically repointed at the new inode and the old (possibly bundle-shared)
-      inode keeps its bytes. So no existing output or bundle inode is ever
-      opened, truncated, or followed.
-
-    On any failure only the staging inode WE created is unlinked (relative to the
-    pinned directory), so cleanup never touches an unrelated path and no partial
-    or truncated output is left behind; the bundle and any pre-existing output
-    byte are unchanged. Output bytes are exactly ``data`` (deterministic); the
-    random staging name affects nothing the caller observes.
-    """
-
-    # Write-side capability preflight, independent of the read side. It runs
-    # BEFORE any output-side operation -- no anchor open, no component open or
-    # mkdir, no staging create, no replace, no unlink. Without it, a platform
-    # (or a degraded flag such as _O_NOFOLLOW == 0) that already made
-    # validate_bundle fail closed would still reach this publisher, whose
-    # component walk would silently lose its no-follow protection -- so the
-    # failure report itself could be redirected into the validated bundle by a
-    # post-preflight ancestor swap. Read-only primitives (O_PATH, O_NONBLOCK)
-    # are deliberately NOT required here: when only those are missing the gate
-    # may still safely publish its failure report.
-    if not publication_primitives_available():
-        raise GateUsageError(
-            "--json-out requires the descriptor publication primitives (O_NOFOLLOW, "
-            "O_DIRECTORY, and dir_fd support for open/mkdir/replace/unlink) to prove "
-            "the write cannot be redirected; refusing to publish rather than degrade"
-        )
-
-    leaf = out_path.name
-    if not leaf or leaf in (".", ".."):
-        raise GateUsageError(f"--json-out is not a writable file name: {out_path}")
-
-    dir_fd = _open_output_parent_nofollow(out_path.parent)
-    create_flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY | _O_NOFOLLOW | _O_CLOEXEC
-    stage_leaf = leaf[:100]
-    staging: str | None = None
-    fd: int | None = None
-    try:
-        # A UNIQUE staging name per attempt. O_EXCL makes an existing entry at the
-        # name raise; rather than unlink it (which could delete an unrelated
-        # pre-existing file), a fresh random name is tried. Nothing we did not
-        # create is ever removed.
-        for _ in range(1000):
-            candidate = f".{stage_leaf}.rbce-stage.{os.urandom(8).hex()}"
-            try:
-                fd = os.open(candidate, create_flags, 0o600, dir_fd=dir_fd)
-            except FileExistsError:
-                continue
-            staging = candidate
-            break
-        if fd is None or staging is None:
-            raise GateUsageError(
-                "could not create a unique --json-out staging file after many attempts"
-            )
-        try:
-            handle = os.fdopen(fd, "w", encoding="utf-8")
-        except BaseException:
-            os.close(fd)
-            raise
-        with handle:
-            handle.write(data)
-            handle.flush()
-            os.fsync(handle.fileno())
-        # Atomically replace the destination ENTRY. rename does not follow the
-        # destination, so a hard-linked or symlinked destination is repointed at
-        # this fresh inode, never truncated.
-        os.replace(staging, leaf, src_dir_fd=dir_fd, dst_dir_fd=dir_fd)
-        staging = None
-    finally:
-        if staging is not None:
-            # Only ever the uniquely named inode we created; never a pre-existing path.
-            try:
-                os.unlink(staging, dir_fd=dir_fd)
-            except OSError:  # pragma: no cover - best-effort cleanup
-                pass
-        os.close(dir_fd)
-
-
 def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -2440,7 +2251,10 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         "--json", action="store_true", help="print only the machine-readable result to stdout"
     )
     parser.add_argument(
-        "--json-out", type=Path, default=None, help="also write the machine-readable result here"
+        "--json-out",
+        type=Path,
+        default=None,
+        help="disabled; capture deterministic --json stdout in the caller if needed",
     )
     return parser.parse_args(argv)
 
@@ -2450,27 +2264,18 @@ def main(argv: list[str] | None = None) -> int:
     bundle_root = args.bundle_root
 
     if args.json_out is not None:
-        # A fast, obvious-case policy guard: the gate never writes where its own
-        # output would land inside the bundle it validates. This is a usability
-        # refusal, NOT the safety mechanism -- realpath cannot see a hard link
-        # that shares a bundle inode, and a pathname check is raceable. The real
-        # protection is publish_json_out below, which never opens, truncates, or
-        # follows an existing output inode.
-        try:
-            root_real = Path(os.path.realpath(bundle_root))
-            out_real = Path(os.path.realpath(args.json_out))
-        except OSError as error:  # pragma: no cover - environment dependent
-            raise GateUsageError(f"could not resolve --json-out: {error}") from error
-        if root_real == out_real or root_real in out_real.parents:
-            raise GateUsageError(
-                "--json-out points inside the bundle; the gate never writes into what it validates"
-            )
+        # Fail before validation or any output-path inspection. A validated
+        # bundle directory can be substituted for an ordinary real output
+        # directory after a pathname preflight; descriptor no-follow checks do
+        # not distinguish those two real directories. The gate therefore owns
+        # no publication capability. Callers that need a file must capture the
+        # deterministic ``--json`` stdout in a separately reviewed layer.
+        raise GateUsageError(
+            "--json-out is disabled: use --json and capture deterministic stdout outside the gate"
+        )
 
     result = validate_bundle(bundle_root)
     machine = json.dumps(result.as_dict(), indent=2, sort_keys=True) + "\n"
-
-    if args.json_out is not None:
-        publish_json_out(args.json_out, machine)
 
     if args.json:
         sys.stdout.write(machine)
