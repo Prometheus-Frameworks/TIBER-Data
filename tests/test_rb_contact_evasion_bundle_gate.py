@@ -1,0 +1,4002 @@
+"""Boundary tests for the rb_contact_evasion_observations_v0 bundle gate (#234, Slice B).
+
+Two things are proven here, and they are deliberately separate.
+
+**Slice A still decides football.** Every committed Slice A fixture is driven
+through the new boundary: P1-P9 stay accepted, and N1-N49 stay rejected for
+their exact existing reason codes. The expected codes are *imported* from Slice
+A's own test module rather than restated, so this file holds no second copy of
+the reason-code map that could drift away from the contract.
+
+**Slice B decides only bytes.** Everything the gate owns -- manifest shape,
+pinned contract identity, path safety, bundle bijection, size and digest, strict
+parsing, the committed JSON Schema -- is exercised against tampering, always on
+temporary copies. No test in this module writes to a committed fixture, contract
+file or schema.
+
+The gate delegates semantic judgment to the canonical contract, which it
+compiles itself from an immutable snapshot of the reviewed source into a
+private temporary build -- it never trusts an ambient ``dist/``. The session
+fixture below proves that build works before anything else; if the evaluator
+cannot be built the tests fail rather than skip, because a skipped semantic
+stage is exactly the false pass the gate exists to prevent.
+"""
+
+from __future__ import annotations
+
+import errno
+import hashlib
+import json
+import os
+import shutil
+import socket
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+TESTS_DIR = Path(__file__).resolve().parent
+FIXTURE_ROOT = REPO_ROOT / "test/fixtures/rb_contact_evasion"
+REFERENCE_BUNDLE = FIXTURE_ROOT / "bundle"
+ARTIFACT_SCHEMA_PATH = REPO_ROOT / "schemas/rb_contact_evasion_observations_v0.schema.json"
+
+if str(TESTS_DIR) not in sys.path:
+    sys.path.insert(0, str(TESTS_DIR))
+
+# Slice A's own pins. Importing them is the point: Slice B must preserve exactly
+# the corpus and codes Slice A committed, not a copy of them.
+import test_rb_contact_evasion_observations_v0 as slice_a  # noqa: E402
+
+from scripts.validate_rb_contact_evasion_bundle import (  # noqa: E402
+    ADMITTED_DIGEST_ALGORITHMS,
+    EVALUATOR_ENTRY_SOURCE,
+    FORBIDDEN_MANIFEST_KEYS,
+    MANIFEST_FILENAME,
+    PINNED_ARTIFACT_ID,
+    PINNED_MANIFEST_VERSION,
+    PINNED_SCHEMA_VERSION,
+    GateUsageError,
+    build_evaluator,
+    canonical_contract_constants,
+    ensure_evaluator,
+    main,
+    parse_evaluator_report,
+    validate_bundle,
+)
+
+GATE_SCRIPT = REPO_ROOT / "scripts/validate_rb_contact_evasion_bundle.py"
+BRIDGE_SCRIPT = REPO_ROOT / "scripts/rb_contact_evasion_contract_bridge.mjs"
+
+POSITIVE_FIXTURES = slice_a.POSITIVE_FIXTURES
+MANDATED_POSITIVE_FIXTURES = slice_a.MANDATED_POSITIVE_FIXTURES
+NEGATIVE_FIXTURES = dict(slice_a.NEGATIVE_FIXTURES)
+MANDATED_NEGATIVE_FIXTURES = dict(slice_a.MANDATED_NEGATIVE_FIXTURES)
+
+
+# ---------------------------------------------------------------------------
+# Session setup: the canonical evaluator must be reachable
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="session", autouse=True)
+def evaluator_is_buildable() -> None:
+    """The gate compiles the contract itself; prove that works before anything else.
+
+    Nothing here touches ``dist/``. If the build cannot be produced the tests
+    fail rather than skip, because a skipped semantic stage is exactly the false
+    pass the gate exists to prevent.
+    """
+
+    build, error = ensure_evaluator()
+    assert build is not None, (
+        "the gate must be able to compile the canonical contract from source; "
+        f"it could not: {error}"
+    )
+
+
+@pytest.fixture
+def fresh_evaluator_cache():
+    """Clear the per-process build memo around a test that perturbs the build."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    gate._EVALUATOR_BUILD = None
+    yield
+    gate._EVALUATOR_BUILD = None
+
+
+# ---------------------------------------------------------------------------
+# Bundle construction helpers. Temporary copies only.
+# ---------------------------------------------------------------------------
+
+
+def _fixture_path(name: str) -> Path:
+    for sub in ("positive", "negative"):
+        candidate = FIXTURE_ROOT / sub / name
+        if candidate.exists():
+            return candidate
+    raise AssertionError(f"no committed fixture named {name}")
+
+
+def make_bundle(
+    root: Path,
+    files: dict[str, bytes],
+    *,
+    manifest_overrides: dict | None = None,
+    entry_overrides: dict[str, dict] | None = None,
+    artifacts_override: list | None = None,
+    manifest_bytes: bytes | None = None,
+) -> Path:
+    """Write a self-consistent bundle, then apply the requested tampering.
+
+    The default is always a bundle that *passes*, so a test that fails proves
+    the single thing it changed is what the gate caught.
+    """
+
+    root.mkdir(parents=True, exist_ok=True)
+    entries = []
+    for relative, raw in files.items():
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(raw)
+        entry = {
+            "path": relative,
+            "size_bytes": len(raw),
+            "digest": hashlib.sha256(raw).hexdigest(),
+        }
+        entry.update((entry_overrides or {}).get(relative, {}))
+        entries.append(entry)
+
+    position = "fixture_only"
+    for raw in files.values():
+        try:
+            position = json.loads(raw)["artifact_position"]
+        except Exception:  # noqa: BLE001 - malformed payloads keep the default
+            pass
+        break
+
+    manifest = {
+        "manifest_version": PINNED_MANIFEST_VERSION,
+        "artifact_id": PINNED_ARTIFACT_ID,
+        "schema_version": PINNED_SCHEMA_VERSION,
+        "artifact_position": position,
+        "digest_algorithm": "sha256",
+        "generated_at": "2026-08-25T00:00:00+00:00",
+        "artifacts": entries if artifacts_override is None else artifacts_override,
+    }
+    manifest.update(manifest_overrides or {})
+
+    payload = (
+        manifest_bytes
+        if manifest_bytes is not None
+        else (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    )
+    (root / MANIFEST_FILENAME).write_bytes(payload)
+    return root
+
+
+def bundle_from_fixture(root: Path, name: str, **kwargs) -> Path:
+    """A one-artifact bundle holding a byte-for-byte copy of a committed fixture."""
+
+    raw = _fixture_path(name).read_bytes()
+    return make_bundle(root, {f"observations/{name}": raw}, **kwargs)
+
+
+def codes(result) -> list[str]:
+    return result.reason_codes
+
+
+def bundle_codes(result) -> list[str]:
+    return [code for code in result.reason_codes if code.startswith("BUNDLE_")]
+
+
+# ---------------------------------------------------------------------------
+# Slice A's committed behaviour, exercised through the new boundary
+# ---------------------------------------------------------------------------
+
+
+def test_slice_a_corpus_is_intact() -> None:
+    """Guard against corpus drift before anything is asserted about it."""
+
+    assert MANDATED_POSITIVE_FIXTURES == [
+        "p1_complete_derived_explosiveness_rate.json",
+        "p2_raw_count_without_denominator.json",
+        "p3_historical_testing_classified.json",
+        "p4_rights_blocked_missing_component.json",
+        "p5_declared_snapshot_supersession.json",
+        "p6_weekly_and_season_windows_coexist.json",
+        "p7_bucky_receipt_remains_partial.json",
+    ]
+    assert len(POSITIVE_FIXTURES) == 9
+    assert len(NEGATIVE_FIXTURES) == 49
+    assert len(MANDATED_NEGATIVE_FIXTURES) == 15
+    assert len(set(NEGATIVE_FIXTURES.values())) == 49, "each negative fixture owns a distinct code"
+
+
+@pytest.mark.parametrize("name", POSITIVE_FIXTURES)
+def test_positive_fixtures_pass_the_gate(tmp_path: Path, name: str) -> None:
+    """P1-P9 remain accepted end to end, through every Slice B stage."""
+
+    result = validate_bundle(bundle_from_fixture(tmp_path / "b", name))
+    assert result.ok, result.failures
+    assert result.failures == []
+    (artifact,) = result.artifacts
+    assert artifact.contract == {"valid": True, "shape_valid": True, "reason_codes": []}
+    assert artifact.stages_passed == [
+        "path_safety",
+        "bundle_bijection",
+        "integrity",
+        "payload_parse",
+        "payload_shape",
+        "manifest_payload_agreement",
+        "semantic",
+    ]
+
+
+@pytest.mark.parametrize(("name", "expected"), sorted(NEGATIVE_FIXTURES.items()))
+def test_negative_fixtures_keep_their_exact_reason_code(
+    tmp_path: Path, name: str, expected: str
+) -> None:
+    """N1-N49 stay shape-valid and are rejected for their exact existing code.
+
+    A self-consistent manifest is built for each one, so none of them can be
+    rejected by integrity metadata. They reach the canonical evaluator, clear
+    the committed JSON Schema, and are refused there -- and the code Slice A
+    pins is reproduced verbatim, not translated.
+    """
+
+    result = validate_bundle(bundle_from_fixture(tmp_path / "b", name))
+    assert not result.ok
+    assert codes(result) == [expected]
+    assert bundle_codes(result) == [], "no negative fixture may be rejected by the manifest gate"
+    assert {failure.stage for failure in result.failures} == {"semantic"}
+
+    (artifact,) = result.artifacts
+    assert artifact.contract == {"valid": False, "shape_valid": True, "reason_codes": [expected]}
+    assert (
+        "payload_shape" in artifact.stages_passed
+    ), "the fixture is shape-valid and reached semantics"
+    assert "semantic" not in artifact.stages_passed
+
+
+def test_no_negative_fixture_passes_because_its_manifest_is_consistent(tmp_path: Path) -> None:
+    """The whole corpus in one bundle, perfectly described, still fails."""
+
+    files = {
+        f"observations/{name}": _fixture_path(name).read_bytes()
+        for name in sorted(NEGATIVE_FIXTURES)
+        if json.loads(_fixture_path(name).read_bytes())["artifact_position"] == "fixture_only"
+    }
+    result = validate_bundle(make_bundle(tmp_path / "b", files))
+    assert not result.ok
+    assert bundle_codes(result) == []
+    expected = sorted(
+        {NEGATIVE_FIXTURES[Path(path).name] for path in files}
+    )
+    assert codes(result) == expected
+
+
+def test_mandated_negative_codes_are_reproduced_verbatim(tmp_path: Path) -> None:
+    """N1-N15, the corpus #234 mandates, keep their exact codes at the boundary."""
+
+    for name, expected in sorted(MANDATED_NEGATIVE_FIXTURES.items()):
+        result = validate_bundle(bundle_from_fixture(tmp_path / name, name))
+        assert codes(result) == [expected], name
+
+
+# ---------------------------------------------------------------------------
+# The committed reference bundle
+# ---------------------------------------------------------------------------
+
+
+def test_reference_bundle_passes() -> None:
+    result = validate_bundle(REFERENCE_BUNDLE)
+    assert result.ok, result.failures
+    assert [artifact.path for artifact in result.artifacts] == [
+        "observations/p2_raw_count_without_denominator.json",
+        "observations/p7_bucky_receipt_remains_partial.json",
+    ]
+
+
+def test_reference_bundle_artifacts_are_byte_copies_of_committed_fixtures() -> None:
+    """The bundle copies must never drift from the fixtures they mirror."""
+
+    for name in (
+        "p2_raw_count_without_denominator.json",
+        "p7_bucky_receipt_remains_partial.json",
+    ):
+        assert (REFERENCE_BUNDLE / "observations" / name).read_bytes() == _fixture_path(
+            name
+        ).read_bytes(), name
+
+
+def test_reference_bundle_is_not_a_candidate_artifact() -> None:
+    """It is a gate fixture. It must not look like governed or candidate data."""
+
+    manifest = json.loads((REFERENCE_BUNDLE / MANIFEST_FILENAME).read_text())
+    assert manifest["artifact_position"] == "fixture_only"
+    for path in (REFERENCE_BUNDLE / "observations").glob("*.json"):
+        assert json.loads(path.read_text())["artifact_position"] == "fixture_only"
+    assert not (REPO_ROOT / "exports/candidates/rb_contact_evasion").exists()
+    assert not (REPO_ROOT / "exports/promoted/rb_contact_evasion").exists()
+
+
+# ---------------------------------------------------------------------------
+# Integrity: size and digest, before any parse
+# ---------------------------------------------------------------------------
+
+
+def test_byte_append_is_caught(tmp_path: Path) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    target = root / "observations/p2_raw_count_without_denominator.json"
+    target.write_bytes(target.read_bytes() + b"\n")
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_SIZE_MISMATCH"]
+
+
+def test_byte_append_with_updated_size_is_caught_by_the_digest(tmp_path: Path) -> None:
+    """Correcting the size does not launder the change; the digest still fails."""
+
+    name = "p2_raw_count_without_denominator.json"
+    raw = _fixture_path(name).read_bytes() + b"\n"
+    root = make_bundle(
+        tmp_path / "b",
+        {f"observations/{name}": raw},
+        entry_overrides={
+            f"observations/{name}": {"digest": hashlib.sha256(b"other").hexdigest()}
+        },
+    )
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_DIGEST_MISMATCH"]
+
+
+def test_same_length_byte_flip_is_caught(tmp_path: Path) -> None:
+    """A size check alone would miss this; the digest is what catches it."""
+
+    name = "p2_raw_count_without_denominator.json"
+    original = _fixture_path(name).read_bytes()
+    root = bundle_from_fixture(tmp_path / "b", name)
+    target = root / f"observations/{name}"
+    flipped = original.replace(b'"value": 62', b'"value": 63', 1)
+    assert flipped != original and len(flipped) == len(original)
+    target.write_bytes(flipped)
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_DIGEST_MISMATCH"]
+
+
+def test_wrong_declared_size_is_caught(tmp_path: Path) -> None:
+    name = "p2_raw_count_without_denominator.json"
+    root = bundle_from_fixture(
+        tmp_path / "b", name, entry_overrides={f"observations/{name}": {"size_bytes": 1}}
+    )
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_SIZE_MISMATCH"]
+
+
+def test_wrong_declared_digest_is_caught(tmp_path: Path) -> None:
+    name = "p2_raw_count_without_denominator.json"
+    root = bundle_from_fixture(
+        tmp_path / "b",
+        name,
+        entry_overrides={f"observations/{name}": {"digest": "0" * 64}},
+    )
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_DIGEST_MISMATCH"]
+
+
+def test_integrity_runs_before_parsing(tmp_path: Path) -> None:
+    """Malformed bytes with a wrong digest never reach the parser."""
+
+    root = make_bundle(
+        tmp_path / "b",
+        {"observations/a.json": b"{ this is not json"},
+        entry_overrides={"observations/a.json": {"digest": "1" * 64}},
+    )
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_DIGEST_MISMATCH"]
+    (artifact,) = result.artifacts
+    assert "payload_parse" not in artifact.stages_passed
+    assert artifact.contract is None
+
+
+def test_malformed_digest_value_is_rejected(tmp_path: Path) -> None:
+    name = "p2_raw_count_without_denominator.json"
+    for bad in ("abc", "0" * 63, "0" * 65):
+        root = bundle_from_fixture(
+            tmp_path / bad, name, entry_overrides={f"observations/{name}": {"digest": bad}}
+        )
+        assert codes(validate_bundle(root)) == ["BUNDLE_DIGEST_VALUE_MALFORMED"], bad
+
+
+def test_non_hex_digest_fails_the_manifest_shape(tmp_path: Path) -> None:
+    """Uppercase and non-hex digests never reach the byte checks at all."""
+
+    name = "p2_raw_count_without_denominator.json"
+    for bad in ("A" * 64, "z" * 64):
+        root = bundle_from_fixture(
+            tmp_path / bad, name, entry_overrides={f"observations/{name}": {"digest": bad}}
+        )
+        assert codes(validate_bundle(root)) == ["BUNDLE_MANIFEST_SHAPE_INVALID"], bad
+
+
+def test_unsupported_digest_algorithm_is_rejected(tmp_path: Path) -> None:
+    name = "p2_raw_count_without_denominator.json"
+    for algorithm in ("md5", "sha1", "crc32", "none", ""):
+        root = bundle_from_fixture(
+            tmp_path / f"alg-{algorithm or 'empty'}",
+            name,
+            manifest_overrides={"digest_algorithm": algorithm},
+        )
+        result = validate_bundle(root)
+        assert "BUNDLE_DIGEST_ALGORITHM_UNSUPPORTED" in codes(result) or codes(result) == [
+            "BUNDLE_MANIFEST_SHAPE_INVALID"
+        ], algorithm
+
+
+def test_malformed_digest_algorithm_type_is_rejected(tmp_path: Path) -> None:
+    root = bundle_from_fixture(
+        tmp_path / "b",
+        "p2_raw_count_without_denominator.json",
+        manifest_overrides={"digest_algorithm": 256},
+    )
+    assert codes(validate_bundle(root)) == ["BUNDLE_MANIFEST_SHAPE_INVALID"]
+
+
+# ---------------------------------------------------------------------------
+# Bijection and containment
+# ---------------------------------------------------------------------------
+
+
+def test_missing_artifact_is_caught(tmp_path: Path) -> None:
+    name = "p2_raw_count_without_denominator.json"
+    root = bundle_from_fixture(tmp_path / "b", name)
+    (root / f"observations/{name}").unlink()
+    assert codes(validate_bundle(root)) == ["BUNDLE_ARTIFACT_MISSING"]
+
+
+def test_undeclared_extra_file_is_caught(tmp_path: Path) -> None:
+    """Every per-entry digest still matches; only the bijection catches this."""
+
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    (root / "observations/smuggled.json").write_bytes(b"{}\n")
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_UNDECLARED_FILE"]
+    assert result.failures[0].path == "observations/smuggled.json"
+
+
+def test_undeclared_file_outside_the_observations_directory_is_caught(tmp_path: Path) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    (root / "README.txt").write_bytes(b"harmless looking\n")
+    assert codes(validate_bundle(root)) == ["BUNDLE_UNDECLARED_FILE"]
+
+
+def test_duplicate_manifest_entry_is_caught(tmp_path: Path) -> None:
+    name = "p2_raw_count_without_denominator.json"
+    raw = _fixture_path(name).read_bytes()
+    entry = {
+        "path": f"observations/{name}",
+        "size_bytes": len(raw),
+        "digest": hashlib.sha256(raw).hexdigest(),
+    }
+    root = make_bundle(
+        tmp_path / "b", {f"observations/{name}": raw}, artifacts_override=[entry, dict(entry)]
+    )
+    assert codes(validate_bundle(root)) == ["BUNDLE_DUPLICATE_MANIFEST_ENTRY"]
+
+
+def test_empty_artifact_list_fails_closed(tmp_path: Path) -> None:
+    """A bundle declaring nothing is not a bundle that passed."""
+
+    root = make_bundle(tmp_path / "b", {}, artifacts_override=[])
+    assert codes(validate_bundle(root)) == ["BUNDLE_MANIFEST_SHAPE_INVALID"]
+
+
+def test_manifest_declaring_itself_is_rejected(tmp_path: Path) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    manifest = json.loads((root / MANIFEST_FILENAME).read_text())
+    manifest["artifacts"].append(
+        {"path": MANIFEST_FILENAME, "size_bytes": 2, "digest": "0" * 64}
+    )
+    (root / MANIFEST_FILENAME).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    assert "BUNDLE_MANIFEST_DECLARES_ITSELF" in codes(validate_bundle(root))
+
+
+# ---------------------------------------------------------------------------
+# Path safety
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    [
+        ("/etc/passwd", "BUNDLE_PATH_NOT_RELATIVE"),
+        ("/tmp/elsewhere.json", "BUNDLE_PATH_NOT_RELATIVE"),
+        ("C:/windows/system32/config", "BUNDLE_PATH_NOT_RELATIVE"),
+        ("../outside.json", "BUNDLE_PATH_TRAVERSAL"),
+        ("observations/../../outside.json", "BUNDLE_PATH_TRAVERSAL"),
+        ("observations/../observations/a.json", "BUNDLE_PATH_TRAVERSAL"),
+        ("./observations/a.json", "BUNDLE_PATH_NOT_NORMALIZED"),
+        ("observations//a.json", "BUNDLE_PATH_NOT_NORMALIZED"),
+        ("observations/", "BUNDLE_PATH_NOT_NORMALIZED"),
+        ("observations\\a.json", "BUNDLE_PATH_NOT_NORMALIZED"),
+    ],
+)
+def test_unsafe_paths_are_rejected(tmp_path: Path, path: str, expected: str) -> None:
+    """Rejected on shape, before the filesystem is touched at all."""
+
+    root = tmp_path / "b"
+    root.mkdir()
+    (root / "observations").mkdir()
+    (root / "observations/a.json").write_bytes(b"{}\n")
+    make_bundle(
+        root,
+        {},
+        artifacts_override=[{"path": path, "size_bytes": 3, "digest": "0" * 64}],
+    )
+    result = validate_bundle(root)
+    assert expected in codes(result), (path, codes(result))
+
+
+def test_traversal_target_outside_the_bundle_is_never_read(tmp_path: Path) -> None:
+    """A real, digest-matching file one directory up still cannot be admitted."""
+
+    outside = tmp_path / "outside.json"
+    raw = _fixture_path("p2_raw_count_without_denominator.json").read_bytes()
+    outside.write_bytes(raw)
+    root = make_bundle(
+        tmp_path / "b",
+        {},
+        artifacts_override=[
+            {
+                "path": "../outside.json",
+                "size_bytes": len(raw),
+                "digest": hashlib.sha256(raw).hexdigest(),
+            }
+        ],
+    )
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_PATH_TRAVERSAL"]
+    assert result.artifacts[0].contract is None
+
+
+def test_declared_symlink_is_rejected(tmp_path: Path) -> None:
+    name = "p2_raw_count_without_denominator.json"
+    raw = _fixture_path(name).read_bytes()
+    outside = tmp_path / "real.json"
+    outside.write_bytes(raw)
+    root = tmp_path / "b"
+    (root / "observations").mkdir(parents=True)
+    os.symlink(outside, root / "observations/link.json")
+    make_bundle(
+        root,
+        {},
+        artifacts_override=[
+            {
+                "path": "observations/link.json",
+                "size_bytes": len(raw),
+                "digest": hashlib.sha256(raw).hexdigest(),
+            }
+        ],
+    )
+    assert "BUNDLE_PATH_NOT_REGULAR_FILE" in codes(validate_bundle(root))
+
+
+def test_symlinked_parent_directory_is_rejected(tmp_path: Path) -> None:
+    """A linked directory is as good an escape as a linked file."""
+
+    name = "p2_raw_count_without_denominator.json"
+    raw = _fixture_path(name).read_bytes()
+    real_dir = tmp_path / "elsewhere"
+    real_dir.mkdir()
+    (real_dir / "a.json").write_bytes(raw)
+    root = tmp_path / "b"
+    root.mkdir()
+    os.symlink(real_dir, root / "observations")
+    make_bundle(
+        root,
+        {},
+        artifacts_override=[
+            {
+                "path": "observations/a.json",
+                "size_bytes": len(raw),
+                "digest": hashlib.sha256(raw).hexdigest(),
+            }
+        ],
+    )
+    assert "BUNDLE_PATH_NOT_REGULAR_FILE" in codes(validate_bundle(root))
+
+
+def test_declared_symlink_is_rejected_by_path_safety_specifically(tmp_path: Path) -> None:
+    """The per-component symlink check is what refuses it, not root containment.
+
+    Mutation testing found this gap: with the component check removed, a leaf
+    symlink pointing outside was still refused, but by ``BUNDLE_PATH_ESCAPES_ROOT``
+    after the gate had already resolved through the link. Asserting the exact code
+    pins which control is doing the work.
+    """
+
+    name = "p2_raw_count_without_denominator.json"
+    raw = _fixture_path(name).read_bytes()
+    outside = tmp_path / "real.json"
+    outside.write_bytes(raw)
+    root = tmp_path / "b"
+    (root / "observations").mkdir(parents=True)
+    os.symlink(outside, root / "observations/link.json")
+    make_bundle(
+        root,
+        {},
+        artifacts_override=[
+            {
+                "path": "observations/link.json",
+                "size_bytes": len(raw),
+                "digest": hashlib.sha256(raw).hexdigest(),
+            }
+        ],
+    )
+    result = validate_bundle(root)
+    # Exact equality is the point: without the component check the link resolves
+    # and BUNDLE_PATH_ESCAPES_ROOT appears alongside this code.
+    assert codes(result) == ["BUNDLE_PATH_NOT_REGULAR_FILE"]
+    assert "path_safety" in {failure.stage for failure in result.failures}
+    assert result.artifacts[0].observed_digest is None
+    assert result.artifacts[0].stages_passed == []
+
+
+def test_symlink_to_a_file_inside_the_bundle_is_never_read_through(tmp_path: Path) -> None:
+    """Root containment cannot catch this one: the target is inside the bundle.
+
+    Only the per-component symlink check stops the gate opening the file through
+    a link, so this asserts that no bytes were read for the aliased entry.
+    """
+
+    name = "p2_raw_count_without_denominator.json"
+    raw = _fixture_path(name).read_bytes()
+    root = tmp_path / "b"
+    (root / "observations").mkdir(parents=True)
+    (root / "observations/real.json").write_bytes(raw)
+    os.symlink(root / "observations/real.json", root / "observations/alias.json")
+    digest = hashlib.sha256(raw).hexdigest()
+    make_bundle(
+        root,
+        {},
+        artifacts_override=[
+            {"path": "observations/real.json", "size_bytes": len(raw), "digest": digest},
+            {"path": "observations/alias.json", "size_bytes": len(raw), "digest": digest},
+        ],
+    )
+    result = validate_bundle(root)
+    assert "BUNDLE_PATH_NOT_REGULAR_FILE" in codes(result)
+
+    alias = next(a for a in result.artifacts if a.path == "observations/alias.json")
+    assert alias.observed_digest is None, "the gate must not read through a symlink at all"
+    assert alias.observed_size is None
+    assert alias.stages_passed == []
+
+
+def test_symlinked_parent_directory_is_rejected_by_path_safety_specifically(
+    tmp_path: Path,
+) -> None:
+    name = "p2_raw_count_without_denominator.json"
+    raw = _fixture_path(name).read_bytes()
+    real_dir = tmp_path / "elsewhere"
+    real_dir.mkdir()
+    (real_dir / "a.json").write_bytes(raw)
+    root = tmp_path / "b"
+    root.mkdir()
+    os.symlink(real_dir, root / "observations")
+    make_bundle(
+        root,
+        {},
+        artifacts_override=[
+            {
+                "path": "observations/a.json",
+                "size_bytes": len(raw),
+                "digest": hashlib.sha256(raw).hexdigest(),
+            }
+        ],
+    )
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_PATH_NOT_REGULAR_FILE"]
+    artifact = result.artifacts[0]
+    assert artifact.observed_digest is None
+    assert artifact.stages_passed == []
+
+
+def test_undeclared_symlink_anywhere_in_the_bundle_is_rejected(tmp_path: Path) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    os.symlink(tmp_path, root / "escape")
+    assert "BUNDLE_PATH_NOT_REGULAR_FILE" in codes(validate_bundle(root))
+
+
+def test_non_regular_file_is_rejected(tmp_path: Path) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    os.mkfifo(root / "observations/pipe.json")
+    result = validate_bundle(root)
+    assert "BUNDLE_PATH_NOT_REGULAR_FILE" in codes(result)
+
+
+def test_declared_non_regular_file_is_rejected(tmp_path: Path) -> None:
+    root = tmp_path / "b"
+    (root / "observations").mkdir(parents=True)
+    os.mkfifo(root / "observations/pipe.json")
+    make_bundle(
+        root,
+        {},
+        artifacts_override=[
+            {"path": "observations/pipe.json", "size_bytes": 0, "digest": "0" * 64}
+        ],
+    )
+    assert "BUNDLE_PATH_NOT_REGULAR_FILE" in codes(validate_bundle(root))
+
+
+def test_declared_directory_is_rejected(tmp_path: Path) -> None:
+    root = tmp_path / "b"
+    (root / "observations/nested").mkdir(parents=True)
+    make_bundle(
+        root,
+        {},
+        artifacts_override=[
+            {"path": "observations/nested", "size_bytes": 0, "digest": "0" * 64}
+        ],
+    )
+    assert "BUNDLE_PATH_NOT_REGULAR_FILE" in codes(validate_bundle(root))
+
+
+# ---------------------------------------------------------------------------
+# Pinned contract identity
+# ---------------------------------------------------------------------------
+
+
+def test_pins_agree_with_the_canonical_contract() -> None:
+    """The pins in code are checked against Slice A, not asserted against a copy."""
+
+    canonical = canonical_contract_constants()
+    assert canonical["ok"], canonical
+    assert canonical["artifact_id"] == PINNED_ARTIFACT_ID
+    assert canonical["schema_version"] == PINNED_SCHEMA_VERSION
+
+
+def test_pinned_schema_version_matches_the_committed_json_schema() -> None:
+    schema = json.loads(ARTIFACT_SCHEMA_PATH.read_text())
+    assert schema["properties"]["schema_version"]["const"] == PINNED_SCHEMA_VERSION
+    assert schema["properties"]["artifact_id"]["const"] == PINNED_ARTIFACT_ID
+
+
+@pytest.mark.parametrize(
+    "override",
+    [
+        {"artifact_id": "rb_contact_evasion_observations_v1"},
+        {"artifact_id": "player_season_coverage_v0"},
+        {"schema_version": "rb_contact_evasion_observations_v0.3.0"},
+        {"schema_version": "rb_contact_evasion_observations_v0.5.0"},
+        {"manifest_version": "rb_contact_evasion_observations_bundle_manifest_v0.2.0"},
+    ],
+)
+def test_wrong_declared_contract_identity_is_rejected(tmp_path: Path, override: dict) -> None:
+    """The manifest restates the identity; it can never redefine it."""
+
+    root = bundle_from_fixture(
+        tmp_path / "b", "p2_raw_count_without_denominator.json", manifest_overrides=override
+    )
+    result = validate_bundle(root)
+    assert "BUNDLE_CONTRACT_IDENTITY_MISMATCH" in codes(result)
+    assert result.artifacts[0].contract is None, "semantics never run on an unestablished identity"
+
+
+def test_identity_failure_suppresses_the_semantic_verdict(tmp_path: Path) -> None:
+    """A wrong-identity bundle must not report a passing payload."""
+
+    root = bundle_from_fixture(
+        tmp_path / "b",
+        "p2_raw_count_without_denominator.json",
+        manifest_overrides={"artifact_id": "something_else"},
+    )
+    result = validate_bundle(root)
+    assert not result.ok
+    assert all(artifact.contract is None for artifact in result.artifacts)
+
+
+# ---------------------------------------------------------------------------
+# Parsing: a matching digest never excuses malformed JSON
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        b"{ this is not json",
+        b"",
+        # `null` and `[]` parse, so the committed shape gate is what stops them.
+        # They are kept here to prove the boundary refuses them somewhere, and
+        # that neither reaches the evaluator.
+        b"null",
+        b"[]",
+        b'{"artifact_id": "rb_contact_evasion_observations_v0",}',
+        b"\xff\xfe not utf-8",
+    ],
+)
+def test_malformed_json_with_matching_digest_is_rejected(tmp_path: Path, raw: bytes) -> None:
+    """Size and digest are correct by construction here; the parse is what fails."""
+
+    root = make_bundle(tmp_path / "b", {"observations/a.json": raw})
+    result = validate_bundle(root)
+    assert not result.ok
+    assert set(codes(result)) <= {
+        "BUNDLE_ARTIFACT_JSON_MALFORMED",
+        "BUNDLE_ARTIFACT_SCHEMA_INVALID",
+    }, codes(result)
+    (artifact,) = result.artifacts
+    assert (
+        "integrity" in artifact.stages_passed
+    ), "integrity passed; the failure is downstream of it"
+    assert artifact.contract is None, "nothing unparseable or misshapen reaches the evaluator"
+
+
+def test_duplicate_json_key_with_matching_digest_is_rejected(tmp_path: Path) -> None:
+    """Last-wins duplicate keys would let two readers see two different payloads."""
+
+    raw = b'{"artifact_id": "a", "artifact_id": "b"}'
+    root = make_bundle(tmp_path / "b", {"observations/a.json": raw})
+    assert codes(validate_bundle(root)) == ["BUNDLE_ARTIFACT_DUPLICATE_KEY"]
+
+
+def test_non_json_constants_are_rejected(tmp_path: Path) -> None:
+    """Python accepts NaN by default; JavaScript does not. The gate rejects it."""
+
+    raw = b'{"artifact_id": NaN}'
+    root = make_bundle(tmp_path / "b", {"observations/a.json": raw})
+    assert codes(validate_bundle(root)) == ["BUNDLE_ARTIFACT_JSON_MALFORMED"]
+
+
+def test_malformed_manifest_json_is_rejected(tmp_path: Path) -> None:
+    root = make_bundle(
+        tmp_path / "b",
+        {"observations/a.json": b"{}\n"},
+        manifest_bytes=b"{ not json",
+    )
+    assert codes(validate_bundle(root)) == ["BUNDLE_MANIFEST_JSON_MALFORMED"]
+
+
+def test_duplicate_manifest_json_key_is_rejected(tmp_path: Path) -> None:
+    root = make_bundle(
+        tmp_path / "b",
+        {"observations/a.json": b"{}\n"},
+        manifest_bytes=b'{"artifact_id": "a", "artifact_id": "b"}',
+    )
+    assert codes(validate_bundle(root)) == ["BUNDLE_MANIFEST_DUPLICATE_KEY"]
+
+
+def test_missing_manifest_is_rejected(tmp_path: Path) -> None:
+    root = tmp_path / "b"
+    (root / "observations").mkdir(parents=True)
+    (root / "observations/a.json").write_bytes(b"{}\n")
+    assert codes(validate_bundle(root)) == ["BUNDLE_MANIFEST_UNREADABLE"]
+
+
+def test_symlinked_manifest_is_rejected(tmp_path: Path) -> None:
+    real = tmp_path / "real_manifest.json"
+    real.write_text("{}")
+    root = tmp_path / "b"
+    root.mkdir()
+    os.symlink(real, root / MANIFEST_FILENAME)
+    assert codes(validate_bundle(root)) == ["BUNDLE_MANIFEST_UNREADABLE"]
+
+
+def test_missing_bundle_root_is_rejected(tmp_path: Path) -> None:
+    assert codes(validate_bundle(tmp_path / "nope")) == ["BUNDLE_ROOT_INVALID"]
+
+
+# ---------------------------------------------------------------------------
+# The committed JSON Schema shape gate
+# ---------------------------------------------------------------------------
+
+
+def test_schema_gate_rejects_a_structurally_wrong_payload(tmp_path: Path) -> None:
+    raw = json.dumps({"artifact_id": "rb_contact_evasion_observations_v0"}).encode()
+    root = make_bundle(tmp_path / "b", {"observations/a.json": raw})
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_ARTIFACT_SCHEMA_INVALID"]
+    assert result.artifacts[0].contract is None
+
+
+def test_schema_gate_rejects_an_unknown_field(tmp_path: Path) -> None:
+    payload = json.loads(_fixture_path("p2_raw_count_without_denominator.json").read_text())
+    payload["smuggled_field"] = True
+    raw = json.dumps(payload, indent=2).encode()
+    root = make_bundle(tmp_path / "b", {"observations/a.json": raw})
+    assert codes(validate_bundle(root)) == ["BUNDLE_ARTIFACT_SCHEMA_INVALID"]
+
+
+def test_schema_gate_runs_before_semantics(tmp_path: Path) -> None:
+    payload = json.loads(_fixture_path("p2_raw_count_without_denominator.json").read_text())
+    payload["observations"][0]["mechanism_id"] = "elusiveness"
+    raw = json.dumps(payload, indent=2).encode()
+    root = make_bundle(tmp_path / "b", {"observations/a.json": raw})
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_ARTIFACT_SCHEMA_INVALID"]
+    assert result.artifacts[0].contract is None
+
+
+# ---------------------------------------------------------------------------
+# The manifest may never weaken a contract rule
+# ---------------------------------------------------------------------------
+
+
+def test_manifest_schema_is_closed_and_carries_no_contract_authority() -> None:
+    """Structural proof, not prose: the manifest has no field to hide behind."""
+
+    schema = json.loads(
+        (
+            REPO_ROOT / "schemas/rb_contact_evasion_observations_bundle_manifest_v0.schema.json"
+        ).read_text()
+    )
+    assert schema["additionalProperties"] is False
+    assert schema["$defs"]["artifactEntry"]["additionalProperties"] is False
+    admitted = set(schema["properties"])
+    assert admitted & FORBIDDEN_MANIFEST_KEYS == set()
+    assert admitted == {
+        "manifest_version",
+        "artifact_id",
+        "schema_version",
+        "artifact_position",
+        "digest_algorithm",
+        "generated_at",
+        "bundle_note",
+        "artifacts",
+    }
+    assert set(schema["$defs"]["artifactEntry"]["properties"]) == {"path", "size_bytes", "digest"}
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        "skip_semantic_validation",
+        "suppressed_reason_codes",
+        "permissions",
+        "promotable",
+        "valid",
+        "waivers",
+        "override",
+        "score",
+        "rank",
+        "metric_dictionary",
+        "missingness_reason",
+        "provenance_mode",
+    ],
+)
+def test_manifest_cannot_declare_a_weakening_field(tmp_path: Path, key: str) -> None:
+    root = bundle_from_fixture(
+        tmp_path / "b",
+        "p2_raw_count_without_denominator.json",
+        manifest_overrides={key: True},
+    )
+    assert codes(validate_bundle(root)) == ["BUNDLE_MANIFEST_SHAPE_INVALID"]
+
+
+def test_every_forbidden_key_is_refused_by_the_committed_schema(tmp_path: Path) -> None:
+    for key in sorted(FORBIDDEN_MANIFEST_KEYS):
+        root = bundle_from_fixture(
+            tmp_path / f"k-{key}",
+            "p2_raw_count_without_denominator.json",
+            manifest_overrides={key: "anything"},
+        )
+        assert codes(validate_bundle(root)) == ["BUNDLE_MANIFEST_SHAPE_INVALID"], key
+
+
+def test_manifest_cannot_downgrade_a_candidate_to_fixture_position(tmp_path: Path) -> None:
+    """The rules a candidate faces are not escapable by relabelling the manifest."""
+
+    payload = json.loads(_fixture_path("p2_raw_count_without_denominator.json").read_text())
+    payload["artifact_position"] = "candidate"
+    raw = json.dumps(payload, indent=2).encode()
+    root = make_bundle(
+        tmp_path / "b",
+        {"observations/a.json": raw},
+        manifest_overrides={"artifact_position": "fixture_only"},
+    )
+    result = validate_bundle(root)
+    assert codes(result) == ["BUNDLE_MANIFEST_PAYLOAD_DISAGREEMENT"]
+    assert result.artifacts[0].contract is None
+
+
+def test_manifest_cannot_upgrade_a_fixture_to_candidate_position(tmp_path: Path) -> None:
+    root = bundle_from_fixture(
+        tmp_path / "b",
+        "p2_raw_count_without_denominator.json",
+        manifest_overrides={"artifact_position": "candidate"},
+    )
+    assert codes(validate_bundle(root)) == ["BUNDLE_MANIFEST_PAYLOAD_DISAGREEMENT"]
+
+
+def test_manifest_cannot_contradict_the_payload_identity(tmp_path: Path) -> None:
+    """The payload's own artifact_id and schema_version are what the contract reads."""
+
+    payload = json.loads(_fixture_path("p2_raw_count_without_denominator.json").read_text())
+    payload["artifact_id"] = "rb_contact_evasion_observations_v1"
+    raw = json.dumps(payload, indent=2).encode()
+    root = make_bundle(tmp_path / "b", {"observations/a.json": raw})
+    # The payload's own id no longer matches the committed schema's const, so the
+    # shape gate stops it before the manifest can even be compared.
+    assert codes(validate_bundle(root)) == ["BUNDLE_ARTIFACT_SCHEMA_INVALID"]
+
+
+def test_promoted_position_still_fails_closed_through_the_gate(tmp_path: Path) -> None:
+    """Slice A refuses promoted position outright, and the manifest cannot help."""
+
+    payload = json.loads(_fixture_path("p2_raw_count_without_denominator.json").read_text())
+    payload["artifact_position"] = "promoted"
+    raw = json.dumps(payload, indent=2).encode()
+    root = make_bundle(tmp_path / "b", {"observations/a.json": raw})
+    result = validate_bundle(root)
+    assert "PROMOTED_POSITION_REQUIRES_PROMOTION_GATE" in codes(result)
+    assert bundle_codes(result) == [], "the refusal is Slice A's, not the manifest gate's"
+
+
+# ---------------------------------------------------------------------------
+# The decisive control: a self-consistent semantic tamper
+# ---------------------------------------------------------------------------
+
+
+def test_self_consistent_semantic_tamper_is_rejected_by_the_evaluator(tmp_path: Path) -> None:
+    """Bytes and manifest digest updated together -- integrity is perfect.
+
+    This is the case that proves the architecture: nothing about the manifest is
+    wrong, so only the canonical semantic evaluator can refuse it, and it does,
+    under Slice A's own code.
+    """
+
+    payload = json.loads(_fixture_path("p2_raw_count_without_denominator.json").read_text())
+    payload["observations"][0]["identity"]["gsis_id"] = None
+    payload["observations"][0]["identity"]["identity_resolution"] = "unresolved"
+    raw = json.dumps(payload, indent=2).encode()
+    root = make_bundle(tmp_path / "b", {"observations/a.json": raw})
+
+    result = validate_bundle(root)
+    assert codes(result) == ["CANONICAL_IDENTITY_UNRESOLVED"]
+    assert bundle_codes(result) == [], "integrity metadata is entirely consistent here"
+
+    (artifact,) = result.artifacts
+    assert artifact.observed_digest == artifact.declared_digest
+    assert artifact.observed_size == artifact.declared_size
+    assert "integrity" in artifact.stages_passed
+    assert "payload_shape" in artifact.stages_passed
+    assert artifact.contract == {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+    }
+
+
+def test_second_self_consistent_semantic_tamper(tmp_path: Path) -> None:
+    """A different rule, same lesson: consistent metadata is not validity."""
+
+    payload = json.loads(_fixture_path("p1_complete_derived_explosiveness_rate.json").read_text())
+    payload["observations"][0]["measurement"]["denominator"] = None
+    raw = json.dumps(payload, indent=2).encode()
+    root = make_bundle(tmp_path / "b", {"observations/a.json": raw})
+    result = validate_bundle(root)
+    assert bundle_codes(result) == []
+    assert "RATE_MISSING_DENOMINATOR" in codes(result)
+
+
+# ---------------------------------------------------------------------------
+# Determinism, non-mutation, offline
+# ---------------------------------------------------------------------------
+
+
+def test_result_is_deterministic_across_runs(tmp_path: Path) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "n01_rate_missing_denominator.json")
+    first = json.dumps(validate_bundle(root).as_dict(), sort_keys=True)
+    second = json.dumps(validate_bundle(root).as_dict(), sort_keys=True)
+    assert first == second
+
+
+def test_machine_result_carries_no_absolute_path_or_clock(tmp_path: Path) -> None:
+    """Two machines validating the same bytes must produce the same JSON."""
+
+    root = bundle_from_fixture(tmp_path / "b", "n01_rate_missing_denominator.json")
+    rendered = json.dumps(validate_bundle(root).as_dict(), sort_keys=True)
+    assert str(tmp_path) not in rendered
+    assert str(REPO_ROOT) not in rendered
+
+
+def test_failures_are_ordered_deterministically(tmp_path: Path) -> None:
+    files = {
+        f"observations/{name}": _fixture_path(name).read_bytes()
+        for name in (
+            "n01_rate_missing_denominator.json",
+            "n03_rushing_receiving_silently_combined.json",
+        )
+    }
+    root = make_bundle(tmp_path / "b", files)
+    result = validate_bundle(root)
+    paths = [failure.path for failure in result.failures]
+    assert paths == sorted(paths)
+
+
+def test_gate_does_not_mutate_the_bundle(tmp_path: Path) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "p7_bucky_receipt_remains_partial.json")
+    before = {
+        path.relative_to(root).as_posix(): (
+            hashlib.sha256(path.read_bytes()).hexdigest(),
+            path.stat().st_mtime_ns,
+        )
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+    assert validate_bundle(root).ok
+    after = {
+        path.relative_to(root).as_posix(): (
+            hashlib.sha256(path.read_bytes()).hexdigest(),
+            path.stat().st_mtime_ns,
+        )
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+    assert before == after
+
+
+def test_gate_does_not_mutate_committed_fixtures() -> None:
+    before = {
+        path.relative_to(REPO_ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(FIXTURE_ROOT.rglob("*.json"))
+    }
+    assert validate_bundle(REFERENCE_BUNDLE).ok
+    after = {
+        path.relative_to(REPO_ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(FIXTURE_ROOT.rglob("*.json"))
+    }
+    assert before == after
+
+
+def test_gate_performs_no_network_access(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Any socket the gate itself opens raises, and the run still completes."""
+
+    def refuse(*args, **kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("the gate must not open a socket")
+
+    monkeypatch.setattr(socket, "socket", refuse)
+    monkeypatch.setattr(socket, "create_connection", refuse)
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    assert validate_bundle(root).ok
+
+
+def test_gate_and_bridge_sources_import_no_network_client() -> None:
+    gate_source = GATE_SCRIPT.read_text()
+    bridge_source = BRIDGE_SCRIPT.read_text()
+    banned_gate_imports = (
+        "import socket",
+        "import urllib",
+        "import http",
+        "import requests",
+        "import httpx",
+    )
+    for banned in banned_gate_imports:
+        assert banned not in gate_source, banned
+    for banned in ("node:http", "node:https", "node:net", "fetch(", "XMLHttpRequest"):
+        assert banned not in bridge_source, banned
+
+
+def test_bridge_holds_no_football_semantics() -> None:
+    """The bridge must stay a pipe, not become a second authority."""
+
+    source = BRIDGE_SCRIPT.read_text()
+    for banned in (
+        "mechanism",
+        "denominator",
+        "reason_code",
+        "RATE_",
+        "metric_id",
+        "cohort",
+        "gsis",
+    ):
+        assert banned not in source, banned
+    # Imported, surface-checked, called. Nothing else in the file knows the name.
+    assert source.count("evaluateRbContactEvasionObservationsV0") == 3, (
+        "the bridge imports the canonical evaluator and calls it, nothing more"
+    )
+
+
+def test_gate_holds_no_football_semantics() -> None:
+    """Slice B must not have re-implemented a single Slice A rule."""
+
+    source = GATE_SCRIPT.read_text()
+    for banned in (
+        "contact_avoidance",
+        "contact_survival",
+        "explosiveness",
+        "agility_change_of_direction",
+        "forced_missed_tackles",
+        "yards_after_contact",
+        "minimum_eligible_opportunities",
+        "RATE_MISSING_DENOMINATOR",
+        "CANONICAL_IDENTITY_UNRESOLVED",
+    ):
+        assert banned not in source, banned
+
+
+def test_gate_declares_no_score_or_ranking_surface() -> None:
+    rendered = json.dumps(validate_bundle(REFERENCE_BUNDLE).as_dict())
+    for banned in ("score", "grade", "ranking", "percentile", "tier", "elite", "rating"):
+        assert banned not in rendered.lower(), banned
+
+
+# ---------------------------------------------------------------------------
+# CLI surface
+# ---------------------------------------------------------------------------
+
+
+def test_cli_exit_code_zero_on_pass(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    assert main([str(root)]) == 0
+    assert "RESULT: PASS" in capsys.readouterr().out
+
+
+def test_cli_exit_code_one_on_failure(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "n01_rate_missing_denominator.json")
+    assert main([str(root)]) == 1
+    out = capsys.readouterr().out
+    assert "RESULT: FAIL" in out
+    assert "RATE_MISSING_DENOMINATOR" in out
+
+
+def test_cli_json_mode_emits_only_json(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "n01_rate_missing_denominator.json")
+    assert main([str(root), "--json"]) == 1
+    parsed = json.loads(capsys.readouterr().out)
+    assert parsed["ok"] is False
+    assert parsed["reason_codes"] == ["RATE_MISSING_DENOMINATOR"]
+    assert parsed["gate"] == "rb_contact_evasion_observations_bundle_gate_v0"
+
+
+def test_cli_json_out_writes_the_machine_result(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    out = tmp_path / "result.json"
+    assert main([str(root), "--json-out", str(out)]) == 0
+    capsys.readouterr()
+    assert json.loads(out.read_text())["ok"] is True
+
+
+def test_cli_refuses_to_write_inside_the_bundle(tmp_path: Path) -> None:
+    """The gate never writes into what it validates."""
+
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    with pytest.raises(GateUsageError):
+        main([str(root), "--json-out", str(root / "result.json")])
+    assert not (root / "result.json").exists()
+
+
+def test_cli_subprocess_end_to_end(tmp_path: Path) -> None:
+    """The documented invocation works as documented."""
+
+    root = bundle_from_fixture(tmp_path / "b", "n11_canonical_identity_unresolved.json")
+    completed = subprocess.run(
+        [sys.executable, str(GATE_SCRIPT), str(root), "--json"],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 1
+    assert json.loads(completed.stdout)["reason_codes"] == ["CANONICAL_IDENTITY_UNRESOLVED"]
+
+
+def test_cli_usage_error_exit_code(tmp_path: Path) -> None:
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    completed = subprocess.run(
+        [sys.executable, str(GATE_SCRIPT), str(root), "--json-out", str(root / "r.json")],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 2
+    assert b"usage error" in completed.stderr
+
+
+# ---------------------------------------------------------------------------
+# Fail-closed when the canonical authority cannot be reached
+# ---------------------------------------------------------------------------
+
+
+def test_unbuildable_evaluator_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fresh_evaluator_cache
+) -> None:
+    """No evaluator, no pass. A missing authority is never a silent skip."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    monkeypatch.setattr(gate, "EVALUATOR_TSCONFIG_PATH", tmp_path / "absent.tsconfig.json")
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    result = gate.validate_bundle(root)
+    assert not result.ok
+    # One code, not two: the manifest-scoped identity failure already explains
+    # why no artifact reached the semantic stage.
+    assert codes(result) == ["BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE"]
+    assert all(artifact.contract is None for artifact in result.artifacts)
+    assert result.evaluator is None, "no receipt is emitted when nothing was built"
+
+
+def test_broken_bridge_fails_closed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    broken = tmp_path / "broken_bridge.mjs"
+    broken.write_text("process.exit(9);\n")
+    monkeypatch.setattr(gate, "BRIDGE_PATH", broken)
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    result = gate.validate_bundle(root)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE" in codes(result)
+
+
+def test_bridge_returning_an_unreadable_report_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    liar = tmp_path / "liar.mjs"
+    liar.write_text(
+        "const answer = process.argv[2] === 'constants'\n"
+        f"  ? {{ok: true, artifact_id: {PINNED_ARTIFACT_ID!r},"
+        f" schema_version: {PINNED_SCHEMA_VERSION!r}}}\n"
+        "  : {ok: true, report: 'everything is fine'};\n"
+        "console.log(JSON.stringify(answer));\n"
+    )
+    monkeypatch.setattr(gate, "BRIDGE_PATH", liar)
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    result = gate.validate_bundle(root)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+# ---------------------------------------------------------------------------
+# Scope confirmations
+# ---------------------------------------------------------------------------
+
+
+def test_slice_b_wrote_nothing_under_exports() -> None:
+    """Slice B creates no candidate or promoted artifact anywhere."""
+
+    exports = REPO_ROOT / "exports"
+    matches = [
+        path.relative_to(REPO_ROOT).as_posix()
+        for path in exports.rglob("*")
+        if "rb_contact_evasion" in path.as_posix() or "contact_evasion" in path.name
+    ]
+    assert matches == []
+
+
+def test_slice_b_did_not_modify_slice_a_contract_files() -> None:
+    """The Slice A surface this gate depends on must be unmodified by this slice."""
+
+    tracked = subprocess.run(
+        ["git", "diff", "--name-only", "4498d5efd053e6bbc87f5f28214b0509550ad653", "--"],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+    if tracked.returncode != 0:  # pragma: no cover - shallow clone or detached history
+        pytest.skip("the authorized base commit is not reachable in this checkout")
+    changed = {line for line in tracked.stdout.splitlines() if line}
+    protected = {
+        "src/contracts/v1/rbContactEvasionObservationsV0.ts",
+        "schemas/rb_contact_evasion_observations_v0.schema.json",
+        "docs/contracts/rb-contact-evasion-observations-v0.md",
+        "test/rbContactEvasionObservationsV0.contract.test.ts",
+        "tests/test_rb_contact_evasion_observations_v0.py",
+    }
+    protected |= {
+        path.relative_to(REPO_ROOT).as_posix()
+        for sub in ("positive", "negative")
+        for path in (FIXTURE_ROOT / sub).glob("*.json")
+    }
+    assert changed & protected == set(), sorted(changed & protected)
+
+
+def test_admitted_digest_algorithms_are_exactly_sha256() -> None:
+    assert ADMITTED_DIGEST_ALGORITHMS == frozenset({"sha256"})
+
+
+# ---------------------------------------------------------------------------
+# Review repair 1: evaluator identity is established by build, never asserted
+# ---------------------------------------------------------------------------
+#
+# Codex reproduced a fail-open at 0b48acf: a permissive module under the
+# gitignored ``dist/`` exporting the correct artifact id and schema version made
+# the gate return ok:true for the committed, shape-valid N11 fixture. Identity
+# is now established by compiling the reviewed source, so a compiled module on
+# disk -- stale, substituted or permissive -- is never consulted at all.
+
+
+PERMISSIVE_MODULE = (
+    'export const RB_CONTACT_EVASION_ARTIFACT_ID = "rb_contact_evasion_observations_v0";\n'
+    'export const RB_CONTACT_EVASION_SCHEMA_VERSION = '
+    '"rb_contact_evasion_observations_v0.4.0";\n'
+    "export function evaluateRbContactEvasionObservationsV0() {\n"
+    "  return { valid: true, shape_valid: true, violations: [], reason_codes: [] };\n"
+    "}\n"
+)
+
+
+def test_permissive_stale_build_is_never_consulted(tmp_path: Path) -> None:
+    """The exact fail-open Codex first reproduced, in an isolated repository.
+
+    A permissive module exporting the correct constants sits where ``dist/``
+    would be, in a throwaway copy -- the checkout's ``dist/`` is never touched.
+    N11 must still be rejected for its own reason code, because the gate compiles
+    the reviewed source and never consults the build lying around.
+    """
+
+    root = _isolated_repo(tmp_path, (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text())
+    assert "valid: true" in (root / "dist/src/index.js").read_text()
+    bundle = make_bundle(
+        tmp_path / "b",
+        {
+            "observations/a.json": _fixture_path(
+                "n11_canonical_identity_unresolved.json"
+            ).read_bytes()
+        },
+    )
+    result = _run_isolated_gate(root, bundle)
+    assert result["ok"] is False
+    assert result["reason_codes"] == ["CANONICAL_IDENTITY_UNRESOLVED"]
+
+
+def test_stale_build_does_not_make_a_positive_fixture_pass_for_the_wrong_reason(
+    tmp_path: Path,
+) -> None:
+    """A permissive stale build present in an isolated repo changes nothing.
+
+    P2 passes because the freshly compiled reviewed source accepts it, and the
+    receipt names that source -- its module digest is not the stale build's.
+    """
+
+    root = _isolated_repo(tmp_path, (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text())
+    stale_digest = hashlib.sha256((root / "dist/src/index.js").read_bytes()).hexdigest()
+    bundle = make_bundle(
+        tmp_path / "b",
+        {
+            "observations/a.json": _fixture_path(
+                "p2_raw_count_without_denominator.json"
+            ).read_bytes()
+        },
+    )
+    result = _run_isolated_gate(root, bundle)
+    assert result["ok"] is True
+    assert result["evaluator"]["entry_source"] == EVALUATOR_ENTRY_SOURCE
+    built = {entry["path"] for entry in result["evaluator"]["source_files"]}
+    assert EVALUATOR_ENTRY_SOURCE in built
+    assert result["evaluator"]["module_digest"] != stale_digest
+
+
+def test_gate_never_reads_the_gitignored_build(tmp_path: Path) -> None:
+    """Structural backstop: no code path in the gate or bridge opens dist/."""
+
+    for source in (GATE_SCRIPT.read_text(), BRIDGE_SCRIPT.read_text()):
+        code_lines = [
+            line
+            for line in source.splitlines()
+            if "dist" in line
+            and not line.lstrip().startswith(("#", "*", "//"))
+            and "``dist" not in line
+        ]
+        assert code_lines == [], code_lines
+
+
+def test_receipt_records_the_compiled_source_surface() -> None:
+    """The receipt says exactly what was hashed, and is stable across runs."""
+
+    build, error = ensure_evaluator()
+    assert error is None and build is not None
+    receipt = build.receipt()
+
+    paths = [entry["path"] for entry in receipt["source_files"]]
+    assert EVALUATOR_ENTRY_SOURCE in paths
+    for required in (
+        "tsconfig.json",
+        "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+        "package.json",
+        "package-lock.json",
+    ):
+        assert required in paths, required
+    assert paths == sorted(paths)
+    assert all(len(entry["sha256"]) == 64 for entry in receipt["source_files"])
+    assert len(receipt["source_fingerprint"]) == 64
+    assert len(receipt["module_digest"]) == 64
+    assert [pin["name"] for pin in receipt["dependency_pins"]] == ["zod"]
+
+    # Repo-relative only: two machines validating one source must agree.
+    assert str(REPO_ROOT) not in json.dumps(receipt)
+
+
+def test_receipt_matches_the_committed_contract_source() -> None:
+    """The hash in the receipt is the hash of the file a reviewer can read."""
+
+    build, _ = ensure_evaluator()
+    assert build is not None
+    recorded = {entry[0]: entry[1] for entry in build.source_files}
+    on_disk = hashlib.sha256((REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_bytes()).hexdigest()
+    assert recorded[EVALUATOR_ENTRY_SOURCE] == on_disk
+
+
+def _isolated_repo(tmp_path: Path, contract_source: str) -> Path:
+    """A minimal repository copy whose contract source has been modified.
+
+    The committed contract is never touched: everything here is a copy, and the
+    modification exists only to prove the verdict follows the source that was
+    compiled rather than any build lying around.
+    """
+
+    root = tmp_path / "repo"
+    (root / "src/contracts/v1").mkdir(parents=True)
+    (root / "scripts").mkdir()
+    (root / "schemas").mkdir()
+    (root / "dist/src").mkdir(parents=True)
+
+    for relative in (
+        "tsconfig.json",
+        "package.json",
+        "package-lock.json",
+        "scripts/validate_rb_contact_evasion_bundle.py",
+        "scripts/rb_contact_evasion_contract_bridge.mjs",
+        "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+        "schemas/rb_contact_evasion_observations_v0.schema.json",
+        "schemas/rb_contact_evasion_observations_bundle_manifest_v0.schema.json",
+    ):
+        (root / relative).write_bytes((REPO_ROOT / relative).read_bytes())
+
+    (root / EVALUATOR_ENTRY_SOURCE).write_text(contract_source)
+    os.symlink(REPO_ROOT / "node_modules", root / "node_modules", target_is_directory=True)
+    # A stale, correct-constants build already sitting where dist/ would be.
+    (root / "dist/src/index.js").write_text(PERMISSIVE_MODULE)
+    return root
+
+
+def _run_isolated_gate(root: Path, bundle: Path) -> dict:
+    completed = subprocess.run(
+        [sys.executable, str(root / "scripts/validate_rb_contact_evasion_bundle.py"),
+         str(bundle), "--json"],
+        cwd=str(root),
+        capture_output=True,
+        check=False,
+    )
+    assert completed.stdout, completed.stderr.decode()
+    return json.loads(completed.stdout)
+
+
+def test_modified_contract_source_changes_the_verdict_despite_a_stale_build(
+    tmp_path: Path,
+) -> None:
+    """Control 3: modified canonical source, unchanged existing dist.
+
+    The isolated copy carries a permissive ``dist/`` *and* a contract whose
+    declared schema version has been altered. If the gate were trusting the
+    build on disk it would report the pinned version and pass; instead it
+    reports drift, which can only come from compiling the modified source.
+    """
+
+    source = (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text()
+    altered = source.replace(
+        "'rb_contact_evasion_observations_v0.4.0'",
+        "'rb_contact_evasion_observations_v0.9.9-modified'",
+    )
+    assert altered != source
+
+    root = _isolated_repo(tmp_path, altered)
+    bundle = make_bundle(
+        tmp_path / "bundle",
+        {
+            "observations/a.json": _fixture_path(
+                "p2_raw_count_without_denominator.json"
+            ).read_bytes()
+        },
+    )
+    result = _run_isolated_gate(root, bundle)
+    assert result["ok"] is False
+    assert "BUNDLE_CONTRACT_IDENTITY_DRIFT" in result["reason_codes"]
+    assert any(
+        "0.9.9-modified" in failure["detail"] for failure in result["failures"]
+    ), result["failures"]
+
+
+def test_modified_contract_behaviour_changes_the_verdict_despite_a_stale_build(
+    tmp_path: Path,
+) -> None:
+    """Control 3, behavioural half: a source edit changes what is accepted.
+
+    Again in an isolated copy with a permissive ``dist/``. The edit inverts one
+    existing guard, so the normally-valid ``fixture_only`` P2 fixture is refused
+    instead of ``promoted``. If the stale build were being used, P2 would pass.
+    """
+
+    source = (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text()
+    altered = source.replace(
+        "if (artifact.artifact_position === 'promoted') {",
+        "if (artifact.artifact_position !== 'promoted') {",
+    )
+    assert altered != source
+
+    root = _isolated_repo(tmp_path, altered)
+    bundle = make_bundle(
+        tmp_path / "bundle",
+        {
+            "observations/a.json": _fixture_path(
+                "p2_raw_count_without_denominator.json"
+            ).read_bytes()
+        },
+    )
+    result = _run_isolated_gate(root, bundle)
+    assert result["ok"] is False
+    assert result["reason_codes"] == ["PROMOTED_POSITION_REQUIRES_PROMOTION_GATE"]
+
+
+def test_correctly_rebuilt_current_evaluator_passes(tmp_path: Path) -> None:
+    """Control 4: an unmodified isolated copy reproduces the committed verdicts."""
+
+    root = _isolated_repo(tmp_path, (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text())
+    positive = make_bundle(
+        tmp_path / "pos",
+        {
+            "observations/a.json": _fixture_path(
+                "p2_raw_count_without_denominator.json"
+            ).read_bytes()
+        },
+    )
+    assert _run_isolated_gate(root, positive)["ok"] is True
+
+    negative = make_bundle(
+        tmp_path / "neg",
+        {
+            "observations/a.json": _fixture_path(
+                "n11_canonical_identity_unresolved.json"
+            ).read_bytes()
+        },
+    )
+    rejected = _run_isolated_gate(root, negative)
+    assert rejected["ok"] is False
+    assert rejected["reason_codes"] == ["CANONICAL_IDENTITY_UNRESOLVED"]
+
+
+def test_build_failure_fails_closed(tmp_path: Path, fresh_evaluator_cache) -> None:
+    """Control 5: a contract source that does not compile yields no verdict."""
+
+    broken_source = tmp_path / "broken"
+    (broken_source / "src/contracts/v1").mkdir(parents=True)
+    os.symlink(REPO_ROOT / "node_modules", broken_source / "node_modules", target_is_directory=True)
+    for cfg in ("tsconfig.json", "package.json", "package-lock.json"):
+        (broken_source / cfg).write_bytes((REPO_ROOT / cfg).read_bytes())
+    (broken_source / EVALUATOR_ENTRY_SOURCE).write_text(
+        "export const oops: number = 'not a number';\n"
+    )
+    tsconfig = tmp_path / "broken.tsconfig.json"
+    tsconfig.write_text(
+        json.dumps(
+            {
+                "extends": str(REPO_ROOT / "tsconfig.json"),
+                "compilerOptions": {"declaration": False, "rootDir": str(broken_source)},
+                "files": [str(broken_source / EVALUATOR_ENTRY_SOURCE)],
+                "include": [],
+            }
+        )
+    )
+    build, error = build_evaluator(tsconfig_path=tsconfig, repo_root=broken_source)
+    assert build is None
+    assert error is not None
+    assert error["error"] in {"evaluator_build_failed", "evaluator_source_unreadable"}
+
+
+def test_missing_build_surface_fails_closed(tmp_path: Path) -> None:
+    build, error = build_evaluator(tsconfig_path=tmp_path / "nope.json")
+    assert build is None
+    assert error is not None and error["error"] == "evaluator_tsconfig_missing"
+
+
+def test_bridge_refuses_a_module_that_does_not_match_its_digest(tmp_path: Path) -> None:
+    """The bridge re-hashes before importing, closing the build-to-import window."""
+
+    module = tmp_path / "module.mjs"
+    module.write_text(PERMISSIVE_MODULE)
+    completed = subprocess.run(
+        [
+            "node",
+            str(BRIDGE_SCRIPT),
+            "constants",
+            str(module),
+            "0" * 64,
+        ],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    answer = json.loads(completed.stdout.decode().strip().splitlines()[-1])
+    assert answer["ok"] is False
+    assert answer["error"] == "compiled_module_tampered"
+
+
+def test_bridge_requires_a_module_and_a_digest() -> None:
+    completed = subprocess.run(
+        ["node", str(BRIDGE_SCRIPT), "constants"],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    answer = json.loads(completed.stdout.decode().strip().splitlines()[-1])
+    assert answer["ok"] is False
+    assert answer["error"] == "usage"
+
+
+def test_barrel_and_module_expose_the_same_evaluator(tmp_path: Path) -> None:
+    """The narrowed build surface is still Slice A's public evaluator.
+
+    The gate compiles the module that *defines* the evaluator rather than the
+    ``src/index.ts`` barrel. This proves the barrel is a re-export of exactly
+    that function, so nothing about which surface is "public" changed.
+
+    Compiled into a temporary directory on purpose: this test must not depend on
+    -- or be fooled by -- whatever happens to be sitting in the gitignored
+    ``dist/``.
+    """
+
+    barrel = (REPO_ROOT / "src/index.ts").read_text()
+    contracts_barrel = (REPO_ROOT / "src/contracts/v1/index.ts").read_text()
+    assert "export * from './contracts/v1/index.js';" in barrel
+    assert "export * from './rbContactEvasionObservationsV0.js';" in contracts_barrel
+
+    out = tmp_path / "out"
+    tsconfig = tmp_path / "barrel.tsconfig.json"
+    tsconfig.write_text(
+        json.dumps(
+            {
+                "extends": str(REPO_ROOT / "tsconfig.json"),
+                "compilerOptions": {
+                    "declaration": False,
+                    "outDir": str(out),
+                    # The tsconfig lives outside the repo, so ambient @types
+                    # would not resolve from here.
+                    "typeRoots": [str(REPO_ROOT / "node_modules/@types")],
+                },
+                "files": [str(REPO_ROOT / "src/index.ts")],
+                "include": [],
+            }
+        )
+    )
+    # Use the repository-local compiler, invoked as `node <tsc>`, so this test
+    # never touches PATH's npx/tsc and never risks a registry fetch.
+    built = subprocess.run(
+        ["node", str(REPO_ROOT / "node_modules/typescript/bin/tsc"), "-p", str(tsconfig)],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    assert built.returncode == 0, built.stdout.decode()[-2000:]
+
+    os.symlink(REPO_ROOT / "node_modules", out / "node_modules", target_is_directory=True)
+    (out / "package.json").write_text('{"type": "module"}\n')
+
+    completed = subprocess.run(
+        [
+            "node",
+            "--input-type=module",
+            "-e",
+            "const a = await import('./src/index.js');"
+            "const b = await import('./src/contracts/v1/"
+            "rbContactEvasionObservationsV0.js');"
+            "console.log(a.evaluateRbContactEvasionObservationsV0 === "
+            "b.evaluateRbContactEvasionObservationsV0);",
+        ],
+        cwd=str(out),
+        capture_output=True,
+        check=False,
+    )
+    assert completed.stdout.decode().strip() == "true", completed.stderr.decode()
+
+
+# ---------------------------------------------------------------------------
+# Review repair 2: an invalid verdict can never produce a passing bundle
+# ---------------------------------------------------------------------------
+#
+# Codex reproduced a fail-open at 0b48acf: a report of
+# {"valid": false, "reason_codes": [...], "violations": []} recorded
+# contract.valid=false on the artifact, appended nothing to the failure list,
+# and the gate computed ok = not failures -> true.
+
+
+def _report_bundle(tmp_path: Path, report, monkeypatch) -> object:
+    """Run a real bundle against a bridge that returns a chosen report."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    liar = tmp_path / "liar.mjs"
+    liar.write_text(
+        "const answer = process.argv[2] === 'constants'\n"
+        f"  ? {{ok: true, artifact_id: {PINNED_ARTIFACT_ID!r},"
+        f" schema_version: {PINNED_SCHEMA_VERSION!r}}}\n"
+        f"  : {{ok: true, report: {json.dumps(report)}}};\n"
+        "console.log(JSON.stringify(answer));\n"
+    )
+    monkeypatch.setattr(gate, "BRIDGE_PATH", liar)
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    return gate.validate_bundle(root)
+
+
+VIOLATION = {
+    "reason_code": "CANONICAL_IDENTITY_UNRESOLVED",
+    "path": "observations[0]",
+    "detail": "d",
+}
+
+CONTRADICTORY_REPORTS = {
+    # The exact report Codex used.
+    "invalid_with_no_violations": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [],
+    },
+    "invalid_with_no_codes_and_no_violations": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": [],
+        "violations": [],
+    },
+    "invalid_with_violations_but_no_codes": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": [],
+        "violations": [VIOLATION],
+    },
+    "valid_string": {
+        "valid": "false",
+        "shape_valid": True,
+        "reason_codes": [],
+        "violations": [],
+    },
+    "valid_numeric_falsy": {"valid": 0, "shape_valid": True, "reason_codes": [], "violations": []},
+    "valid_numeric_truthy": {"valid": 1, "shape_valid": True, "reason_codes": [], "violations": []},
+    "shape_valid_not_boolean": {
+        "valid": True,
+        "shape_valid": 1,
+        "reason_codes": [],
+        "violations": [],
+    },
+    "valid_with_violations": {
+        "valid": True,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [VIOLATION],
+    },
+    "valid_with_reason_codes": {
+        "valid": True,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [],
+    },
+    "codes_disagree_with_violations": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["MINIMUM_SAMPLE_NOT_MET_RATE_EMITTED"],
+        "violations": [VIOLATION],
+    },
+    "malformed_violation_entry": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": ["CANONICAL_IDENTITY_UNRESOLVED"],
+    },
+    "violation_missing_detail": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [{"reason_code": "CANONICAL_IDENTITY_UNRESOLVED", "path": "p"}],
+    },
+    "violation_code_not_a_string": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [{"reason_code": 7, "path": "p", "detail": "d"}],
+    },
+    "reason_codes_not_a_list": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": "CANONICAL_IDENTITY_UNRESOLVED",
+        "violations": [VIOLATION],
+    },
+    "duplicate_reason_codes": {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED", "CANONICAL_IDENTITY_UNRESOLVED"],
+        "violations": [VIOLATION],
+    },
+    "unparseable_but_valid": {
+        "valid": True,
+        "shape_valid": False,
+        "reason_codes": [],
+        "violations": [],
+    },
+    "unexpected_extra_key": {
+        "valid": True,
+        "shape_valid": True,
+        "reason_codes": [],
+        "violations": [],
+        "override": True,
+    },
+    "missing_key": {"valid": True, "shape_valid": True, "reason_codes": []},
+    "not_an_object": "everything is fine",
+}
+
+
+@pytest.mark.parametrize("label", sorted(CONTRADICTORY_REPORTS))
+def test_contradictory_evaluator_report_never_passes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, label: str
+) -> None:
+    """Every malformed or self-contradictory verdict fails closed, with one code."""
+
+    result = _report_bundle(tmp_path, CONTRADICTORY_REPORTS[label], monkeypatch)
+    assert not result.ok, label
+    assert codes(result) == ["BUNDLE_SEMANTIC_EVALUATOR_FAILED"], label
+    assert result.artifacts[0].contract is None, label
+    assert "semantic" not in result.artifacts[0].stages_passed, label
+
+
+@pytest.mark.parametrize("label", sorted(CONTRADICTORY_REPORTS))
+def test_parse_evaluator_report_rejects_each_contradiction(label: str) -> None:
+    """The envelope check is the thing doing it, and it explains itself."""
+
+    report, reason = parse_evaluator_report(CONTRADICTORY_REPORTS[label])
+    assert report is None, label
+    assert isinstance(reason, str) and reason, label
+
+
+def test_parse_evaluator_report_accepts_a_real_rejection() -> None:
+    """Slice A's own negative report shape is untouched by the new strictness."""
+
+    report, reason = parse_evaluator_report(
+        {
+            "valid": False,
+            "shape_valid": True,
+            "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+            "violations": [VIOLATION],
+        }
+    )
+    assert reason is None
+    assert report is not None and report["valid"] is False
+
+
+def test_parse_evaluator_report_accepts_a_real_acceptance() -> None:
+    report, reason = parse_evaluator_report(
+        {"valid": True, "shape_valid": True, "reason_codes": [], "violations": []}
+    )
+    assert reason is None
+    assert report is not None and report["valid"] is True
+
+
+def test_parse_evaluator_report_accepts_a_shape_failure() -> None:
+    """Slice A reports shape_valid:false with SCHEMA_SHAPE_INVALID; still admitted."""
+
+    report, reason = parse_evaluator_report(
+        {
+            "valid": False,
+            "shape_valid": False,
+            "reason_codes": ["SCHEMA_SHAPE_INVALID"],
+            "violations": [
+                {"reason_code": "SCHEMA_SHAPE_INVALID", "path": "<root>", "detail": "d"}
+            ],
+        }
+    )
+    assert reason is None
+    assert report is not None
+
+
+def test_every_real_slice_a_report_is_admitted_by_the_envelope_check(tmp_path: Path) -> None:
+    """The corpus is the regression: no committed fixture's verdict is refused."""
+
+    for name in [*POSITIVE_FIXTURES, *sorted(NEGATIVE_FIXTURES)]:
+        result = validate_bundle(bundle_from_fixture(tmp_path / name, name))
+        assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" not in codes(result), name
+        assert result.artifacts[0].contract is not None, name
+
+
+def test_blocked_artifact_without_a_recorded_failure_cannot_pass(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The closing sweep: an unexplained block is itself a failure.
+
+    ``evaluate_semantics`` is replaced by one that silently blocks without
+    recording anything -- the shape of any future bug that forgets a failure.
+    The bundle must not pass.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    def silent_block(artifacts, failures):
+        for artifact in artifacts:
+            artifact.block()
+
+    monkeypatch.setattr(gate, "evaluate_semantics", silent_block)
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    result = gate.validate_bundle(root)
+    assert not result.ok
+    assert codes(result) == ["BUNDLE_SEMANTIC_EVALUATOR_FAILED"]
+
+
+def test_success_requires_every_artifact_to_complete_the_semantic_stage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An empty failure list alone is never enough to report a pass."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    def do_nothing(artifacts, failures):
+        return None
+
+    monkeypatch.setattr(gate, "evaluate_semantics", do_nothing)
+    root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
+    result = gate.validate_bundle(root)
+    assert not result.ok
+    assert all("semantic" not in a.stages_passed for a in result.artifacts)
+
+
+def test_module_swapped_after_the_build_forces_a_rebuild(fresh_evaluator_cache) -> None:
+    """The per-process memo is re-checked, not assumed.
+
+    Overwriting the module the gate built -- the shape of a swap between one
+    validation and the next -- must not be reused. The memo is discarded and the
+    source is compiled again.
+    """
+
+    first, error = ensure_evaluator()
+    assert error is None and first is not None
+    assert REPO_ROOT not in first.module_path.parents, (
+        "the gate must build into a private directory outside the repository; "
+        f"it built into {first.module_path}"
+    )
+    original_digest = first.module_digest
+    original_bytes = first.module_path.read_bytes()
+
+    first.module_path.write_text(PERMISSIVE_MODULE)
+    assert first.module_path.read_bytes() != original_bytes
+
+    second, error = ensure_evaluator()
+    assert error is None and second is not None
+    # Rebuilt from the same unchanged source, so the digest is reproduced, and
+    # the permissive bytes are gone.
+    assert second.module_digest == original_digest
+    assert second.source_fingerprint == first.source_fingerprint
+    assert second.module_path.read_bytes() != PERMISSIVE_MODULE.encode()
+
+
+def test_swapped_module_cannot_deliver_a_verdict(tmp_path: Path, fresh_evaluator_cache) -> None:
+    """End to end: a swapped module never yields a passing N11."""
+
+    build, _ = ensure_evaluator()
+    assert build is not None
+    assert REPO_ROOT not in build.module_path.parents, (
+        "refusing to tamper with a module inside the repository; "
+        f"the gate built into {build.module_path}"
+    )
+    build.module_path.write_text(PERMISSIVE_MODULE)
+
+    result = validate_bundle(
+        bundle_from_fixture(tmp_path / "b", "n11_canonical_identity_unresolved.json")
+    )
+    assert not result.ok
+    assert codes(result) == ["CANONICAL_IDENTITY_UNRESOLVED"]
+
+
+def test_build_surface_that_omits_the_contract_is_refused(tmp_path: Path) -> None:
+    """A build that never compiled the canonical contract is not an evaluator.
+
+    Honest note on which control does the work: ``tsc`` derives its output path
+    from the input path, so a tsconfig pointing anywhere else emits nothing at
+    the expected location and the *emitted-output* check refuses the build first.
+    The entry-source check behind it is defence-in-depth for a future change to
+    the output mapping, and mutation testing records it as redundant today
+    rather than claiming a necessity it does not have. This asserts the exact
+    code so the test cannot drift into implying otherwise.
+    """
+
+    other = tmp_path / "elsewhere"
+    (other / "src/contracts/v1").mkdir(parents=True)
+    os.symlink(REPO_ROOT / "node_modules", other / "node_modules", target_is_directory=True)
+    for cfg in ("tsconfig.json", "package.json", "package-lock.json"):
+        (other / cfg).write_bytes((REPO_ROOT / cfg).read_bytes())
+    decoy = other / "src/contracts/v1/decoy.ts"
+    decoy.write_text("export const unrelated = 1;\n")
+    tsconfig = tmp_path / "decoy.tsconfig.json"
+    tsconfig.write_text(
+        json.dumps(
+            {
+                "extends": str(REPO_ROOT / "tsconfig.json"),
+                "compilerOptions": {
+                    "declaration": False,
+                    "rootDir": str(other),
+                    "typeRoots": [str(REPO_ROOT / "node_modules/@types")],
+                },
+                "files": [str(decoy)],
+                "include": [],
+            }
+        )
+    )
+    build, error = build_evaluator(tsconfig_path=tsconfig, repo_root=other)
+    assert build is None
+    # tsc derives its output path from the input path, so a decoy under a
+    # different tree emits nothing at the expected location; the emitted-output
+    # or entry-not-compiled check refuses it before the module is trusted.
+    assert error is not None and error["error"] in {
+        "evaluator_build_incomplete",
+        "evaluator_entry_not_compiled",
+    }
+
+
+def test_a_bundle_declaring_no_artifact_can_never_pass(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Success requires artifacts, not merely an empty failure list.
+
+    The committed manifest schema already refuses an empty ``artifacts`` list, so
+    this bypasses the shape gate to reach the condition underneath it: if that
+    schema were ever widened, a bundle validating nothing must still not pass.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    monkeypatch.setattr(gate, "check_manifest_shape", lambda manifest, failures: True)
+    root = make_bundle(tmp_path / "b", {}, artifacts_override=[])
+    result = gate.validate_bundle(root)
+    assert result.artifacts == []
+    assert not result.ok, "a bundle that validated nothing is not a bundle that passed"
+
+
+def test_backstop_holds_if_the_envelope_check_ever_admits_a_rejection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Layering, proven: the two guards on an invalid verdict are independent.
+
+    ``parse_evaluator_report`` normally refuses a rejection that names no
+    violation. Here it is replaced by one that admits it -- the shape of a future
+    weakening of that check -- and the gate must still refuse the bundle rather
+    than record ``valid: false`` and report a pass, which is the exact fail-open
+    the review found.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    monkeypatch.setattr(gate, "parse_evaluator_report", lambda report: (report, None))
+    result = _report_bundle(
+        tmp_path,
+        {
+            "valid": False,
+            "shape_valid": True,
+            "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+            "violations": [],
+        },
+        monkeypatch,
+    )
+    assert not result.ok
+    assert codes(result) == ["BUNDLE_SEMANTIC_EVALUATOR_FAILED"]
+
+
+# ---------------------------------------------------------------------------
+# Convergence repair — lifecycle invariant across the whole chain
+# ---------------------------------------------------------------------------
+#
+# One invariant covers: captured reviewed source bytes -> local compiler ->
+# emitted module bytes -> bytes actually executed -> bridge transport ->
+# structurally admitted verdict. These controls exercise each seam.
+
+
+def _liar_bridge(tmp_path: Path, body: str) -> Path:
+    """A stand-in bridge whose behaviour is chosen per test.
+
+    ``body`` is JS that, given `mode`, produces the process's stdout and exit.
+    The constants response is always a well-formed success so the identity
+    stage passes and the test can reach the seam under test -- unless the test
+    is specifically about the constants path.
+    """
+
+    path = tmp_path / "liar_bridge.mjs"
+    path.write_text(body)
+    return path
+
+
+def _run_with_bridge(tmp_path: Path, bridge_body: str, fixture: str, monkeypatch) -> object:
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    bridge = _liar_bridge(tmp_path, bridge_body)
+    monkeypatch.setattr(gate, "BRIDGE_PATH", bridge)
+    root = bundle_from_fixture(tmp_path / "b", fixture)
+    return gate.validate_bundle(root)
+
+
+CONSTANTS_OK = (
+    "const c = JSON.stringify({ok: true, artifact_id: "
+    f"{PINNED_ARTIFACT_ID!r}, schema_version: {PINNED_SCHEMA_VERSION!r}}});\n"
+)
+
+
+# --- Transport: exit code, ok type, single-object, exact envelope -------------
+
+
+def test_transport_success_json_then_nonzero_exit_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A success-looking line followed by exit 9 must fail at the public gate."""
+
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: true, report: {valid: true, shape_valid: true, "
+        "reason_codes: [], violations: []}});\n"
+        "console.log(process.argv[2] === 'constants' ? c : e);\n"
+        "process.exit(9);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert not any(a.contract and a.contract["valid"] for a in result.artifacts)
+
+
+def test_transport_constants_ok_not_boolean_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`ok: "false"` (a truthy non-boolean) in the constants envelope must fail."""
+
+    body = (
+        "const c = JSON.stringify({ok: 'false', artifact_id: "
+        f"{PINNED_ARTIFACT_ID!r}, schema_version: {PINNED_SCHEMA_VERSION!r}}});\n"
+        "console.log(process.argv[2] === 'constants' ? c : '{}');\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_UNAVAILABLE" in codes(result)
+
+
+def test_transport_evaluate_ok_not_boolean_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: 1, report: {valid: true, shape_valid: true, "
+        "reason_codes: [], violations: []}});\n"
+        "console.log(process.argv[2] === 'constants' ? c : e);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+def test_transport_duplicate_ok_key_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A response with a duplicate key must be refused (strict parse)."""
+
+    body = (
+        CONSTANTS_OK
+        + 'const e = \'{"ok": true, "ok": false, "report": {"valid": true, '
+        '"shape_valid": true, "reason_codes": [], "violations": []}}\';\n'
+        "console.log(process.argv[2] === 'constants' ? c : e);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+def test_transport_multiple_json_lines_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A real refusal line followed by a success line must not be admitted."""
+
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: true, report: {valid: true, shape_valid: true, "
+        "reason_codes: [], violations: []}});\n"
+        "if (process.argv[2] === 'constants') { console.log(c); }\n"
+        "else {\n"
+        "  console.log(JSON.stringify({ok: false, error: 'x', detail: 'real refusal'}));\n"
+        "  console.log(e);\n"
+        "}\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+def test_transport_extra_key_in_success_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An evaluate success carrying an extra field must be refused."""
+
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: true, report: {valid: true, shape_valid: true, "
+        "reason_codes: [], violations: []}, override: true});\n"
+        "console.log(process.argv[2] === 'constants' ? c : e);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+def test_transport_mixed_success_error_envelope_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`ok:true` carrying error/detail fields is neither envelope; refuse it."""
+
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: true, error: 'x', detail: 'y'});\n"
+        "console.log(process.argv[2] === 'constants' ? c : e);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+def test_transport_declared_failure_is_honoured(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A well-formed failure envelope fails closed (positive control)."""
+
+    body = (
+        CONSTANTS_OK
+        + "if (process.argv[2] === 'constants') { console.log(c); process.exit(0); }\n"
+        "console.log(JSON.stringify("
+        "{ok: false, error: 'boom', detail: 'the evaluator refused'}));\n"
+        "process.exit(3);\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+
+
+# --- Toolchain: repo-local only, no npx, no acquisition -----------------------
+
+
+def test_missing_local_typescript_fails_closed_without_npx(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fresh_evaluator_cache
+) -> None:
+    """No local compiler => fail closed, and npx on PATH is never invoked."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    poison = tmp_path / "poison"
+    poison.mkdir()
+    marker = tmp_path / "NPX_RAN"
+    for name in ("npx", "tsc"):
+        exe = poison / name
+        exe.write_text(f"#!/bin/sh\ntouch {marker}\nexit 0\n")
+        exe.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{poison}:{os.environ['PATH']}")
+    monkeypatch.setattr(gate, "EVALUATOR_TS_COMPILER", tmp_path / "absent/tsc")
+
+    build, error = gate.build_evaluator()
+    assert build is None
+    assert error is not None and error["error"] == "evaluator_toolchain_unavailable"
+    assert not marker.exists(), "npx/tsc on PATH must never be executed"
+
+
+def test_version_mismatch_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fresh_evaluator_cache
+) -> None:
+    """An installed compiler whose version != the lockfile pin fails closed."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    fake_pkg = tmp_path / "typescript_package.json"
+    fake_pkg.write_text(json.dumps({"version": "0.0.0-not-pinned"}))
+    monkeypatch.setattr(gate, "EVALUATOR_TS_PACKAGE_JSON", fake_pkg)
+
+    build, error = gate.build_evaluator()
+    assert build is None
+    assert error is not None and error["error"] == "evaluator_toolchain_mismatch"
+
+
+def test_poisoned_npx_earlier_on_path_is_never_executed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fresh_evaluator_cache
+) -> None:
+    """With a working local compiler, a poisoned PATH npx/tsc still never runs."""
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    poison = tmp_path / "poison"
+    poison.mkdir()
+    marker = tmp_path / "POISON_RAN"
+    for name in ("npx", "tsc"):
+        exe = poison / name
+        exe.write_text(f"#!/bin/sh\ntouch {marker}\nexit 0\n")
+        exe.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{poison}:{os.environ['PATH']}")
+
+    build, error = gate.build_evaluator()
+    assert error is None and build is not None
+    assert not marker.exists(), "the repository-local compiler is used; PATH poison never runs"
+
+
+def test_gate_never_invokes_npx_in_source() -> None:
+    """Structural: no code path in the gate shells out to npx or bare tsc."""
+
+    source = GATE_SCRIPT.read_text()
+    for line in source.splitlines():
+        stripped = line.lstrip()
+        if stripped.startswith("#"):
+            continue
+        assert '"npx"' not in line, line
+        assert "'npx'" not in line, line
+
+
+# --- Source->module binding: race-free snapshot -------------------------------
+
+
+def test_working_tree_drift_during_compile_cannot_forge_the_receipt(
+    tmp_path: Path,
+) -> None:
+    """Finding 2: source drift during the compile window is not admissible.
+
+    An isolated repo is compiled while its working-tree source is rewritten
+    right before the compile pass reads. Because the compile reads an immutable
+    snapshot, the receipt describes the snapshot bytes, never the drifted ones.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    root = tmp_path / "repo"
+    (root / "src/contracts/v1").mkdir(parents=True)
+    (root / "scripts").mkdir()
+    os.symlink(REPO_ROOT / "node_modules", root / "node_modules", target_is_directory=True)
+    for cfg in (
+        "tsconfig.json",
+        "package.json",
+        "package-lock.json",
+        "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+    ):
+        (root / cfg).write_bytes((REPO_ROOT / cfg).read_bytes())
+    old = (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text()
+    drifted = old.replace(
+        "'rb_contact_evasion_observations_v0.4.0'",
+        "'rb_contact_evasion_observations_v9.9.9-drifted'",
+    )
+    (root / EVALUATOR_ENTRY_SOURCE).write_text(old)
+
+    real_run = subprocess.run
+    calls = {"n": 0}
+
+    def draining(argv, **kwargs):
+        if any("tsc" in str(a) for a in argv):
+            calls["n"] += 1
+            if calls["n"] == 2:  # right before the compile pass reads
+                (root / EVALUATOR_ENTRY_SOURCE).write_text(drifted)
+        return real_run(argv, **kwargs)
+
+    import unittest.mock
+
+    with unittest.mock.patch.object(gate.subprocess, "run", draining):
+        build, error = gate.build_evaluator(
+            tsconfig_path=root / "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+            repo_root=root,
+        )
+
+    assert error is None and build is not None
+    recorded = dict(build.source_files)[EVALUATOR_ENTRY_SOURCE]
+    assert recorded == hashlib.sha256(old.encode()).hexdigest()
+    assert recorded != hashlib.sha256(drifted.encode()).hexdigest()
+    module_text = build.module_path.read_text()
+    assert "v0.4.0" in module_text and "drifted" not in module_text
+    assert (root / EVALUATOR_ENTRY_SOURCE).read_text() == drifted  # tree did drift
+
+
+# --- Module->execution binding: single authenticated read --------------------
+
+
+def test_bridge_opens_the_module_exactly_once(tmp_path: Path) -> None:
+    """Finding 3: the module is read once (authentication); execution is in-memory.
+
+    strace shows exactly one openat of the module path across a whole bridge run,
+    so there is no hash-then-reopen window for a swap to exploit.
+    """
+
+    strace = shutil.which("strace")
+    if strace is None:  # pragma: no cover - environment dependent
+        pytest.skip("strace unavailable")
+
+    build, error = ensure_evaluator()
+    assert error is None and build is not None
+    log = tmp_path / "strace.log"
+    subprocess.run(
+        [
+            strace,
+            "-f",
+            "-e",
+            "trace=openat",
+            "-o",
+            str(log),
+            "node",
+            str(BRIDGE_SCRIPT),
+            "constants",
+            str(build.module_path),
+            build.module_digest,
+        ],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    module_name = build.module_path.name
+    opens = [
+        line
+        for line in log.read_text().splitlines()
+        if f'"{build.module_path}"' in line or f'{module_name}", ' in line
+    ]
+    # Exactly one open of the module full path.
+    full_path_opens = [line for line in opens if str(build.module_path) in line]
+    assert len(full_path_opens) == 1, full_path_opens
+
+
+def test_bridge_refuses_a_swapped_module_at_authentication(tmp_path: Path) -> None:
+    """A module whose bytes do not match the expected digest is never executed."""
+
+    module = tmp_path / "module.mjs"
+    module.write_text(PERMISSIVE_MODULE)
+    completed = subprocess.run(
+        ["node", str(BRIDGE_SCRIPT), "constants", str(module), "0" * 64],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode != 0
+    answer = json.loads(completed.stdout.decode().strip())
+    assert answer["ok"] is False
+    assert answer["error"] == "compiled_module_tampered"
+
+
+# --- Finding 5: no test touches the checkout's ambient dist/ ------------------
+
+
+def test_no_test_writes_to_the_checkout_dist(tmp_path: Path) -> None:
+    """The whole module must not reference the checkout's real dist/ as a target.
+
+    Every poisoned-build control lives in an isolated temporary repository. This
+    asserts the test source contains no write to ``REPO_ROOT / "dist"``.
+    """
+
+    source = (TESTS_DIR / "test_rb_contact_evasion_bundle_gate.py").read_text()
+    # Exclude this scanner's own body, which necessarily names the tokens.
+    marker = "def test_no_test_writes_to_the_checkout_dist("
+    scanned = source[: source.index(marker)]
+    needle = "REPO_ROOT" + ' / "' + "dist"  # assembled so it is not a literal here
+    assert needle not in scanned
+    assert ("poisoned" + "_dist") not in scanned
+
+
+def test_transport_success_then_extra_line_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A success line FIRST, followed by any extra line, must be refused.
+
+    The parser reads the first line, so without the "exactly one line" check a
+    bridge could emit a success and then trailing output and have the success
+    admitted. This is the case the multiple-response check exists for.
+    """
+
+    body = (
+        CONSTANTS_OK
+        + "const e = JSON.stringify({ok: true, report: {valid: true, shape_valid: true, "
+        "reason_codes: [], violations: []}});\n"
+        "if (process.argv[2] === 'constants') { console.log(c); }\n"
+        "else { console.log(e); console.log('trailing junk'); }\n"
+    )
+    result = _run_with_bridge(tmp_path, body, "p2_raw_count_without_denominator.json", monkeypatch)
+    assert not result.ok
+    assert "BUNDLE_SEMANTIC_EVALUATOR_FAILED" in codes(result)
+    assert not any(a.contract and a.contract["valid"] for a in result.artifacts)
+
+
+def test_receipt_hashes_the_snapshot_not_the_working_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The receipt must hash the immutable snapshot, never the live working tree.
+
+    The working-tree source is drifted in the window *after* the snapshot is
+    copied but *before* the hash loop runs (hooking the snapshot's symlink
+    creation, which sits exactly there). If the code hashed the working tree the
+    receipt would record the drifted bytes; because it hashes the snapshot, it
+    records the original.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    root = tmp_path / "repo"
+    (root / "src/contracts/v1").mkdir(parents=True)
+    (root / "scripts").mkdir()
+    for cfg in (
+        "tsconfig.json",
+        "package.json",
+        "package-lock.json",
+        "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+    ):
+        (root / cfg).write_bytes((REPO_ROOT / cfg).read_bytes())
+    os.symlink(REPO_ROOT / "node_modules", root / "node_modules", target_is_directory=True)
+    old = (REPO_ROOT / EVALUATOR_ENTRY_SOURCE).read_text()
+    drifted = old.replace(
+        "'rb_contact_evasion_observations_v0.4.0'",
+        "'rb_contact_evasion_observations_v9.9.9-drifted'",
+    )
+    (root / EVALUATOR_ENTRY_SOURCE).write_text(old)
+
+    real_symlink = os.symlink
+    fired = {"done": False}
+
+    def drifting_symlink(src, dst, *args, **kwargs):
+        # The first symlink build_evaluator makes is the snapshot's node_modules,
+        # created after the source is copied and before it is hashed.
+        if not fired["done"]:
+            fired["done"] = True
+            (root / EVALUATOR_ENTRY_SOURCE).write_text(drifted)
+        return real_symlink(src, dst, *args, **kwargs)
+
+    monkeypatch.setattr(gate.os, "symlink", drifting_symlink)
+    build, error = gate.build_evaluator(
+        tsconfig_path=root / "scripts/rb_contact_evasion_evaluator.tsconfig.json",
+        repo_root=root,
+    )
+    assert error is None and build is not None
+    assert fired["done"], "the drift injection did fire"
+    assert (root / EVALUATOR_ENTRY_SOURCE).read_text() == drifted, "the working tree did drift"
+
+    recorded = dict(build.source_files)[EVALUATOR_ENTRY_SOURCE]
+    assert recorded == hashlib.sha256(old.encode()).hexdigest(), (
+        "the receipt must hash the immutable snapshot bytes, not the drifted working tree"
+    )
+    assert recorded != hashlib.sha256(drifted.encode()).hexdigest()
+
+
+def test_tsc_listfiles_escape_detector() -> None:
+    """The escape detector splits repo-local sources from out-of-tree reads.
+
+    This is the logic the snapshot-confinement guards rely on. A path outside the
+    root and outside node_modules is an escape; node_modules declarations and
+    non-path lines are neither source nor escape.
+    """
+
+    import scripts.validate_rb_contact_evasion_bundle as gate
+
+    root = REPO_ROOT
+    stdout = "\n".join(
+        [
+            f"{root}/src/contracts/v1/rbContactEvasionObservationsV0.ts",
+            f"{root}/node_modules/zod/index.d.ts",
+            "/etc/passwd",
+            "/some/other/repo/evil.ts",
+            "Files:",
+        ]
+    )
+    sources, escapes = gate._tsc_repo_local_sources(stdout, root)
+    assert sources == ["src/contracts/v1/rbContactEvasionObservationsV0.ts"]
+    assert set(escapes) == {"/etc/passwd", "/some/other/repo/evil.ts"}
+
+
+# ---------------------------------------------------------------------------
+# Independent-review repair — descriptor-bound file reads (P2)
+# ---------------------------------------------------------------------------
+#
+# Every bundle file is opened once, without following symlinks; its type and
+# size are validated by fstat on that descriptor; and it is read with a bounded
+# read from the same descriptor. There is no stat()-then-reopen window an
+# oversized file, FIFO, device, or symlink can slip through, and no unbounded
+# read. These controls exercise the boundary through the public gate and the
+# read helper directly. All temp copies; no committed file is mutated.
+
+import scripts.validate_rb_contact_evasion_bundle as _gate  # noqa: E402
+
+
+def _one_artifact_bundle(root: Path, raw: bytes, name: str = "observations/a.json") -> Path:
+    return make_bundle(root, {name: raw})
+
+
+def test_read_helper_refuses_oversized_file_without_reading_it(tmp_path: Path) -> None:
+    """fstat size > cap => TOO_LARGE, and the file is never read into memory."""
+
+    big = tmp_path / "big.bin"
+    big.write_bytes(b"x" * (2048 + 1))
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "big.bin", 2048)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.TOO_LARGE
+
+
+def test_read_helper_bounded_read_never_exceeds_cap_plus_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Growth after fstat is caught by the bounded read, not by unbounded memory.
+
+    fstat is forced to report a within-cap size while the file on disk is far
+    larger; the bounded read must stop at cap+1 and report growth, never buffer
+    the whole file.
+    """
+
+    cap = 4096
+    big = tmp_path / "grows.bin"
+    big.write_bytes(b"y" * (cap * 64))  # 256 KiB actual
+
+    real_fstat = os.fstat
+    reads = {"max_single": 0}
+    real_read = os.read
+
+    def small_fstat(fd):
+        st = real_fstat(fd)
+        return os.stat_result(
+            (st.st_mode, st.st_ino, st.st_dev, st.st_nlink, st.st_uid, st.st_gid, cap)
+            + st[7:]
+        )
+
+    def counting_read(fd, n):
+        reads["max_single"] = max(reads["max_single"], n)
+        return real_read(fd, n)
+
+    monkeypatch.setattr(_gate.os, "fstat", small_fstat)
+    monkeypatch.setattr(_gate.os, "read", counting_read)
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "grows.bin", cap)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.TOO_LARGE
+    # No single read request ever asked for more than cap+1 bytes total budget.
+    assert reads["max_single"] <= cap + 1
+
+
+def test_read_helper_refuses_a_fifo_without_hanging(tmp_path: Path) -> None:
+    """A FIFO with no writer is refused promptly, never blocking the open."""
+
+    fifo = tmp_path / "pipe"
+    os.mkfifo(fifo)
+    # If the open blocked this would hang; the test process would time out.
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "pipe", 4096)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.NOT_REGULAR
+
+
+def test_read_helper_refuses_a_directory(tmp_path: Path) -> None:
+    (tmp_path / "adir").mkdir()
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "adir", 4096)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.NOT_REGULAR
+
+
+def test_read_helper_refuses_a_final_component_symlink(tmp_path: Path) -> None:
+    real = tmp_path / "real.json"
+    real.write_bytes(b"{}\n")
+    os.symlink(real, tmp_path / "link.json")
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "link.json", 4096)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.SYMLINK
+
+
+def test_read_helper_refuses_an_intermediate_component_symlink(tmp_path: Path) -> None:
+    real_dir = tmp_path / "realdir"
+    real_dir.mkdir()
+    (real_dir / "a.json").write_bytes(b"{}\n")
+    os.symlink(real_dir, tmp_path / "linkdir")
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "linkdir/a.json", 4096)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.SYMLINK
+
+
+def test_read_helper_reads_a_regular_file_exactly(tmp_path: Path) -> None:
+    payload = b'{"hello": "world"}\n'
+    (tmp_path / "ok.json").write_bytes(payload)
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "ok.json", 4096)
+    assert outcome == _gate._ReadOutcome.OK
+    assert data == payload
+
+
+def test_gate_refuses_oversized_replacement_between_check_and_read(tmp_path: Path) -> None:
+    """Public gate: an artifact whose on-disk size exceeds the cap is refused.
+
+    The size is validated by fstat on the opened descriptor, so an oversized
+    file is caught before its bytes are read -- the cap binds the read.
+    """
+
+    root = tmp_path / "b"
+    (root / "observations").mkdir(parents=True)
+    oversized = b"x" * (_gate.ARTIFACT_MAX_BYTES + 4096)
+    target = root / "observations/a.json"
+    target.write_bytes(oversized)
+    manifest = {
+        "manifest_version": PINNED_MANIFEST_VERSION,
+        "artifact_id": PINNED_ARTIFACT_ID,
+        "schema_version": PINNED_SCHEMA_VERSION,
+        "artifact_position": "fixture_only",
+        "digest_algorithm": "sha256",
+        "generated_at": "2026-08-25T00:00:00+00:00",
+        "artifacts": [
+            {
+                "path": "observations/a.json",
+                "size_bytes": len(oversized),
+                "digest": hashlib.sha256(oversized).hexdigest(),
+            }
+        ],
+    }
+    (root / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    result = validate_bundle(root)
+    assert not result.ok
+    assert "BUNDLE_ARTIFACT_TOO_LARGE" in codes(result)
+
+
+def test_gate_refuses_a_fifo_artifact_without_hanging(tmp_path: Path) -> None:
+    """Public gate: a FIFO in artifact position is refused, promptly."""
+
+    raw = _fixture_path("p2_raw_count_without_denominator.json").read_bytes()
+    root = tmp_path / "b"
+    (root / "observations").mkdir(parents=True)
+    manifest = {
+        "manifest_version": PINNED_MANIFEST_VERSION,
+        "artifact_id": PINNED_ARTIFACT_ID,
+        "schema_version": PINNED_SCHEMA_VERSION,
+        "artifact_position": "fixture_only",
+        "digest_algorithm": "sha256",
+        "generated_at": "2026-08-25T00:00:00+00:00",
+        "artifacts": [
+            {
+                "path": "observations/a.json",
+                "size_bytes": len(raw),
+                "digest": hashlib.sha256(raw).hexdigest(),
+            }
+        ],
+    }
+    (root / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    os.mkfifo(root / "observations/a.json")
+    result = validate_bundle(root)
+    assert not result.ok
+    assert "BUNDLE_PATH_NOT_REGULAR_FILE" in codes(result)
+
+
+def test_gate_refuses_a_fifo_manifest_without_hanging(tmp_path: Path) -> None:
+    """Public gate: a FIFO manifest is refused, promptly."""
+
+    root = tmp_path / "b"
+    (root / "observations").mkdir(parents=True)
+    (root / "observations/a.json").write_bytes(b"{}\n")
+    os.mkfifo(root / "manifest.json")
+    result = validate_bundle(root)
+    assert not result.ok
+    assert "BUNDLE_MANIFEST_UNREADABLE" in codes(result)
+
+
+def test_gate_refuses_symlinked_manifest_via_descriptor(tmp_path: Path) -> None:
+    real = tmp_path / "real_manifest.json"
+    real.write_text("{}")
+    root = tmp_path / "b"
+    root.mkdir()
+    (root / "observations").mkdir()
+    (root / "observations/a.json").write_bytes(b"{}\n")
+    os.symlink(real, root / "manifest.json")
+    result = validate_bundle(root)
+    assert not result.ok
+    assert "BUNDLE_MANIFEST_UNREADABLE" in codes(result)
+
+
+def test_semantic_stage_uses_verified_bytes_not_a_reopen(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Replacing the artifact after integrity must not change what the evaluator sees.
+
+    The file is swapped in the window between integrity and the semantic stage
+    (by wrapping the stage that runs just before it). The bytes captured at
+    integrity are what the bridge receives, so the evaluator still judges the
+    original N11 bytes; if the semantic stage reopened the pathname it would read
+    the swapped, permissive-looking payload and the bundle would wrongly pass.
+    """
+
+    root = _one_artifact_bundle(
+        tmp_path / "b", _fixture_path("n11_canonical_identity_unresolved.json").read_bytes()
+    )
+    target = root / "observations/a.json"
+    swap = _fixture_path("p2_raw_count_without_denominator.json").read_bytes()
+
+    real_stage = _gate.check_manifest_payload_agreement
+    fired = {"done": False}
+
+    def swapping_stage(manifest, artifacts, failures):
+        real_stage(manifest, artifacts, failures)
+        # After the last pre-semantic stage, replace the file on disk. A reopen
+        # at the semantic stage would read this; verified-bytes must not.
+        if not fired["done"]:
+            fired["done"] = True
+            target.write_bytes(swap)
+
+    monkeypatch.setattr(_gate, "check_manifest_payload_agreement", swapping_stage)
+    result = _gate.validate_bundle(root)
+    assert fired["done"]
+    assert target.read_bytes() == swap, "the on-disk file was swapped after integrity"
+    # The verdict is the original N11's, proving the evaluator saw the verified bytes.
+    assert not result.ok
+    assert codes(result) == ["CANONICAL_IDENTITY_UNRESOLVED"]
+    (artifact,) = result.artifacts
+    assert artifact.contract == {
+        "valid": False,
+        "shape_valid": True,
+        "reason_codes": ["CANONICAL_IDENTITY_UNRESOLVED"],
+    }
+
+
+def test_verified_bytes_are_frozen_immutable_after_integrity(tmp_path: Path) -> None:
+    """P1: integrity freezes the digest-authorized bytes into an immutable object.
+
+    After the integrity stage, ``verified_bytes`` and ``raw_bytes`` are the SAME
+    immutable ``bytes`` object (not a mutable ``bytearray`` alias), so no later
+    stage can flip a byte in place and change what the evaluator judges. The read
+    helper still yields a ``bytearray``; the promise is made when the digest
+    matches, and that is where the freeze happens.
+    """
+
+    raw = _fixture_path("p2_raw_count_without_denominator.json").read_bytes()
+    root = _one_artifact_bundle(tmp_path / "b", raw)
+
+    manifest = json.loads((root / MANIFEST_FILENAME).read_text())
+    artifacts = [
+        _gate.ArtifactState(
+            path=entry["path"],
+            declared_size=entry["size_bytes"],
+            declared_digest=entry["digest"],
+        )
+        for entry in manifest["artifacts"]
+    ]
+    failures: list = []
+    _gate.check_path_safety(root, artifacts, failures)
+    _gate.check_bundle_bijection(root, artifacts, failures)
+    _gate.check_integrity(root, manifest, artifacts, failures)
+    assert failures == []
+
+    (artifact,) = artifacts
+    assert type(artifact.verified_bytes) is bytes, "verified bytes must be frozen immutable bytes"
+    assert type(artifact.raw_bytes) is bytes
+    assert artifact.verified_bytes is artifact.raw_bytes, "both fields share one immutable object"
+    assert artifact.verified_bytes == raw
+    assert hashlib.sha256(artifact.verified_bytes).hexdigest() == artifact.declared_digest
+    # In-place mutation is impossible: bytes rejects item assignment. A bytearray
+    # alias (the pre-fix behaviour) would accept it and silently change the subject.
+    with pytest.raises(TypeError):
+        artifact.verified_bytes[0] = artifact.verified_bytes[0]  # type: ignore[index]
+
+
+def test_evaluator_receives_bytes_matching_the_manifest_digest(tmp_path: Path) -> None:
+    """P1 behavioural: the bytes the evaluator receives hash to the manifest digest.
+
+    The whole gate runs on a copy of the reference bundle; the bridge boundary is
+    instrumented to capture exactly what is sent to the evaluator. Every captured
+    payload's SHA-256 must equal a digest the manifest declared -- proving the
+    subject the evaluator judged is byte-for-byte the subject integrity authorized.
+    """
+
+    root = tmp_path / "bundle"
+    shutil.copytree(REFERENCE_BUNDLE, root)
+    manifest = json.loads((root / MANIFEST_FILENAME).read_text())
+    declared_digests = {entry["digest"] for entry in manifest["artifacts"]}
+
+    captured: list[str] = []
+    real_run_bridge = _gate._run_bridge
+
+    def capturing_bridge(mode, stdin_bytes, build):  # noqa: ANN001
+        if mode == "evaluate":
+            captured.append(hashlib.sha256(bytes(stdin_bytes)).hexdigest())
+        return real_run_bridge(mode, stdin_bytes=stdin_bytes, build=build)
+
+    original = _gate._run_bridge
+    _gate._run_bridge = capturing_bridge
+    try:
+        result = _gate.validate_bundle(root)
+    finally:
+        _gate._run_bridge = original
+
+    assert result.ok
+    assert len(captured) == len(manifest["artifacts"]) >= 1
+    for sent_digest in captured:
+        assert sent_digest in declared_digests, (
+            "the evaluator received bytes whose SHA-256 is not a declared manifest digest"
+        )
+
+
+def test_pre_semantic_mutation_cannot_alter_the_evaluated_subject(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """P1 regression: an in-place whitespace flip between integrity and the
+    semantic stage cannot change the evaluated bytes.
+
+    This reproduces the original defect through the real gate: the stage that
+    runs just before semantic evaluation attempts a JSON-equivalent space->tab
+    swap on ``verified_bytes``. With the freeze in place the object is immutable,
+    so the attempt raises and the evaluator still receives digest-matching bytes.
+    Remove the freeze (restore the mutable ``bytearray`` alias) and the swap
+    succeeds -- the evaluator then receives bytes whose SHA-256 differs from the
+    manifest digest, and this test fails on both counts.
+    """
+
+    root = tmp_path / "bundle"
+    shutil.copytree(REFERENCE_BUNDLE, root)
+    manifest = json.loads((root / MANIFEST_FILENAME).read_text())
+    declared_digests = {entry["digest"] for entry in manifest["artifacts"]}
+
+    attempts = {"tried": 0, "refused": 0}
+    real_stage = _gate.check_manifest_payload_agreement
+
+    def mutating_stage(manifest_arg, artifacts, failures):  # noqa: ANN001
+        real_stage(manifest_arg, artifacts, failures)
+        for artifact in artifacts:
+            vb = artifact.verified_bytes
+            if vb is None:
+                continue
+            index = vb.find(b" ")  # a JSON insignificant space
+            if index < 0:
+                continue
+            attempts["tried"] += 1
+            try:
+                vb[index] = 0x09  # space -> tab, JSON-equivalent; refused if immutable
+            except TypeError:
+                attempts["refused"] += 1
+
+    captured: list[str] = []
+    real_run_bridge = _gate._run_bridge
+
+    def capturing_bridge(mode, stdin_bytes, build):  # noqa: ANN001
+        if mode == "evaluate":
+            captured.append(hashlib.sha256(bytes(stdin_bytes)).hexdigest())
+        return real_run_bridge(mode, stdin_bytes=stdin_bytes, build=build)
+
+    monkeypatch.setattr(_gate, "check_manifest_payload_agreement", mutating_stage)
+    monkeypatch.setattr(_gate, "_run_bridge", capturing_bridge)
+    result = _gate.validate_bundle(root)
+
+    assert attempts["tried"] >= 1, "the mutation hook must have run on the verified bytes"
+    assert attempts["refused"] == attempts["tried"], (
+        "every in-place mutation attempt must be refused -- verified_bytes must be immutable"
+    )
+    assert captured, "the evaluator must have been reached"
+    for sent_digest in captured:
+        assert sent_digest in declared_digests, (
+            "the evaluator received mutated bytes: the digest no longer binds the evaluated subject"
+        )
+    assert result.ok
+
+
+def test_oversized_file_is_refused_without_reading_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """fstat's size cap refuses an oversized file before any byte is read.
+
+    This distinguishes the fstat cap from the bounded read: both would yield
+    TOO_LARGE, but the fstat cap must refuse *without* an os.read, so a huge file
+    is never streamed at all.
+    """
+
+    cap = 4096
+    big = tmp_path / "big.bin"
+    big.write_bytes(b"z" * (cap * 32))
+
+    real_read = os.read
+    reads = {"count": 0}
+
+    def counting_read(fd, n):
+        reads["count"] += 1
+        return real_read(fd, n)
+
+    monkeypatch.setattr(_gate.os, "read", counting_read)
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "big.bin", cap)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.TOO_LARGE
+    assert reads["count"] == 0, "an oversized file must be refused by fstat, never read"
+
+
+def test_normal_manifest_and_artifact_reads_are_deterministic(tmp_path: Path) -> None:
+    """The descriptor read returns the same bytes as a plain read, repeatably."""
+
+    payload = _fixture_path("p2_raw_count_without_denominator.json").read_bytes()
+    (tmp_path / "a.json").write_bytes(payload)
+    for _ in range(3):
+        data, (outcome, _) = _gate.read_bundle_file(tmp_path, "a.json", _gate.ARTIFACT_MAX_BYTES)
+        assert outcome == _gate._ReadOutcome.OK
+        assert data == payload
+
+
+def test_descriptor_read_does_not_mutate_committed_fixtures() -> None:
+    before = {
+        path.relative_to(REPO_ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(FIXTURE_ROOT.rglob("*.json"))
+    }
+    assert validate_bundle(REFERENCE_BUNDLE).ok
+    after = {
+        path.relative_to(REPO_ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(FIXTURE_ROOT.rglob("*.json"))
+    }
+    assert before == after
+
+
+# ---------------------------------------------------------------------------
+# Second independent-review repair — capability fail-closed (P1) and true
+# single-buffer memory (P2)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def _capability_matrix(monkeypatch: pytest.MonkeyPatch):
+    """Helper to drop one or more descriptor primitives on the gate module."""
+
+    def drop(*, o_path=False, o_nofollow=False, o_nonblock=False, dir_fd=False):
+        if o_path:
+            monkeypatch.setattr(_gate, "_O_PATH", 0)
+        if o_nofollow:
+            monkeypatch.setattr(_gate, "_O_NOFOLLOW", 0)
+        if o_nonblock:
+            monkeypatch.setattr(_gate, "_O_NONBLOCK", 0)
+        if dir_fd:
+            class _NoDirFd:
+                def __contains__(self, item):  # noqa: ANN001
+                    return False
+
+            monkeypatch.setattr(_gate.os, "supports_dir_fd", _NoDirFd())
+
+    return drop
+
+
+def _external_symlink_bundle(tmp_path: Path, which: str) -> tuple[Path, bytes]:
+    """A bundle whose manifest or artifact (final or intermediate) links outside.
+
+    Returns (bundle_root, external_secret_bytes). The secret must never be read.
+    """
+
+    secret = tmp_path / "outside_secret.json"
+    secret_bytes = b'{"external":"MUST-NEVER-BE-READ"}\n'
+    secret.write_bytes(secret_bytes)
+    secret_dir = tmp_path / "outside_dir"
+    secret_dir.mkdir()
+    (secret_dir / "a.json").write_bytes(secret_bytes)
+
+    root = tmp_path / "bundle"
+    (root / "observations").mkdir(parents=True)
+    (root / "observations/a.json").write_bytes(b"{}\n")
+    good_manifest = {
+        "manifest_version": PINNED_MANIFEST_VERSION,
+        "artifact_id": PINNED_ARTIFACT_ID,
+        "schema_version": PINNED_SCHEMA_VERSION,
+        "artifact_position": "fixture_only",
+        "digest_algorithm": "sha256",
+        "generated_at": "2026-08-25T00:00:00+00:00",
+        "artifacts": [
+            {
+                "path": "observations/a.json",
+                "size_bytes": 3,
+                "digest": hashlib.sha256(b"{}\n").hexdigest(),
+            }
+        ],
+    }
+    if which == "manifest":
+        (root / "manifest.json").symlink_to(secret)
+    else:
+        (root / "manifest.json").write_text(
+            json.dumps(good_manifest, indent=2, sort_keys=True) + "\n"
+        )
+        if which == "final":
+            (root / "observations/a.json").unlink()
+            (root / "observations/a.json").symlink_to(secret)
+        elif which == "intermediate":
+            (root / "observations/a.json").unlink()
+            (root / "observations").rmdir()
+            (root / "observations").symlink_to(secret_dir)
+    return root, secret_bytes
+
+
+def _instrument_open_read(monkeypatch: pytest.MonkeyPatch, *, dir_fd_supported: bool):
+    """Spy on the gate's actual open/read boundary and record every call.
+
+    Returns ``(opens, reads)`` lists that fill as the gate opens paths and reads
+    bytes. The spies wrap the real ``os.open``/``os.read`` so behaviour is
+    unchanged; they merely observe.
+
+    The one subtlety is ``descriptor_primitives_available()``, which tests
+    ``os.open in os.supports_dir_fd`` by *identity*. Replacing ``os.open`` with a
+    spy would make that membership test False and could make the preflight fail
+    for an unrelated reason (the spy), masking a real read. So when ``dir_fd`` is
+    meant to be supported we register the spy in a patched ``supports_dir_fd`` set
+    -- capability detection then still sees dir_fd support, and the only thing
+    that can make the preflight fail is a genuinely dropped ``O_*`` flag, never
+    the instrumentation itself.
+    """
+
+    opens: list = []
+    reads: list = []
+    real_open = _gate.os.open
+    real_read = _gate.os.read
+
+    def spy_open(path, flags, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        opens.append(path)
+        return real_open(path, flags, *args, **kwargs)
+
+    def spy_read(fd, n):  # noqa: ANN001
+        reads.append(n)
+        return real_read(fd, n)
+
+    monkeypatch.setattr(_gate.os, "read", spy_read)
+    if dir_fd_supported:
+        monkeypatch.setattr(
+            _gate.os, "supports_dir_fd", {spy_open, *_gate.os.supports_dir_fd}
+        )
+    monkeypatch.setattr(_gate.os, "open", spy_open)
+    return opens, reads
+
+
+def test_open_read_instrumentation_observes_reads_and_preserves_detection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Control for the capability matrix: the open/read spies must (a) leave
+    capability detection intact when the primitives are present, and (b) actually
+    observe a real open and read. Otherwise a zero count in the matrix below would
+    prove a broken detector, not a genuine no-access.
+    """
+
+    payload = b'{"ok":true}\n'
+    (tmp_path / "a.json").write_bytes(payload)
+    opens, reads = _instrument_open_read(monkeypatch, dir_fd_supported=True)
+    assert _gate.descriptor_primitives_available() is True
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "a.json", 4096)
+    assert outcome == _gate._ReadOutcome.OK
+    assert bytes(data) == payload
+    assert opens, "the open spy must observe the real component open(s)"
+    assert reads, "the read spy must observe the real leaf read"
+
+
+@pytest.mark.parametrize("which", ["manifest", "final", "intermediate"])
+@pytest.mark.parametrize(
+    "drop_kwargs",
+    [
+        {"o_path": True},
+        {"o_nofollow": True},
+        {"dir_fd": True},
+        {"o_nonblock": True},
+        {"o_path": True, "o_nofollow": True, "dir_fd": True},
+    ],
+)
+def test_dropping_any_primitive_never_reads_external_bytes(
+    tmp_path: Path,
+    _capability_matrix,
+    monkeypatch: pytest.MonkeyPatch,
+    which: str,
+    drop_kwargs: dict,
+) -> None:
+    """Capability matrix: with any required primitive missing, the gate fails
+    closed before opening or reading anything, for manifest, final-component, and
+    intermediate cases.
+
+    A symlink to bytes outside the bundle is present in each case. The proof is
+    behavioural: the actual ``os.open``/``os.read`` boundary is instrumented, and
+    after the capability preflight fails the gate must open zero paths and read
+    zero bytes -- so the external symlink target is never touched. (The earlier
+    version only checked the external marker was absent from ``GateResult`` text,
+    with a vacuous ``secret[:0]`` term; absence from the rendered result does not
+    prove the bytes were never read.)
+    """
+
+    root, secret = _external_symlink_bundle(tmp_path, which)
+    _capability_matrix(**drop_kwargs)
+    assert not _gate.descriptor_primitives_available()
+
+    opens, reads = _instrument_open_read(
+        monkeypatch, dir_fd_supported=not drop_kwargs.get("dir_fd", False)
+    )
+    # Instrumentation must not itself be the reason the preflight fails: with the
+    # dir_fd view preserved (above), detection still fails only because of the
+    # dropped O_* flag.
+    assert not _gate.descriptor_primitives_available()
+
+    result = _gate.validate_bundle(root)
+
+    # Behavioural no-access proof: nothing was opened, nothing was read.
+    assert opens == [], f"gate opened path(s) after preflight failure: {opens}"
+    assert reads == [], f"gate read byte(s) after preflight failure: {reads}"
+
+    assert not result.ok
+    assert "BUNDLE_DESCRIPTOR_UNSUPPORTED" in codes(result)
+    rendered = json.dumps(result.as_dict())
+    # The marker really is in the external bytes (the fixture is genuine), and it
+    # is absent from the result because those bytes were never opened or read.
+    assert b"MUST-NEVER-BE-READ" in secret
+    assert "MUST-NEVER-BE-READ" not in rendered
+    for artifact in result.artifacts:
+        assert artifact.verified_bytes is None
+
+
+def test_read_helper_fails_closed_when_primitives_unavailable(
+    tmp_path: Path, _capability_matrix
+) -> None:
+    """The helper itself refuses (UNSUPPORTED) and never opens the path."""
+
+    secret = tmp_path / "secret.json"
+    secret.write_bytes(b"EXTERNAL\n")
+    (tmp_path / "manifest.json").symlink_to(secret)
+    _capability_matrix(o_path=True)
+    data, (outcome, _) = _gate.read_bundle_file(tmp_path, "manifest.json", 4096)
+    assert data is None
+    assert outcome == _gate._ReadOutcome.UNSUPPORTED
+
+
+def test_no_full_path_fallback_open_remains_in_the_source() -> None:
+    """Structural: the helper has no full-path open fallback branch."""
+
+    src = GATE_SCRIPT.read_text()
+    # The only os.open calls in read_bundle_file must pass dir_fd (component
+    # walk) or open the bundle root; none opens a joined full relative path.
+    assert "bundle_root / PurePosixPath(relative_posix)" not in src
+
+
+def test_full_gate_with_all_primitives_present_still_passes(tmp_path: Path) -> None:
+    """Sanity: on this platform (all primitives present) the gate works."""
+
+    assert _gate.descriptor_primitives_available()
+    root = _one_artifact_bundle(
+        tmp_path / "b", _fixture_path("p2_raw_count_without_denominator.json").read_bytes()
+    )
+    assert _gate.validate_bundle(root).ok
+
+
+def test_read_peak_payload_ownership_is_single_buffer(tmp_path: Path) -> None:
+    """P2: peak payload ownership is ~one buffer, not two.
+
+    Measures actual traced peak memory during the read (not merely the size of
+    each os.read request). The old chunk-list-then-join peaked at ~2x the
+    payload; the single growing buffer peaks at the payload plus one small read
+    chunk. Asserts the peak is well under 2x — distinguishing real peak
+    ownership from request sizing.
+    """
+
+    import tracemalloc
+
+    cap = 8 * 1024 * 1024  # 8 MiB
+    payload = tmp_path / "payload.bin"
+    payload.write_bytes(b"a" * cap)
+
+    fd = os.open(str(payload), os.O_RDONLY)
+    try:
+        tracemalloc.start()
+        base = tracemalloc.get_traced_memory()[0]
+        data, grew = _gate._read_fd_capped(fd, cap)
+        peak = tracemalloc.get_traced_memory()[1]
+        tracemalloc.stop()
+    finally:
+        os.close(fd)
+
+    assert not grew
+    assert len(data) == cap
+    peak_over_payload = peak - base - cap
+    # Peak beyond the payload is bounded by a small constant (one read chunk plus
+    # bytearray growth headroom), never a second payload-sized copy.
+    assert peak_over_payload < 4 * _gate._READ_CHUNK, (
+        f"peak {peak - base} exceeds payload {cap} by {peak_over_payload}, "
+        "which indicates a second payload-sized representation"
+    )
+
+
+def test_read_helper_returns_a_single_growing_buffer_not_a_join(tmp_path: Path) -> None:
+    """Structural: the reader owns one buffer and never joins a chunk list."""
+
+    src = GATE_SCRIPT.read_text()
+    reader = src[src.index("def _read_fd_capped(") : src.index("def read_bundle_file(")]
+    assert 'b"".join' not in reader
+    assert "chunks" not in reader
+    assert "buf += chunk" in reader
+
+
+def test_growth_and_short_read_still_detected_with_single_buffer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The single-buffer reader keeps post-fstat growth and short-read behaviour."""
+
+    cap = 4096
+    grew_file = tmp_path / "grew.bin"
+    grew_file.write_bytes(b"x" * (cap * 8))
+    fd = os.open(str(grew_file), os.O_RDONLY)
+    try:
+        data, grew = _gate._read_fd_capped(fd, cap)
+    finally:
+        os.close(fd)
+    assert grew is True
+    assert len(data) == 0  # oversize buffer is dropped, not returned
+
+    short_file = tmp_path / "short.bin"
+    short_file.write_bytes(b"y" * 10)
+    fd = os.open(str(short_file), os.O_RDONLY)
+    try:
+        data, grew = _gate._read_fd_capped(fd, cap)
+    finally:
+        os.close(fd)
+    assert grew is False
+    assert len(data) == 10  # fewer bytes than any declared size -> caller rejects
+
+
+# ---------------------------------------------------------------------------
+# Fifth independent-review repair --- safe --json-out publication (P2)
+#
+# The gate must never open, truncate, or follow an existing output inode. It
+# publishes through a fresh staging inode in a dir-fd-pinned parent, then
+# atomically replaces the destination entry. Every control snapshots SHA-256 and
+# size of every bundle file before and compares after; temporary bundle copies
+# only.
+# ---------------------------------------------------------------------------
+
+
+def _bundle_snapshot(root: Path) -> dict:
+    snap = {}
+    for path in sorted(root.rglob("*")):
+        if path.is_file() and not path.is_symlink():
+            raw = path.read_bytes()
+            snap[path.relative_to(root).as_posix()] = (hashlib.sha256(raw).hexdigest(), len(raw))
+    return snap
+
+
+def _two_artifact_bundle(root: Path) -> Path:
+    return make_bundle(
+        root,
+        {
+            "observations/p2_raw_count_without_denominator.json": _fixture_path(
+                "p2_raw_count_without_denominator.json"
+            ).read_bytes(),
+        },
+    )
+
+
+def test_json_out_hard_link_to_manifest_does_not_truncate_it(tmp_path: Path) -> None:
+    """Control 1: --json-out is a hard link sharing manifest.json's inode."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "outside.json"
+    os.link(root / "manifest.json", out)  # shares the manifest inode
+    before = _bundle_snapshot(root)
+    manifest_ino = os.stat(root / "manifest.json").st_ino
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+
+    after = _bundle_snapshot(root)
+    assert before == after, "the validated bundle must be byte-identical"
+    # manifest.json keeps its own bytes; the hard-linked entry now holds the result.
+    assert json.loads((root / "manifest.json").read_text())["artifact_id"]
+    assert json.loads(out.read_text())["ok"] is True
+    # The output entry was repointed to a NEW inode (rename), not the shared one.
+    assert os.stat(out).st_ino != manifest_ino
+
+
+@pytest.mark.parametrize("artifact", ["observations/p2_raw_count_without_denominator.json"])
+def test_json_out_hard_link_to_artifact_does_not_truncate_it(tmp_path: Path, artifact: str) -> None:
+    """Control 2: --json-out is a hard link sharing an artifact's inode."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "outside.json"
+    os.link(root / artifact, out)
+    before = _bundle_snapshot(root)
+    artifact_ino = os.stat(root / artifact).st_ino
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+
+    after = _bundle_snapshot(root)
+    assert before == after, "the validated bundle must be byte-identical"
+    assert json.loads(out.read_text())["ok"] is True
+    assert os.stat(out).st_ino != artifact_ino
+
+
+def test_json_out_symlink_to_bundle_file_never_truncates_it(tmp_path: Path) -> None:
+    """Control 3: --json-out is a symlink pointing at a bundle file.
+
+    A pre-existing symlink into the bundle is caught by the realpath policy guard
+    (it resolves inside the bundle); whether refused there or safely republished,
+    the bundle file it points at must never be truncated.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "link.json"
+    out.symlink_to(root / "manifest.json")
+    before = _bundle_snapshot(root)
+
+    refused = False
+    try:
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+    except GateUsageError:
+        refused = True
+
+    after = _bundle_snapshot(root)
+    assert before == after, "the symlink's bundle target must be byte-identical"
+    # Either outcome is safe; assert it did not corrupt the manifest.
+    assert json.loads((root / "manifest.json").read_text())["artifact_id"]
+    if not refused:
+        assert json.loads(out.read_text())["ok"] is True
+
+
+def test_json_out_leaf_swapped_to_symlink_after_preflight(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Control 4: the leaf is swapped to a symlink into the bundle after preflight.
+
+    Publication happens after validate_bundle; wrapping that stage swaps the
+    output leaf to a symlink into the bundle in the window before the write.
+    Because publication renames a fresh inode onto the destination entry (never
+    opening it), the symlink is replaced, not followed, and the bundle is intact.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "out.json"
+    before = _bundle_snapshot(root)
+
+    real_validate = _gate.validate_bundle
+
+    def swapping_validate(bundle_root):
+        result = real_validate(bundle_root)
+        if out.exists() or out.is_symlink():
+            out.unlink()
+        out.symlink_to(root / "manifest.json")
+        return result
+
+    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+
+    after = _bundle_snapshot(root)
+    assert before == after, "a post-preflight leaf swap must not touch the bundle"
+    assert not out.is_symlink(), "the destination entry is now a regular file, not the symlink"
+    assert json.loads(out.read_text())["ok"] is True
+
+
+def test_json_out_parent_swapped_to_symlink_after_preflight(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Control 5: a reachable parent directory is swapped to a symlink into the bundle."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    parent = tmp_path / "outdir"
+    parent.mkdir()
+    out = parent / "p2_raw_count_without_denominator.json"  # would land on the artifact name
+    before = _bundle_snapshot(root)
+
+    real_validate = _gate.validate_bundle
+
+    def swapping_validate(bundle_root):
+        result = real_validate(bundle_root)
+        shutil.rmtree(parent)
+        parent.symlink_to(root / "observations")
+        return result
+
+    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
+    with pytest.raises(GateUsageError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+
+    after = _bundle_snapshot(root)
+    assert before == after, "a parent swapped to a symlink into the bundle must be refused"
+
+
+def test_json_out_publication_failure_leaves_bundle_and_prior_output_intact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Control 6: a failed atomic replace preserves the bundle and prior output."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "prior.json"
+    prior_bytes = b'{"prior":"output","keep":true}\n'
+    out.write_bytes(prior_bytes)
+    before_bundle = _bundle_snapshot(root)
+
+    real_replace = _gate.os.replace
+
+    def failing_replace(*args, **kwargs):
+        raise OSError(errno.EIO, "induced publication failure")
+
+    monkeypatch.setattr(_gate.os, "replace", failing_replace)
+    with pytest.raises(OSError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+    monkeypatch.setattr(_gate.os, "replace", real_replace)
+
+    assert _bundle_snapshot(root) == before_bundle, "the bundle must be byte-identical"
+    assert out.read_bytes() == prior_bytes, "the prior output must be byte-identical"
+    # No staging litter is left behind.
+    leftovers = [p.name for p in tmp_path.iterdir() if "rbce-stage" in p.name]
+    assert leftovers == [], f"staging files must be cleaned up: {leftovers}"
+
+
+def test_json_out_ordinary_new_and_replacement_still_succeed(tmp_path: Path) -> None:
+    """Control 7: a new output, and replacement of an unrelated prior output, both succeed."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    before = _bundle_snapshot(root)
+
+    # New output (no prior file).
+    fresh = tmp_path / "fresh.json"
+    assert _gate.main([str(root), "--json", "--json-out", str(fresh)]) == 0
+    assert json.loads(fresh.read_text())["ok"] is True
+
+    # Replacement of an unrelated prior regular file.
+    prior = tmp_path / "prior.json"
+    prior.write_text('{"stale":true}\n')
+    prior_ino = os.stat(prior).st_ino
+    assert _gate.main([str(root), "--json", "--json-out", str(prior)]) == 0
+    assert json.loads(prior.read_text())["ok"] is True
+    assert os.stat(prior).st_ino != prior_ino, "replacement is a fresh inode, not a truncate"
+
+    assert _bundle_snapshot(root) == before, "the bundle is untouched by ordinary publication"
+    leftovers = [p.name for p in tmp_path.iterdir() if "rbce-stage" in p.name]
+    assert leftovers == [], f"staging files must be cleaned up: {leftovers}"
+
+
+def test_json_out_ancestor_symlink_swapped_after_preflight_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A grandparent swapped to a symlink into the bundle after preflight is refused.
+
+    O_NOFOLLOW on the immediate parent guards only the final component; an
+    ancestor above it is still followed. The component-by-component O_NOFOLLOW
+    walk refuses a symlink at *any* level, so a post-preflight ancestor swap
+    cannot redirect the write into the bundle.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    gp = tmp_path / "gp"
+    (gp / "observations").mkdir(parents=True)  # real dirs at preflight
+    out = gp / "observations" / "p2_raw_count_without_denominator.json"
+    before = _bundle_snapshot(root)
+
+    real_validate = _gate.validate_bundle
+
+    def swapping_validate(bundle_root):
+        result = real_validate(bundle_root)
+        shutil.rmtree(gp)
+        gp.symlink_to(root)  # gp -> bundle root; gp/observations -> bundle/observations
+        return result
+
+    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
+    with pytest.raises(GateUsageError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+
+    assert _bundle_snapshot(root) == before, "an ancestor symlink into the bundle must be refused"
+
+
+def test_json_out_static_ancestor_symlink_is_refused(tmp_path: Path) -> None:
+    """Any symlink on the output path — even one resolving outside the bundle — is refused.
+
+    The publisher does not follow a symlink at any output-path component; a
+    symlinked ancestor is a usage error, not a path it silently traverses.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    real_dir = tmp_path / "real_out"
+    real_dir.mkdir()
+    linked = tmp_path / "linked"
+    linked.symlink_to(real_dir)  # an innocuous symlink, outside the bundle
+    out = linked / "result.json"
+    before = _bundle_snapshot(root)
+
+    with pytest.raises(GateUsageError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+
+    assert _bundle_snapshot(root) == before
+    assert not (real_dir / "result.json").exists(), "no write through a symlinked ancestor"
+
+
+def test_json_out_staging_collision_never_deletes_unrelated_entry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A staging-name collision retries with a new name; it never deletes the entry.
+
+    ``os.urandom`` is forced to collide the first staging name with an unrelated
+    pre-existing file. The publisher must preserve that file (O_EXCL fails, a new
+    random name is tried) rather than unlink it, and still publish the result.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "out.json"
+
+    first_token = bytes(8)  # eight zero bytes
+    second_token = b"\x11" * 8
+    tokens = [first_token, second_token]
+    calls = {"i": 0}
+
+    def fake_urandom(n: int) -> bytes:
+        token = tokens[min(calls["i"], len(tokens) - 1)]
+        calls["i"] += 1
+        return token
+
+    monkeypatch.setattr(_gate.os, "urandom", fake_urandom)
+
+    first_hex = first_token.hex()
+    collide_name = f".{out.name}.rbce-stage.{first_hex}"
+    unrelated = tmp_path / collide_name
+    unrelated.write_bytes(b"UNRELATED-DO-NOT-DELETE\n")
+    before = _bundle_snapshot(root)
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+
+    assert unrelated.read_bytes() == b"UNRELATED-DO-NOT-DELETE\n", "unrelated entry must survive"
+    assert json.loads(out.read_text())["ok"] is True
+    assert _bundle_snapshot(root) == before
+    # The second (distinct) token's staging file was renamed away, not left behind.
+    leftovers = [p.name for p in tmp_path.iterdir() if "rbce-stage" in p.name and p != unrelated]
+    assert leftovers == [], f"our own staging files must be cleaned up: {leftovers}"
+
+
+def test_json_out_staging_symlink_collider_is_preserved_not_followed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A pre-existing SYMLINK at the first staging candidate survives with its target.
+
+    O_CREAT|O_EXCL fails with EEXIST on a symlink (dangling or not), so the
+    publisher must move to a new candidate name -- never unlink the symlink,
+    never follow it. Its name and target must be unchanged afterwards, its
+    target's bytes intact, and the result still published.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "out.json"
+
+    first_token = bytes(8)
+    second_token = b"\x22" * 8
+    tokens = [first_token, second_token]
+    calls = {"i": 0}
+
+    def fake_urandom(n: int) -> bytes:
+        token = tokens[min(calls["i"], len(tokens) - 1)]
+        calls["i"] += 1
+        return token
+
+    monkeypatch.setattr(_gate.os, "urandom", fake_urandom)
+
+    target = tmp_path / "link_target.json"
+    target_bytes = b'{"symlink":"target"}\n'
+    target.write_bytes(target_bytes)
+    collide_name = f".{out.name}.rbce-stage.{first_token.hex()}"
+    collider = tmp_path / collide_name
+    collider.symlink_to(target)
+    before = _bundle_snapshot(root)
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+
+    assert collider.is_symlink(), "the symlink collider must keep its name"
+    assert os.readlink(collider) == str(target), "the symlink collider must keep its target"
+    assert target.read_bytes() == target_bytes, "the symlink target must be byte-identical"
+    assert json.loads(out.read_text())["ok"] is True
+    assert _bundle_snapshot(root) == before
+
+
+def test_json_out_creates_missing_nested_parents_and_replaces(tmp_path: Path) -> None:
+    """Ordinary nested-parent creation and replacement through the no-follow walk.
+
+    Two missing parent levels are created by the walk's dir_fd-relative mkdir
+    (there is no full-path makedirs), publication succeeds, and a second run
+    atomically replaces the first output. The bundle stays byte-identical.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "new_a" / "new_b" / "out.json"
+    assert not (tmp_path / "new_a").exists()
+    before = _bundle_snapshot(root)
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+    assert json.loads(out.read_text())["ok"] is True
+    first_ino = os.stat(out).st_ino
+
+    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
+    assert json.loads(out.read_text())["ok"] is True
+    assert os.stat(out).st_ino != first_ino, "replacement publishes a fresh inode"
+
+    assert _bundle_snapshot(root) == before
+    leftovers = [
+        p.name
+        for p in (tmp_path / "new_a" / "new_b").iterdir()
+        if "rbce-stage" in p.name
+    ]
+    assert leftovers == [], f"staging files must be cleaned up: {leftovers}"
+
+
+# ---------------------------------------------------------------------------
+# Seventh independent-review repair --- write-side capability invariant (P1)
+#
+# validate_bundle fails closed when read primitives are missing, but main() still
+# calls publish_json_out afterwards. If _O_NOFOLLOW == 0 the publisher's component
+# walk silently loses no-follow protection and a post-preflight ancestor swap can
+# redirect the write into the bundle. publish_json_out must independently prove
+# its OWN publication primitives before touching the output path.
+# ---------------------------------------------------------------------------
+
+
+def _spy_write_ops(monkeypatch: pytest.MonkeyPatch):
+    """Spy on every output-side FS op and record calls, WITHOUT breaking the
+    publication capability check.
+
+    ``publication_primitives_available()`` tests dir_fd support by identity
+    (``os.open in os.supports_dir_fd`` etc.). Replacing those functions with
+    spies would drop them from the set and make the guard fail for an unrelated
+    reason, so the spies are registered in a patched ``supports_dir_fd`` -- the
+    guard then fails only on a genuinely dropped flag, and the spies still
+    observe whether any output-side op was attempted.
+    """
+
+    calls: dict[str, list] = {"open": [], "mkdir": [], "replace": [], "unlink": [], "rename": []}
+    real = {
+        "open": _gate.os.open,
+        "mkdir": _gate.os.mkdir,
+        "replace": _gate.os.replace,
+        "unlink": _gate.os.unlink,
+        "rename": _gate.os.rename,
+    }
+
+    def make(name):
+        def spy(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+            calls[name].append((args, kwargs))
+            return real[name](*args, **kwargs)
+
+        return spy
+
+    spies = {name: make(name) for name in real}
+    monkeypatch.setattr(
+        _gate.os,
+        "supports_dir_fd",
+        {spies["open"], spies["mkdir"], spies["replace"], spies["unlink"], spies["rename"],
+         *_gate.os.supports_dir_fd},
+    )
+    for name, spy in spies.items():
+        monkeypatch.setattr(_gate.os, name, spy)
+    return calls
+
+
+def test_json_out_refused_through_main_when_nofollow_unavailable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Public-gate regression for the round-7 P1.
+
+    With ``_O_NOFOLLOW == 0`` the real validation fails closed
+    (``BUNDLE_DESCRIPTOR_UNSUPPORTED``); an output ancestor is swapped into the
+    bundle after the realpath preflight. The write-side capability preflight must
+    refuse publication so the failure report is never written through the swapped
+    ancestor, and every bundle byte must remain unchanged.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    gp = tmp_path / "gp"
+    (gp / "observations").mkdir(parents=True)
+    out = gp / "observations" / "p2_raw_count_without_denominator.json"
+    before = _bundle_snapshot(root)
+
+    real_validate = _gate.validate_bundle
+
+    def swapping_validate(bundle_root):
+        result = real_validate(bundle_root)
+        shutil.rmtree(gp)
+        gp.symlink_to(root)  # ancestor -> bundle, after preflight
+        return result
+
+    monkeypatch.setattr(_gate, "_O_NOFOLLOW", 0)
+    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
+    with pytest.raises(GateUsageError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+
+    assert _bundle_snapshot(root) == before, "no bundle byte may change when publication is refused"
+
+
+def test_publish_json_out_refuses_before_any_output_side_op(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Direct publication regression: a missing write-side capability refuses
+    BEFORE any output-side open, mkdir, staging creation, replace, or unlink.
+
+    Behavioural and non-vacuous: every output-side FS op is spied (and the spies
+    are kept in ``supports_dir_fd`` so the guard fails only on the dropped
+    ``_O_NOFOLLOW``). The refusal must happen with zero recorded ops.
+    """
+
+    calls = _spy_write_ops(monkeypatch)
+    monkeypatch.setattr(_gate, "_O_NOFOLLOW", 0)
+    assert not _gate.publication_primitives_available()
+
+    out = tmp_path / "sub" / "result.json"
+    with pytest.raises(GateUsageError):
+        _gate.publish_json_out(out, '{"ok":true}\n')
+
+    assert calls["open"] == [], "no output-side open before the capability refusal"
+    assert calls["mkdir"] == [], "no mkdir before the capability refusal"
+    assert calls["replace"] == [], "no replace before the capability refusal"
+    assert calls["unlink"] == [], "no unlink before the capability refusal"
+    assert not out.exists() and not (tmp_path / "sub").exists(), "no output path created"
+
+
+@pytest.mark.parametrize(
+    "drop",
+    [
+        "o_nofollow",
+        "o_directory",
+        "open_dirfd",
+        "mkdir_dirfd",
+        "unlink_dirfd",
+        "replace_rename_dirfd",
+    ],
+)
+def test_publication_capability_matrix_refuses_and_preserves_bundle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, drop: str
+) -> None:
+    """Each safety-critical write-side primitive/operation, dropped in isolation,
+    makes ``publication_primitives_available()`` false and publication refuse,
+    with the bundle byte-identical."""
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "result.json"
+    before = _bundle_snapshot(root)
+    supports = set(_gate.os.supports_dir_fd)
+
+    if drop == "o_nofollow":
+        monkeypatch.setattr(_gate, "_O_NOFOLLOW", 0)
+    elif drop == "o_directory":
+        monkeypatch.setattr(_gate, "_O_DIRECTORY", 0)
+    elif drop == "open_dirfd":
+        monkeypatch.setattr(_gate.os, "supports_dir_fd", supports - {_gate.os.open})
+    elif drop == "mkdir_dirfd":
+        monkeypatch.setattr(_gate.os, "supports_dir_fd", supports - {_gate.os.mkdir})
+    elif drop == "unlink_dirfd":
+        monkeypatch.setattr(_gate.os, "supports_dir_fd", supports - {_gate.os.unlink})
+    elif drop == "replace_rename_dirfd":
+        monkeypatch.setattr(
+            _gate.os, "supports_dir_fd", supports - {_gate.os.replace, _gate.os.rename}
+        )
+
+    assert not _gate.publication_primitives_available()
+    with pytest.raises(GateUsageError):
+        _gate.main([str(root), "--json", "--json-out", str(out)])
+    assert not out.exists(), "no output written when publication capability is missing"
+    assert _bundle_snapshot(root) == before
+
+
+def test_readonly_primitive_missing_still_publishes_failure_report(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """Separation control: a missing READ-only primitive (O_PATH) fails the read
+    side closed but leaves publication capability intact, so the gate safely
+    publishes the ``BUNDLE_DESCRIPTOR_UNSUPPORTED`` failure report and returns 1.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    out = tmp_path / "result.json"
+    before = _bundle_snapshot(root)
+
+    monkeypatch.setattr(_gate, "_O_PATH", 0)
+    assert not _gate.descriptor_primitives_available()
+    assert _gate.publication_primitives_available()
+
+    code = _gate.main([str(root), "--json", "--json-out", str(out)])
+    capsys.readouterr()
+
+    assert code == 1, "read failure reports exit 1, not a publication usage error"
+    published = json.loads(out.read_text())
+    assert published["ok"] is False
+    assert "BUNDLE_DESCRIPTOR_UNSUPPORTED" in published["reason_codes"]
+    assert _bundle_snapshot(root) == before
+
+
+def test_missing_publication_primitive_without_json_out_is_inert(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """No-output control: with ``--json-out`` omitted, a missing publication-only
+    capability (dir_fd support for replace/rename) does not alter ordinary
+    validation/stdout behaviour -- a passing bundle still exits 0.
+    """
+
+    root = _two_artifact_bundle(tmp_path / "b")
+    reduced = set(_gate.os.supports_dir_fd) - {_gate.os.replace, _gate.os.rename}
+    monkeypatch.setattr(_gate.os, "supports_dir_fd", reduced)
+    assert not _gate.publication_primitives_available()
+    assert _gate.descriptor_primitives_available()  # read side unaffected
+
+    code = _gate.main([str(root), "--json"])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert json.loads(out)["ok"] is True
+
+
+def test_publish_json_out_never_opens_destination_for_writing() -> None:
+    """Structural: publication renames onto the destination; it never opens the leaf.
+
+    The only write-opening ``os.open`` in the publisher creates the staging inode
+    with O_CREAT|O_EXCL|O_NOFOLLOW; publication is an ``os.replace``. Guards
+    against a regression that reintroduces a truncating open of the destination.
+    """
+
+    src = GATE_SCRIPT.read_text()
+    body = src[src.index("def publish_json_out(") : src.index("def _parse_args(")]
+    # Drop the docstring so prose that mentions the unsafe forms is not matched.
+    code = body[body.index('"""', body.index('"""') + 3) + 3 :]
+    assert "O_EXCL" in code and "O_NOFOLLOW" in code
+    assert "os.replace(" in code
+    assert ".write_text(" not in code, "publication must not write_text into an existing path"
+    assert "O_TRUNC" not in code

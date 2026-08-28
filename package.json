@@ -37,7 +37,8 @@
     "inspect:projection-input-semantics": "node scripts/inspect_projection_input_semantics.mjs",
     "docs:projection-input-semantics": "node scripts/inspect_projection_input_semantics.mjs --write",
     "check:point-prediction-scenario-export": "node scripts/check_point_prediction_scenario_export_contract.mjs",
-    "check:player-lab": "node scripts/check_player_lab_route.mjs"
+    "check:player-lab": "node scripts/check_player_lab_route.mjs",
+    "check:rb-contact-evasion-bundle": "python3 scripts/validate_rb_contact_evasion_bundle.py"
   },
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.0",

@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber-data.local/schemas/rb_contact_evasion_observations_bundle_manifest_v0.schema.json",
+  "title": "rb_contact_evasion_observations_v0 candidate bundle manifest v0 (shape gate)",
+  "description": "Shape gate for the manifest of a rb_contact_evasion_observations_v0 candidate bundle (TIBER-Data #234, Slice B). THE MANIFEST IS INTEGRITY METADATA, NOT AUTHORITY. It declares which files a bundle contains and what bytes they must be; it can never establish that a payload is contract-valid, and it carries no field able to relax a contract rule. Semantic authority stays in src/contracts/v1/rbContactEvasionObservationsV0.ts and shape authority in schemas/rb_contact_evasion_observations_v0.schema.json; every declared artifact is parsed, shape-gated and evaluated by those, whatever this manifest says. The manifest deliberately has NO permissions, provenance, missingness, metric, cohort, rights, waiver, override, exemption, skip, score, ranking or validity field, and none may be added: adding one would create a second authority the payload could hide behind. artifact_id, schema_version and digest_algorithm are restated here for inspectability only -- the admitted values are pinned in scripts/validate_rb_contact_evasion_bundle.py, and a manifest that disagrees with those pins fails closed rather than redefining them. artifact_position is restated so it can be checked for EXACT agreement with the payload; it can never substitute for, weaken or override the payload's own declared position.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "artifact_id",
+    "schema_version",
+    "artifact_position",
+    "digest_algorithm",
+    "generated_at",
+    "artifacts"
+  ],
+  "properties": {
+    "manifest_version": {
+      "description": "Manifest contract version. The admitted value is pinned in code.",
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_id": {
+      "description": "Restated contract artifact id. The admitted value is pinned in code; a mismatch fails closed.",
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_version": {
+      "description": "Restated contract schema version. The admitted value is pinned in code; a mismatch fails closed.",
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_position": {
+      "description": "Restated governance position. Must equal every declared payload's own artifact_position exactly. It never relaxes a position rule: the contract layer still applies its own fail-closed rules to the payload's declared position.",
+      "type": "string",
+      "enum": [
+        "fixture_only",
+        "candidate",
+        "promoted"
+      ]
+    },
+    "digest_algorithm": {
+      "description": "Digest algorithm for every entry. The admitted algorithms are pinned in code; anything else fails closed.",
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "description": "When the manifest was written. Diagnostic only: it is never compared against, nor allowed to substitute for, any contract clock.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "bundle_note": {
+      "description": "Optional free-text note for human readers. Carries no gate meaning whatsoever.",
+      "type": "string"
+    },
+    "artifacts": {
+      "description": "Exactly the artifact files the bundle contains. The gate enforces a bijection with the regular files actually present, so a missing, undeclared or duplicate entry fails closed.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/artifactEntry"
+      }
+    }
+  },
+  "$defs": {
+    "artifactEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "size_bytes",
+        "digest"
+      ],
+      "properties": {
+        "path": {
+          "description": "Bundle-relative POSIX path. The gate additionally rejects absolute paths, drive-qualified paths, backslashes, '.'/'..'/empty segments, symlinks, non-regular files, and anything resolving outside the bundle root.",
+          "type": "string",
+          "minLength": 1
+        },
+        "size_bytes": {
+          "description": "Exact byte length of the file. Checked before the file is read, parsed or evaluated.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "digest": {
+          "description": "Lowercase hex digest of the exact file bytes under digest_algorithm. Checked before the file is parsed or evaluated.",
+          "type": "string",
+          "pattern": "^[0-9a-f]+$"
+        }
+      }
+    }
+  }
+}

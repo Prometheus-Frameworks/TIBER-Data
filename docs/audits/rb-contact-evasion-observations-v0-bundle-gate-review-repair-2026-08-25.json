@@ -1,0 +1,429 @@
+{
+  "artifact_version": "rb_contact_evasion_bundle_gate_review_repair_v1",
+  "audit_date": "2026-08-25",
+  "evidence_cutoff_date": "2026-08-27",
+  "evidence_cutoff_note": "This paired record now spans seven review-repair rounds; the latest evidence (the seventh round's --json-out write-side capability invariant) was produced on 2026-08-27, so the cutoff includes that date.",
+  "record_type": "independent_review_repair_record",
+  "not_an_independent_audit_of_repaired_head": true,
+  "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+  "tracking_issue": {
+    "repository": "Prometheus-Frameworks/TIBER-Data",
+    "number": 234,
+    "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/issues/234"
+  },
+  "pull_request": {
+    "repository": "Prometheus-Frameworks/TIBER-Data",
+    "number": 260,
+    "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/260"
+  },
+  "task_classification": [
+    "repo_governance_documentation",
+    "contract_adjacent_validation_tooling"
+  ],
+  "reviewed_head": "4f9591af3ebbcabea965b689e7b95ab8b821d4c1",
+  "authorized_base": "4498d5efd053e6bbc87f5f28214b0509550ad653",
+  "review_source": {
+    "reviewer_identity": "chatgpt-codex-connector",
+    "review_kind": "independent_review_triggered_by_ready_for_review",
+    "created_at": "2026-08-25T18:31:26Z",
+    "auditor_identity_fabricated": false,
+    "review_comment_ids": [
+      "r3856050625",
+      "r3856050632",
+      "r3856050637"
+    ]
+  },
+  "scope": {
+    "source_bytes_retrieved": false,
+    "sources_admitted": false,
+    "source_access_authorized": false,
+    "ingestion_authorized": false,
+    "candidate_rows_authorized": false,
+    "artifact_created": false,
+    "promotion_authorized": false,
+    "consumer_activation_authorized": false,
+    "slice_a_changed": false,
+    "exports_changed": false,
+    "committed_fixtures_mutated_by_tests": false
+  },
+  "findings": [
+    {
+      "id": "r3856050625",
+      "severity": "P1",
+      "title": "Commit the required auditor review artifact",
+      "accepted": true,
+      "agents_md_reference": "AGENTS.md:L41-L45",
+      "disposition": "committed_paired_audit_record_under_docs_audits",
+      "disposition_detail": "This paired .md/.json record follows the repository dated-paired convention. It records that the Codex independent review produced the findings; it does not fabricate an independent auditor identity, and it leaves final exact-head audit status pending fresh Codex review of the repaired head."
+    },
+    {
+      "id": "r3856050632",
+      "severity": "P1",
+      "title": "Record the material handoff",
+      "accepted": true,
+      "agents_md_reference": "AGENTS.md:L98-L107",
+      "disposition": "handoff_md_updated",
+      "disposition_detail": "Added a '## Current handoff \u2014 #234 Slice B' section to HANDOFF.md in the existing format: active task, files touched, what is now true, what remains missing, what must not be assumed, audit-trigger status."
+    },
+    {
+      "id": "r3856050637",
+      "severity": "P2",
+      "title": "Bind the size/type checks to the exact bytes read",
+      "accepted": true,
+      "agents_md_reference": "AGENTS.md:L35-L36",
+      "reproduced_at_reviewed_head": true,
+      "reproduction_detail": "After the size check sampled the original inode, the pathname was reopened by read_bytes() and an oversized replacement of 75497472 bytes (72 MiB) was read in full, 8388608 bytes past the 67108864-byte cap, unbounded.",
+      "defect_class": "time_of_check_time_of_use_pathname_stat_then_reopen",
+      "repaired_sites": [
+        "read_manifest",
+        "check_integrity",
+        "evaluate_semantics"
+      ],
+      "invariant": "descriptor_bound_read",
+      "invariant_properties": [
+        "components_opened_descriptor_relative_O_NOFOLLOW",
+        "intermediate_components_O_PATH_require_real_directory_by_fstat",
+        "final_and_intermediate_symlink_refused",
+        "leaf_O_NONBLOCK_fifo_cannot_hang",
+        "fstat_requires_regular_file",
+        "cap_enforced_against_same_descriptor_fstat_size",
+        "growth_after_fstat_detected_without_unbounded_memory",
+        "semantic_stage_receives_verified_in_memory_bytes_no_reopen",
+        "exact_digest_and_declared_size_semantics_preserved",
+        "existing_path_bijection_manifest_shape_identity_lifecycle_guarantees_preserved",
+        "bounded_read_reads_at_most_cap_plus_one_total_into_one_growing_buffer",
+        "single_buffer_peak_ownership_no_second_payload_sized_representation"
+      ],
+      "disposition": "code_repaired_with_reproduction_negative_controls_and_mutation_evidence"
+    }
+  ],
+  "residual_boundaries": [
+    "the_gate_proves_bytes_and_file_identity_not_football_truth",
+    "node_modules_pinned_toolchain_binary_and_node_remain_trusted_out_of_scope",
+    "admitted_source_registry_unimplemented_no_source_admitted",
+    "this_record_is_not_an_independent_audit_of_the_repaired_head"
+  ],
+  "authorization": {
+    "source_access": false,
+    "ingestion": false,
+    "candidate_build": false,
+    "promotion": false,
+    "consumer_activation": false,
+    "issue_234_state": "open",
+    "pr_260_state": "draft_unmerged"
+  },
+  "second_review_round": {
+    "audit_date": "2026-08-26",
+    "reviewed_head": "96c332149e6411c51ecd6839afbe922a5a1ca499",
+    "review_source": {
+      "review_kind": "codex_exact_head_review_performed_in_operator_session",
+      "relayed_by": "operator",
+      "github_review_object": null,
+      "github_review_comment_ids": [],
+      "identity_correction": "A prior version of this block recorded reviewer_identity as chatgpt-codex-connector. That was incorrect: no GitHub connector review object or review thread exists for this round. The findings were produced by a Codex exact-head review performed in the operator session and relayed by the operator into PR #260 (as a follow-up comment on the existing first-round thread r3856050637, comment id r3859172198). The connector is NOT the author of this round. The only genuine chatgpt-codex-connector review threads on PR #260 are the three first-round threads created 2026-08-25T18:31:26Z (r3856050625, r3856050632, r3856050637)."
+    },
+    "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+    "findings": [
+      {
+        "severity": "P1",
+        "title": "Required descriptor capabilities failed open",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "With O_PATH/O_NOFOLLOW/dir_fd support disabled and manifest.json made a symlink to a file outside the bundle, read_bundle_file returned OK and read the external bytes via the full-path fallback.",
+        "defect_class": "silent_capability_degradation_to_full_path_open",
+        "disposition": "removed_fallback_fail_closed_before_reading",
+        "disposition_detail": "descriptor_primitives_available() gates the read; a missing O_NOFOLLOW/O_PATH/O_NONBLOCK/dir_fd yields UNSUPPORTED and validate_bundle fails the whole gate closed with BUNDLE_DESCRIPTOR_UNSUPPORTED before reading any bundle bytes. No pathname-check-then-open substitute. Capability matrix (drop each primitive and combinations, against manifest/final/intermediate external symlinks) proves external bytes are never read.",
+        "corrected_prior_claim": "per_component_symlink_safety_still_enforced_by_check_path_safety_upstream_was_wrong"
+      },
+      {
+        "severity": "P2",
+        "title": "cap-plus-one memory claim was false",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "_read_fd_capped accumulated a chunk list then joined; both coexist during join. A 4 MiB read peaked at ~8 MiB via tracemalloc; a 64 MiB cap would peak ~128 MiB.",
+        "defect_class": "second_payload_sized_representation_during_join",
+        "disposition": "single_growing_bytearray_returned_directly_no_join",
+        "disposition_detail": "One growing bytearray, returned as a bytes-like object; no chunk list, no whole-payload join. tracemalloc peak measured ~1.25x payload (payload plus one read chunk) versus ~2x. Post-fstat growth and short reads preserved. Every 'never buffers more than cap+1' statement corrected in code comments, contract doc, this JSON, the Markdown audit, and HANDOFF.md.",
+        "correction_note_fourth_round": "The 'every statement corrected' claim above was itself incomplete: two occurrences survived it (the gate's descriptor-reads module comment and the check_integrity docstring, both still saying the read 'buffers no more than the cap plus one byte'). They were corrected in the fourth round; see fourth_review_round.",
+        "regression_distinguishes_peak_ownership_from_os_read_request_size": true
+      }
+    ],
+    "verification": {
+      "focused_slice_b_tests_passed": 284,
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true,
+      "mutation_count": 6,
+      "mutations_all_killed": true,
+      "degenerate_evidence": false,
+      "gate_restored_byte_for_byte": true
+    }
+  },
+  "third_review_round": {
+    "audit_date": "2026-08-26",
+    "reviewed_head": "8d2b9cad0488d649657b43d6b1339a6c92bcc0c7",
+    "review_source": {
+      "review_kind": "codex_exact_head_review_performed_in_operator_session",
+      "relayed_by": "operator",
+      "github_review_object": null,
+      "github_review_comment_ids": [],
+      "identity_note": "As with the second round, these findings were produced by a Codex exact-head review performed in the operator session and relayed by the operator. There is no GitHub connector review object or thread for this round; the connector is not claimed as its author."
+    },
+    "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+    "findings": [
+      {
+        "severity": "P1",
+        "title": "Mutable verified-byte identity: evaluator could receive bytes whose digest no longer matched",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "_read_fd_capped returned a bytearray; check_integrity hashed it, then aliased the SAME mutable object into both verified_bytes and raw_bytes; evaluate_semantics sent that object to the evaluator without re-proving the digest. Reproduced through the real gate on a copy of the reference bundle: a hook on the stage immediately before semantic evaluation flipped one JSON-insignificant space (0x20) to a tab (0x09) in verified_bytes in place; the gate returned ok=True and the bridge received bytes whose SHA-256 (8f99..., cc71...) differed from both the observed digest and the manifest digests (f16a..., ffab...).",
+        "defect_class": "mutable_alias_breaks_digest_to_evaluated_subject_binding",
+        "disposition": "freeze_verified_bytes_to_immutable_bytes_at_the_integrity_boundary",
+        "disposition_detail": "At the point the digest promise is made (digest match in check_integrity), the verified bytes are frozen into an immutable bytes object (frozen = bytes(raw); del raw) and both verified_bytes and raw_bytes reference that single immutable object. An immutable bytes object cannot be mutated in place by any alias, so the bytes parsed, schema-checked, and evaluated are byte-for-byte the ones integrity bound. Re-running the reproduction through the real gate: verified_bytes is now bytes, the in-place mutation is refused ('bytes' object does not support item assignment), and the evaluator receives bytes whose SHA-256 equals the manifest digests.",
+        "memory_reconciliation": "The freeze is a deliberate, one-time, per-artifact second payload-sized allocation: the bytearray and its bytes copy coexist for the duration of the copy, then the bytearray is released. This does NOT reinstate the round-2 chunk-list double-peak: the bounded reader still owns a single buffer and makes no whole-payload copy (that property is scoped to the reader). The 'no whole-payload copy' claim is corrected in the reader docstring, the contract doc, and this record to be reader-scoped, not whole-lifecycle, and the freeze copy is disclosed.",
+        "regression_and_mutation_evidence": "Public-gate regressions added: test_verified_bytes_are_frozen_immutable_after_integrity (verified_bytes/raw_bytes are the same immutable bytes object; in-place assignment raises), test_evaluator_receives_bytes_matching_the_manifest_digest (bridge boundary instrumented; every payload sent hashes to a declared manifest digest), test_pre_semantic_mutation_cannot_alter_the_evaluated_subject (the reproduction, as a regression: the in-place whitespace flip is refused and the evaluator still receives digest-matching bytes). A mutation removing the freeze (restoring the bytearray alias) is killed by these tests: the mutation attempt succeeds and the evaluator receives non-matching bytes."
+      },
+      {
+        "severity": "P1",
+        "title": "Incorrect reviewer identity in the second-round audit artifacts",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "The second_review_round block attributed the operator-relayed Codex findings to reviewer_identity chatgpt-codex-connector and asserted the identity was not fabricated, but no GitHub connector review object or thread exists for that round. The only genuine connector threads on PR #260 are the three first-round threads created 2026-08-25T18:31:26Z.",
+        "defect_class": "misattributed_review_provenance",
+        "disposition": "corrected_both_audit_artifacts_to_record_actual_provenance",
+        "disposition_detail": "The second-round block now records: a Codex exact-head review performed in the operator session, relayed by the operator, with github_review_object null and no review-comment id, and does not claim the connector authored it. The Markdown audit's second-round section is corrected to match. The first-round attribution to chatgpt-codex-connector is unchanged because those three threads are genuine GitHub review objects."
+      },
+      {
+        "severity": "P2",
+        "title": "Capability matrix did not prove no read (vacuous secret[:0] assertion)",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "The capability-matrix tests only asserted the external secret text was absent from GateResult, and one term (secret[:0]) checked zero secret bytes, so it was vacuous. Absence from the rendered result does not prove the external bytes were never opened or read.",
+        "defect_class": "vacuous_no_read_assertion",
+        "disposition": "instrument_the_actual_open_read_boundary_and_prove_zero_access",
+        "disposition_detail": "The 15-case capability matrix (manifest, final-, and intermediate-component external symlink x each dropped primitive and the combined case) now instruments the gate's real os.open/os.read boundary and asserts zero opens and zero reads after the capability preflight fails. A control test (test_open_read_instrumentation_observes_reads_and_preserves_detection) proves the spies leave descriptor_primitives_available() intact when primitives are present and actually observe a real open and read, so a zero count in the matrix is a genuine no-access, not a broken detector. The instrumentation preserves the dir_fd view (registers the spy in supports_dir_fd when dir_fd is meant to be supported) so the preflight fails only because of the dropped O_* flag, never because os.open was replaced.",
+        "instrumentation_does_not_break_capability_detection": true
+      },
+      {
+        "severity": "P2",
+        "title": "Reconcile all evidence text and counts",
+        "accepted": true,
+        "disposition": "corrected_stale_wording_counts_and_cutoff",
+        "disposition_detail": "Stale cap/pathname-stat wording reconciled across changed files: the contract stage table row 7 now says byte size and type from fstat on the opened descriptor (never a pathname stat) then SHA-256 then freeze; the check_integrity docstring and the reader docstring are corrected; the 'no whole-payload copy' claim is scoped to the bounded reader with the freeze copy disclosed. The evidence cutoff is corrected to include 2026-08-26.",
+        "focused_test_count_reconciliation": "pytest --collect-only reports 288 node IDs at the repaired head. That equals 284 (the actual collected count at the prior head 8d2b9ca, verified with --collect-only) plus 4 new tests this round (1 open/read instrumentation control + 3 P1 identity regressions). CORRECTED IN THE FOURTH ROUND (2026-08-26): this field originally gave the lineage as '262 -> 284 (+22) -> 288 (+4)', which was false. Collect-only runs in isolated worktrees at each historical head establish: 4f9591af 248, 96c33214 263, 8d2b9cad 284, 8c484931 288 -- so the true lineage is 248 -> 263 (+15) -> 284 (+21: 15 parametrized matrix cases + 6 standalone tests) -> 288 (+4). The first repair round had undercounted its 15 additions as 14 (recording 262 instead of 263), and this round's attempted reconciliation compounded the error by trusting the recorded 262 and re-deriving the second-round delta as +22 instead of re-counting the base. The second round's original '+21' was correct all along; the error was in the recorded base, not the delta."
+      }
+    ],
+    "verification": {
+      "focused_slice_b_tests_collected": 288,
+      "focused_slice_b_tests_passed": 288,
+      "prior_head_focused_tests_collected": 284,
+      "full_python_suite_passed": 1009,
+      "full_python_suite_skipped": 3,
+      "full_python_suite_prior_head_passed": 1005,
+      "full_python_suite_delta_note": "1005 at the prior head + 4 new focused tests this round = 1009.",
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true,
+      "mutation_count": 4,
+      "mutations_all_killed": true,
+      "degenerate_evidence": false,
+      "gate_restored_byte_for_byte": true
+    }
+  },
+  "fourth_review_round": {
+    "audit_date": "2026-08-26",
+    "reviewed_head": "8c484931255ea5edb4de7923a30b2d8434b8ebfa",
+    "review_source": {
+      "review_kind": "codex_exact_head_review_performed_in_operator_session",
+      "relayed_by": "operator",
+      "github_review_object": null,
+      "github_review_comment_ids": [],
+      "identity_note": "As with the second and third rounds, relayed by the operator; no GitHub connector review object or thread exists for this round and the connector is not claimed as its author."
+    },
+    "verdict_on_prior_round": "functional_repairs_accepted",
+    "verdict_detail": "The mutable-alias P1 freeze, the capability no-access instrumentation, and the corrected reviewer provenance were accepted. This round is limited to one P2 evidence-reconciliation finding; no gate behavior changed.",
+    "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+    "findings": [
+      {
+        "severity": "P2",
+        "title": "Evidence reconciliation: false test-count lineage and remaining stale wording",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "pytest --collect-only in isolated git worktrees at each historical head reports: 4f9591af 248, 96c33214 263, 8d2b9cad 284, 8c484931 288. The audit trail instead recorded 262 for the first repair round (its 15 additions undercounted as 14) and the third round's reconciliation propagated that error, deriving a '262 -> 284 (+22)' lineage instead of re-counting the base.",
+        "defect_class": "propagated_recorded_count_instead_of_remeasuring",
+        "disposition": "corrected_lineage_and_remaining_stale_wording_no_behavior_change",
+        "disposition_detail": "Corrected lineage everywhere it appears (PR body, HANDOFF.md, Markdown audit, this JSON) to 248 -> 263 (+15) -> 284 (+21: 15 parametrized matrix cases + 6 standalone tests) -> 288 (+4), with the propagation error explained rather than silently rewritten (historical commits untouched; corrections annotated in place). Also corrected the remaining stale wording the second round's 'every statement corrected' claim had missed: the gate's module comment and check_integrity docstring still said the bounded read 'never buffers more than the cap plus one byte' -- corrected to 'reads at most cap + 1 bytes in total; peak reader ownership is one growing buffer plus one bounded read chunk and allocation headroom'. The test module docstring still said semantic judgment is delegated to the compiled contract under dist/ -- corrected: the gate compiles reviewed source into its private temporary build and never trusts ambient dist/. The Markdown audit's top-level evidence cutoff (2026-08-25) corrected to 2026-08-26. The freeze-memory wording in the PR body, HANDOFF.md, and the third-round audit section is made precise: the chunk-list/join double representation is gone from the reader, while the integrity freeze deliberately and transiently owns the bytearray and immutable bytes copy together -- a disclosed, momentary, per-artifact double-payload peak at the freeze."
+      }
+    ],
+    "verification": {
+      "behavior_changed": false,
+      "comments_and_governance_text_only": true,
+      "mutation_evidence": "not_manufactured_for_prose_changes",
+      "focused_slice_b_tests_collected": 288,
+      "focused_slice_b_tests_passed": 288,
+      "lineage_collect_only_isolated_worktrees": {
+        "4f9591af": 248,
+        "96c33214": 263,
+        "8d2b9cad": 284,
+        "8c484931": 288
+      },
+      "full_python_suite_passed": 1009,
+      "full_python_suite_skipped": 3,
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true
+    }
+  },
+  "fifth_review_round": {
+    "audit_date": "2026-08-26",
+    "reviewed_head": "e68fc176304699ed5ed815f22836f6b9bb56aea6",
+    "review_source": {
+      "review_kind": "independent_github_connector_review",
+      "reviewer_identity": "chatgpt-codex-connector",
+      "review_comment_ids": ["r3864788150"],
+      "created_at": "2026-08-26T16:38:55Z",
+      "identity_note": "Unlike the second through fourth rounds, this is a genuine GitHub connector review thread on PR #260 (comment r3864788150), authored by chatgpt-codex-connector. It is the first connector thread since the three first-round threads."
+    },
+    "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+    "findings": [
+      {
+        "severity": "P2",
+        "title": "--json-out could follow an existing output inode and truncate a validated bundle file",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "Against the real gate on temporary reference-bundle copies, three windows each ended with exit 0 and a corrupted bundle: (A) --json-out an external hard link sharing manifest.json's inode -- the pathname realpath preflight accepted it (the link's own name is outside the bundle; realpath does not resolve a hard link elsewhere) and write_text() followed the shared inode, truncating manifest.json from 1086 to 2913 bytes; (B) --json-out swapped to a symlink into the bundle after the preflight but before publication -- write_text followed it; (C) --json-out's parent directory swapped to a symlink into the bundle's observations/ dir before publication -- write_text wrote onto the artifact p2_raw_count_without_denominator.json (4144 -> 2913 bytes). A successful invocation therefore corrupted the bundle the gate promises never to mutate.",
+        "defect_class": "output_publication_follows_existing_inode_hardlink_symlink_parent_swap",
+        "disposition": "publish_through_fresh_staging_inode_then_atomic_replace",
+        "disposition_detail": "New publish_json_out establishes one output-publication invariant: the intended output parent is opened once with O_NOFOLLOW | O_DIRECTORY and every step is done relative to that descriptor (a parent that is or becomes a symlink is refused/pinned, so it cannot redirect the write into the bundle); a fresh staging inode is created relative to that dir_fd with O_CREAT | O_EXCL | O_WRONLY | O_NOFOLLOW (never opening an existing inode, refusing a symlink at the staging name), the data is written and fsync'd; publication is a single os.replace (rename) of the staging entry onto the destination entry. rename never follows the destination, so a hard-linked or symlinked destination has its directory entry repointed at the new inode while the old (possibly bundle-shared) inode keeps its bytes. On any failure the staging inode is unlinked relative to the pinned dir_fd only, leaving the bundle and any prior output byte-for-byte unchanged. The realpath 'points inside the bundle' preflight is kept but demoted to a usability guard (it cannot see a hard link and is raceable); the publication mechanism is the safety. Output bytes and exit codes are unchanged; re-running all three windows leaves every bundle file byte-identical (A and B publish the result to the intended name; C is refused).",
+        "negative_controls": [
+          "hard link to manifest.json: bundle byte-identical, result published, output inode != manifest inode",
+          "hard link to each artifact class: bundle byte-identical, result published",
+          "symlink to a bundle file: caught by the realpath guard or safely republished; target byte-identical either way",
+          "leaf swapped to a symlink after preflight: rename replaces the symlink entry, bundle byte-identical",
+          "reachable parent-directory symlink swap: O_NOFOLLOW parent open refuses, bundle byte-identical",
+          "publication (os.replace) failure: staging cleaned up, bundle and prior output byte-for-byte unchanged",
+          "ordinary new output and replacement of an unrelated prior output: both succeed with a fresh inode",
+          "symlink planted at the staging name pointing into the bundle: not followed (O_EXCL|O_NOFOLLOW), bundle intact"
+        ],
+        "mutation_evidence": "5 mutations against the real publication, all killed, no degenerate, gate restored byte-for-byte: reinstate_write_text_publication (6 kills), publish_truncates_leaf_pathname (6), parent_open_follows_symlink (1), staging_create_not_exclusive (2: structural + staging-name symlink control), no_staging_cleanup_on_failure (1)."
+      }
+    ],
+    "verification": {
+      "focused_slice_b_tests_collected": 297,
+      "focused_slice_b_tests_passed": 297,
+      "focused_lineage": "288 (e68fc17 prior) + 9 new (8 --json-out controls + 1 structural) = 297",
+      "full_python_suite_passed": 1018,
+      "full_python_suite_skipped": 3,
+      "mutation_count": 5,
+      "mutations_all_killed": true,
+      "degenerate_evidence": false,
+      "gate_restored_byte_for_byte": true,
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true,
+      "superseded_note_sixth_round": "The single-parent-open mechanism and the deterministic-staging-name control described here were superseded in the sixth round: the parent open is now a component-by-component O_NOFOLLOW walk (an immediate-parent open still followed ancestor symlinks), and the staging name is uniquely randomized so a collision is never resolved by unlinking (the prior FileExistsError handler could delete an unrelated entry). See sixth_review_round."
+    }
+  },
+  "sixth_review_round": {
+    "audit_date": "2026-08-26",
+    "reviewed_head": "58c69f62728e0c6cf99e5840816a747f0b37d3e6",
+    "review_source": {
+      "review_kind": "codex_exact_head_review_relayed_via_operator_authorized_pr_comment",
+      "relayed_by": "operator",
+      "github_review_object": null,
+      "github_review_comment_ids": [],
+      "github_issue_comment_id": "5431528233",
+      "github_issue_comment_url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/260#issuecomment-5431528233",
+      "identity_note": "The finding was produced by a Codex exact-head review of 58c69f6 performed in the operator session. It first reached the repair agent as an operator-relayed condensed handoff (elaborating it in the operator's Codex chat tripped a content filter; the operator separately contacted support); the FULL handoff was then durably recorded as operator-authorized PR comment 5431528233 (2026-08-26T21:49:53Z), which states its own provenance and instructs that the findings not be attributed to the connector. No chatgpt-codex-connector review object or inline thread exists for this round. A provenance line in an earlier version of this block said no GitHub object existed for this round; the posted comment supersedes that -- corrected here without rewriting the round's history."
+    },
+    "verdict_on_prior_round": "prior_json_out_repair_incomplete_in_two_ways",
+    "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+    "findings": [
+      {
+        "severity": "P2",
+        "title": "--json-out publication redirectable through an ancestor symlink; collision cleanup deletes an unrelated entry",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "Two sub-findings, both reproduced against the real gate on temporary reference-bundle copies. (1) Ancestor symlink: the round-5 publisher opened only the IMMEDIATE parent with O_NOFOLLOW | O_DIRECTORY, but O_NOFOLLOW guards only the final path component. With out = gp/observations/<artifact>, gp and observations real directories at the realpath preflight (so the preflight passed, seeing a path outside the bundle), then gp swapped to a symlink to the bundle root before publication, os.open('gp/observations', O_NOFOLLOW) followed the gp symlink and opened bundle/observations; publication overwrote observations/p2_raw_count_without_denominator.json (4144 -> 2913 bytes). (2) Collision cleanup: the staging name was deterministic ('.{leaf}.rbce-stage.{pid}') and a FileExistsError at that name was resolved by os.unlink(staging) then retry -- so an unrelated pre-existing file at that name was deleted. Reproduced: a pre-created unrelated file at the deterministic staging name was removed by a successful --json-out run.",
+        "defect_class": "ancestor_symlink_followed_by_final_component_nofollow_only; deterministic_staging_name_blind_unlink_deletes_unrelated_entry",
+        "disposition": "component_by_component_nofollow_walk_and_unique_nondestructive_staging",
+        "disposition_detail": "The output parent is now resolved by _open_output_parent_nofollow: a component-by-component walk from a trusted anchor (/ absolute, cwd relative), each component opened O_NOFOLLOW | O_DIRECTORY relative to the previous, so a symlink at ANY level (parent or ancestor, present or swapped in after the preflight) is refused; missing components are created with mkdir relative to the pinned parent, never through a symlink. Staging now uses a uniquely random name ('.{leaf}.rbce-stage.{os.urandom(8).hex()}') created O_CREAT|O_EXCL|O_WRONLY|O_NOFOLLOW; a name collision is resolved by trying a NEW random name -- an existing entry is never unlinked, so publication never deletes or mutates an unrelated pre-existing path, and the finally cleanup only removes the uniquely named inode the gate itself created. os.replace publication, digest/hard-link/symlink-destination safety, refusal/failed-publish preservation, deterministic output, and exit codes are all unchanged. Re-running both windows: the ancestor swap is refused (GateUsageError) with the bundle byte-identical; the collision leaves the unrelated file byte-identical and still publishes the result.",
+        "negative_controls": [
+          "ancestor (grandparent) swapped to a symlink into the bundle after preflight, with two parent levels: refused, bundle byte-identical",
+          "static ancestor symlink even resolving OUTSIDE the bundle: refused (no output-path symlink is followed at any level)",
+          "staging-name collision with a pre-existing REGULAR FILE forced via os.urandom: the unrelated entry survives byte-for-byte and the result still publishes",
+          "staging-name collision with a pre-existing SYMLINK forced via os.urandom: the symlink keeps its name and target, its target's bytes are intact, and the result still publishes (added per the full posted handoff)",
+          "ordinary nested-parent creation: two missing parent levels created by the walk's dir_fd-relative mkdir (no full-path makedirs exists), publication and atomic replacement both succeed, bundle byte-identical, no staging litter (added per the full posted handoff)",
+          "the prior round's controls (hard link to manifest and artifact, symlink to a bundle file, leaf swap, parent swap, publication failure, ordinary new + replacement, structural) all still pass"
+        ],
+        "mutation_evidence": "5 mutations against the real publication, all killed, no degenerate, gate restored byte-for-byte: single_parent_open_follows_ancestor (4 kills: ancestor-swap, parent-swap, static-ancestor, nested-parent-creation), blind_unlink_on_collision (2: regular-file and symlink collision controls -- a behavioural kill of the unlink-on-collision reinstatement, not textual), reinstate_write_text_publication (8), publish_truncates_leaf_pathname (7), no_staging_cleanup_on_failure (1)."
+      }
+    ],
+    "verification": {
+      "focused_slice_b_tests_collected": 301,
+      "focused_slice_b_tests_passed": 301,
+      "focused_lineage": "297 (58c69f6 prior) - 1 (deterministic-staging-name control removed, superseded by the collision controls) + 3 (ancestor-swap, static-ancestor, regular-file collision, at 090cdea) + 2 (symlink collision, nested-parent creation; completion pass per the full posted handoff) = 301",
+      "full_python_suite_passed": 1022,
+      "full_python_suite_skipped": 3,
+      "mutation_count": 5,
+      "mutations_all_killed": true,
+      "degenerate_evidence": false,
+      "gate_restored_byte_for_byte": true,
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true
+    }
+  },
+  "seventh_review_round": {
+    "audit_date": "2026-08-27",
+    "reviewed_head": "73c89a05bd57ec6e01d6a2c09eb7d66703a1faef",
+    "review_source": {
+      "review_kind": "codex_exact_head_review_posted_via_operator_authorized_pr_comment",
+      "relayed_by": "operator",
+      "github_review_object": null,
+      "github_review_comment_ids": ["r3867337268"],
+      "github_issue_comment_id": "5434054902",
+      "github_issue_comment_url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/260#issuecomment-5434054902",
+      "inline_thread_url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/260#discussion_r3867337268",
+      "identity_note": "A Codex exact-head review of 73c89a0, performed in the operator session and durably posted through operator-authorized PR comment 5434054902 (2026-08-27T03:38:11Z), which references an operator-authored inline review thread r3867337268 (2026-08-26T22:53:37Z) raising the same P1. Both are authored by the operator account (Prometheus-Frameworks), not the chatgpt-codex-connector; the connector is not claimed as author. The review accepted the sixth-round completion pass and raised one blocking P1."
+    },
+    "verdict_on_prior_round": "sixth_round_controls_accepted_one_write_side_capability_blocker",
+    "final_exact_head_audit_status": "pending_fresh_codex_review_of_repaired_head",
+    "findings": [
+      {
+        "severity": "P1",
+        "title": "--json-out publication degraded when its own descriptor primitives were unavailable",
+        "accepted": true,
+        "reproduced": true,
+        "reproduction_detail": "descriptor_primitives_available() gates the bundle READ path, but main() still calls publish_json_out after validate_bundle returns BUNDLE_DESCRIPTOR_UNSUPPORTED, and publish_json_out had no independent capability preflight. Reproduced through the exact public main() path on a temporary reference-bundle copy: forced _O_NOFOLLOW = 0; validate_bundle returned ok:false with BUNDLE_DESCRIPTOR_UNSUPPORTED; after the realpath preflight an output ancestor (gp) was swapped to a symlink into the temporary bundle; _open_output_parent_nofollow silently built step_flags without no-follow protection (since _O_NOFOLLOW was 0) and followed the swapped ancestor; main() published the failure report through it -- exit code was 1 but the targeted bundle artifact observations/p2_raw_count_without_denominator.json was replaced by the gate report and its SHA-256 changed (4144 -> 832 bytes). The read side failed closed while the write side corrupted the object being protected.",
+        "defect_class": "write_side_publication_lacked_independent_capability_preflight",
+        "disposition": "write_side_capability_invariant_separate_from_read_side",
+        "disposition_detail": "New publication_primitives_available() -- deliberately separate from descriptor_primitives_available() because read safety and publication safety need different primitive sets -- requires a nonzero O_NOFOLLOW and O_DIRECTORY plus dir_fd support for every operation the publisher uses (os.open, os.mkdir, os.replace/os.rename, os.unlink). publish_json_out calls it FIRST, before opening an anchor, creating a parent, staging, replacing, or cleaning up; if any primitive is missing it raises GateUsageError (exit 2) and touches no output path and no bundle byte. Read-only primitives (O_PATH, O_NONBLOCK) are intentionally NOT required by the publication check, so when only those are missing the gate still safely publishes the BUNDLE_DESCRIPTOR_UNSUPPORTED failure report and returns 1. All accepted round-5/round-6 properties (component-by-component parent binding, no existing-inode truncation, non-destructive collision handling, atomic replacement, deterministic bytes, staging-owned cleanup, exit behavior) are preserved.",
+        "portability_note": "The atomic-replace capability is proved by os.replace OR os.rename membership in os.supports_dir_fd. Both are implemented by renameat and share dir_fd support, but CPython registers only os.rename in the set on some builds -- verified on this platform: os.replace in os.supports_dir_fd is False while os.rename in os.supports_dir_fd is True and os.replace(..., src_dir_fd=...) works. Requiring os.replace membership alone would fail closed spuriously on those builds; accepting either is the honest portable test, and a mutation that requires os.replace membership only is killed by every ordinary --json-out control.",
+        "negative_controls": [
+          "public-gate regression: _O_NOFOLLOW = 0, real validation returns BUNDLE_DESCRIPTOR_UNSUPPORTED, output ancestor swapped into the bundle after preflight, publication refused, every bundle byte unchanged",
+          "direct publication regression: missing write-side capability refuses before any output-side open/mkdir/staging/replace/unlink -- behavioural, every output-side op is spied (spies kept in supports_dir_fd so the guard fails only on the dropped flag), zero recorded ops",
+          "capability matrix: each of O_NOFOLLOW, O_DIRECTORY, and dir_fd support for open/mkdir/unlink/(replace-and-rename) dropped in isolation makes the guard false and publication refuse, bundle byte-identical",
+          "separation control: a missing READ-only primitive (O_PATH) fails the read side closed but leaves publication capability intact, so the failure report is safely published at exit 1, bundle byte-identical",
+          "no-output control: with --json-out omitted, a missing publication-only capability (dir_fd support for replace/rename) does not alter ordinary validation/stdout; a passing bundle still exits 0",
+          "all round-5/round-6 controls (hard link, symlink destination, ancestor/parent/leaf swaps, both collider classes, publication failure, ordinary new + nested creation + replacement, structural) remain green"
+        ],
+        "mutation_evidence": "3 mutations against the real capability guard, all killed, no degenerate, gate restored byte-for-byte: bypass_publication_preflight (8 kills, incl. the public corruption control behaviourally), guard_always_true (9 kills, incl. the public corruption control), require_os_replace_membership_only (10 kills -- proves the OR-portability handling is load-bearing: requiring os.replace membership alone spuriously refuses ALL --json-out on this platform)."
+      }
+    ],
+    "verification": {
+      "focused_slice_b_tests_collected": 311,
+      "focused_slice_b_tests_passed": 311,
+      "focused_lineage": "301 (73c89a0 prior) + 10 new (public-gate regression, direct-refuse regression, 6-case capability matrix, read-only separation, no-output) = 311",
+      "full_python_suite_passed": 1032,
+      "full_python_suite_skipped": 3,
+      "mutation_count": 3,
+      "mutations_all_killed": true,
+      "degenerate_evidence": false,
+      "gate_restored_byte_for_byte": true,
+      "slice_a_unchanged": true,
+      "exports_changed": false,
+      "reference_bundle_byte_identical": true
+    }
+  }
+}

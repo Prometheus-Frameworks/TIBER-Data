@@ -1,0 +1,21 @@
+{
+  "artifact_id": "rb_contact_evasion_observations_v0",
+  "artifact_position": "fixture_only",
+  "artifacts": [
+    {
+      "digest": "f16a53a20d691f4aad49317b45f6bc787d999f110976f61dac66d6f11d8126d6",
+      "path": "observations/p2_raw_count_without_denominator.json",
+      "size_bytes": 4144
+    },
+    {
+      "digest": "ffab864599c836f7a84260cd47022ecf2a588ffff539ae444e05bbc34067d0bc",
+      "path": "observations/p7_bucky_receipt_remains_partial.json",
+      "size_bytes": 20332
+    }
+  ],
+  "bundle_note": "Reference bundle for the TIBER-Data #234 Slice B gate. Both artifacts are byte-for-byte copies of committed Slice A contract fixtures; every value in them is synthetic and none is evidence about any real player. This is a gate fixture, not a candidate artifact: it sits at fixture_only position and no admitted source exists under this contract.",
+  "digest_algorithm": "sha256",
+  "generated_at": "2026-08-25T00:00:00+00:00",
+  "manifest_version": "rb_contact_evasion_observations_bundle_manifest_v0.1.0",
+  "schema_version": "rb_contact_evasion_observations_v0.4.0"
+}
