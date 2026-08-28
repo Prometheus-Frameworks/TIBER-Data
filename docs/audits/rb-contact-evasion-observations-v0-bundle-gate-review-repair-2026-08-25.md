@@ -544,3 +544,41 @@ membership only), **all killed, no degenerate, gate restored byte-for-byte** —
 mutations are killed *behaviourally* by the public corruption control, and the portability mutation by every
 ordinary `--json-out` control. No Slice A change; nothing under `exports/**`; reference bundle
 byte-identical. Final exact-head audit status remains **pending fresh Codex review of the repaired head**.
+
+---
+
+## Post-merge containment round — 2026-08-28 (disable `--json-out`)
+
+PR #260 merged with the publication surface still present. The final PR head
+`660edb1587780242188ce3ebf49caa117c59cc8d` differed from independently reviewed
+head `48cb35264bf63b8cde522ede650fa6933ce039df` only by one audit-date field; current
+`main` is `6762665fefdbc81963f3d0a5708078de6cfba981`.
+
+### P1 — a real output-parent entry can be replaced by the real bundle directory
+
+The earlier component-by-component `O_NOFOLLOW` repair refuses symlinks, but it
+cannot distinguish two real directories. After the pathname preflight, replacing
+the output-parent entry with the real validated bundle directory lets publication
+resolve relative to that bundle descriptor and replace a bundle file. The gate's
+“never mutate the validated bundle” invariant therefore remained unproved.
+
+**Disposition: remove the write capability.** `--json-out` now raises usage
+error `2` before validation or any output-path inspection. `publish_json_out`,
+`_open_output_parent_nofollow`, and `publication_primitives_available` are
+removed. Deterministic `--json` stdout and normal pass/fail exit codes are
+unchanged. Any file capture belongs to a separately reviewed caller.
+
+**Controls:** pre-existing output is byte-identical and validation is not called;
+the real-directory-substitution hook never runs; a subprocess returns `2` with
+no stdout and creates no parent; and a structural control proves the retired
+publisher helpers are absent.
+
+### Post-merge containment verification
+
+Focused collection is **292** tests after retiring 23 publication-success node
+IDs and adding four disablement controls. The environment-independent slice is
+**291 passed**; one existing `strace` path-format assertion failed locally with
+zero matched opens and is unrelated to changed code. Ruff, `py_compile`, JSON
+validation, and `git diff --check` pass. No Slice A change; nothing under
+`exports/**`; the reference bundle is byte-identical. Final exact-head audit
+status is **pending independent review of the containment branch**.

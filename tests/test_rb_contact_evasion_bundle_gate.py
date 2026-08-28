@@ -24,7 +24,6 @@ stage is exactly the false pass the gate exists to prevent.
 
 from __future__ import annotations
 
-import errno
 import hashlib
 import json
 import os
@@ -1251,14 +1250,14 @@ def test_cli_json_mode_emits_only_json(tmp_path: Path, capsys: pytest.CaptureFix
     assert parsed["gate"] == "rb_contact_evasion_observations_bundle_gate_v0"
 
 
-def test_cli_json_out_writes_the_machine_result(
+def test_cli_json_out_is_disabled(
     tmp_path: Path, capsys: pytest.CaptureFixture
 ) -> None:
     root = bundle_from_fixture(tmp_path / "b", "p2_raw_count_without_denominator.json")
     out = tmp_path / "result.json"
-    assert main([str(root), "--json-out", str(out)]) == 0
-    capsys.readouterr()
-    assert json.loads(out.read_text())["ok"] is True
+    with pytest.raises(GateUsageError, match="--json-out is disabled"):
+        main([str(root), "--json-out", str(out)])
+    assert not out.exists()
 
 
 def test_cli_refuses_to_write_inside_the_bundle(tmp_path: Path) -> None:
@@ -3407,13 +3406,13 @@ def test_growth_and_short_read_still_detected_with_single_buffer(
 
 
 # ---------------------------------------------------------------------------
-# Fifth independent-review repair --- safe --json-out publication (P2)
+# ---------------------------------------------------------------------------
+# Post-merge containment --- --json-out is disabled (P1)
 #
-# The gate must never open, truncate, or follow an existing output inode. It
-# publishes through a fresh staging inode in a dir-fd-pinned parent, then
-# atomically replaces the destination entry. Every control snapshots SHA-256 and
-# size of every bundle file before and compares after; temporary bundle copies
-# only.
+# A real directory can be substituted for another real directory after any
+# pathname preflight. No O_NOFOLLOW walk can identify that the replacement is
+# the validated bundle. The gate therefore owns no output-path write capability;
+# deterministic machine output remains available on stdout.
 # ---------------------------------------------------------------------------
 
 
@@ -3422,7 +3421,10 @@ def _bundle_snapshot(root: Path) -> dict:
     for path in sorted(root.rglob("*")):
         if path.is_file() and not path.is_symlink():
             raw = path.read_bytes()
-            snap[path.relative_to(root).as_posix()] = (hashlib.sha256(raw).hexdigest(), len(raw))
+            snap[path.relative_to(root).as_posix()] = (
+                hashlib.sha256(raw).hexdigest(),
+                len(raw),
+            )
     return snap
 
 
@@ -3437,566 +3439,89 @@ def _two_artifact_bundle(root: Path) -> Path:
     )
 
 
-def test_json_out_hard_link_to_manifest_does_not_truncate_it(tmp_path: Path) -> None:
-    """Control 1: --json-out is a hard link sharing manifest.json's inode."""
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    out = tmp_path / "outside.json"
-    os.link(root / "manifest.json", out)  # shares the manifest inode
-    before = _bundle_snapshot(root)
-    manifest_ino = os.stat(root / "manifest.json").st_ino
-
-    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
-
-    after = _bundle_snapshot(root)
-    assert before == after, "the validated bundle must be byte-identical"
-    # manifest.json keeps its own bytes; the hard-linked entry now holds the result.
-    assert json.loads((root / "manifest.json").read_text())["artifact_id"]
-    assert json.loads(out.read_text())["ok"] is True
-    # The output entry was repointed to a NEW inode (rename), not the shared one.
-    assert os.stat(out).st_ino != manifest_ino
-
-
-@pytest.mark.parametrize("artifact", ["observations/p2_raw_count_without_denominator.json"])
-def test_json_out_hard_link_to_artifact_does_not_truncate_it(tmp_path: Path, artifact: str) -> None:
-    """Control 2: --json-out is a hard link sharing an artifact's inode."""
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    out = tmp_path / "outside.json"
-    os.link(root / artifact, out)
-    before = _bundle_snapshot(root)
-    artifact_ino = os.stat(root / artifact).st_ino
-
-    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
-
-    after = _bundle_snapshot(root)
-    assert before == after, "the validated bundle must be byte-identical"
-    assert json.loads(out.read_text())["ok"] is True
-    assert os.stat(out).st_ino != artifact_ino
-
-
-def test_json_out_symlink_to_bundle_file_never_truncates_it(tmp_path: Path) -> None:
-    """Control 3: --json-out is a symlink pointing at a bundle file.
-
-    A pre-existing symlink into the bundle is caught by the realpath policy guard
-    (it resolves inside the bundle); whether refused there or safely republished,
-    the bundle file it points at must never be truncated.
-    """
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    out = tmp_path / "link.json"
-    out.symlink_to(root / "manifest.json")
-    before = _bundle_snapshot(root)
-
-    refused = False
-    try:
-        _gate.main([str(root), "--json", "--json-out", str(out)])
-    except GateUsageError:
-        refused = True
-
-    after = _bundle_snapshot(root)
-    assert before == after, "the symlink's bundle target must be byte-identical"
-    # Either outcome is safe; assert it did not corrupt the manifest.
-    assert json.loads((root / "manifest.json").read_text())["artifact_id"]
-    if not refused:
-        assert json.loads(out.read_text())["ok"] is True
-
-
-def test_json_out_leaf_swapped_to_symlink_after_preflight(
+def test_json_out_is_disabled_before_validation_or_output_inspection(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Control 4: the leaf is swapped to a symlink into the bundle after preflight.
-
-    Publication happens after validate_bundle; wrapping that stage swaps the
-    output leaf to a symlink into the bundle in the window before the write.
-    Because publication renames a fresh inode onto the destination entry (never
-    opening it), the symlink is replaced, not followed, and the bundle is intact.
-    """
-
     root = _two_artifact_bundle(tmp_path / "b")
-    out = tmp_path / "out.json"
-    before = _bundle_snapshot(root)
-
-    real_validate = _gate.validate_bundle
-
-    def swapping_validate(bundle_root):
-        result = real_validate(bundle_root)
-        if out.exists() or out.is_symlink():
-            out.unlink()
-        out.symlink_to(root / "manifest.json")
-        return result
-
-    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
-    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
-
-    after = _bundle_snapshot(root)
-    assert before == after, "a post-preflight leaf swap must not touch the bundle"
-    assert not out.is_symlink(), "the destination entry is now a regular file, not the symlink"
-    assert json.loads(out.read_text())["ok"] is True
-
-
-def test_json_out_parent_swapped_to_symlink_after_preflight(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Control 5: a reachable parent directory is swapped to a symlink into the bundle."""
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    parent = tmp_path / "outdir"
-    parent.mkdir()
-    out = parent / "p2_raw_count_without_denominator.json"  # would land on the artifact name
-    before = _bundle_snapshot(root)
-
-    real_validate = _gate.validate_bundle
-
-    def swapping_validate(bundle_root):
-        result = real_validate(bundle_root)
-        shutil.rmtree(parent)
-        parent.symlink_to(root / "observations")
-        return result
-
-    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
-    with pytest.raises(GateUsageError):
-        _gate.main([str(root), "--json", "--json-out", str(out)])
-
-    after = _bundle_snapshot(root)
-    assert before == after, "a parent swapped to a symlink into the bundle must be refused"
-
-
-def test_json_out_publication_failure_leaves_bundle_and_prior_output_intact(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Control 6: a failed atomic replace preserves the bundle and prior output."""
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    out = tmp_path / "prior.json"
-    prior_bytes = b'{"prior":"output","keep":true}\n'
-    out.write_bytes(prior_bytes)
+    out_parent = tmp_path / "ordinary-real-directory"
+    out_parent.mkdir()
+    out = out_parent / "result.json"
+    out.write_bytes(b'{"prior":"preserve"}\n')
     before_bundle = _bundle_snapshot(root)
+    before_output = out.read_bytes()
+    validate = pytest.fail
 
-    real_replace = _gate.os.replace
-
-    def failing_replace(*args, **kwargs):
-        raise OSError(errno.EIO, "induced publication failure")
-
-    monkeypatch.setattr(_gate.os, "replace", failing_replace)
-    with pytest.raises(OSError):
-        _gate.main([str(root), "--json", "--json-out", str(out)])
-    monkeypatch.setattr(_gate.os, "replace", real_replace)
-
-    assert _bundle_snapshot(root) == before_bundle, "the bundle must be byte-identical"
-    assert out.read_bytes() == prior_bytes, "the prior output must be byte-identical"
-    # No staging litter is left behind.
-    leftovers = [p.name for p in tmp_path.iterdir() if "rbce-stage" in p.name]
-    assert leftovers == [], f"staging files must be cleaned up: {leftovers}"
-
-
-def test_json_out_ordinary_new_and_replacement_still_succeed(tmp_path: Path) -> None:
-    """Control 7: a new output, and replacement of an unrelated prior output, both succeed."""
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    before = _bundle_snapshot(root)
-
-    # New output (no prior file).
-    fresh = tmp_path / "fresh.json"
-    assert _gate.main([str(root), "--json", "--json-out", str(fresh)]) == 0
-    assert json.loads(fresh.read_text())["ok"] is True
-
-    # Replacement of an unrelated prior regular file.
-    prior = tmp_path / "prior.json"
-    prior.write_text('{"stale":true}\n')
-    prior_ino = os.stat(prior).st_ino
-    assert _gate.main([str(root), "--json", "--json-out", str(prior)]) == 0
-    assert json.loads(prior.read_text())["ok"] is True
-    assert os.stat(prior).st_ino != prior_ino, "replacement is a fresh inode, not a truncate"
-
-    assert _bundle_snapshot(root) == before, "the bundle is untouched by ordinary publication"
-    leftovers = [p.name for p in tmp_path.iterdir() if "rbce-stage" in p.name]
-    assert leftovers == [], f"staging files must be cleaned up: {leftovers}"
-
-
-def test_json_out_ancestor_symlink_swapped_after_preflight_is_refused(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """A grandparent swapped to a symlink into the bundle after preflight is refused.
-
-    O_NOFOLLOW on the immediate parent guards only the final component; an
-    ancestor above it is still followed. The component-by-component O_NOFOLLOW
-    walk refuses a symlink at *any* level, so a post-preflight ancestor swap
-    cannot redirect the write into the bundle.
-    """
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    gp = tmp_path / "gp"
-    (gp / "observations").mkdir(parents=True)  # real dirs at preflight
-    out = gp / "observations" / "p2_raw_count_without_denominator.json"
-    before = _bundle_snapshot(root)
-
-    real_validate = _gate.validate_bundle
-
-    def swapping_validate(bundle_root):
-        result = real_validate(bundle_root)
-        shutil.rmtree(gp)
-        gp.symlink_to(root)  # gp -> bundle root; gp/observations -> bundle/observations
-        return result
-
-    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
-    with pytest.raises(GateUsageError):
-        _gate.main([str(root), "--json", "--json-out", str(out)])
-
-    assert _bundle_snapshot(root) == before, "an ancestor symlink into the bundle must be refused"
-
-
-def test_json_out_static_ancestor_symlink_is_refused(tmp_path: Path) -> None:
-    """Any symlink on the output path — even one resolving outside the bundle — is refused.
-
-    The publisher does not follow a symlink at any output-path component; a
-    symlinked ancestor is a usage error, not a path it silently traverses.
-    """
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    real_dir = tmp_path / "real_out"
-    real_dir.mkdir()
-    linked = tmp_path / "linked"
-    linked.symlink_to(real_dir)  # an innocuous symlink, outside the bundle
-    out = linked / "result.json"
-    before = _bundle_snapshot(root)
-
-    with pytest.raises(GateUsageError):
-        _gate.main([str(root), "--json", "--json-out", str(out)])
-
-    assert _bundle_snapshot(root) == before
-    assert not (real_dir / "result.json").exists(), "no write through a symlinked ancestor"
-
-
-def test_json_out_staging_collision_never_deletes_unrelated_entry(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """A staging-name collision retries with a new name; it never deletes the entry.
-
-    ``os.urandom`` is forced to collide the first staging name with an unrelated
-    pre-existing file. The publisher must preserve that file (O_EXCL fails, a new
-    random name is tried) rather than unlink it, and still publish the result.
-    """
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    out = tmp_path / "out.json"
-
-    first_token = bytes(8)  # eight zero bytes
-    second_token = b"\x11" * 8
-    tokens = [first_token, second_token]
-    calls = {"i": 0}
-
-    def fake_urandom(n: int) -> bytes:
-        token = tokens[min(calls["i"], len(tokens) - 1)]
-        calls["i"] += 1
-        return token
-
-    monkeypatch.setattr(_gate.os, "urandom", fake_urandom)
-
-    first_hex = first_token.hex()
-    collide_name = f".{out.name}.rbce-stage.{first_hex}"
-    unrelated = tmp_path / collide_name
-    unrelated.write_bytes(b"UNRELATED-DO-NOT-DELETE\n")
-    before = _bundle_snapshot(root)
-
-    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
-
-    assert unrelated.read_bytes() == b"UNRELATED-DO-NOT-DELETE\n", "unrelated entry must survive"
-    assert json.loads(out.read_text())["ok"] is True
-    assert _bundle_snapshot(root) == before
-    # The second (distinct) token's staging file was renamed away, not left behind.
-    leftovers = [p.name for p in tmp_path.iterdir() if "rbce-stage" in p.name and p != unrelated]
-    assert leftovers == [], f"our own staging files must be cleaned up: {leftovers}"
-
-
-def test_json_out_staging_symlink_collider_is_preserved_not_followed(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """A pre-existing SYMLINK at the first staging candidate survives with its target.
-
-    O_CREAT|O_EXCL fails with EEXIST on a symlink (dangling or not), so the
-    publisher must move to a new candidate name -- never unlink the symlink,
-    never follow it. Its name and target must be unchanged afterwards, its
-    target's bytes intact, and the result still published.
-    """
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    out = tmp_path / "out.json"
-
-    first_token = bytes(8)
-    second_token = b"\x22" * 8
-    tokens = [first_token, second_token]
-    calls = {"i": 0}
-
-    def fake_urandom(n: int) -> bytes:
-        token = tokens[min(calls["i"], len(tokens) - 1)]
-        calls["i"] += 1
-        return token
-
-    monkeypatch.setattr(_gate.os, "urandom", fake_urandom)
-
-    target = tmp_path / "link_target.json"
-    target_bytes = b'{"symlink":"target"}\n'
-    target.write_bytes(target_bytes)
-    collide_name = f".{out.name}.rbce-stage.{first_token.hex()}"
-    collider = tmp_path / collide_name
-    collider.symlink_to(target)
-    before = _bundle_snapshot(root)
-
-    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
-
-    assert collider.is_symlink(), "the symlink collider must keep its name"
-    assert os.readlink(collider) == str(target), "the symlink collider must keep its target"
-    assert target.read_bytes() == target_bytes, "the symlink target must be byte-identical"
-    assert json.loads(out.read_text())["ok"] is True
-    assert _bundle_snapshot(root) == before
-
-
-def test_json_out_creates_missing_nested_parents_and_replaces(tmp_path: Path) -> None:
-    """Ordinary nested-parent creation and replacement through the no-follow walk.
-
-    Two missing parent levels are created by the walk's dir_fd-relative mkdir
-    (there is no full-path makedirs), publication succeeds, and a second run
-    atomically replaces the first output. The bundle stays byte-identical.
-    """
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    out = tmp_path / "new_a" / "new_b" / "out.json"
-    assert not (tmp_path / "new_a").exists()
-    before = _bundle_snapshot(root)
-
-    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
-    assert json.loads(out.read_text())["ok"] is True
-    first_ino = os.stat(out).st_ino
-
-    assert _gate.main([str(root), "--json", "--json-out", str(out)]) == 0
-    assert json.loads(out.read_text())["ok"] is True
-    assert os.stat(out).st_ino != first_ino, "replacement publishes a fresh inode"
-
-    assert _bundle_snapshot(root) == before
-    leftovers = [
-        p.name
-        for p in (tmp_path / "new_a" / "new_b").iterdir()
-        if "rbce-stage" in p.name
-    ]
-    assert leftovers == [], f"staging files must be cleaned up: {leftovers}"
-
-
-# ---------------------------------------------------------------------------
-# Seventh independent-review repair --- write-side capability invariant (P1)
-#
-# validate_bundle fails closed when read primitives are missing, but main() still
-# calls publish_json_out afterwards. If _O_NOFOLLOW == 0 the publisher's component
-# walk silently loses no-follow protection and a post-preflight ancestor swap can
-# redirect the write into the bundle. publish_json_out must independently prove
-# its OWN publication primitives before touching the output path.
-# ---------------------------------------------------------------------------
-
-
-def _spy_write_ops(monkeypatch: pytest.MonkeyPatch):
-    """Spy on every output-side FS op and record calls, WITHOUT breaking the
-    publication capability check.
-
-    ``publication_primitives_available()`` tests dir_fd support by identity
-    (``os.open in os.supports_dir_fd`` etc.). Replacing those functions with
-    spies would drop them from the set and make the guard fail for an unrelated
-    reason, so the spies are registered in a patched ``supports_dir_fd`` -- the
-    guard then fails only on a genuinely dropped flag, and the spies still
-    observe whether any output-side op was attempted.
-    """
-
-    calls: dict[str, list] = {"open": [], "mkdir": [], "replace": [], "unlink": [], "rename": []}
-    real = {
-        "open": _gate.os.open,
-        "mkdir": _gate.os.mkdir,
-        "replace": _gate.os.replace,
-        "unlink": _gate.os.unlink,
-        "rename": _gate.os.rename,
-    }
-
-    def make(name):
-        def spy(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
-            calls[name].append((args, kwargs))
-            return real[name](*args, **kwargs)
-
-        return spy
-
-    spies = {name: make(name) for name in real}
     monkeypatch.setattr(
-        _gate.os,
-        "supports_dir_fd",
-        {spies["open"], spies["mkdir"], spies["replace"], spies["unlink"], spies["rename"],
-         *_gate.os.supports_dir_fd},
+        _gate,
+        "validate_bundle",
+        lambda _root: validate("--json-out must fail before validation"),
     )
-    for name, spy in spies.items():
-        monkeypatch.setattr(_gate.os, name, spy)
-    return calls
+
+    with pytest.raises(GateUsageError, match="--json-out is disabled"):
+        _gate.main([str(root), "--json-out", str(out)])
+
+    assert _bundle_snapshot(root) == before_bundle
+    assert out.read_bytes() == before_output
 
 
-def test_json_out_refused_through_main_when_nofollow_unavailable(
+def test_json_out_real_directory_substitution_window_never_opens(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Public-gate regression for the round-7 P1.
+    """Regression for the independently reproduced real-directory substitution.
 
-    With ``_O_NOFOLLOW == 0`` the real validation fails closed
-    (``BUNDLE_DESCRIPTOR_UNSUPPORTED``); an output ancestor is swapped into the
-    bundle after the realpath preflight. The write-side capability preflight must
-    refuse publication so the failure report is never written through the swapped
-    ancestor, and every bundle byte must remain unchanged.
+    The former publisher could not distinguish an ordinary real output parent
+    from the real bundle directory substituted after preflight. The disabled
+    option refuses before validation, so the substitution hook never runs and
+    neither directory is touched.
     """
 
     root = _two_artifact_bundle(tmp_path / "b")
-    gp = tmp_path / "gp"
-    (gp / "observations").mkdir(parents=True)
-    out = gp / "observations" / "p2_raw_count_without_denominator.json"
+    parent = tmp_path / "out"
+    parent.mkdir()
+    out = parent / "manifest.json"
     before = _bundle_snapshot(root)
+    swapped = False
 
-    real_validate = _gate.validate_bundle
+    def substitute_after_preflight(_root):
+        nonlocal swapped
+        swapped = True
+        parent.rmdir()
+        parent.symlink_to(root)
+        pytest.fail("validation must not run for disabled --json-out")
 
-    def swapping_validate(bundle_root):
-        result = real_validate(bundle_root)
-        shutil.rmtree(gp)
-        gp.symlink_to(root)  # ancestor -> bundle, after preflight
-        return result
+    monkeypatch.setattr(_gate, "validate_bundle", substitute_after_preflight)
 
-    monkeypatch.setattr(_gate, "_O_NOFOLLOW", 0)
-    monkeypatch.setattr(_gate, "validate_bundle", swapping_validate)
-    with pytest.raises(GateUsageError):
+    with pytest.raises(GateUsageError, match="--json-out is disabled"):
         _gate.main([str(root), "--json", "--json-out", str(out)])
 
-    assert _bundle_snapshot(root) == before, "no bundle byte may change when publication is refused"
-
-
-def test_publish_json_out_refuses_before_any_output_side_op(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Direct publication regression: a missing write-side capability refuses
-    BEFORE any output-side open, mkdir, staging creation, replace, or unlink.
-
-    Behavioural and non-vacuous: every output-side FS op is spied (and the spies
-    are kept in ``supports_dir_fd`` so the guard fails only on the dropped
-    ``_O_NOFOLLOW``). The refusal must happen with zero recorded ops.
-    """
-
-    calls = _spy_write_ops(monkeypatch)
-    monkeypatch.setattr(_gate, "_O_NOFOLLOW", 0)
-    assert not _gate.publication_primitives_available()
-
-    out = tmp_path / "sub" / "result.json"
-    with pytest.raises(GateUsageError):
-        _gate.publish_json_out(out, '{"ok":true}\n')
-
-    assert calls["open"] == [], "no output-side open before the capability refusal"
-    assert calls["mkdir"] == [], "no mkdir before the capability refusal"
-    assert calls["replace"] == [], "no replace before the capability refusal"
-    assert calls["unlink"] == [], "no unlink before the capability refusal"
-    assert not out.exists() and not (tmp_path / "sub").exists(), "no output path created"
-
-
-@pytest.mark.parametrize(
-    "drop",
-    [
-        "o_nofollow",
-        "o_directory",
-        "open_dirfd",
-        "mkdir_dirfd",
-        "unlink_dirfd",
-        "replace_rename_dirfd",
-    ],
-)
-def test_publication_capability_matrix_refuses_and_preserves_bundle(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, drop: str
-) -> None:
-    """Each safety-critical write-side primitive/operation, dropped in isolation,
-    makes ``publication_primitives_available()`` false and publication refuse,
-    with the bundle byte-identical."""
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    out = tmp_path / "result.json"
-    before = _bundle_snapshot(root)
-    supports = set(_gate.os.supports_dir_fd)
-
-    if drop == "o_nofollow":
-        monkeypatch.setattr(_gate, "_O_NOFOLLOW", 0)
-    elif drop == "o_directory":
-        monkeypatch.setattr(_gate, "_O_DIRECTORY", 0)
-    elif drop == "open_dirfd":
-        monkeypatch.setattr(_gate.os, "supports_dir_fd", supports - {_gate.os.open})
-    elif drop == "mkdir_dirfd":
-        monkeypatch.setattr(_gate.os, "supports_dir_fd", supports - {_gate.os.mkdir})
-    elif drop == "unlink_dirfd":
-        monkeypatch.setattr(_gate.os, "supports_dir_fd", supports - {_gate.os.unlink})
-    elif drop == "replace_rename_dirfd":
-        monkeypatch.setattr(
-            _gate.os, "supports_dir_fd", supports - {_gate.os.replace, _gate.os.rename}
-        )
-
-    assert not _gate.publication_primitives_available()
-    with pytest.raises(GateUsageError):
-        _gate.main([str(root), "--json", "--json-out", str(out)])
-    assert not out.exists(), "no output written when publication capability is missing"
+    assert swapped is False
+    assert parent.is_dir() and not parent.is_symlink()
     assert _bundle_snapshot(root) == before
 
 
-def test_readonly_primitive_missing_still_publishes_failure_report(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+def test_json_out_subprocess_returns_usage_error_without_creating_parent(
+    tmp_path: Path,
 ) -> None:
-    """Separation control: a missing READ-only primitive (O_PATH) fails the read
-    side closed but leaves publication capability intact, so the gate safely
-    publishes the ``BUNDLE_DESCRIPTOR_UNSUPPORTED`` failure report and returns 1.
-    """
-
     root = _two_artifact_bundle(tmp_path / "b")
-    out = tmp_path / "result.json"
+    out = tmp_path / "missing" / "result.json"
     before = _bundle_snapshot(root)
 
-    monkeypatch.setattr(_gate, "_O_PATH", 0)
-    assert not _gate.descriptor_primitives_available()
-    assert _gate.publication_primitives_available()
+    completed = subprocess.run(
+        [sys.executable, str(GATE_SCRIPT), str(root), "--json-out", str(out)],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        check=False,
+    )
 
-    code = _gate.main([str(root), "--json", "--json-out", str(out)])
-    capsys.readouterr()
-
-    assert code == 1, "read failure reports exit 1, not a publication usage error"
-    published = json.loads(out.read_text())
-    assert published["ok"] is False
-    assert "BUNDLE_DESCRIPTOR_UNSUPPORTED" in published["reason_codes"]
+    assert completed.returncode == 2
+    assert b"--json-out is disabled" in completed.stderr
+    assert completed.stdout == b""
+    assert not out.parent.exists()
     assert _bundle_snapshot(root) == before
 
 
-def test_missing_publication_primitive_without_json_out_is_inert(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
-) -> None:
-    """No-output control: with ``--json-out`` omitted, a missing publication-only
-    capability (dir_fd support for replace/rename) does not alter ordinary
-    validation/stdout behaviour -- a passing bundle still exits 0.
-    """
-
-    root = _two_artifact_bundle(tmp_path / "b")
-    reduced = set(_gate.os.supports_dir_fd) - {_gate.os.replace, _gate.os.rename}
-    monkeypatch.setattr(_gate.os, "supports_dir_fd", reduced)
-    assert not _gate.publication_primitives_available()
-    assert _gate.descriptor_primitives_available()  # read side unaffected
-
-    code = _gate.main([str(root), "--json"])
-    out = capsys.readouterr().out
-    assert code == 0
-    assert json.loads(out)["ok"] is True
-
-
-def test_publish_json_out_never_opens_destination_for_writing() -> None:
-    """Structural: publication renames onto the destination; it never opens the leaf.
-
-    The only write-opening ``os.open`` in the publisher creates the staging inode
-    with O_CREAT|O_EXCL|O_NOFOLLOW; publication is an ``os.replace``. Guards
-    against a regression that reintroduces a truncating open of the destination.
-    """
-
-    src = GATE_SCRIPT.read_text()
-    body = src[src.index("def publish_json_out(") : src.index("def _parse_args(")]
-    # Drop the docstring so prose that mentions the unsafe forms is not matched.
-    code = body[body.index('"""', body.index('"""') + 3) + 3 :]
-    assert "O_EXCL" in code and "O_NOFOLLOW" in code
-    assert "os.replace(" in code
-    assert ".write_text(" not in code, "publication must not write_text into an existing path"
-    assert "O_TRUNC" not in code
+def test_retired_json_out_publisher_is_absent() -> None:
+    source = GATE_SCRIPT.read_text()
+    assert "def publish_json_out(" not in source
+    assert "def publication_primitives_available(" not in source
+    assert "def _open_output_parent_nofollow(" not in source

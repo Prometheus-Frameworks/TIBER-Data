@@ -214,8 +214,8 @@ python3 scripts/validate_rb_contact_evasion_bundle.py <bundle-root>
 # machine-readable result on stdout, for CI
 python3 scripts/validate_rb_contact_evasion_bundle.py <bundle-root> --json
 
-# or write it to a file (which must be outside the bundle)
-python3 scripts/validate_rb_contact_evasion_bundle.py <bundle-root> --json-out result.json
+# --json-out is disabled; a separately reviewed caller may capture stdout
+python3 scripts/validate_rb_contact_evasion_bundle.py <bundle-root> --json
 ```
 
 Or through the package script:
@@ -230,51 +230,19 @@ Exit codes: `0` the bundle passed every stage, `1` the bundle failed the gate,
 `2` the invocation itself was invalid.
 
 The gate performs no network access and opens every **bundle** path read-only.
-It never writes into the bundle it is validating. `--json-out` pointing inside
-the bundle is refused as a usage error, but that pathname check is only a
-usability guard: it cannot see a hard link that shares a bundle file's inode and
-it is raceable. The safety is in how the result is published. `--json-out` never
-opens, truncates, or follows an existing output inode.
+It never writes into the bundle it is validating.
 
-Before any output-side operation, publication runs its **own** capability
-preflight (`publication_primitives_available()`), separate from the read side's
-`descriptor_primitives_available()` because the two need different primitive
-sets. The read side would fail closed and refuse to read the bundle if a read
-primitive were missing — but `main` would still go on to publish the failure
-report, and if the no-follow flag were degraded to `0` the walk below would
-silently lose its protection. So publication independently requires a nonzero
-`O_NOFOLLOW` and `O_DIRECTORY` plus `dir_fd` support for every operation it uses
-(`open`, `mkdir`, atomic replace, `unlink`); if any is missing it raises a usage
-error and exits `2` **before** opening an anchor, creating a parent, staging,
-replacing, or cleaning up — touching no output path and no bundle byte. (The
-atomic-replace capability is proved by `os.replace` **or** `os.rename` membership
-in `os.supports_dir_fd`: both are `renameat`, but CPython registers only
-`os.rename` on some builds — Linux/CPython 3.11 among them — while
-`os.replace(..., src_dir_fd=…)` works, so requiring `os.replace` membership alone
-would fail closed spuriously.) When only a *read*-specific primitive (`O_PATH`,
-`O_NONBLOCK`) is missing, publication capability is intact, so the gate still
-safely publishes the `BUNDLE_DESCRIPTOR_UNSUPPORTED` failure report and exits `1`.
+`--json-out` is intentionally disabled and returns usage error `2` before
+validation or any output-path inspection. The prior descriptor-relative
+publisher could block symlink, hard-link, and missing-primitive attacks, but it
+could not distinguish an ordinary real output directory from the validated
+bundle directory substituted after a pathname preflight. Because the invariant
+is stronger than the available proof, the gate no longer owns a write
+capability.
 
-The intended output parent
-is resolved by a **component-by-component `O_NOFOLLOW` walk** from a trusted
-anchor (`/` for an absolute path, the current directory for a relative one), each
-component opened relative to the previous one. Because `O_NOFOLLOW` guards only
-the final component of any single `open`, walking every level is what refuses a
-symlink at *any* component — the parent **or any ancestor**, whether already
-present or swapped in after the pathname preflight — so nothing can redirect the
-write into the bundle; missing components are created with `mkdir` relative to
-the pinned parent, never through a symlink. A **fresh, uniquely named** staging
-inode is then created relative to that descriptor with
-`O_CREAT | O_EXCL | O_WRONLY | O_NOFOLLOW`, written, and `fsync`ed; a name
-collision is resolved by trying a new random name, so an existing entry is never
-unlinked and publication never deletes or mutates an unrelated pre-existing path.
-Publication is a single `os.replace` (rename) of the staging entry onto the
-destination entry. Because `rename` never follows the destination, a hard-linked
-or symlinked output has its directory entry atomically repointed at the new inode
-while the old (possibly bundle-shared) inode keeps its bytes — so a successful
-`--json-out` can never corrupt the bundle. A refusal or a failed publication
-leaves every bundle byte and any pre-existing output byte unchanged, and only the
-uniquely named staging inode the gate created is cleaned up.
+For machine-readable output, use `--json` and capture its deterministic stdout
+in a separate caller or CI layer whose write authority is outside this
+validator. The stdout bytes and the pass/fail exit codes remain unchanged.
 
 ## Bundle layout and manifest contract
 
