@@ -199,6 +199,9 @@ def main() -> int:
     if not args.forge_artifact:
         ap.error("--forge-artifact is required unless --check")
 
+    if Path("exports/promoted/draft_review/evidence_admission_v1.json").exists():
+        raise SystemExit("Draft Review extension is accepted. Use materialize_draft_review_identity_admission.py; the old FORGE/V1 cohort would discard accepted rows.")
+
     artifact = build(args)
     report = artifact.pop("_report")
     json.dump(artifact, open(args.out, "w"), indent=1)

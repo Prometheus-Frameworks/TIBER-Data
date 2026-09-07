@@ -283,3 +283,22 @@ Example:
   inspection time is acquisition time; all weekly rows agree on position; a
   historical snapshot proves current usage or a forecast. No merges or
   production deployment are authorized.
+
+## Current handoff — accepted Draft Review evidence materialization
+
+- Active task: materialize the operator-accepted four-row extension and bounded
+  historical-use receipt for #263 / Fantasy#360 under the existing implementation
+  and review/repair authority. No merge or production deployment.
+- Files touched: separate accepted receipt, V2 additive artifact, deterministic
+  offline materializer, old CLI overwrite guard, matching tests/docs; archived
+  proposal audit reads its immutable base so later promotion does not rewrite
+  its historical evidence.
+- Now true: original68 rows preserved, exactly4 medium/name_exact rows added,
+  accepted source/window/field policy retained, legacy CLI cannot silently drop
+  the extension. Source/candidate inputs and V1 are untouched.
+- Missing: independent exact-head mechanical review and the bounded Fantasy
+  consumer implementation/tests. These remain separate from operator acceptance.
+- Must not assume: admission is a merge/deployment grant, reviewed source IDs
+  are provider-declared agreements, missing timestamps are current clocks, or
+  historical data establishes current role/forecast/transaction recommendations.
+- Audit-trigger status: independent exact-head review pending in the linked PR.
