@@ -41,3 +41,12 @@ def test_materializer_rejects_unaccepted_drift(kind):
     if kind == "source": receipt["sources"][0]["sha256"] = "0" * 64
     if kind == "acceptance": receipt["operator_acceptance"] = "invented"
     with pytest.raises(ValueError): m.build(receipt)
+
+
+@pytest.mark.parametrize("field", ["schema_version", "scope", "proposal_path", "review",
+                                   "merge_authorized", "production_deployment_authorized", "unknown_authority"])
+def test_contradictory_authority_envelope_rejected(field):
+    receipt = json.loads((ROOT / m.RECEIPT_PATH).read_bytes())
+    receipt[field] = True
+    with pytest.raises(ValueError, match="authority envelope"):
+        m.build(receipt)

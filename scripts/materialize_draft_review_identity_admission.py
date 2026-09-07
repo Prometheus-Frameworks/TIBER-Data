@@ -24,6 +24,19 @@ def historical(path):
 def build(receipt=None):
     rb = (ROOT / RECEIPT_PATH).read_bytes() if receipt is None else json.dumps(receipt, indent=2).encode() + b"\n"
     receipt = json.loads(rb)
+    fixed = {
+        "schema_version": "draft_review_evidence_admission_v1",
+        "scope": "bounded_historical_descriptive_consumer",
+        "proposal_path": PROPOSAL_PATH,
+        "review": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/264#issuecomment-5570922674",
+    }
+    allowed = set(fixed) | {"status", "proposal_commit", "proposal_sha256", "operator_acceptance",
+                            "identity_records", "consumer_scope", "sources", "merge_authorized",
+                            "production_deployment_authorized", "artifact_generated_at"}
+    if (set(receipt) != allowed or any(receipt.get(k) != v for k, v in fixed.items())
+            or receipt.get("merge_authorized") is not False
+            or receipt.get("production_deployment_authorized") is not False):
+        raise ValueError("Invalid or contradictory admission authority envelope")
     pb = historical(PROPOSAL_PATH)
     p = json.loads(pb)
     if (receipt.get("status") != "accepted" or receipt.get("operator_acceptance") != ACCEPTANCE
