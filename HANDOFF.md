@@ -258,3 +258,28 @@ Example:
 - Why removal is required: a post-preflight attacker can replace an ordinary real output-parent entry with the real bundle directory. `O_NOFOLLOW` cannot distinguish those two real directories, so the publisher cannot prove the gate's “never mutate the validated bundle” invariant. Removing the write capability closes that class rather than adding another incomplete pathname check.
 - Verification: focused bundle-gate collection is **292** tests after retiring 23 publication-success controls and adding four disablement controls. The environment-independent slice is **291 passed**; one existing `strace` path-format assertion failed locally with zero matched opens and is unrelated to changed code. Ruff, `py_compile`, JSON validation, and diff checks pass. Remote exact-head checks and independent review remain required.
 - What must not be assumed: merge is not authorized; no candidate artifact exists; no source is admitted; stdout capture is not part of this gate and must not target the validated bundle without a separately proved caller boundary.
+
+## Current handoff — #263 Draft Review evidence admission proposal
+
+- Active task: prepare and independently review four existing candidate identity
+  admissions and a bounded 2025 historical descriptive-use permission for
+  TIBER-Fantasy #360. This is preparation, not effective admission.
+- Files touched: paired `docs/audits/draft-review-evidence-admission-2026-09-07`
+  Markdown/JSON, a read-only pinned replay checker, its focused tests, and this
+  appended handoff. No source, candidate or promoted export was mutated.
+- Audit-trigger status: independent exact-commit review required; durable review
+  and any repair/re-review results will be recorded in the linked PR.
+- What is now true: four exact proposed V2-compatible name_exact/medium rows,
+  source hashes and original candidate clocks are inspectable; historical rows
+  and coverage discrepancies are reproducibly enumerated; the proposed consumer
+  uses outcomes counts and source weekly shares, excludes ambiguous air-yard
+  totals, preserves nulls/clocks and requires attribution. Public-source terms
+  documentation was checked without acquiring player data.
+- What is still missing: the operator's final admission decision, any subsequent
+  additive identity promotion/receipt and consumer integration, and independent
+  acceptance of those mechanical changes. The proposal JSON stays inactive.
+- What must not be assumed: preparation, tests, review or merging documentation
+  grants admission; candidate name evidence is provider-ID agreement; source
+  inspection time is acquisition time; all weekly rows agree on position; a
+  historical snapshot proves current usage or a forecast. No merges or
+  production deployment are authorized.
