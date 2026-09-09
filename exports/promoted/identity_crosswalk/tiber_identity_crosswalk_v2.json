@@ -1,7 +1,7 @@
 {
  "artifact_id": "TIBER_IDENTITY_CROSSWALK_V2",
  "schema_version": "v2",
- "generated_at": "2026-08-09T00:00:00Z",
+ "generated_at": "2026-09-07T18:21:18Z",
  "supported_providers": [
   "sleeper"
  ],
@@ -9,7 +9,7 @@
  "id_vocabulary": "gsis",
  "coverage_notes": {
   "id_vocabulary": "tiber_player_id is a GSIS player id (00-XXXXXXX), matching TIBER-FORGE FORGE_PLAYER_STATIC_V1 promoted rows.",
-  "slice": "Rows backing the pinned FORGE cohort, plus prior promoted provider ids re-expressed in the GSIS vocabulary.",
+  "slice": "Rows backing the pinned FORGE cohort, plus prior promoted provider ids re-expressed in the GSIS vocabulary. Plus four operator-accepted Draft Review identities; see admission receipt.",
   "match_method": "gsis_direct/espn_bridge are provider-declared id agreements; name_exact is a unique normalized-name + position match and carries medium confidence."
  },
  "source_artifacts": [
@@ -22,13 +22,18 @@
    "artifact": "FORGE_PLAYER_STATIC_V1",
    "path": "TIBER-FORGE:exports/promoted/forge_player_static/forge_player_static_v1.json",
    "sha256": "de0e2c19a7054653c460b9b8597b620d37084b5407d035afb97310c694cd1cf9"
+  },
+  {
+   "artifact": "DRAFT_REVIEW_EVIDENCE_ADMISSION_V1",
+   "path": "exports/promoted/draft_review/evidence_admission_v1.json",
+   "sha256": "603e52409c5d07820bc58c5c0b7d6df91e4eb7cdc31326633d1c24e35c34811c"
   }
  ],
- "record_count": 68,
+ "record_count": 72,
  "record_count_by_match_method": {
   "espn_bridge": 6,
   "gsis_direct": 23,
-  "name_exact": 39
+  "name_exact": 43
  },
  "records": [
   {
@@ -914,6 +919,58 @@
    "match_method": "name_exact",
    "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
    "source_updated_at": "2026-08-09T00:00:00Z"
+  },
+  {
+   "provider": "sleeper",
+   "provider_player_id": "7526",
+   "provider_canonical_id": "sleeper:7526",
+   "tiber_player_id": "00-0036613",
+   "player_name": "Jaylen Waddle",
+   "position": "WR",
+   "team": "DEN",
+   "confidence": "medium",
+   "match_method": "name_exact",
+   "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+   "source_updated_at": "2026-08-08T18:17:13Z"
+  },
+  {
+   "provider": "sleeper",
+   "provider_player_id": "12512",
+   "provider_canonical_id": "sleeper:12512",
+   "tiber_player_id": "00-0040784",
+   "player_name": "Quinshon Judkins",
+   "position": "RB",
+   "team": "CLE",
+   "confidence": "medium",
+   "match_method": "name_exact",
+   "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+   "source_updated_at": "2026-08-08T18:17:13Z"
+  },
+  {
+   "provider": "sleeper",
+   "provider_player_id": "12481",
+   "provider_canonical_id": "sleeper:12481",
+   "tiber_player_id": "00-0040715",
+   "player_name": "Cam Skattebo",
+   "position": "RB",
+   "team": "NYG",
+   "confidence": "medium",
+   "match_method": "name_exact",
+   "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+   "source_updated_at": "2026-08-08T18:17:13Z"
+  },
+  {
+   "provider": "sleeper",
+   "provider_player_id": "7594",
+   "provider_canonical_id": "sleeper:7594",
+   "tiber_player_id": "00-0036555",
+   "player_name": "Chuba Hubbard",
+   "position": "RB",
+   "team": "CAR",
+   "confidence": "medium",
+   "match_method": "name_exact",
+   "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+   "source_updated_at": "2026-08-08T18:17:13Z"
   }
  ]
 }

@@ -13,6 +13,7 @@ import hashlib
 import io
 import json
 import math
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -56,7 +57,10 @@ def require(condition: bool, message: str) -> None:
 
 
 def read_pinned(root: Path, path: str) -> bytes:
-    raw = (root / path).read_bytes()
+    # This is the archived proposal audit, not a validator of later admitted
+    # files. Replay its immutable base after a subsequent promotion changes them.
+    raw = (subprocess.check_output(["git", "-C", str(root), "show", f"{BASE}:{path}"])
+           if root.resolve() == ROOT.resolve() else (root / path).read_bytes())
     require(hashlib.sha256(raw).hexdigest() == PINS[path], f"source hash drift: {path}")
     return raw
 

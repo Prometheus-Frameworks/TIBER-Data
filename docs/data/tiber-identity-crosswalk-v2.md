@@ -45,3 +45,33 @@ The promoter validates against `schemas/tiber_identity_crosswalk_v2.schema.json`
 - `verified_manual_seed` — operator-verified V1 seed (`high`)
 
 Known gaps are recorded in `docs/audits/identity-crosswalk-v2-gsis-vocabulary-2026-08-09.md`: `Frank Gore Jr.` has no GSIS identity in the coverage universe and is not carried into V2; `Kenneth Gainwell` has no crosswalk row, so FORGE-cohort coverage is 49/50.
+
+## Accepted Draft Review extension — Data #263 / Fantasy #360
+
+The operator accepted the four reviewed name_exact/medium edges in
+[the exact proposal acceptance](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/264#issuecomment-5574349251).
+`exports/promoted/draft_review/evidence_admission_v1.json` is the separate
+acceptance receipt. The original proposal remains unchanged as historical
+preparation evidence. Its audit now replays its immutable base commit rather
+than validating subsequent files in the working tree.
+
+The admitted V2 artifact has 72 rows. Its original 68 records are byte-for-byte
+preserved; the four additional rows retain the reviewed candidate-generation
+clocks and medium confidence. Artifact generation time is a separate receipt
+clock, not a provider update time. The source_artifacts list pins the receipt.
+
+Reproduce offline from the retained reviewed proposal commit:
+
+```sh
+python scripts/materialize_draft_review_identity_admission.py
+python scripts/materialize_draft_review_identity_admission.py --check
+python scripts/promote_identity_crosswalk_rows.py --check
+```
+
+The materializer requires git objects for the exact reviewed proposal commit;
+missing objects fail rather than falling back to mutable source data. It rejects
+changed edges, tiers, source pins, consumer windows or acceptance reference.
+The old FORGE/V1-cohort CLI now refuses regeneration while this receipt exists,
+because it would drop accepted rows. Its schema-only --check remains available.
+No schema, V1 artifact, source statistics or candidate evidence is changed.
+The accepted historical-use receipt does not assert deployed consumer readiness.

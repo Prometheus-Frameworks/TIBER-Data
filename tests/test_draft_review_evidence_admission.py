@@ -21,8 +21,8 @@ audit = load_module("admission_audit", ROOT / "scripts/audit_draft_review_eviden
 
 
 def identity_inputs():
-    return [json.loads((ROOT / p).read_bytes()) for p in [audit.CANDIDATES, audit.CROSSWALK, audit.COVERAGE]] + [
-        list(csv.DictReader(io.StringIO((ROOT / audit.CONFLICTS).read_text())))]
+    return [json.loads(audit.read_pinned(ROOT, p)) for p in [audit.CANDIDATES, audit.CROSSWALK, audit.COVERAGE]] + [
+        list(csv.DictReader(io.StringIO(audit.read_pinned(ROOT, audit.CONFLICTS).decode())))]
 
 
 def test_pinned_replay_matches_and_never_grants_admission():

@@ -1,0 +1,167 @@
+{
+  "schema_version": "draft_review_evidence_admission_v1",
+  "status": "accepted",
+  "scope": "bounded_historical_descriptive_consumer",
+  "proposal_commit": "e08e5cb8f8c3c71441e62755fb87c9514ce1b249",
+  "proposal_path": "docs/audits/draft-review-evidence-admission-2026-09-07.json",
+  "proposal_sha256": "38905fafa9097c54de6dfab7afe567f198eba5194213f864ea9bab9fb700717d",
+  "operator_acceptance": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/264#issuecomment-5574349251",
+  "review": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/264#issuecomment-5570922674",
+  "identity_records": [
+    {
+      "provider": "sleeper",
+      "provider_player_id": "7526",
+      "provider_canonical_id": "sleeper:7526",
+      "tiber_player_id": "00-0036613",
+      "player_name": "Jaylen Waddle",
+      "position": "WR",
+      "team": "DEN",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "12512",
+      "provider_canonical_id": "sleeper:12512",
+      "tiber_player_id": "00-0040784",
+      "player_name": "Quinshon Judkins",
+      "position": "RB",
+      "team": "CLE",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "12481",
+      "provider_canonical_id": "sleeper:12481",
+      "tiber_player_id": "00-0040715",
+      "player_name": "Cam Skattebo",
+      "position": "RB",
+      "team": "NYG",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "7594",
+      "provider_canonical_id": "sleeper:7594",
+      "tiber_player_id": "00-0036555",
+      "player_name": "Chuba Hubbard",
+      "position": "RB",
+      "team": "CAR",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    }
+  ],
+  "consumer_scope": {
+    "consumer": "TIBER-Fantasy Draft Review / issue 360",
+    "season": 2025,
+    "weeks": [
+      1,
+      18
+    ],
+    "period_basis": "documented 2025 regular-season week boundary; game_type/game_id absent",
+    "mode": "retrospective_descriptive_only",
+    "exact_approved_identity_required": true,
+    "outcome_fields": [
+      "targets",
+      "receptions",
+      "rushing_attempts",
+      "receiving_yards",
+      "receiving_tds",
+      "rushing_yards",
+      "rushing_tds",
+      "passing_yards",
+      "passing_tds",
+      "interceptions"
+    ],
+    "usage_fields": [
+      "target_share",
+      "air_yards_share"
+    ],
+    "air_yards": "excluded: zero origin ambiguous after legacy defaulting",
+    "unavailable_usage_fields": [
+      "routes_run",
+      "route_participation",
+      "team_rushing_attempts",
+      "rush_share",
+      "red_zone_targets",
+      "red_zone_carries",
+      "snap_share"
+    ],
+    "join_policy": "season/week/GSIS exact; cross-lane context or position conflict blocks joined derivations",
+    "missing_usage_policy": "retain independent outcomes; usage unavailable, never fabricate a row",
+    "missing_week_policy": "unknown, not bye/DNP/injury/zero",
+    "aggregation_policy": "same explicit calendar window; report recorded weeks and nonnull denominators; average weekly share is not season share",
+    "scoring": "raw statistics only; no league fantasy points or scoring subtotal in this grant",
+    "source_acquired_at": null,
+    "source_updated_at": null,
+    "original_release_hash": null,
+    "package_version": null,
+    "forecast_allowed": false,
+    "refresh_allowed": false,
+    "public_rights_receipt": "Accepted scoped terms/attribution assessment in reviewed proposal and operator acceptance; no blanket provider admission.",
+    "attribution_required": "nflverse contributors; source and CC-BY-4.0 links; identify TIBER filtering/aggregation; retain supplied notices"
+  },
+  "sources": [
+    {
+      "path": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "sha256": "45a69f2176104249d3ea416ccdd71dadd8196c6f5dfe3f1bf4e303580ecf47cd"
+    },
+    {
+      "path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v2.json",
+      "sha256": "e6c6f8720352f1b94bf0a60fc5c6a2af7995b2b86b87ef9170b18ef3fcc96f9c"
+    },
+    {
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac"
+    },
+    {
+      "path": "exports/candidates/identity_crosswalk/identity_crosswalk_review_v0.csv",
+      "sha256": "3f7002c33e6ef31a07e1a63db10f3ecbeefcb0328f78e083893973f55ea137f8"
+    },
+    {
+      "path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
+      "sha256": "30a8e17370270e2fa5d055c7a771f19af2fe7bd89282cd2373f7704a492412cb"
+    },
+    {
+      "path": "data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json",
+      "sha256": "f241112115c9a625abead3410db89db6b4a8b603ce1dd663a45ff0697563e3a2"
+    },
+    {
+      "path": "scripts/build_player_weekly_usage_source_backed_2025.py",
+      "sha256": "6d3a3313b2355897dca6762eb554f0d7527a7f896f7d2fd3f407f1286726e020"
+    },
+    {
+      "path": "scripts/build_player_weekly_ppr_outcomes_source_backed_2025.py",
+      "sha256": "0b54704b3c3c428500b586bbff58a5386d5e50b336e84a2b126ea8718480033f"
+    },
+    {
+      "path": "scripts/promote_identity_crosswalk_rows.py",
+      "sha256": "840e4b73dc6f586f9584ae056e63d67216c89bf373caef99242e7a13a0e3d0fa"
+    },
+    {
+      "path": "schemas/tiber_identity_crosswalk_v2.schema.json",
+      "sha256": "e2cbb780013e4baaad3d52c61aabd5b7a1576f2b54f72de848c9c2cd9a3fc0f7"
+    },
+    {
+      "path": "exports/promoted/nfl/player_weekly_usage_v1.json",
+      "sha256": "425db119ed6b6d78bead9a638a4295703bf316547c4b76c0022b0de765804260"
+    },
+    {
+      "path": "exports/promoted/nfl/player_weekly_ppr_outcomes_v1.json",
+      "sha256": "20a0cb0494a5bae30e2d667cf0572a50a6dcde60fb2de33a317529716ce095f5"
+    }
+  ],
+  "merge_authorized": false,
+  "production_deployment_authorized": false,
+  "artifact_generated_at": "2026-09-07T18:21:18Z"
+}
