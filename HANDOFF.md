@@ -302,3 +302,36 @@ Example:
   are provider-declared agreements, missing timestamps are current clocks, or
   historical data establishes current role/forecast/transaction recommendations.
 - Audit-trigger status: independent exact-head review pending in the linked PR.
+
+## Current handoff — Research #22 offline one-game PBP validation/read v0
+
+- Active task: first PR of the Research #22 2026 PBP scope — a local, read-only
+  one-game play-by-play receipt verifier and bounded reader with synthetic tests
+  and the requested storage/import compatibility plan. Owning repository is
+  TIBER-Data; Fantasy's old importers and bronze table are reference only.
+- Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
+  (CLI), `tests/test_pbp_one_game_offline_read.py` (synthetic fixtures),
+  `docs/data/pbp-one-game-offline-read-v0.md` (reader doc plus compatibility plan),
+  and this handoff. No contract, schema, raw, candidate, promoted, README, or
+  support-claim file changed. No new dependency was added.
+- Audit-trigger status: not triggered by file surface (no contract, raw, promoted,
+  support-claim, or identity change; builder code has matching tests). Independent
+  review (Codex, per scope) is still expected before merge.
+- What is now true: the reader hashes exact bytes before parsing and rejects missing,
+  wrong-size, wrong-digest, or non-parquet input with no side effect; requires explicit
+  season/date/away/home; resolves exactly one game from source identity columns or
+  returns unresolved; distinguishes absent/null/explicit-zero/value states;
+  classifies duplicate keys as identical or conflicting without discarding; derives a
+  team's N-th possession from ordered posteam runs bounded by provider drive and never
+  equates it with drive number N; caps output at 40 events plus two boundaries per
+  side with explicit truncation; never invents retrieval, publication, ingestion, or
+  admission. Focused tests pass 35/35 and lint is clean under the repo ruff rules.
+- What is still missing: operator review; an explicitly authorized real input (exact
+  bytes and digest) for the NE at SEA 2026-09-09 request; a database-enforced
+  read-only verification of the deployed bronze schema and rows; the receipt-contract
+  decision in the compatibility plan before any durable import.
+- What must not be assumed: this PR does not verify that the 2026 game exists in any
+  source or in Railway; synthetic tests prove software behavior only; the reader's
+  output is not ingestion, admission, promotion, or a Research activation; no Team,
+  FORGE, Forecast, or ledger consumer may read it; the upstream release URL and its
+  observed metadata are external observations, not TIBER receipts.
