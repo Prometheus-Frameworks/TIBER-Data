@@ -6,6 +6,7 @@ import hashlib
 import importlib.util
 import io
 import json
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,7 +33,11 @@ PINS.update({prior.CROSSWALK: 'c0e5c32a20b0397ff22e994a0fd48ec16907b5909f0880e0e
 def read_inputs(root=ROOT):
     raw = {}
     for path, expected in PINS.items():
-        raw[path] = (root / path).read_bytes()
+        # Only the superseded 72-row crosswalk replays its immutable proposal base.
+        # Other inputs remain checked against current bytes, so source drift fails.
+        raw[path] = (subprocess.check_output(['git', '-C', str(root), 'show', f'{BASE}:{path}'])
+                     if path == prior.CROSSWALK and root.resolve() == ROOT.resolve()
+                     else (root / path).read_bytes())
         prior.require(hashlib.sha256(raw[path]).hexdigest() == expected, f'source drift: {path}')
     return raw
 
@@ -101,7 +106,7 @@ def main():
     rendered = json.dumps(build_report(), indent=2, allow_nan=False) + '\n'
     if args.check:
         prior.require((ROOT / REPORT).read_text() == rendered, 'proposal replay mismatch')
-        print('Three-edge inactive proposal matches; 72 promoted rows unchanged.')
+        print('Archived inactive proposal matches its 72-row base; no admission is performed.')
     else:
         print(rendered, end='')
 

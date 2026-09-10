@@ -321,3 +321,26 @@ Example:
   production release was performed.
 - Audit triggers: identity and source-use/downstream semantics; exact-head
   independent review pending.
+
+## Current handoff — #267 / #268 three-identity admission preparation
+
+- Active task: user-authorized data artifact and downstream handoff preparation
+  for exactly Parker Washington/9487, Drake London/8112 and Chris Rodriguez/10219.
+  [Authorization](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/268#issuecomment-5627117154)
+  covers branch admission/promotion changes and independent review only.
+- Files touched: separate Team receipt, additive 75-row V2 artifact, offline
+  materializer, archived proposal crosswalk replay adjustment, legacy overwrite
+  guard, focused tests, paired mechanical audit, inventory and identity docs.
+- Now true: original 72 rows and all source/candidate bytes retained; exactly
+  three medium/name_exact additions; previous receipt and archived proposal
+  unchanged. Scope/denominators/unknowns remain explicit. Legacy regeneration
+  cannot discard the extension. Focused suites pass 74 tests.
+- Missing: independent exact-commit review of these mechanical changes, then
+  separate operator decisions for merge/deployment and downstream consumption.
+- Must not assume: branch preparation activates production or consumers; these
+  identities resolve Watson/Lloyd/Dobbins/Gainwell; provider IDs agree; candidate
+  JAX context supersedes historical WAS; absent weeks are zero or games played.
+  No consumer bundle regeneration, merge, deployment or release performed.
+  Data #269 is untouched.
+- Audit-trigger status: builder mechanical audit completed; independent exact
+  commit review pending and recorded separately in PR #268.

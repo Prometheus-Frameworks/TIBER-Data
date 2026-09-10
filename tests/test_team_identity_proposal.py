@@ -79,7 +79,7 @@ def test_byte_drift_fails_closed(tmp_path):
     for path in audit.PINS:
         p = tmp_path / path
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_bytes((ROOT / path).read_bytes())
+        p.write_bytes(audit.read_inputs()[path])
     (tmp_path / audit.RECEIPT).write_text('{}')
     with pytest.raises(ValueError, match='source drift'):
         audit.build_report(tmp_path)

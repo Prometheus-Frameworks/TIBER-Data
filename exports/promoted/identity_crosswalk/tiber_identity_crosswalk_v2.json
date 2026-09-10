@@ -1,7 +1,7 @@
 {
  "artifact_id": "TIBER_IDENTITY_CROSSWALK_V2",
  "schema_version": "v2",
- "generated_at": "2026-09-07T18:21:18Z",
+ "generated_at": "2026-09-10T23:54:26Z",
  "supported_providers": [
   "sleeper"
  ],
@@ -9,7 +9,7 @@
  "id_vocabulary": "gsis",
  "coverage_notes": {
   "id_vocabulary": "tiber_player_id is a GSIS player id (00-XXXXXXX), matching TIBER-FORGE FORGE_PLAYER_STATIC_V1 promoted rows.",
-  "slice": "Rows backing the pinned FORGE cohort, plus prior promoted provider ids re-expressed in the GSIS vocabulary. Plus four operator-accepted Draft Review identities; see admission receipt.",
+  "slice": "Rows backing the pinned FORGE cohort, plus prior promoted provider ids re-expressed in the GSIS vocabulary. Plus four operator-accepted Draft Review identities; see admission receipt. Plus three operator-authorized historical Team identities prepared on the review branch; see separate Team admission receipt. Production and consumer activation remain separately gated.",
   "match_method": "gsis_direct/espn_bridge are provider-declared id agreements; name_exact is a unique normalized-name + position match and carries medium confidence."
  },
  "source_artifacts": [
@@ -27,13 +27,18 @@
    "artifact": "DRAFT_REVIEW_EVIDENCE_ADMISSION_V1",
    "path": "exports/promoted/draft_review/evidence_admission_v1.json",
    "sha256": "603e52409c5d07820bc58c5c0b7d6df91e4eb7cdc31326633d1c24e35c34811c"
+  },
+  {
+   "artifact": "TEAM_IDENTITY_ADMISSION_V1",
+   "path": "exports/promoted/draft_review/team_identity_admission_v1.json",
+   "sha256": "4ed7a6e7d0310c0f3b3e3c70a53f7d7ec0fb0c22dbd931702ea5efc4399f84ef"
   }
  ],
- "record_count": 72,
+ "record_count": 75,
  "record_count_by_match_method": {
   "espn_bridge": 6,
   "gsis_direct": 23,
-  "name_exact": 43
+  "name_exact": 46
  },
  "records": [
   {
@@ -967,6 +972,45 @@
    "player_name": "Chuba Hubbard",
    "position": "RB",
    "team": "CAR",
+   "confidence": "medium",
+   "match_method": "name_exact",
+   "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+   "source_updated_at": "2026-08-08T18:17:13Z"
+  },
+  {
+   "provider": "sleeper",
+   "provider_player_id": "9487",
+   "provider_canonical_id": "sleeper:9487",
+   "tiber_player_id": "00-0038606",
+   "player_name": "Parker Washington",
+   "position": "WR",
+   "team": "JAX",
+   "confidence": "medium",
+   "match_method": "name_exact",
+   "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+   "source_updated_at": "2026-08-08T18:17:13Z"
+  },
+  {
+   "provider": "sleeper",
+   "provider_player_id": "8112",
+   "provider_canonical_id": "sleeper:8112",
+   "tiber_player_id": "00-0037238",
+   "player_name": "Drake London",
+   "position": "WR",
+   "team": "ATL",
+   "confidence": "medium",
+   "match_method": "name_exact",
+   "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+   "source_updated_at": "2026-08-08T18:17:13Z"
+  },
+  {
+   "provider": "sleeper",
+   "provider_player_id": "10219",
+   "provider_canonical_id": "sleeper:10219",
+   "tiber_player_id": "00-0038611",
+   "player_name": "Chris Rodriguez Jr.",
+   "position": "RB",
+   "team": "JAX",
    "confidence": "medium",
    "match_method": "name_exact",
    "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
