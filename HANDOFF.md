@@ -302,3 +302,22 @@ Example:
   are provider-declared agreements, missing timestamps are current clocks, or
   historical data establishes current role/forecast/transaction recommendations.
 - Audit-trigger status: independent exact-head review pending in the linked PR.
+
+## Current handoff — #267 three Team historical identity proposals
+
+- Active task: authorized preparation and independent review of exactly Parker
+  Washington/9487, Drake London/8112 and Chris Rodriguez/10219. Task class:
+  provenance/source audit plus downstream handoff preparation.
+- Files touched: paired `docs/audits/team-identity-proposal-2026-09-10` MD/JSON,
+  `scripts/audit_team_identity_proposal.py`, focused tests and this append.
+- Now true: proposed V2-compatible name_exact/medium rows, exact pinned source
+  inspection, collision checks and per-field weekly denominators are reviewable.
+  Current promoted 72 rows and accepted receipt remain unchanged.
+- Missing: independent exact-head review and operator admission. Review receipt
+  belongs in the linked PR; proposal consumer permission remains false.
+- Must not assume: preparation/review admits identity, candidate team is current
+  or historical team, name matching is provider verification, or missing weeks
+  are zeros. No source acquisition, promotion, consumer regeneration, merge or
+  production release was performed.
+- Audit triggers: identity and source-use/downstream semantics; exact-head
+  independent review pending.
