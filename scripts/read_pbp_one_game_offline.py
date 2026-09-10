@@ -14,8 +14,10 @@ Usage (all inputs explicit; nothing is guessed, downloaded, or written to a data
         [--out /local/path/result.json]
 
 Exit codes: 0 = a result was produced (matched, read, or honestly unresolved);
-2 = the input was rejected before parsing (missing file, byte/digest mismatch,
-unsupported format) and nothing was written; 3 = invalid arguments.
+2 = the input was rejected (missing file, byte/digest mismatch, unsupported format,
+or a bounded parse failure after magic-byte verification) and nothing was written;
+3 = invalid arguments; 4 = --out already exists (any existing path, including the
+input file or an alias of it) so nothing was read or written.
 
 The result is local and non-canonical. It is not an ingestion, admission, promotion,
 or Research activation. See docs/data/pbp-one-game-offline-read-v0.md.
@@ -24,6 +26,7 @@ or Research activation. See docs/data/pbp-one-game-offline-read-v0.md.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -89,6 +92,15 @@ def main(argv: list[str] | None = None) -> int:
         if args.possession_team is not None
         else None
     )
+    if args.out is not None and os.path.lexists(args.out):
+        # Refuse any existing path (regular file, the input itself, a symlink or hardlink
+        # alias of it, or a dangling symlink) before reading anything. Nothing is modified.
+        print(
+            f"refusing --out {args.out!r}: path already exists; the reader only creates a "
+            "new output file and never overwrites the source or any existing file",
+            file=sys.stderr,
+        )
+        return 4
     result = read_one_game(
         path=args.path,
         expected_bytes=args.expected_bytes,
@@ -106,7 +118,18 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.write(text)
         return 2
     if args.out:
-        Path(args.out).write_text(text, encoding="utf-8")
+        try:
+            # O_CREAT|O_EXCL: atomic exclusive creation. Fails (without truncating anything)
+            # if the path appeared since the pre-check, including as a symlink.
+            with open(args.out, "x", encoding="utf-8") as handle:
+                handle.write(text)
+        except FileExistsError:
+            print(
+                f"refusing --out {args.out!r}: path appeared before exclusive creation; "
+                "no file was modified",
+                file=sys.stderr,
+            )
+            return 4
     else:
         sys.stdout.write(text)
     return 0

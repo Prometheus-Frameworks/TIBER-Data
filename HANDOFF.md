@@ -307,31 +307,47 @@ Example:
 
 - Active task: first PR of the Research #22 2026 PBP scope — a local, read-only
   one-game play-by-play receipt verifier and bounded reader with synthetic tests
-  and the requested storage/import compatibility plan. Owning repository is
+  and the requested storage/import compatibility plan, revised after the
+  2026-09-10 independent branch review of head `2da2f604` (findings F1–F5 plus
+  documentation and error-handling corrections). Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
   (CLI), `tests/test_pbp_one_game_offline_read.py` (synthetic fixtures),
   `docs/data/pbp-one-game-offline-read-v0.md` (reader doc plus compatibility plan),
   and this handoff. No contract, schema, raw, candidate, promoted, README, or
   support-claim file changed. No new dependency was added.
-- Audit-trigger status: not triggered by file surface (no contract, raw, promoted,
-  support-claim, or identity change; builder code has matching tests). Independent
-  review (Codex, per scope) is still expected before merge.
+- Audit-trigger status: **audit pending.** The reader introduces a team alias
+  map, game-identity matching, and provenance/status wording, which the pinned
+  AGENTS.md treats as identity and source/provenance semantics regardless of
+  file path. One independent review round (Codex, read-only) has occurred and
+  its findings are repaired on this branch; independent re-review of the exact
+  revised head is required before merge.
 - What is now true: the reader hashes exact bytes before parsing and rejects missing,
-  wrong-size, wrong-digest, or non-parquet input with no side effect; requires explicit
-  season/date/away/home; resolves exactly one game from source identity columns or
-  returns unresolved; distinguishes absent/null/explicit-zero/value states;
+  wrong-size, wrong-digest, or non-parquet input with no side effect, and turns a
+  post-magic-byte parser failure into a bounded `parse_failure` receipt; requires
+  explicit season/date/away/home; resolves exactly one game from the five invariant
+  identity columns only, reporting event-varying and game-level descriptor values
+  without using them to reject; reads lazily with the game filter pushed into the
+  parquet scan and discloses physical versus logical read scope; distinguishes
+  absent/null/explicit-zero/value states and keeps a null play type unknown;
   classifies duplicate keys as identical or conflicting without discarding; derives a
-  team's N-th possession from ordered posteam runs bounded by provider drive and never
-  equates it with drive number N; caps output at 40 events plus two boundaries per
-  side with explicit truncation; never invents retrieval, publication, ingestion, or
-  admission. Focused tests pass 35/35 and lint is clean under the repo ruff rules.
-- What is still missing: operator review; an explicitly authorized real input (exact
-  bytes and digest) for the NE at SEA 2026-09-09 request; a database-enforced
-  read-only verification of the deployed bronze schema and rows; the receipt-contract
-  decision in the compatibility plan before any durable import.
+  team's N-th possession from ordered posteam runs bounded by provider drive, never
+  equates it with drive number N, and withholds selection when any earlier run, an
+  unattributed drive value, or an order-affecting conflicting duplicate could alter
+  the count; caps output at 40 events plus two boundaries per side with explicit
+  truncation; never invents retrieval, publication, ingestion, or admission; and the
+  CLI refuses to write over the input, any alias of it, or any existing path.
+  Focused tests pass 56/56 and lint is clean under the repo ruff rules.
+- What is still missing: independent re-review of the revised head; an explicitly
+  authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
+  offline read; separately, for any claim of verified stored TIBER evidence or any
+  durable import, the database-enforced read-only verification of the deployed
+  bronze schema and rows and the receipt-contract decision in the compatibility
+  plan; verification of the branch deployment binding through authorized provider
+  access before any further push (the repair was returned as a local patch).
 - What must not be assumed: this PR does not verify that the 2026 game exists in any
   source or in Railway; synthetic tests prove software behavior only; the reader's
   output is not ingestion, admission, promotion, or a Research activation; no Team,
   FORGE, Forecast, or ledger consumer may read it; the upstream release URL and its
-  observed metadata are external observations, not TIBER receipts.
+  observed metadata are external observations, not TIBER receipts; the first push
+  was not established as deployment-safe beyond repository-level evidence.

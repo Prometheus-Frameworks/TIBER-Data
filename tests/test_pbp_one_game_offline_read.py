@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -118,7 +119,7 @@ def test_missing_input_rejected_before_parse(tmp_path, monkeypatch):
     )
     assert result["status"] == "rejected"
     assert result["rejection"]["reason"] == "missing_input"
-    assert result["rejection"]["parsed"] is False
+    assert result["rejection"]["parsed"] == "not_attempted"
     assert result["receipt"]["source"]["actual_sha256"] is None
     assert result["game"] is None and result["events"] is None
     assert list(tmp_path.iterdir()) == []
@@ -298,6 +299,7 @@ def test_duplicate_keys_identical_versus_conflicting(tmp_path):
             "play_id": 6.0,
             "occurrences": 2,
             "differing_columns": ["yards_gained"],
+            "affects_possession_order": False,
         }
     ]
     statuses = {r["play_id"]: r["duplicate_status"] for r in result["events"]["rows"]}
@@ -442,11 +444,11 @@ def test_nullified_event_and_repeated_key_preserve_status_without_snap_counting(
     events = result["events"]
     nullified = [r for r in events["rows"] if r["play_id"] == 4.0]
     assert len(nullified) == 2
-    assert all(r["event_status"]["no_play"] is True for r in nullified)
+    assert all(r["event_status"]["no_play"] == "no_play" for r in nullified)
     assert all(r["event_status"]["penalty_raw"] == 1.0 for r in nullified)
     assert all(r["duplicate_status"] == "identical_duplicate" for r in nullified)
     assert events["row_count"] == 5 and events["distinct_game_play_key_count"] == 4
-    assert result["inventory"]["fields"]["no_play_rows"] == 2
+    assert result["inventory"]["fields"]["no_play_status_rows"]["no_play"] == 2
     assert "snap" in events["snap_denominator_note"]
     assert not any("snap" in key for key in events if key != "snap_denominator_note")
 
@@ -582,3 +584,259 @@ def test_cli_rejects_partial_possession_arguments(tmp_path):
         capture_output=True, text=True, cwd=REPO_ROOT,
     )
     assert proc.returncode == 3
+
+
+# ---------------------------------------------------------------------------
+# Review repairs (Research #22 branch review, 2026-09-10)
+# ---------------------------------------------------------------------------
+
+
+def test_f1_event_varying_time_of_day_does_not_conflict_game_identity(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for i, r in enumerate(rows):
+        r["time_of_day"] = f"01:{i:02d}:00"
+        r["start_time"] = "13:00:00"
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "read"
+    assert result["game"]["status"] == "matched"
+    assert "time_of_day" not in mod.GAME_IDENTITY_COLUMNS
+    assert "time_of_day" in mod.INVENTORY_FIELD_FAMILIES["quarter_clock"]
+    assert set(result["game"]["selection_scan"]["columns_scanned"]) == set(
+        mod.GAME_IDENTITY_COLUMNS
+    )
+    descriptors = result["game"]["descriptors"]
+    assert descriptors["start_time"] == {
+        "distinct_count": 1, "distinct_values": ["13:00:00"],
+        "varies_within_game": False, "truncated": False,
+    }
+    assert descriptors["week"]["distinct_values"] == [1]
+    assert result["events"]["rows"][0]["fields"]["time_of_day"] == "01:09:00"
+
+
+def test_f1_varying_descriptor_is_disclosed_not_fatal(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[-1]["week"] = 2
+    path = write_parquet(tmp_path, rows)
+    result = run(path)
+    assert result["game"]["status"] == "matched"
+    assert result["game"]["descriptors"]["week"]["varies_within_game"] is True
+    assert result["game"]["descriptors"]["week"]["distinct_values"] == [1, 2]
+
+
+def test_f1_conflicting_home_team_within_one_game_stays_unresolved(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[-1]["home_team"] = "SYZ"
+    path = write_parquet(tmp_path, rows)
+    result = run(path)
+    assert result["status"] == "unresolved"
+    assert result["game"]["reason"] == "conflicting_game_metadata"
+
+
+def test_f2_null_drive_earlier_in_prefix_withholds_ordinal(tmp_path):
+    # (SYA,null), (SYA,1), (SYB,2), (SYA,3): the missing earlier drive may simply be part
+    # of the first possession, so "SYA possession 2" cannot be established.
+    possessions = [(HOME, None, 2), (HOME, 1.0, 2), (AWAY, 2.0, 2), (HOME, 3.0, 2)]
+    path = write_parquet(tmp_path, alternating_game(possessions))
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    assert selection["reason"] == "null_provider_drive_in_prefix"
+    assert selection["affected_runs"] == [1]
+    assert result["events"]["status"] == "withheld"
+    assert len(result["possession"]["runs"]) == 4  # records retained
+
+
+def test_f2_non_monotone_drive_earlier_in_prefix_withholds_ordinal(tmp_path):
+    possessions = [(AWAY, 5.0, 2), (HOME, 1.0, 2), (AWAY, 2.0, 2), (HOME, 3.0, 2)]
+    path = write_parquet(tmp_path, alternating_game(possessions))
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["selection"]["reason"] == "provider_drive_order_non_monotone"
+
+
+def test_f2_conflicting_duplicate_on_earlier_team_or_drive_withholds_ordinal(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows.append(dict(rows[4], posteam=AWAY, defteam=HOME))  # play 5 duplicated with other team
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    assert selection["reason"] == "conflicting_duplicate_in_prefix"
+    assert selection["affected_play_ids"] == [5.0]
+    conflict = result["inventory"]["keys"]["conflicting_duplicate_keys"][0]
+    assert conflict["affects_possession_order"] is True
+
+
+def test_f2_conflicting_duplicate_on_non_order_field_does_not_withhold(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows.append(dict(rows[4], yards_gained=99.0))
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    conflict = result["inventory"]["keys"]["conflicting_duplicate_keys"][0]
+    assert conflict["affects_possession_order"] is False
+
+
+def test_f2_conflicting_duplicate_after_selection_does_not_withhold(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows.append(dict(rows[-1], posteam=HOME, defteam=AWAY))  # last play (drive 5) conflict
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["selection"]["status"] == "resolved"
+
+
+def test_f2_unattributed_row_carrying_unaccounted_drive_withholds_ordinal(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    # A posteam-null row with its own provider drive number between drives 1 and 2 is
+    # evidence of a possession the run count did not see.
+    rows.insert(3, play(3.5, None, 1.5, desc="SYNTHETIC unattributed with own drive"))
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    selection = result["possession"]["selection"]
+    assert selection["reason"] == "unattributed_drive_value_in_prefix"
+    assert selection["affected_play_ids"] == [3.5]
+
+
+def test_f2_neutral_unattributed_row_inside_a_drive_still_resolves(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows.insert(4, play(4.5, None, 2.0, desc="SYNTHETIC timeout inside drive 2"))
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["possession"]["selection"]["selected_run"]["provider_drive"] == 4.0
+
+
+def _cli(args: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(REPO_ROOT / "scripts" / "read_pbp_one_game_offline.py"), *args],
+        capture_output=True, text=True, cwd=REPO_ROOT,
+    )
+
+
+def _cli_args(path: Path, out: Path) -> list[str]:
+    args = receipt_args(path)
+    return [
+        "--path", str(path), "--expected-bytes", str(args["expected_bytes"]),
+        "--expected-sha256", args["expected_sha256"], "--season", str(SYN_SEASON),
+        "--date", SYN_DATE, "--away", AWAY, "--home", HOME, "--out", str(out),
+    ]
+
+
+@pytest.mark.parametrize("alias", ["input_itself", "symlink", "hardlink", "dangling_symlink"])
+def test_f3_cli_refuses_out_that_aliases_or_exists(tmp_path, alias):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    original = path.read_bytes()
+    if alias == "input_itself":
+        out = path
+    elif alias == "symlink":
+        out = tmp_path / "alias.json"
+        out.symlink_to(path)
+    elif alias == "hardlink":
+        out = tmp_path / "alias.json"
+        os.link(path, out)
+    else:
+        out = tmp_path / "dangling.json"
+        out.symlink_to(tmp_path / "does_not_exist")
+    proc = _cli(_cli_args(path, out))
+    assert proc.returncode == 4, proc.stderr
+    assert "refusing --out" in proc.stderr
+    assert path.read_bytes() == original
+    if alias != "dangling_symlink":
+        assert Path(out).read_bytes() == original
+    else:
+        assert os.path.lexists(out) and not out.exists()
+
+
+def test_f3_cli_refuses_unrelated_existing_output(tmp_path):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    out = tmp_path / "existing.json"
+    out.write_text("keep me", encoding="utf-8")
+    proc = _cli(_cli_args(path, out))
+    assert proc.returncode == 4
+    assert out.read_text(encoding="utf-8") == "keep me"
+
+
+def test_f3_cli_creates_new_output_exclusively(tmp_path):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    out = tmp_path / "fresh.json"
+    proc = _cli(_cli_args(path, out))
+    assert proc.returncode == 0, proc.stderr
+    assert json.loads(out.read_text())["status"] == "read"
+
+
+def test_f4_game_read_pushes_selection_into_scan_and_never_uses_eager_read(tmp_path, monkeypatch):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    other = [
+        dict(r, game_id="SYN_1999_01_SYC_SYD", home_team="SYD", away_team="SYC") for r in rows
+    ]
+    path = write_parquet(tmp_path, rows + other)
+    content = path.read_bytes()
+    plan = mod.game_scan(content, SYN_GAME_ID).explain()
+    scan_line, *rest = plan.splitlines()
+    assert scan_line.lstrip().startswith("Parquet SCAN")
+    assert any("SELECTION:" in line and "game_id" in line for line in rest)
+    assert not any(line.strip().startswith("FILTER") for line in plan.splitlines())
+
+    def eager_forbidden(*a, **k):
+        raise AssertionError("eager pl.read_parquet must not be used after verification")
+
+    monkeypatch.setattr(pl, "read_parquet", eager_forbidden)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "read"
+    assert result["inventory"]["read_strategy"]["selection_pushed_into_scan"] is True
+    assert result["inventory"]["keys"]["row_count"] == len(rows)
+    assert "physical_io" in result["inventory"]["read_strategy"]
+
+
+def test_f5_null_play_type_is_unknown_not_a_negative_no_play_assertion(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[3]["play_type"] = None
+    rows[4]["play_type"] = "no_play"
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    statuses = {r["play_id"]: r["event_status"]["no_play"] for r in result["events"]["rows"]}
+    assert statuses[4.0] == "unknown_null_play_type"
+    assert statuses[5.0] == "no_play"
+    assert statuses[6.0] == "other_play_type"
+    counts = result["inventory"]["fields"]["no_play_status_rows"]
+    assert counts == {
+        "no_play": 1, "other_play_type": len(rows) - 2,
+        "unknown_null_play_type": 1, "unknown_absent_column": 0,
+    }
+
+
+def test_f5_absent_play_type_column_is_unknown_absent(tmp_path):
+    rows = [
+        {k: v for k, v in r.items() if k != "play_type"}
+        for r in alternating_game(DEFAULT_POSSESSIONS)
+    ]
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert all(
+        r["event_status"]["no_play"] == "unknown_absent_column" for r in result["events"]["rows"]
+    )
+    counts = result["inventory"]["fields"]["no_play_status_rows"]
+    assert counts["unknown_absent_column"] == len(rows)
+
+
+def test_classify_no_play_pure_states():
+    assert mod.classify_no_play({}, set()) == "unknown_absent_column"
+    assert mod.classify_no_play({"play_type": None}, {"play_type"}) == "unknown_null_play_type"
+    assert mod.classify_no_play({"play_type": "no_play"}, {"play_type"}) == "no_play"
+    assert mod.classify_no_play({"play_type": "pass"}, {"play_type"}) == "other_play_type"
+
+
+def test_parse_failure_after_magic_check_is_a_bounded_rejection(tmp_path):
+    path = tmp_path / "corrupt.parquet"
+    path.write_bytes(b"PAR1" + b"\x00SYNTHETIC GARBAGE\x00" * 4 + b"PAR1")
+    result = mod.read_one_game(**receipt_args(path), request=REQ)
+    assert result["status"] == "rejected"
+    assert result["rejection"]["reason"] == "parse_failure"
+    assert result["rejection"]["parsed"] == "attempted_failed"
+    assert result["rejection"]["detail"]
+    assert result["receipt"]["source"]["receipt_status"] == "verified"
+    assert result["receipt"]["source"]["format_detected"] == "parquet"
+    assert result["game"] is None
+    proc = _cli(_cli_args(path, tmp_path / "out.json"))
+    assert proc.returncode == 2
+    assert not (tmp_path / "out.json").exists()

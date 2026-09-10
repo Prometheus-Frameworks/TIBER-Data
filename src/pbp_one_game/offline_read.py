@@ -8,19 +8,28 @@ Scope (Research #22 first PR, TIBER-Data owning repository):
   rejection and no side effect. There is no download, no replacement path guessing.
 - One supported format: parquet (magic-byte checked), read with polars, which is an
   existing declared repository dependency (`pyproject.toml`). No multi-format framework.
+  A parquet file that passes the magic-byte check but fails to parse produces a bounded
+  `parse_failure` rejection rather than an uncaught exception.
 - Require an explicit requested season, date, away team, and home team. Game identity
-  is derived from source identity columns only; raw source identity values are
-  preserved verbatim. Zero or multiple matching games is an unresolved result. No game
-  ID is synthesized; no substitute date or game is ever selected.
+  is derived from invariant source identity columns only; event-varying and game-level
+  descriptor columns are preserved but never used to reject a game. Raw source identity
+  values are preserved verbatim. Zero or multiple matching games is an unresolved
+  result. No game ID is synthesized; no substitute date or game is ever selected.
 - Inspect the source schema before projecting columns. Absent columns, null values,
   explicit false/zero values, and uninspected columns are reported as distinct states.
+- Read lazily: the identity scan projects identity columns only, and the game read
+  pushes `game_id == <matched>` into the parquet scan so only the located game's rows
+  are materialized. Physical row-group I/O is disclosed separately from logical scope.
 - Return a local, non-canonical receipt plus a bounded game inventory. Row count and
   distinct (game_id, play_id) count are reported separately; neither is an official
   snap denominator. Duplicated keys are classified as identical or conflicting and are
   never silently discarded.
 - Team possession sequence is derived from ordered `posteam` runs bounded by the
-  provider drive number; a team's N-th possession is selected only when the provider
-  numbering supports that association, otherwise it is unresolved.
+  provider drive number. A team's N-th possession is selected only when the provider
+  numbering supports that association for the ENTIRE prefix used to count N; any
+  earlier null drive, non-contiguous or non-monotone drive, unattributed row carrying
+  an unaccounted drive value, or conflicting duplicate that could alter order, team, or
+  drive leaves the selection unresolved.
 - Output is capped at MAX_EVENT_ROWS event rows plus at most
   MAX_BOUNDARY_EVENTS_PER_SIDE boundary rows on each side, with explicit truncation.
 - The only non-reproducible value across runs of the same input and reader revision is
@@ -43,28 +52,35 @@ from pathlib import Path
 from typing import Any
 
 READER_NAME = "pbp_one_game_offline_read"
-READER_VERSION = "0.1.0"
+READER_VERSION = "0.2.0"
 SUPPORTED_FORMAT = "parquet"
 PARQUET_MAGIC = b"PAR1"
 
 MAX_EVENT_ROWS = 40
 MAX_BOUNDARY_EVENTS_PER_SIDE = 2
+MAX_DESCRIPTOR_VALUES_REPORTED = 5
 
 # Mirrors the existing candidate builders (team_week_raw_v0, formation_summary_v0).
 TEAM_CODE_CANONICAL_MAP = {"LA": "LAR"}
 
 # Documented nflverse play-by-play column names. Existence is INSPECTED at read time and
 # reported; nothing below is assumed to exist in a given source file.
+#
+# Invariant game identity: the ONLY columns whose distinct-tuple count decides whether a
+# game's metadata is consistent. Every one of them is required for certification.
 GAME_IDENTITY_COLUMNS: tuple[str, ...] = (
-    "game_id", "season", "week", "season_type", "game_date", "home_team", "away_team",
-    "old_game_id", "nfl_api_id", "start_time", "time_of_day", "stadium", "location",
-)
-REQUIRED_IDENTITY_COLUMNS: tuple[str, ...] = (
     "game_id", "season", "game_date", "home_team", "away_team",
+)
+REQUIRED_IDENTITY_COLUMNS: tuple[str, ...] = GAME_IDENTITY_COLUMNS
+# Game-level descriptors: preserved for the matched game and reported with their distinct
+# values, but never used to reject a game. Variation within a game is disclosed, not fatal.
+GAME_DESCRIPTOR_COLUMNS: tuple[str, ...] = (
+    "week", "season_type", "old_game_id", "nfl_api_id", "start_time", "stadium", "location",
 )
 PLAY_KEY_COLUMNS: tuple[str, ...] = ("game_id", "play_id")
 
-# Families inventoried for the bounded event read.
+# Families inventoried for the bounded event read. `time_of_day` is an event-level
+# timestamp and belongs here, not in game identity.
 INVENTORY_FIELD_FAMILIES: dict[str, tuple[str, ...]] = {
     "possession_order": (
         "posteam", "defteam", "posteam_type", "drive", "fixed_drive", "fixed_drive_result",
@@ -73,7 +89,7 @@ INVENTORY_FIELD_FAMILIES: dict[str, tuple[str, ...]] = {
     ),
     "quarter_clock": (
         "qtr", "game_half", "time", "quarter_seconds_remaining", "half_seconds_remaining",
-        "game_seconds_remaining", "quarter_end",
+        "game_seconds_remaining", "quarter_end", "time_of_day",
     ),
     "down_distance": ("down", "ydstogo", "goal_to_go"),
     "field_position": ("yardline_100", "side_of_field", "yrdln"),
@@ -115,12 +131,23 @@ SEPARATE_FAMILY_NOTES: dict[str, str] = {
     "protection": "No documented PBP field describes protection responsibility.",
 }
 
+# Columns whose disagreement between duplicate rows could alter possession order, team,
+# or drive association.
+ORDER_AFFECTING_COLUMNS: frozenset[str] = frozenset({"posteam", "drive", "fixed_drive"})
+
 NO_PLAY_PLAY_TYPE = "no_play"
+NO_PLAY_STATUS_NO_PLAY = "no_play"
+NO_PLAY_STATUS_OTHER = "other_play_type"
+NO_PLAY_STATUS_UNKNOWN_NULL = "unknown_null_play_type"
+NO_PLAY_STATUS_UNKNOWN_ABSENT = "unknown_absent_column"
 
 VALUE_STATUS_ABSENT = "absent_column"
 VALUE_STATUS_NULL = "null"
 VALUE_STATUS_FALSE_OR_ZERO = "explicit_false_or_zero"
 VALUE_STATUS_VALUE = "value"
+
+PARSE_NOT_ATTEMPTED = "not_attempted"
+PARSE_ATTEMPTED_FAILED = "attempted_failed"
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -217,6 +244,18 @@ def classify_value(row: dict[str, Any], column: str, columns: set[str]) -> str:
     if isinstance(value, (int, float)) and value == 0:
         return VALUE_STATUS_FALSE_OR_ZERO
     return VALUE_STATUS_VALUE
+
+
+def classify_no_play(row: dict[str, Any], columns: set[str]) -> str:
+    """Derived no-play status that never asserts a known type from a missing discriminator."""
+    if "play_type" not in columns:
+        return NO_PLAY_STATUS_UNKNOWN_ABSENT
+    value = row.get("play_type")
+    if value is None:
+        return NO_PLAY_STATUS_UNKNOWN_NULL
+    if value == NO_PLAY_PLAY_TYPE:
+        return NO_PLAY_STATUS_NO_PLAY
+    return NO_PLAY_STATUS_OTHER
 
 
 def _play_sort_key(row: dict[str, Any]) -> tuple[int, float]:
@@ -372,11 +411,13 @@ def verify_source_bytes(
     return content
 
 
-def _rejection(receipt: dict[str, Any], reason: str, detail: str) -> dict[str, Any]:
+def _rejection(
+    receipt: dict[str, Any], reason: str, detail: str, *, parsed: str = PARSE_NOT_ATTEMPTED
+) -> dict[str, Any]:
     receipt["times"]["processing_time"] = _now_iso()
     return {
         "status": "rejected",
-        "rejection": {"reason": reason, "detail": detail, "parsed": False},
+        "rejection": {"reason": reason, "detail": detail, "parsed": parsed},
         "receipt": receipt,
         "game": None,
         "inventory": None,
@@ -386,7 +427,7 @@ def _rejection(receipt: dict[str, Any], reason: str, detail: str) -> dict[str, A
 
 
 # ---------------------------------------------------------------------------
-# Step 2: schema inspection and game location
+# Step 2: schema inspection and game location (lazy, identity columns only)
 # ---------------------------------------------------------------------------
 
 
@@ -397,27 +438,44 @@ def inspect_schema(content: bytes) -> dict[str, str]:
     return {name: str(dtype) for name, dtype in schema.items()}
 
 
+def _lazy_scan(content: bytes) -> Any:
+    """Lazy scan over the exact verified bytes; callers push projections/filters into it."""
+    import polars as pl
+
+    return pl.scan_parquet(io.BytesIO(content))
+
+
+def game_scan(content: bytes, game_id: str) -> Any:
+    """LazyFrame for exactly one game; the equality predicate is pushed into the scan."""
+    import polars as pl
+
+    return _lazy_scan(content).filter(pl.col("game_id") == game_id)
+
+
 def locate_game(
     content: bytes, schema: dict[str, str], request: GameRequest
 ) -> dict[str, Any]:
     """Scan ONLY identity columns across the file to find exactly one matching game."""
-    import polars as pl
-
     columns = set(schema)
     missing = [c for c in REQUIRED_IDENTITY_COLUMNS if c not in columns]
     present_identity = [c for c in GAME_IDENTITY_COLUMNS if c in columns]
+    present_descriptors = [c for c in GAME_DESCRIPTOR_COLUMNS if c in columns]
     location: dict[str, Any] = {
         "status": None,
         "reason": None,
         "requested": request.to_dict(),
         "identity_columns_present": present_identity,
         "identity_columns_absent": [c for c in GAME_IDENTITY_COLUMNS if c not in columns],
+        "descriptor_columns_present": present_descriptors,
+        "descriptor_columns_absent": [c for c in GAME_DESCRIPTOR_COLUMNS if c not in columns],
         "selection_scan": {
             "columns_scanned": present_identity,
-            "note": "Only game-identity columns were projected across the supplied file "
-            "to locate the requested game; other games were not read or analyzed.",
+            "note": "Only invariant game-identity columns were projected across the supplied "
+            "file to locate the requested game. Descriptor columns were read for the "
+            "matched game only. No other game's event rows were materialized.",
         },
         "observed": None,
+        "descriptors": None,
         "date_match_basis": None,
         "timezone": "not_stated_by_source_identity_columns",
         "diagnostics": {},
@@ -428,8 +486,13 @@ def locate_game(
         location["diagnostics"]["missing_columns"] = missing
         return location
 
-    frame = pl.read_parquet(io.BytesIO(content), columns=present_identity)
-    distinct = frame.unique(maintain_order=True).to_dicts()
+    distinct = (
+        _lazy_scan(content)
+        .select(present_identity)
+        .unique(maintain_order=True)
+        .collect()
+        .to_dicts()
+    )
 
     req_home = canon_team(request.home_team)
     req_away = canon_team(request.away_team)
@@ -485,6 +548,7 @@ def locate_game(
     location["status"] = "matched"
     location["observed"] = observed
     location["date_match_basis"] = basis
+    location["descriptors"] = _describe_game_descriptors(content, game_id, present_descriptors)
     if basis.startswith("datetime"):
         location["timezone"] = (
             "source game_date carries a time component; timezone "
@@ -493,13 +557,43 @@ def locate_game(
     return location
 
 
-def load_game_rows(content: bytes, game_id: str) -> list[dict[str, Any]]:
-    import polars as pl
+def _describe_game_descriptors(
+    content: bytes, game_id: str, descriptor_columns: list[str]
+) -> dict[str, Any]:
+    """Distinct values of game-level descriptor columns for the matched game only."""
+    if not descriptor_columns:
+        return {}
+    report: dict[str, Any] = {}
+    frame = game_scan(content, game_id).select(descriptor_columns).collect()
+    for column in descriptor_columns:
+        values = frame.get_column(column).unique(maintain_order=True).to_list()
+        jsonable = [_jsonable(v) for v in values]
+        report[column] = {
+            "distinct_count": len(jsonable),
+            "distinct_values": jsonable[:MAX_DESCRIPTOR_VALUES_REPORTED],
+            "varies_within_game": len(jsonable) > 1,
+            "truncated": len(jsonable) > MAX_DESCRIPTOR_VALUES_REPORTED,
+        }
+    return report
 
-    frame = pl.read_parquet(io.BytesIO(content)).filter(pl.col("game_id") == game_id)
+
+def load_game_rows(content: bytes, game_id: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Materialize only the located game's rows (all columns) via a pushed-down filter."""
+    lazy = game_scan(content, game_id)
+    plan = lazy.explain()
+    frame = lazy.collect()
     rows = [{k: _jsonable(v) for k, v in row.items()} for row in frame.to_dicts()]
     rows.sort(key=_play_sort_key)
-    return rows
+    strategy = {
+        "logical_scope": f"rows where game_id == {game_id!r}",
+        "columns": "all source columns for the located game only; full-row content is "
+        "required to classify duplicate keys as identical or conflicting",
+        "physical_io": "The verified in-memory bytes are the only source. Parquet row "
+        "groups whose statistics cannot exclude the game may be decoded and discarded "
+        "by the engine; no other game's rows are materialized into the result.",
+        "selection_pushed_into_scan": "SELECTION:" in plan and "game_id" in plan,
+    }
+    return rows, strategy
 
 
 # ---------------------------------------------------------------------------
@@ -529,14 +623,16 @@ def inventory_duplicates(rows: list[dict[str, Any]]) -> dict[str, Any]:
         entry = {"game_id": key[0], "play_id": key[1], "occurrences": len(members)}
         if differing:
             entry["differing_columns"] = sorted(differing)
+            entry["affects_possession_order"] = bool(differing & ORDER_AFFECTING_COLUMNS)
             conflicting.append(entry)
         else:
             identical.append(entry)
+    conflicting_play_ids = {d["play_id"] for d in conflicting}
     for row in rows:
         key = (row.get("game_id"), row.get("play_id"))
         if len(groups[key]) == 1:
             row["_duplicate_status"] = "unique"
-        elif any(d["play_id"] == key[1] for d in conflicting):
+        elif key[1] in conflicting_play_ids:
             row["_duplicate_status"] = "conflicting_duplicate"
         else:
             row["_duplicate_status"] = "identical_duplicate"
@@ -588,9 +684,17 @@ def inventory_fields(rows: list[dict[str, Any]], schema: dict[str, str]) -> dict
         }
         inspected.update(family_columns)
     inspected.update(GAME_IDENTITY_COLUMNS)
+    inspected.update(GAME_DESCRIPTOR_COLUMNS)
     inspected.update(PLAY_KEY_COLUMNS)
     uninspected = sorted(columns - inspected)
-    no_play_rows = sum(1 for r in rows if r.get("play_type") == NO_PLAY_PLAY_TYPE)
+    no_play_counts = {
+        NO_PLAY_STATUS_NO_PLAY: 0,
+        NO_PLAY_STATUS_OTHER: 0,
+        NO_PLAY_STATUS_UNKNOWN_NULL: 0,
+        NO_PLAY_STATUS_UNKNOWN_ABSENT: 0,
+    }
+    for row in rows:
+        no_play_counts[classify_no_play(row, columns)] += 1
     return {
         "source_column_count": len(columns),
         "inventoried_families": families,
@@ -601,9 +705,10 @@ def inventory_fields(rows: list[dict[str, Any]], schema: dict[str, str]) -> dict
             "Clock fields are reported raw. Their semantics (e.g. time remaining at play "
             "start) are documented upstream but not certified by this reader."
         ),
-        "no_play_rows": no_play_rows if "play_type" in columns else None,
+        "no_play_status_rows": no_play_counts,
         "no_play_basis": (
-            f"play_type == '{NO_PLAY_PLAY_TYPE}'" if "play_type" in columns else "absent_column"
+            f"play_type == '{NO_PLAY_PLAY_TYPE}'; a null play_type is unknown, never a "
+            "negative assertion"
         ),
     }
 
@@ -613,14 +718,18 @@ def inventory_fields(rows: list[dict[str, Any]], schema: dict[str, str]) -> dict
 # ---------------------------------------------------------------------------
 
 
-def build_possession_sequence(rows: list[dict[str, Any]], schema: dict[str, str]) -> dict[str, Any]:
+def build_possession_sequence(
+    rows: list[dict[str, Any]], schema: dict[str, str]
+) -> dict[str, Any]:
     """Possession runs: maximal ordered runs of identical non-null posteam AND drive value.
 
     A run is the unit of "possession". The provider `drive` column (fallback
     `fixed_drive`, disclosed) bounds runs so that two consecutive possessions by the
     same team (e.g. either side of halftime) are not merged. If no drive column exists,
     runs are bounded by posteam change only and no provider drive association is
-    possible.
+    possible. Rows with null posteam are recorded as unattributed together with any
+    drive value they carry, so a later selection can tell a neutral administrative row
+    from evidence of a possession the run count did not see.
     """
     columns = set(schema)
     drive_column: str | None = None
@@ -629,16 +738,16 @@ def build_possession_sequence(rows: list[dict[str, Any]], schema: dict[str, str]
             drive_column = candidate
             break
     runs: list[dict[str, Any]] = []
-    unattributed_rows = 0
+    unattributed: list[dict[str, Any]] = []
     play_id_null_rows = 0
     for index, row in enumerate(rows):
         if row.get("play_id") is None:
             play_id_null_rows += 1
         posteam = canon_team(row.get("posteam")) if "posteam" in columns else None
-        if posteam is None:
-            unattributed_rows += 1
-            continue
         drive = row.get(drive_column) if drive_column else None
+        if posteam is None:
+            unattributed.append({"index": index, "play_id": row.get("play_id"), "drive": drive})
+            continue
         current = runs[-1] if runs else None
         if current and current["posteam"] == posteam and current["provider_drive"] == drive:
             current["last_index"] = index
@@ -658,7 +767,6 @@ def build_possession_sequence(rows: list[dict[str, Any]], schema: dict[str, str]
                     "attributed_row_count": 1,
                 }
             )
-    # Per-team ordinal, in order of first appearance.
     per_team: dict[str, int] = {}
     for run in runs:
         per_team[run["posteam"]] = per_team.get(run["posteam"], 0) + 1
@@ -675,9 +783,11 @@ def build_possession_sequence(rows: list[dict[str, Any]], schema: dict[str, str]
             "drive_column_used": drive_column,
             "posteam_column_present": "posteam" in columns,
             "team_ordinal_rule": "N-th run whose posteam is the team, counted in play order; "
-            "never equated with provider drive number N",
+            "never equated with provider drive number N; resolved only when every run in "
+            "the prefix up to the selection is itself evidenced",
         },
-        "unattributed_rows": unattributed_rows,
+        "unattributed_rows": len(unattributed),
+        "unattributed": unattributed,
         "play_id_null_rows": play_id_null_rows,
         "runs": runs,
         "drive_occurrence_counts": {str(k): v for k, v in drive_occurrences.items()},
@@ -685,8 +795,12 @@ def build_possession_sequence(rows: list[dict[str, Any]], schema: dict[str, str]
 
 
 def select_possession(
-    sequence: dict[str, Any], request: PossessionRequest
+    sequence: dict[str, Any],
+    request: PossessionRequest,
+    *,
+    order_affecting_conflict_play_ids: tuple[Any, ...] = (),
 ) -> dict[str, Any]:
+    """Select the team's N-th possession only if the whole counting prefix is evidenced."""
     team = canon_team(request.team)
     result: dict[str, Any] = {
         "requested": {"team": request.team, "team_canonical": team, "ordinal": request.ordinal},
@@ -694,50 +808,75 @@ def select_possession(
         "reason": None,
         "selected_run": None,
     }
+
+    def unresolved(reason: str, run: dict[str, Any] | None = None, **extra: Any) -> dict[str, Any]:
+        result.update(status="unresolved", reason=reason, selected_run=run)
+        result.update(extra)
+        return result
+
     if not sequence["basis"]["posteam_column_present"]:
-        result.update(status="unresolved", reason="posteam_column_absent")
-        return result
+        return unresolved("posteam_column_absent")
     if sequence["basis"]["drive_column_used"] is None:
-        result.update(status="unresolved", reason="no_provider_drive_column")
-        return result
+        return unresolved("no_provider_drive_column")
     if sequence["play_id_null_rows"]:
-        result.update(status="unresolved", reason="null_play_id_breaks_play_order")
-        return result
+        return unresolved("null_play_id_breaks_play_order")
     candidates = [r for r in sequence["runs"] if r["posteam"] == team]
     if request.ordinal < 1 or request.ordinal > len(candidates):
-        result.update(status="unresolved", reason="team_possession_ordinal_not_present")
-        result["team_possession_runs_observed"] = len(candidates)
-        return result
+        return unresolved(
+            "team_possession_ordinal_not_present",
+            team_possession_runs_observed=len(candidates),
+        )
     run = candidates[request.ordinal - 1]
     if run["provider_drive"] is None:
-        result.update(status="unresolved", reason="null_provider_drive_in_possession")
-        result["selected_run"] = run
-        return result
-    if sequence["drive_occurrence_counts"].get(str(run["provider_drive"]), 0) != 1:
-        result.update(status="unresolved", reason="provider_drive_not_contiguous")
-        result["selected_run"] = run
-        return result
-    previous = [r for r in sequence["runs"] if r["sequence_index"] < run["sequence_index"]]
+        return unresolved("null_provider_drive_in_possession", run)
+
+    # The ordinal is a count over every earlier run (any team). Each of those runs must
+    # itself be evidenced, or the count cannot be trusted. Conflicting duplicates that
+    # disagree on team or drive are checked first because they can distort the count.
+    last_play = run["last_play_id"]
     try:
-        selected_drive = float(run["provider_drive"])
-        non_monotone = any(
-            r["provider_drive"] is not None and float(r["provider_drive"]) > selected_drive
-            for r in previous
-        )
+        conflicts = [
+            pid for pid in order_affecting_conflict_play_ids
+            if pid is not None and float(pid) <= float(last_play)
+        ]
     except (TypeError, ValueError):
-        result.update(status="unresolved", reason="provider_drive_not_orderable")
-        result["selected_run"] = run
-        return result
-    if non_monotone:
-        result.update(status="unresolved", reason="provider_drive_order_non_monotone")
-        result["selected_run"] = run
-        return result
-    result.update(status="resolved", reason="possession_semantics_supported")
-    result["selected_run"] = run
+        conflicts = list(order_affecting_conflict_play_ids)
+    if conflicts:
+        return unresolved("conflicting_duplicate_in_prefix", run, affected_play_ids=conflicts)
+    prefix = [r for r in sequence["runs"] if r["sequence_index"] <= run["sequence_index"]]
+    null_prefix = [r["sequence_index"] for r in prefix if r["provider_drive"] is None]
+    if null_prefix:
+        return unresolved("null_provider_drive_in_prefix", run, affected_runs=null_prefix)
+    counts = sequence["drive_occurrence_counts"]
+    non_contiguous = [
+        r["sequence_index"] for r in prefix if counts.get(str(r["provider_drive"]), 0) != 1
+    ]
+    if non_contiguous:
+        return unresolved("provider_drive_not_contiguous", run, affected_runs=non_contiguous)
+    try:
+        drive_values = [float(r["provider_drive"]) for r in prefix]
+    except (TypeError, ValueError):
+        return unresolved("provider_drive_not_orderable", run)
+    if any(earlier > later for earlier, later in zip(drive_values, drive_values[1:], strict=False)):
+        return unresolved("provider_drive_order_non_monotone", run)
+    prefix_drives = {r["provider_drive"] for r in prefix}
+    foreign = [
+        u for u in sequence["unattributed"]
+        if u["index"] <= run["last_index"]
+        and u["drive"] is not None
+        and u["drive"] not in prefix_drives
+    ]
+    if foreign:
+        return unresolved(
+            "unattributed_drive_value_in_prefix",
+            run,
+            affected_play_ids=[u["play_id"] for u in foreign],
+        )
+    result.update(status="resolved", reason="possession_semantics_supported", selected_run=run)
     result["note"] = (
         f"{team} possession #{request.ordinal} is provider drive "
-        f"{run['provider_drive']!r}; the ordinal was derived from posteam run order, not "
-        "from drive-number equality."
+        f"{run['provider_drive']!r}; the ordinal was derived from posteam run order over a "
+        "fully evidenced prefix, not from drive-number equality."
     )
     return result
 
@@ -757,13 +896,12 @@ def _event_row(row: dict[str, Any], columns: set[str]) -> dict[str, Any]:
         for column in family_columns:
             if column in columns:
                 fields[column] = row.get(column)
-    play_type = row.get("play_type") if "play_type" in columns else None
     return {
         "game_id": row.get("game_id"),
         "play_id": row.get("play_id"),
         "duplicate_status": row.get("_duplicate_status", "unique"),
         "event_status": {
-            "no_play": (play_type == NO_PLAY_PLAY_TYPE) if "play_type" in columns else None,
+            "no_play": classify_no_play(row, columns),
             "penalty_raw": row.get("penalty") if "penalty" in columns else VALUE_STATUS_ABSENT,
             "play_deleted_raw": (
                 row.get("play_deleted") if "play_deleted" in columns else VALUE_STATUS_ABSENT
@@ -773,22 +911,26 @@ def _event_row(row: dict[str, Any], columns: set[str]) -> dict[str, Any]:
     }
 
 
+def _empty_events(status: str, reason: str) -> dict[str, Any]:
+    return {
+        "status": status,
+        "reason": reason,
+        "rows": [],
+        "boundary_before": [],
+        "boundary_after": [],
+        "row_count": 0,
+        "distinct_game_play_key_count": 0,
+        "truncated": False,
+        "omitted_row_count": 0,
+    }
+
+
 def select_events(
     rows: list[dict[str, Any]], selection: dict[str, Any], schema: dict[str, str]
 ) -> dict[str, Any]:
     columns = set(schema)
     if selection["status"] != "resolved":
-        return {
-            "status": "withheld",
-            "reason": "possession_unresolved_no_arbitrary_sample",
-            "rows": [],
-            "boundary_before": [],
-            "boundary_after": [],
-            "row_count": 0,
-            "distinct_game_play_key_count": 0,
-            "truncated": False,
-            "omitted_row_count": 0,
-        }
+        return _empty_events("withheld", "possession_unresolved_no_arbitrary_sample")
     run = selection["selected_run"]
     first, last = run["first_index"], run["last_index"]
     window = rows[first : last + 1]
@@ -854,6 +996,23 @@ def read_one_game(
     except SourceRejected as rejected:
         return rejected.result
 
+    try:
+        return _read_verified_content(content, receipt, request, possession)
+    except Exception as exc:  # noqa: BLE001 - bounded: any parser/engine failure is a receipt
+        return _rejection(
+            receipt,
+            "parse_failure",
+            f"{type(exc).__name__}: {exc}",
+            parsed=PARSE_ATTEMPTED_FAILED,
+        )
+
+
+def _read_verified_content(
+    content: bytes,
+    receipt: dict[str, Any],
+    request: GameRequest,
+    possession: PossessionRequest | None,
+) -> dict[str, Any]:
     schema = inspect_schema(content)
     location = locate_game(content, schema, request)
     result: dict[str, Any] = {
@@ -870,7 +1029,7 @@ def read_one_game(
         receipt["times"]["processing_time"] = _now_iso()
         return result
 
-    rows = load_game_rows(content, str(location["observed"]["game_id"]))
+    rows, read_strategy = load_game_rows(content, str(location["observed"]["game_id"]))
     duplicates = inventory_duplicates(rows)
     fields = inventory_fields(rows, schema)
     sequence = build_possession_sequence(rows, schema)
@@ -894,7 +1053,13 @@ def read_one_game(
         "selection": None,
     }
     if possession is not None:
-        selection = select_possession(sequence, possession)
+        order_conflicts = tuple(
+            d["play_id"] for d in duplicates["conflicting_duplicate_keys"]
+            if d.get("affects_possession_order")
+        )
+        selection = select_possession(
+            sequence, possession, order_affecting_conflict_play_ids=order_conflicts
+        )
         possession_block["selection"] = {
             k: v for k, v in selection.items() if k != "selected_run"
         } | {
@@ -906,18 +1071,8 @@ def read_one_game(
         }
         events = select_events(rows, selection, schema)
     else:
-        events = {
-            "status": "not_requested",
-            "reason": "no possession selection requested",
-            "rows": [],
-            "boundary_before": [],
-            "boundary_after": [],
-            "row_count": 0,
-            "distinct_game_play_key_count": 0,
-            "truncated": False,
-            "omitted_row_count": 0,
-        }
-    result["inventory"] = {"keys": duplicates, "fields": fields}
+        events = _empty_events("not_requested", "no possession selection requested")
+    result["inventory"] = {"keys": duplicates, "fields": fields, "read_strategy": read_strategy}
     result["possession"] = possession_block
     result["events"] = events
     result["status"] = "read"
