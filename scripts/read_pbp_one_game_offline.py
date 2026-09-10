@@ -17,7 +17,9 @@ Exit codes: 0 = a result was produced (matched, read, or honestly unresolved);
 2 = the input was rejected (missing file, byte/digest mismatch, unsupported format,
 or a bounded parse failure after magic-byte verification) and nothing was written;
 3 = invalid arguments; 4 = --out already exists (any existing path, including the
-input file or an alias of it) so nothing was read or written.
+input file or an alias of it) so nothing was read or written; 5 = the reader's own
+post-parse processing failed (reader_processing_failure, a reader defect that says
+nothing about the source file) and nothing was written.
 
 The result is local and non-canonical. It is not an ingestion, admission, promotion,
 or Research activation. See docs/data/pbp-one-game-offline-read-v0.md.
@@ -117,6 +119,10 @@ def main(argv: list[str] | None = None) -> int:
     if result["status"] == "rejected":
         sys.stdout.write(text)
         return 2
+    if result["status"] == "processing_failed":
+        # A reader defect after successful parsing: distinct from a source rejection.
+        sys.stdout.write(text)
+        return 5
     if args.out:
         try:
             # O_CREAT|O_EXCL: atomic exclusive creation. Fails (without truncating anything)

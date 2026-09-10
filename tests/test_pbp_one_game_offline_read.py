@@ -840,3 +840,108 @@ def test_parse_failure_after_magic_check_is_a_bounded_rejection(tmp_path):
     proc = _cli(_cli_args(path, tmp_path / "out.json"))
     assert proc.returncode == 2
     assert not (tmp_path / "out.json").exists()
+
+
+# ---------------------------------------------------------------------------
+# R1: parse_failure is bounded to parquet engine stages; reader defects are distinct
+# ---------------------------------------------------------------------------
+
+
+def test_r1_corrupt_parquet_is_parse_failure_at_schema_stage(tmp_path):
+    path = tmp_path / "corrupt.parquet"
+    path.write_bytes(b"PAR1" + b"\x00SYNTHETIC GARBAGE\x00" * 4 + b"PAR1")
+    result = mod.read_one_game(**receipt_args(path), request=REQ)
+    assert result["status"] == "rejected"
+    assert result["rejection"]["reason"] == "parse_failure"
+    assert result["rejection"]["read_stage"] == "inspect_schema"
+    assert result["failure"] is None
+
+
+def test_r1_engine_failure_after_schema_is_parse_failure_with_its_stage(tmp_path, monkeypatch):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+
+    def broken_scan(*a, **k):
+        raise OSError("SYNTHETIC engine failure")
+
+    monkeypatch.setattr(mod, "game_scan", broken_scan)
+    result = run(path)
+    assert result["status"] == "rejected"
+    assert result["rejection"]["reason"] == "parse_failure"
+    assert result["rejection"]["read_stage"] == "describe_game_descriptors"
+    assert result["rejection"]["parsed"] == "attempted_failed"
+
+
+@pytest.mark.parametrize(
+    "function, stage",
+    [
+        ("inventory_duplicates", "inventory_duplicates"),
+        ("inventory_fields", "inventory_fields"),
+        ("build_possession_sequence", "build_possession_sequence"),
+        ("select_possession", "select_possession"),
+        ("select_events", "select_events"),
+    ],
+)
+def test_r1_post_parse_processing_error_is_not_a_parse_failure(
+    tmp_path, monkeypatch, function, stage
+):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+
+    def broken(*a, **k):
+        raise RuntimeError("SYNTHETIC reader defect")
+
+    monkeypatch.setattr(mod, function, broken)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "processing_failed"
+    assert result["rejection"] is None
+    failure = result["failure"]
+    assert failure["kind"] == "reader_processing_failure"
+    assert failure["stage"] == stage
+    assert failure["parsed"] == "succeeded"
+    assert "SYNTHETIC reader defect" in failure["detail"]
+    assert "parse" not in failure["kind"]
+    # Verified receipt and the already-matched game are retained; nothing else is claimed.
+    assert result["receipt"]["source"]["receipt_status"] == "verified"
+    assert result["game"]["status"] == "matched"
+    assert result["inventory"] is None and result["events"] is None
+
+
+def test_r1_matching_logic_error_is_processing_failure_not_parse_failure(tmp_path, monkeypatch):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+
+    def broken(*a, **k):
+        raise KeyError("SYNTHETIC matching defect")
+
+    monkeypatch.setattr(mod, "_normalize_date_value", broken)
+    result = run(path)
+    assert result["status"] == "processing_failed"
+    assert result["failure"]["stage"] == "locate_game_matching"
+    assert result["game"] is None  # location never completed
+
+
+def test_r1_engine_and_processing_stage_vocabularies_are_disjoint_and_asserted():
+    assert not set(mod.ENGINE_STAGES) & set(mod.PROCESSING_STAGES)
+    with pytest.raises(AssertionError):
+        with mod._engine_stage("inventory_duplicates"):
+            pass
+    with pytest.raises(AssertionError):
+        with mod._processing_stage("inspect_schema"):
+            pass
+
+
+def test_r1_cli_exit_5_for_processing_failure_and_writes_nothing(tmp_path, monkeypatch):
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location(
+        "read_pbp_one_game_offline", REPO_ROOT / "scripts" / "read_pbp_one_game_offline.py"
+    )
+    assert spec is not None and spec.loader is not None
+    cli = module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    monkeypatch.setattr(mod, "inventory_fields", lambda *a, **k: (_ for _ in ()).throw(
+        RuntimeError("SYNTHETIC")
+    ))
+    out = tmp_path / "out.json"
+    code = cli.main(_cli_args(path, out)[:-2] + ["--out", str(out)])
+    assert code == 5
+    assert not out.exists()

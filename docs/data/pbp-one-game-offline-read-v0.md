@@ -36,7 +36,7 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
 | Path | Role |
 | --- | --- |
 | `src/pbp_one_game/offline_read.py` | Library: receipt verification, schema inspection, lazy game location, inventory, possession selection, bounded events |
-| `scripts/read_pbp_one_game_offline.py` | Thin CLI over the library; exit 0 result, 2 rejected, 3 usage, 4 output collision |
+| `scripts/read_pbp_one_game_offline.py` | Thin CLI over the library; exit 0 result, 2 rejected, 3 usage, 4 output collision, 5 reader processing failure |
 | `tests/test_pbp_one_game_offline_read.py` | Synthetic-fixture tests (fictional `SYA`/`SYB`, season 1999) |
 | `docs/data/pbp-one-game-offline-read-v0.md` | This document, including the storage/import compatibility plan |
 
@@ -46,10 +46,16 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    count, and expected SHA-256. The exact bytes are read and hashed. Missing file,
    byte-count mismatch, digest mismatch, or non-parquet magic bytes stop processing with
    a precise `rejected` result whose `parsed` field is `not_attempted`. A file that
-   passes the magic-byte check but fails inside the parquet engine produces a bounded
-   `parse_failure` rejection with `parsed: attempted_failed`, the exception class and
-   message, and the verified receipt; it never raises out of the reader. Nothing is
-   downloaded, guessed, or written in either case.
+   passes the magic-byte check but fails inside a parquet engine stage (schema read,
+   identity scan, descriptor read, game-row collect) produces a bounded `parse_failure`
+   rejection with `parsed: attempted_failed`, the failing `read_stage`, the exception
+   class and message, and the verified receipt. Only those four engine stages can
+   produce `parse_failure`. A defect in the reader's own post-parse processing
+   (matching, inventory, sequencing, selection, assembly) is returned as a distinct
+   `processing_failed` result with `failure.kind: reader_processing_failure`, its
+   processing `stage`, and `parsed: succeeded`; it is never attributed to the source
+   file. Neither path raises out of the reader, and nothing is downloaded, guessed, or
+   written in any case.
 2. **One format.** Parquet, read with `polars`, an existing declared dependency in
    `pyproject.toml`. No new dependency was added and no multi-format framework exists.
    `pyarrow` is the parquet backend polars already declares.
@@ -121,7 +127,8 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
     any path already exists there (a regular file, the input itself, a symlink or
     hardlink alias of it, or a dangling symlink), checked before anything is read; the
     write itself uses exclusive creation (`O_CREAT|O_EXCL`), so a path that appears in
-    between fails without truncating anything. Rejections never write an output file.
+    between fails without truncating anything. Rejections and processing failures never
+    write an output file.
 
 The module imports no network, database, or application code; a test asserts that.
 
@@ -149,7 +156,12 @@ python scripts/read_pbp_one_game_offline.py \
 
 `python -m pytest tests/test_pbp_one_game_offline_read.py` covers the scope's required
 matrix and the review regressions: wrong digest / missing input rejected before parsing
-with no side effect; a PAR1-wrapped corrupt file rejected as a bounded `parse_failure`;
+with no side effect; a PAR1-wrapped corrupt file rejected as a bounded `parse_failure`
+at the schema stage, an engine failure after the schema read reported with its own
+stage, and a monkeypatched exception in each pure processing function (and in matching
+logic) reported as `reader_processing_failure` with its stage and never as
+`parse_failure`, with the CLI exiting 5 and writing nothing; the engine and processing
+stage vocabularies are disjoint and enforced;
 wrong home/away/date/season and the real target request against a synthetic file are
 unresolved with no fallback; conflicting `game_date` or `home_team` inside one game is
 conflicting metadata while varying `time_of_day` or `week` is not; identical versus
@@ -300,7 +312,13 @@ item-1 receipt contract decision.
 
 **Push boundary.** The first commit on this branch was pushed after repository-level
 checks only (no CI workflows, no branch-scoped deploy trigger in `railpack.json` or
-`.replit`); account-level Railway/Replit branch deployment binding was not verified, which
-the review recorded as an unresolved execution-boundary deviation. The repair commit was
-therefore returned as a local patch and not pushed. Before any further push, establish
-the branch deployment binding through authorized provider access.
+`.replit`); account-level branch deployment binding was not verified at that time, which
+the review recorded as an unresolved execution-boundary deviation. The F1–F5 repair was
+returned as a local patch. On 2026-09-10 the operator's read-only Railway inspection of
+project TIBER-data, production environment, service TIBER-Data recorded: source branch
+`main`; all twenty returned recent deployments from `main`, the latest being
+`b0c79de5` created 2026-09-09T17:42:13Z; no deployment for `2da2f604` or this branch;
+zero staged changes. Pushing this feature branch is therefore not configured to deploy
+that Railway production service. That receipt covers Railway only; no Replit
+account-level inspection occurred, and repository evidence remains the only evidence
+about Replit. The R1 repair commit was pushed on that basis.

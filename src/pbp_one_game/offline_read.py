@@ -46,6 +46,8 @@ import io
 import json
 import math
 import re
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -148,6 +150,19 @@ VALUE_STATUS_VALUE = "value"
 
 PARSE_NOT_ATTEMPTED = "not_attempted"
 PARSE_ATTEMPTED_FAILED = "attempted_failed"
+PARSE_SUCCEEDED = "succeeded"
+
+# Stages that touch the parquet engine (schema read, scan, collect). Only a failure
+# raised inside one of these is a `parse_failure` attributable to the source bytes.
+ENGINE_STAGES: tuple[str, ...] = (
+    "inspect_schema", "locate_game_identity_scan", "describe_game_descriptors", "load_game_rows",
+)
+# Pure post-parse processing stages. A failure here is a reader defect
+# (`reader_processing_failure`), never a statement about the source file.
+PROCESSING_STAGES: tuple[str, ...] = (
+    "locate_game_matching", "inventory_duplicates", "inventory_fields",
+    "build_possession_sequence", "select_possession", "select_events", "assemble_result",
+)
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -158,6 +173,47 @@ class SourceRejected(Exception):
     def __init__(self, result: dict[str, Any]) -> None:
         super().__init__(result["rejection"]["reason"])
         self.result = result
+
+
+class _StageFailure(Exception):
+    """Internal: an exception captured inside a named stage."""
+
+    def __init__(self, stage: str, exc: BaseException) -> None:
+        super().__init__(f"{stage}: {type(exc).__name__}: {exc}")
+        self.stage = stage
+        self.exc = exc
+
+    @property
+    def detail(self) -> str:
+        return f"{type(self.exc).__name__}: {self.exc}"
+
+
+class _EngineFailure(_StageFailure):
+    """Parquet engine failure (schema read, scan, collect): attributable to the source bytes."""
+
+
+class _ProcessingFailure(_StageFailure):
+    """Pure post-parse reader failure: a reader defect, not a source-file statement."""
+
+
+@contextmanager
+def _engine_stage(stage: str) -> Iterator[None]:
+    assert stage in ENGINE_STAGES, stage
+    try:
+        yield
+    except Exception as exc:
+        raise _EngineFailure(stage, exc) from exc
+
+
+@contextmanager
+def _processing_stage(stage: str) -> Iterator[None]:
+    assert stage in PROCESSING_STAGES, stage
+    try:
+        yield
+    except (_StageFailure, SourceRejected):
+        raise
+    except Exception as exc:
+        raise _ProcessingFailure(stage, exc) from exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -412,14 +468,46 @@ def verify_source_bytes(
 
 
 def _rejection(
-    receipt: dict[str, Any], reason: str, detail: str, *, parsed: str = PARSE_NOT_ATTEMPTED
+    receipt: dict[str, Any],
+    reason: str,
+    detail: str,
+    *,
+    parsed: str = PARSE_NOT_ATTEMPTED,
+    read_stage: str | None = None,
 ) -> dict[str, Any]:
     receipt["times"]["processing_time"] = _now_iso()
     return {
         "status": "rejected",
-        "rejection": {"reason": reason, "detail": detail, "parsed": parsed},
+        "rejection": {
+            "reason": reason, "detail": detail, "parsed": parsed, "read_stage": read_stage,
+        },
+        "failure": None,
         "receipt": receipt,
         "game": None,
+        "inventory": None,
+        "possession": None,
+        "events": None,
+    }
+
+
+def _processing_failed(
+    receipt: dict[str, Any], stage: str, detail: str, game: dict[str, Any] | None
+) -> dict[str, Any]:
+    """Bounded result for a reader defect after parsing succeeded. Not a source statement."""
+    receipt["times"]["processing_time"] = _now_iso()
+    return {
+        "status": "processing_failed",
+        "rejection": None,
+        "failure": {
+            "kind": "reader_processing_failure",
+            "stage": stage,
+            "detail": detail,
+            "parsed": PARSE_SUCCEEDED,
+            "note": "The source bytes were verified and parsed. This failure is in the reader's "
+            "own processing and says nothing about the source file.",
+        },
+        "receipt": receipt,
+        "game": game,
         "inventory": None,
         "possession": None,
         "events": None,
@@ -434,8 +522,9 @@ def _rejection(
 def inspect_schema(content: bytes) -> dict[str, str]:
     import polars as pl
 
-    schema = pl.read_parquet_schema(io.BytesIO(content))
-    return {name: str(dtype) for name, dtype in schema.items()}
+    with _engine_stage("inspect_schema"):
+        schema = pl.read_parquet_schema(io.BytesIO(content))
+        return {name: str(dtype) for name, dtype in schema.items()}
 
 
 def _lazy_scan(content: bytes) -> Any:
@@ -486,13 +575,14 @@ def locate_game(
         location["diagnostics"]["missing_columns"] = missing
         return location
 
-    distinct = (
-        _lazy_scan(content)
-        .select(present_identity)
-        .unique(maintain_order=True)
-        .collect()
-        .to_dicts()
-    )
+    with _engine_stage("locate_game_identity_scan"):
+        distinct = (
+            _lazy_scan(content)
+            .select(present_identity)
+            .unique(maintain_order=True)
+            .collect()
+            .to_dicts()
+        )
 
     req_home = canon_team(request.home_team)
     req_away = canon_team(request.away_team)
@@ -564,7 +654,8 @@ def _describe_game_descriptors(
     if not descriptor_columns:
         return {}
     report: dict[str, Any] = {}
-    frame = game_scan(content, game_id).select(descriptor_columns).collect()
+    with _engine_stage("describe_game_descriptors"):
+        frame = game_scan(content, game_id).select(descriptor_columns).collect()
     for column in descriptor_columns:
         values = frame.get_column(column).unique(maintain_order=True).to_list()
         jsonable = [_jsonable(v) for v in values]
@@ -579,10 +670,12 @@ def _describe_game_descriptors(
 
 def load_game_rows(content: bytes, game_id: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Materialize only the located game's rows (all columns) via a pushed-down filter."""
-    lazy = game_scan(content, game_id)
-    plan = lazy.explain()
-    frame = lazy.collect()
-    rows = [{k: _jsonable(v) for k, v in row.items()} for row in frame.to_dicts()]
+    with _engine_stage("load_game_rows"):
+        lazy = game_scan(content, game_id)
+        plan = lazy.explain()
+        frame = lazy.collect()
+        raw_rows = frame.to_dicts()
+    rows = [{k: _jsonable(v) for k, v in row.items()} for row in raw_rows]
     rows.sort(key=_play_sort_key)
     strategy = {
         "logical_scope": f"rows where game_id == {game_id!r}",
@@ -996,15 +1089,21 @@ def read_one_game(
     except SourceRejected as rejected:
         return rejected.result
 
+    partial: dict[str, Any] = {"game": None}
     try:
-        return _read_verified_content(content, receipt, request, possession)
-    except Exception as exc:  # noqa: BLE001 - bounded: any parser/engine failure is a receipt
+        return _read_verified_content(content, receipt, request, possession, partial)
+    except _EngineFailure as failure:
+        # Only parquet engine stages land here: attributable to the source bytes.
         return _rejection(
             receipt,
             "parse_failure",
-            f"{type(exc).__name__}: {exc}",
+            failure.detail,
             parsed=PARSE_ATTEMPTED_FAILED,
+            read_stage=failure.stage,
         )
+    except _ProcessingFailure as failure:
+        # Pure post-parse reader defect: never labeled as a parser or source failure.
+        return _processing_failed(receipt, failure.stage, failure.detail, partial["game"])
 
 
 def _read_verified_content(
@@ -1012,12 +1111,16 @@ def _read_verified_content(
     receipt: dict[str, Any],
     request: GameRequest,
     possession: PossessionRequest | None,
+    partial: dict[str, Any],
 ) -> dict[str, Any]:
     schema = inspect_schema(content)
-    location = locate_game(content, schema, request)
+    with _processing_stage("locate_game_matching"):
+        location = locate_game(content, schema, request)
+    partial["game"] = location
     result: dict[str, Any] = {
         "status": None,
         "rejection": None,
+        "failure": None,
         "receipt": receipt,
         "game": location,
         "inventory": None,
@@ -1030,52 +1133,64 @@ def _read_verified_content(
         return result
 
     rows, read_strategy = load_game_rows(content, str(location["observed"]["game_id"]))
-    duplicates = inventory_duplicates(rows)
-    fields = inventory_fields(rows, schema)
-    sequence = build_possession_sequence(rows, schema)
-    compact_runs = [
-        {
-            k: v
-            for k, v in run.items()
-            if k in (
-                "sequence_index", "posteam", "posteam_raw", "provider_drive",
-                "team_possession_ordinal", "first_play_id", "last_play_id",
-                "attributed_row_count",
-            )
+    with _processing_stage("inventory_duplicates"):
+        duplicates = inventory_duplicates(rows)
+    with _processing_stage("inventory_fields"):
+        fields = inventory_fields(rows, schema)
+    with _processing_stage("build_possession_sequence"):
+        sequence = build_possession_sequence(rows, schema)
+    with _processing_stage("assemble_result"):
+        compact_runs = [
+            {
+                k: v
+                for k, v in run.items()
+                if k in (
+                    "sequence_index", "posteam", "posteam_raw", "provider_drive",
+                    "team_possession_ordinal", "first_play_id", "last_play_id",
+                    "attributed_row_count",
+                )
+            }
+            for run in sequence["runs"]
+        ]
+        possession_block: dict[str, Any] = {
+            "basis": sequence["basis"],
+            "unattributed_rows": sequence["unattributed_rows"],
+            "play_id_null_rows": sequence["play_id_null_rows"],
+            "runs": compact_runs,
+            "selection": None,
         }
-        for run in sequence["runs"]
-    ]
-    possession_block: dict[str, Any] = {
-        "basis": sequence["basis"],
-        "unattributed_rows": sequence["unattributed_rows"],
-        "play_id_null_rows": sequence["play_id_null_rows"],
-        "runs": compact_runs,
-        "selection": None,
-    }
     if possession is not None:
-        order_conflicts = tuple(
-            d["play_id"] for d in duplicates["conflicting_duplicate_keys"]
-            if d.get("affects_possession_order")
-        )
-        selection = select_possession(
-            sequence, possession, order_affecting_conflict_play_ids=order_conflicts
-        )
-        possession_block["selection"] = {
-            k: v for k, v in selection.items() if k != "selected_run"
-        } | {
-            "selected_run": (
-                {k: v for k, v in selection["selected_run"].items() if not k.endswith("_index")}
-                if selection["selected_run"]
-                else None
+        with _processing_stage("select_possession"):
+            order_conflicts = tuple(
+                d["play_id"] for d in duplicates["conflicting_duplicate_keys"]
+                if d.get("affects_possession_order")
             )
-        }
-        events = select_events(rows, selection, schema)
+            selection = select_possession(
+                sequence, possession, order_affecting_conflict_play_ids=order_conflicts
+            )
+            possession_block["selection"] = {
+                k: v for k, v in selection.items() if k != "selected_run"
+            } | {
+                "selected_run": (
+                    {
+                        k: v for k, v in selection["selected_run"].items()
+                        if not k.endswith("_index")
+                    }
+                    if selection["selected_run"]
+                    else None
+                )
+            }
+        with _processing_stage("select_events"):
+            events = select_events(rows, selection, schema)
     else:
         events = _empty_events("not_requested", "no possession selection requested")
-    result["inventory"] = {"keys": duplicates, "fields": fields, "read_strategy": read_strategy}
-    result["possession"] = possession_block
-    result["events"] = events
-    result["status"] = "read"
+    with _processing_stage("assemble_result"):
+        result["inventory"] = {
+            "keys": duplicates, "fields": fields, "read_strategy": read_strategy,
+        }
+        result["possession"] = possession_block
+        result["events"] = events
+        result["status"] = "read"
     receipt["times"]["processing_time"] = _now_iso()
     return result
 
