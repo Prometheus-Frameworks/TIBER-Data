@@ -587,6 +587,7 @@ def locate_game(
     req_home = canon_team(request.home_team)
     req_away = canon_team(request.away_team)
     matches: list[dict[str, Any]] = []
+    matches_without_game_id = 0
     same_teams_any_orientation = 0
     swapped_orientation = 0
     date_bases: set[str] = set()
@@ -605,14 +606,25 @@ def locate_game(
             if home == req_away and away == req_home and rec_date == request.game_date:
                 swapped_orientation += 1
         if season_ok and home == req_home and away == req_away and rec_date == request.game_date:
-            matches.append(rec)
+            game_id_value = rec.get("game_id")
+            if game_id_value is None or str(game_id_value).strip() == "":
+                # Identity fields agree but the provider game ID is missing: this can
+                # never be certified, and it must not be silently dropped either.
+                matches_without_game_id += 1
+            else:
+                matches.append(rec)
 
     location["diagnostics"] = {
         "distinct_identity_tuples_scanned": len(distinct),
         "same_season_same_teams_any_orientation_or_date": same_teams_any_orientation,
         "swapped_home_away_on_requested_date": swapped_orientation,
+        "matching_tuples_without_game_id": matches_without_game_id,
         "game_date_value_bases": sorted(date_bases),
     }
+    if matches_without_game_id:
+        location["status"] = "unresolved"
+        location["reason"] = "matching_identity_without_game_id"
+        return location
     game_ids = sorted({str(m["game_id"]) for m in matches})
     if not matches:
         location["status"] = "unresolved"

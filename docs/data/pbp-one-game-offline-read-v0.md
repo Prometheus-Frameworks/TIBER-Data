@@ -68,8 +68,10 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    `varies_within_game` flag; variation is disclosed, never fatal. Event-level timestamps
    such as `time_of_day` are ordinary event fields (quarter/clock family). The requested
    `LA`→`LAR` canonicalization mirrors existing builders and raw source values are
-   preserved verbatim. Zero matches, multiple matching game IDs, or one game ID with more
-   than one invariant identity tuple is `unresolved`. Swapped home/away on the requested
+   preserved verbatim. Zero matches, multiple matching game IDs, one game ID with more
+   than one invariant identity tuple, or any matching tuple whose provider `game_id` is
+   null or empty (`matching_identity_without_game_id`, counted in diagnostics) is
+   `unresolved`; a missing game ID is never certified as a match. Swapped home/away on the requested
    date is reported as a diagnostic count only and is never selected. Date timezone is
    reported as not stated by the source unless the source dtype carries one.
 4. **Lazy, bounded reads.** Both reads are `polars.scan_parquet` over the verified
@@ -128,7 +130,9 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
     hardlink alias of it, or a dangling symlink), checked before anything is read; the
     write itself uses exclusive creation (`O_CREAT|O_EXCL`), so a path that appears in
     between fails without truncating anything. Rejections and processing failures never
-    write an output file.
+    write an output file. Malformed invocations (missing required flags, a non-integer
+    value, an unknown flag) exit 3 through an argparse error override, so exit 2 means
+    only a rejected source input.
 
 The module imports no network, database, or application code; a test asserts that.
 
@@ -161,7 +165,9 @@ at the schema stage, an engine failure after the schema read reported with its o
 stage, and a monkeypatched exception in each pure processing function (and in matching
 logic) reported as `reader_processing_failure` with its stage and never as
 `parse_failure`, with the CLI exiting 5 and writing nothing; the engine and processing
-stage vocabularies are disjoint and enforced;
+stage vocabularies are disjoint and enforced; a matching identity tuple with a null,
+empty, or blank `game_id`, alone or alongside a real match, is unresolved and never
+certified; argparse usage errors exit 3 while `--help` exits 0;
 wrong home/away/date/season and the real target request against a synthetic file are
 unresolved with no fallback; conflicting `game_date` or `home_team` inside one game is
 conflicting metadata while varying `time_of_day` or `week` is not; identical versus

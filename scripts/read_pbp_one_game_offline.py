@@ -45,8 +45,17 @@ from src.pbp_one_game.offline_read import (  # noqa: E402
 )
 
 
+class _UsageErrorParser(argparse.ArgumentParser):
+    """argparse exits 2 on usage errors by default; 2 is reserved here for source rejection."""
+
+    def error(self, message: str) -> None:  # type: ignore[override]
+        self.print_usage(sys.stderr)
+        print(f"{self.prog}: error: {message}", file=sys.stderr)
+        raise SystemExit(3)
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
+    parser = _UsageErrorParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(

@@ -945,3 +945,47 @@ def test_r1_cli_exit_5_for_processing_failure_and_writes_nothing(tmp_path, monke
     code = cli.main(_cli_args(path, out)[:-2] + ["--out", str(out)])
     assert code == 5
     assert not out.exists()
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of 0ae4208 (PR #269): C1 null game_id, C2 argparse exit code
+# ---------------------------------------------------------------------------
+
+
+def test_c1_matching_identity_with_null_game_id_is_never_certified(tmp_path):
+    rows = [dict(r, game_id=None) for r in alternating_game(DEFAULT_POSSESSIONS)]
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "unresolved"
+    assert result["game"]["status"] == "unresolved"
+    assert result["game"]["reason"] == "matching_identity_without_game_id"
+    assert result["game"]["observed"] is None
+    assert result["game"]["diagnostics"]["matching_tuples_without_game_id"] == 1
+    assert result["inventory"] is None and result["events"] is None
+
+
+@pytest.mark.parametrize("bad_id", [None, "", "   "])
+def test_c1_mixed_null_and_real_game_id_withholds_the_real_match_too(tmp_path, bad_id):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows.append(play(99.0, HOME, 9.0, game_id=bad_id))
+    path = write_parquet(tmp_path, rows)
+    result = run(path)
+    assert result["status"] == "unresolved"
+    assert result["game"]["reason"] == "matching_identity_without_game_id"
+    assert result["game"]["diagnostics"]["matching_tuples_without_game_id"] == 1
+
+
+def test_c2_argparse_usage_errors_exit_3_not_2(tmp_path):
+    base = [
+        "--path", "x", "--expected-bytes", "1", "--expected-sha256", "00" * 32,
+        "--date", SYN_DATE, "--away", AWAY,
+    ]
+    missing_required = _cli(base + ["--season", "1999"])  # no --home
+    assert missing_required.returncode == 3
+    assert "error" in missing_required.stderr
+    non_integer = _cli(base + ["--season", "abc", "--home", HOME])
+    assert non_integer.returncode == 3
+    unknown_flag = _cli(base + ["--season", "1999", "--home", HOME, "--bogus"])
+    assert unknown_flag.returncode == 3
+    helped = _cli(["--help"])
+    assert helped.returncode == 0
