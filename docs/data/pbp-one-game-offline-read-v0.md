@@ -78,8 +78,10 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    `LA`→`LAR` canonicalization mirrors existing builders and raw source values are
    preserved verbatim. Zero matches, multiple matching game IDs, one game ID with more
    than one invariant identity tuple, or any matching tuple whose provider `game_id` is
-   null or empty (`matching_identity_without_game_id`, counted in diagnostics) is
-   `unresolved`; a missing game ID is never certified as a match. Season equality is
+   null, empty, NaN, or ±infinity (`matching_identity_without_game_id`, with the null/blank
+   and non-finite kinds counted separately in diagnostics) is
+   `unresolved`; a missing or non-finite game ID is never certified as a match and no
+   game scan runs under it. Season equality is
    exact with no lossy coercion: an int on equality, a float only when integral and
    equal, a string only when it is exactly the requested season's digits; fractional,
    boolean, padded, or otherwise invalid season values never match. Swapped home/away on the requested
@@ -114,9 +116,13 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    order-affecting conflict check): integers stay integers, finite floats become exact
    fractions of their binary value, and numeric strings are parsed exactly from their
    decimal spelling under a strict grammar (sign, digits, optional fraction, optional
-   exponent; no whitespace, underscores, hex, or inf/nan spellings), so
-   `9007199254740993.0` and `9007199254740993e0` are the exact integer, never a rounded
-   float. Python compares int and Fraction exactly, so mixed keys sort correctly. Run
+   exponent; no whitespace, underscores, hex, or inf/nan spellings) inside a bounded
+   domain (at most 4000 significant digits and a decimal magnitude within 10**±4000;
+   a string such as `1e999999999` is never expanded and is an unknown order position),
+   so `9007199254740993.0` and `9007199254740993e0` are the exact integer, never a
+   rounded float. Python compares int and Fraction exactly, so mixed keys sort
+   correctly. The sort itself runs inside the named processing stage `sort_game_rows`,
+   so a defect there is a bounded reader failure, never a source failure. Run
    extension, duplicate grouping, and occurrence counting all use the same recursive
    NaN-aware equality and its consistent freeze, so one equivalence relation governs
    every stage; a cross-stage test feeds one shared case set through all of them. A possession is a maximal run
@@ -260,7 +266,14 @@ game scan (no string rendering is compared against a numeric column), neighbouri
 numeric IDs do not leak rows and numeric twins are multiple matches; a decreasing
 Int64 drive prefix above 2**53 is non-monotone rather than collapsing through float
 while the exact ascending order resolves, bytes drives are not orderable, and
-integral numeric-string drives order exactly; a digest
+integral numeric-string drives order exactly; numeric strings outside the bounded
+domain (`1e999999999`, `1e-999999999`, more than 4000 digits) are unknown order
+positions that are never expanded, the domain edges (`1e4000`, 4000 digits) are exact,
+an out-of-domain play ID withholds selection promptly, and the row sort is the named
+processing stage `sort_game_rows`; a NaN or infinite Float64 `game_id` is unusable
+identity (counted as non-finite in diagnostics, no scan, no events) and a non-finite
+twin withholds a real finite match while a finite Float64 ID alone still matches with
+a typed predicate; a digest
 with a trailing or leading newline is a usage
 error before file access; negative byte counts and non-64-hex digests exit 3
 before file access while a well-formed wrong digest still exits 2; non-calendar dates

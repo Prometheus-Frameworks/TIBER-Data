@@ -342,7 +342,13 @@ Example:
   game scan, failing as a parse error; the raw typed ID now drives the scans. N2:
   the drive monotonicity check converted drives through float, so Int64 drives
   above 2**53 collapsed and a decreasing prefix certified a possession; drives now
-  use the same classifier and lossless numeric representation as play IDs).
+  use the same classifier and lossless numeric representation as play IDs), and the
+  Codex review of `7d55214` (O1: the numeric-string grammar had no magnitude bound,
+  so `1e999999999` tried to expand into a billion-digit integer and hung the reader
+  from the row sort, outside any bounded stage; numeric strings now live in a bounded
+  domain and the sort is a named processing stage. O2: a NaN or infinite Float64
+  `game_id` passed the non-empty check and was certified as a match; non-finite IDs
+  are now unusable identity like null and blank ones).
   Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
@@ -388,10 +394,10 @@ Example:
   conflict check, with a cross-stage consistency test over a shared case set), withholds selection when a play ID is non-finite or non-numeric
   or a prefix drive is non-finite, and bounds any residual serialization failure as
   a processing failure.
-  Focused tests pass 164/164 and lint is clean under the repo ruff rules.
+  Focused tests pass 171/171 and lint is clean under the repo ruff rules.
 - What is still missing: independent exact-head re-review of the current branch head
-  (every repair commit through M1 and the merge of main are pushed; the N1/N2 repair
-  is local until assigned); operator assignment for any further repair push; an explicitly
+  (every repair commit through N1/N2 and the merge of main are pushed; the O1/O2
+  repair is local until assigned); operator assignment for any further repair push; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any
   durable import, the database-enforced read-only verification of the deployed

@@ -163,7 +163,7 @@ ENGINE_STAGES: tuple[str, ...] = (
 # Pure post-parse processing stages. A failure here is a reader defect
 # (`reader_processing_failure`), never a statement about the source file.
 PROCESSING_STAGES: tuple[str, ...] = (
-    "locate_game_matching", "inventory_duplicates", "inventory_fields",
+    "locate_game_matching", "sort_game_rows", "inventory_duplicates", "inventory_fields",
     "build_possession_sequence", "select_possession", "select_events", "assemble_result",
     "serialize_result",
 )
@@ -351,6 +351,30 @@ def _values_equal(left: Any, right: Any) -> bool:
 # hex, or inf/nan spellings. Parsed exactly, never through float.
 _NUMERIC_STRING_RE = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?")
 
+# Bounded numeric domain for numeric strings. The grammar alone is unbounded: a tiny
+# string such as "1e999999999" would expand into an integer with a billion digits and
+# hang the reader. A string whose significant digits or decimal magnitude exceed these
+# caps is outside the reader's bounded domain and is an unknown order position, never
+# order evidence. Ints and floats from parquet are bounded by their own types.
+_MAX_NUMERIC_STRING_DIGITS = 4000
+_MAX_NUMERIC_STRING_EXPONENT = 4000  # |exponent of the most significant digit|
+
+
+def _bounded_decimal(text: str) -> Decimal | None:
+    """Exact Decimal for a numeric string inside the bounded domain, else None.
+
+    `Decimal(text)` stores digits and exponent compactly without expanding, so the bound
+    checks are cheap; expansion to an exact Fraction happens only inside the bounds.
+    """
+    if not _NUMERIC_STRING_RE.fullmatch(text):
+        return None
+    dec = Decimal(text)
+    if len(dec.as_tuple().digits) > _MAX_NUMERIC_STRING_DIGITS:
+        return None
+    if dec != 0 and abs(dec.adjusted()) > _MAX_NUMERIC_STRING_EXPONENT:
+        return None
+    return dec
+
 
 def _play_id_numeric(play_id: Any) -> int | Fraction | None:
     """The single lossless numeric representation used by every ordering stage.
@@ -360,8 +384,9 @@ def _play_id_numeric(play_id: Any) -> int | Fraction | None:
     (`9007199254740993.0` and `9007199254740993e0` are the integer 9007199254740993, not
     a rounded float) and become an int when integral, else an exact Fraction. Python
     compares int and Fraction exactly, so every stage that orders or compares play IDs
-    through this function agrees. bool, bytes, NaN, ±infinity, and unparseable values
-    return None and are never order evidence.
+    through this function agrees. bool, bytes, NaN, ±infinity, unparseable values, and
+    numeric strings outside the bounded domain (see `_bounded_decimal`) return None and
+    are never order evidence.
     """
     if play_id is None or isinstance(play_id, bool):
         return None
@@ -370,9 +395,10 @@ def _play_id_numeric(play_id: Any) -> int | Fraction | None:
     if isinstance(play_id, float):
         return Fraction(play_id) if math.isfinite(play_id) else None
     if isinstance(play_id, str):
-        if not _NUMERIC_STRING_RE.fullmatch(play_id):
+        dec = _bounded_decimal(play_id)
+        if dec is None:
             return None
-        exact = Fraction(Decimal(play_id))
+        exact = Fraction(dec)
         return exact.numerator if exact.denominator == 1 else exact
     return None
 
@@ -466,6 +492,10 @@ def play_id_order_class(play_id: Any) -> str:
     if _play_id_numeric(play_id) is not None:
         return PLAY_ID_ORDER_FINITE
     if isinstance(play_id, str):
+        if _NUMERIC_STRING_RE.fullmatch(play_id):
+            # Numeric spelling outside the bounded domain (too many digits or too large a
+            # magnitude): an unknown order position, never expanded.
+            return PLAY_ID_ORDER_NON_NUMERIC
         # Outside the strict numeric grammar: an infinity spelling is non-finite; "nan",
         # whitespace, underscores, hex, or garbage is an unknown order position.
         try:
@@ -802,6 +832,7 @@ def locate_game(
     req_away = canon_team(request.away_team)
     matches: list[dict[str, Any]] = []
     matches_without_game_id = 0
+    matches_with_non_finite_game_id = 0
     same_teams_any_orientation = 0
     swapped_orientation = 0
     date_bases: set[str] = set()
@@ -821,6 +852,10 @@ def locate_game(
                 # Identity fields agree but the provider game ID is missing: this can
                 # never be certified, and it must not be silently dropped either.
                 matches_without_game_id += 1
+            elif _is_nan(game_id_value) or _is_non_finite(game_id_value):
+                # A NaN or ±infinity Float64 ID serializes, but it is no usable source
+                # identity: nothing may be scanned or certified under it.
+                matches_with_non_finite_game_id += 1
             else:
                 matches.append(rec)
 
@@ -829,9 +864,12 @@ def locate_game(
         "same_season_same_teams_any_orientation_or_date": same_teams_any_orientation,
         "swapped_home_away_on_requested_date": swapped_orientation,
         "matching_tuples_without_game_id": matches_without_game_id,
+        "matching_tuples_with_non_finite_game_id": matches_with_non_finite_game_id,
         "game_date_value_bases": sorted(date_bases),
     }
-    if matches_without_game_id:
+    if matches_without_game_id or matches_with_non_finite_game_id:
+        # Null, blank, NaN, or infinite provider IDs are all unusable identity; the
+        # diagnostics say which kind occurred, and no real match beside them is certified.
         location["status"] = "unresolved"
         location["reason"] = "matching_identity_without_game_id"
         return location
@@ -918,7 +956,9 @@ def load_game_rows(content: bytes, game_id: Any) -> tuple[list[dict[str, Any]], 
     # classification and possession sequencing; comparisons are NaN-aware. All JSON
     # shaping (bytes, NaN, infinities, dates) happens once at the output boundary.
     rows = [dict(row) for row in raw_rows]
-    rows.sort(key=_play_sort_key)
+    with _processing_stage("sort_game_rows"):
+        # Pure post-parse work: a defect here is a reader failure, never a source failure.
+        rows.sort(key=_play_sort_key)
     strategy = {
         "logical_scope": f"rows where game_id == {game_id!r}",
         "columns": "all source columns for the located game only; full-row content is "

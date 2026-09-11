@@ -1966,3 +1966,102 @@ def test_n2_drive_orderability_uses_the_shared_classifier(tmp_path):
         assert mod._play_id_numeric(r["provider_drive"]) == mod._play_id_numeric(
             f"{r['sequence_index'] + 9007199254740990}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of 7d55214 (PR #269): O1 unbounded numeric-string exponent,
+# O2 non-finite Float64 game_id certified as a match
+# ---------------------------------------------------------------------------
+
+
+def test_o1_numeric_strings_outside_the_bounded_domain_are_not_order_evidence():
+    n = mod._play_id_numeric
+    # Codex's case: a tiny string that would expand into a billion-digit integer.
+    assert n("1e999999999") is None
+    assert n("1e-999999999") is None
+    assert n("-1E+999999999") is None
+    assert n("0e999999999") == 0  # zero has no magnitude; it stays inside the domain
+    # The edges of the bounded domain are exact and inclusive.
+    assert n("1e4000") == 10**4000 and n("1e4001") is None
+    assert n("1e-4000") == mod.Fraction(1, 10**4000) and n("1e-4001") is None
+    assert n("9" * 4000) == int("9" * 4000) and n("9" * 4001) is None
+    assert n("1." + "0" * 3999) == 1 and n("1." + "0" * 4000) is None
+    # Outside the domain a numeric spelling is an unknown order position, never expanded.
+    assert mod.play_id_order_class("1e999999999") == "non_numeric"
+    assert mod.play_id_order_class("1e-999999999") == "non_numeric"
+    assert mod.play_id_order_class("1e4000") == "finite"
+    assert mod.play_id_order_class("inf") == "non_finite"  # not a numeric spelling
+
+
+def test_o1_out_of_domain_play_id_string_withholds_selection_promptly(tmp_path):
+    import time
+
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["play_id"] = str(int(r["play_id"]))
+    rows[10]["play_id"] = "1e999999999"  # inside HOME drive 4
+    path = write_parquet(tmp_path, rows)
+    started = time.monotonic()
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert time.monotonic() - started < 10
+    assert result["status"] == "read"
+    assert result["possession"]["play_id_non_numeric_rows"] == 1
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    assert selection["reason"] == "non_numeric_play_id_breaks_play_order"
+    assert result["events"]["status"] == "withheld"
+    assert json.loads(mod.dumps_bounded(result)[0])["status"] == "read"
+
+
+def test_o1_row_sort_is_a_bounded_processing_stage(tmp_path, monkeypatch):
+    assert "sort_game_rows" in mod.PROCESSING_STAGES
+    assert "sort_game_rows" not in mod.ENGINE_STAGES
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+
+    def broken(row):
+        raise RuntimeError("SYNTHETIC sort defect")
+
+    monkeypatch.setattr(mod, "_play_sort_key", broken)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "processing_failed"
+    assert result["rejection"] is None
+    assert result["failure"]["kind"] == "reader_processing_failure"
+    assert result["failure"]["stage"] == "sort_game_rows"
+    assert result["failure"]["parsed"] == "succeeded"
+    assert result["game"]["status"] == "matched"
+
+
+@pytest.mark.parametrize("bad_id", [float("nan"), float("inf"), float("-inf")])
+def test_o2_non_finite_game_id_is_never_certified(tmp_path, bad_id):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["game_id"] = bad_id
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "unresolved"
+    assert result["game"]["status"] == "unresolved"
+    assert result["game"]["reason"] == "matching_identity_without_game_id"
+    assert result["game"]["diagnostics"]["matching_tuples_with_non_finite_game_id"] == 1
+    assert result["game"]["diagnostics"]["matching_tuples_without_game_id"] == 0
+    assert result["game"]["observed"] is None
+    assert result["inventory"] is None and result["events"] is None
+    assert "_game_id_raw" not in result["game"]
+    json.loads(mod.dumps_bounded(result)[0])
+
+
+def test_o2_non_finite_twin_withholds_the_real_finite_match_too(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["game_id"] = 123.0
+    rows.append(play(99.0, HOME, 9.0, game_id=float("nan")))
+    path = write_parquet(tmp_path, rows)
+    result = run(path)
+    assert result["game"]["reason"] == "matching_identity_without_game_id"
+    assert result["game"]["diagnostics"]["matching_tuples_with_non_finite_game_id"] == 1
+    assert result["events"] is None
+    # A finite Float64 ID alone still matches with a typed predicate.
+    path = write_parquet(tmp_path, rows[:-1], name="finite.parquet")
+    result = run(path)
+    assert result["status"] == "read"
+    assert result["game"]["observed"]["game_id"] == 123.0
+    assert result["game"]["game_id_predicate"]["python_type"] == "float"
