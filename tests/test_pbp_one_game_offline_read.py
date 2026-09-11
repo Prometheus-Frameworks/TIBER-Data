@@ -989,3 +989,111 @@ def test_c2_argparse_usage_errors_exit_3_not_2(tmp_path):
     assert unknown_flag.returncode == 3
     helped = _cli(["--help"])
     assert helped.returncode == 0
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head re-review of 9b88311 (PR #269): D1 ordinal, D2 season, D3 bytes
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("ordinal", ["0", "-1"])
+def test_d1_non_positive_possession_ordinal_is_a_usage_error(tmp_path, ordinal):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    args = _cli_args(path, tmp_path / "out.json")[:-2]
+    proc = _cli(args + ["--possession-team", HOME, "--possession-ordinal", ordinal])
+    assert proc.returncode == 3
+    assert "positive integer" in proc.stderr
+    assert not (tmp_path / "out.json").exists()
+
+
+def test_d1_library_rejects_non_positive_ordinal_before_reading(tmp_path, monkeypatch):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    monkeypatch.setattr(mod, "verify_source_bytes", lambda *a, **k: pytest.fail("read"))
+    for bad in (0, -3, True):
+        with pytest.raises(ValueError):
+            run(path, possession=mod.PossessionRequest(HOME, bad))
+
+
+@pytest.mark.parametrize(
+    "season_value, expected",
+    [
+        (1999, "matched"), (1999.0, "matched"), ("1999", "matched"),
+        (1999.5, "unresolved"), (1998.999, "unresolved"), ("1999.0", "unresolved"),
+        (" 1999", "unresolved"), (True, "unresolved"), (None, "unresolved"),
+    ],
+)
+def test_d2_season_matches_only_exact_integral_values(tmp_path, season_value, expected):
+    rows = [dict(r, season=season_value) for r in alternating_game(DEFAULT_POSSESSIONS)]
+    path = write_parquet(tmp_path, rows)
+    result = run(path)
+    assert result["game"]["status"] == expected
+    if expected == "unresolved":
+        assert result["game"]["reason"] == "no_matching_game"
+
+
+def test_d2_season_matches_pure_states():
+    assert mod.season_matches(1999, 1999)
+    assert mod.season_matches(1999.0, 1999)
+    assert not mod.season_matches(1999.5, 1999)
+    assert not mod.season_matches(True, 1)
+    assert not mod.season_matches(float("nan"), 1999)
+    assert not mod.season_matches(object(), 1999)
+
+
+def test_d3_bytes_in_emitted_field_serialize_as_explicit_hex_envelope(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["desc"] = b"\x00\xffSYNTHETIC"
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["status"] == "read"
+    text = mod.dumps(result)  # must not raise
+    desc = result["events"]["rows"][0]["fields"]["desc"]
+    assert desc == {"bytes_hex": b"\x00\xffSYNTHETIC".hex(), "byte_length": 11}
+    assert '"bytes_hex"' in text
+
+
+def test_d3_jsonable_normalizes_every_supported_scalar():
+    import datetime as dt
+    from decimal import Decimal
+
+    out = mod._jsonable(
+        {
+            "b": b"\x01", "t": dt.time(1, 2, 3), "td": dt.timedelta(seconds=90),
+            "dec": Decimal("1.50"), "nan": float("nan"), "obj": object(),
+        }
+    )
+    assert out["b"] == {"bytes_hex": "01", "byte_length": 1}
+    assert out["t"] == "01:02:03"
+    assert out["td"] == {"timedelta_seconds": 90.0}
+    assert out["dec"] == {"decimal": "1.50"}
+    assert out["nan"] is None
+    assert out["obj"]["unsupported_type"] == "object"
+    json.dumps(out)
+
+
+def test_d3_serialization_failure_is_bounded_processing_failure_exit_5(tmp_path, monkeypatch):
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location(
+        "read_pbp_one_game_offline", REPO_ROOT / "scripts" / "read_pbp_one_game_offline.py"
+    )
+    assert spec is not None and spec.loader is not None
+    cli = module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["desc"] = b"\x00\xffSYNTHETIC"
+    path = write_parquet(tmp_path, rows)
+    monkeypatch.setattr(mod, "_jsonable", lambda v: v)  # simulate an unnormalized scalar
+    out = tmp_path / "out.json"
+    possession_args = ["--possession-team", HOME, "--possession-ordinal", "1"]
+    code = cli.main(_cli_args(path, out) + possession_args)
+    assert code == 5
+    assert not out.exists()
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    text, bounded = mod.dumps_bounded(result)
+    assert bounded["status"] == "processing_failed"
+    assert bounded["failure"]["stage"] == "serialize_result"
+    assert bounded["failure"]["kind"] == "reader_processing_failure"
+    assert json.loads(text)["failure"]["stage"] == "serialize_result"

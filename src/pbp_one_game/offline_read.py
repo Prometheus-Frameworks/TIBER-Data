@@ -49,7 +49,8 @@ import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, time, timedelta
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -162,6 +163,7 @@ ENGINE_STAGES: tuple[str, ...] = (
 PROCESSING_STAGES: tuple[str, ...] = (
     "locate_game_matching", "inventory_duplicates", "inventory_fields",
     "build_possession_sequence", "select_possession", "select_events", "assemble_result",
+    "serialize_result",
 )
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -247,6 +249,12 @@ class PossessionRequest:
     team: str
     ordinal: int  # 1-based: the team's N-th possession in play order
 
+    def validate(self) -> None:
+        if not self.team:
+            raise ValueError("requested possession team is required")
+        if isinstance(self.ordinal, bool) or not isinstance(self.ordinal, int) or self.ordinal < 1:
+            raise ValueError("requested possession ordinal must be a positive integer (1-based)")
+
 
 @dataclass(frozen=True, slots=True)
 class SourceDeclaration:
@@ -276,16 +284,48 @@ def _now_iso() -> str:
     return datetime.now(UTC).replace(microsecond=0).isoformat()
 
 
+def season_matches(value: Any, requested: int) -> bool:
+    """Exact season equality with no lossy coercion.
+
+    An int matches on equality; a float matches only if it is integral and equal; a
+    string matches only if it is exactly the decimal digits of the requested season.
+    Booleans, fractional values, and anything else never match.
+    """
+    if value is None or isinstance(value, bool):
+        return False
+    if isinstance(value, int):
+        return value == requested
+    if isinstance(value, float):
+        return not math.isnan(value) and value.is_integer() and int(value) == requested
+    if isinstance(value, str):
+        return value == str(requested)
+    return False
+
+
 def _jsonable(value: Any) -> Any:
-    if isinstance(value, float) and math.isnan(value):
-        return None
-    if isinstance(value, (datetime, date)):
+    """Normalize every scalar polars can hand back into a JSON-serializable value.
+
+    Raw values are preserved where JSON can carry them; bytes become an explicit hex
+    envelope rather than being dropped or stringified silently.
+    """
+    if value is None or isinstance(value, (bool, int, str)):
+        return value
+    if isinstance(value, float):
+        return None if math.isnan(value) else value
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        raw = bytes(value)
+        return {"bytes_hex": raw.hex(), "byte_length": len(raw)}
+    if isinstance(value, (datetime, date, time)):
         return value.isoformat()
+    if isinstance(value, timedelta):
+        return {"timedelta_seconds": value.total_seconds()}
+    if isinstance(value, Decimal):
+        return {"decimal": str(value)}
     if isinstance(value, (list, tuple)):
         return [_jsonable(v) for v in value]
     if isinstance(value, dict):
         return {str(k): _jsonable(v) for k, v in value.items()}
-    return value
+    return {"unsupported_type": type(value).__name__, "repr": repr(value)}
 
 
 def classify_value(row: dict[str, Any], column: str, columns: set[str]) -> str:
@@ -594,11 +634,7 @@ def locate_game(
     for rec in distinct:
         rec_date, basis = _normalize_date_value(rec.get("game_date"))
         date_bases.add(basis)
-        season = rec.get("season")
-        try:
-            season_ok = season is not None and int(season) == request.season
-        except (TypeError, ValueError):
-            season_ok = False
+        season_ok = season_matches(rec.get("season"), request.season)
         home = canon_team(rec.get("home_team"))
         away = canon_team(rec.get("away_team"))
         if season_ok and {home, away} == {req_home, req_away}:
@@ -1084,6 +1120,8 @@ def read_one_game(
     """Run the full offline path. Returns a result dict; never raises on rejection."""
     declaration = declaration or SourceDeclaration()
     request.validate()
+    if possession is not None:
+        possession.validate()
     source_path = Path(path)
     receipt = _base_receipt(
         supplied_path=str(path),
@@ -1209,3 +1247,15 @@ def _read_verified_content(
 
 def dumps(result: dict[str, Any]) -> str:
     return json.dumps(_jsonable(result), indent=2, sort_keys=True, allow_nan=False) + "\n"
+
+
+def dumps_bounded(result: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+    """Serialize a result; if serialization itself fails, return a bounded
+    `reader_processing_failure` at stage `serialize_result` instead of raising."""
+    try:
+        return dumps(result), result
+    except (TypeError, ValueError) as exc:
+        failed = _processing_failed(
+            result["receipt"], "serialize_result", f"{type(exc).__name__}: {exc}", None
+        )
+        return dumps(failed), failed

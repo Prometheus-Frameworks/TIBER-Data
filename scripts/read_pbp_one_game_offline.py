@@ -40,7 +40,7 @@ from src.pbp_one_game.offline_read import (  # noqa: E402
     GameRequest,
     PossessionRequest,
     SourceDeclaration,
-    dumps,
+    dumps_bounded,
     read_one_game,
 )
 
@@ -103,6 +103,13 @@ def main(argv: list[str] | None = None) -> int:
         if args.possession_team is not None
         else None
     )
+    if possession is not None:
+        try:
+            possession.validate()
+        except ValueError as exc:
+            # A non-positive ordinal is a malformed invocation, never source evidence.
+            print(f"invalid request: {exc}", file=sys.stderr)
+            return 3
     if args.out is not None and os.path.lexists(args.out):
         # Refuse any existing path (regular file, the input itself, a symlink or hardlink
         # alias of it, or a dangling symlink) before reading anything. Nothing is modified.
@@ -124,7 +131,7 @@ def main(argv: list[str] | None = None) -> int:
             published_at=args.published_at,
         ),
     )
-    text = dumps(result)
+    text, result = dumps_bounded(result)
     if result["status"] == "rejected":
         sys.stdout.write(text)
         return 2

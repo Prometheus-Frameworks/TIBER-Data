@@ -71,7 +71,10 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    preserved verbatim. Zero matches, multiple matching game IDs, one game ID with more
    than one invariant identity tuple, or any matching tuple whose provider `game_id` is
    null or empty (`matching_identity_without_game_id`, counted in diagnostics) is
-   `unresolved`; a missing game ID is never certified as a match. Swapped home/away on the requested
+   `unresolved`; a missing game ID is never certified as a match. Season equality is
+   exact with no lossy coercion: an int on equality, a float only when integral and
+   equal, a string only when it is exactly the requested season's digits; fractional,
+   boolean, padded, or otherwise invalid season values never match. Swapped home/away on the requested
    date is reported as a diagnostic count only and is never selected. Date timezone is
    reported as not stated by the source unless the source dtype carries one.
 4. **Lazy, bounded reads.** Both reads are `polars.scan_parquet` over the verified
@@ -124,15 +127,21 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    is never substituted for retrieval, ingestion, publication, or admission time.
    `lineage.status` is `unknown`, `admission.status` is `not_admitted`,
    `governance_status` is `ungoverned`, `canonical` is `false`. Reader revision is
-   recorded as `READER_VERSION` plus the SHA-256 of the reader module bytes.
+   recorded as `READER_VERSION` plus the SHA-256 of the reader module bytes. Every
+   scalar polars can return is normalized for JSON: bytes become an explicit
+   `{bytes_hex, byte_length}` envelope, time and timedelta and Decimal values become
+   labeled envelopes, NaN becomes null, and an unknown type is reported by name. If
+   serialization still fails, the CLI returns a bounded `reader_processing_failure` at
+   stage `serialize_result` (exit 5) instead of a traceback.
 10. **Source preservation.** The CLI never overwrites. `--out` is refused with exit 4 if
     any path already exists there (a regular file, the input itself, a symlink or
     hardlink alias of it, or a dangling symlink), checked before anything is read; the
     write itself uses exclusive creation (`O_CREAT|O_EXCL`), so a path that appears in
     between fails without truncating anything. Rejections and processing failures never
     write an output file. Malformed invocations (missing required flags, a non-integer
-    value, an unknown flag) exit 3 through an argparse error override, so exit 2 means
-    only a rejected source input.
+    value, an unknown flag, a possession ordinal below 1) exit 3, so exit 2 means only
+    a rejected source input. The possession ordinal is 1-based; a zero or negative
+    ordinal is a malformed invocation, never absent source evidence.
 
 The module imports no network, database, or application code; a test asserts that.
 
@@ -167,7 +176,11 @@ logic) reported as `reader_processing_failure` with its stage and never as
 `parse_failure`, with the CLI exiting 5 and writing nothing; the engine and processing
 stage vocabularies are disjoint and enforced; a matching identity tuple with a null,
 empty, or blank `game_id`, alone or alongside a real match, is unresolved and never
-certified; argparse usage errors exit 3 while `--help` exits 0;
+certified; argparse usage errors and a non-positive possession ordinal exit 3 while
+`--help` exits 0; season values of 1999, 1999.0, and "1999" match while 1999.5,
+1998.999, "1999.0", " 1999", true, and null do not; bytes in an emitted field serialize
+as a hex envelope and a forced serialization failure is a bounded exit-5 processing
+failure at stage `serialize_result`;
 wrong home/away/date/season and the real target request against a synthetic file are
 unresolved with no fallback; conflicting `game_date` or `home_team` inside one game is
 conflicting metadata while varying `time_of_day` or `week` is not; identical versus

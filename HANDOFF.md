@@ -312,7 +312,9 @@ Example:
   documentation and error-handling corrections) and the follow-up precheck finding
   R1 (parse_failure mislabeling), and the Codex exact-head review of `0ae4208` on
   PR #269 (C1: a matching tuple with a null game ID was certified; C2: argparse
-  usage errors exited 2). Owning repository is
+  usage errors exited 2), and the Codex re-review of `9b88311` (D1: non-positive
+  possession ordinal exited 0; D2: a fractional season matched by int truncation;
+  D3: a bytes field crashed serialization). Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
   (CLI), `tests/test_pbp_one_game_offline_read.py` (synthetic fixtures),
@@ -333,7 +335,7 @@ Example:
   source failure; requires
   explicit season/date/away/home; resolves exactly one game from the five invariant
   identity columns only, never certifies a match whose provider game ID is null or
-  empty, reporting event-varying and game-level descriptor values
+  empty or whose season is not exactly equal, reporting event-varying and game-level descriptor values
   without using them to reject; reads lazily with the game filter pushed into the
   parquet scan and discloses physical versus logical read scope; distinguishes
   absent/null/explicit-zero/value states and keeps a null play type unknown;
@@ -344,9 +346,11 @@ Example:
   the count; caps output at 40 events plus two boundaries per side with explicit
   truncation; never invents retrieval, publication, ingestion, or admission; and the
   CLI refuses to write over the input, any alias of it, or any existing path, and
-  routes malformed invocations to exit 3 so exit 2 means only source rejection.
-  Focused tests pass 71/71 and lint is clean under the repo ruff rules.
-- What is still missing: independent re-review of the head carrying the C1/C2
+  routes malformed invocations (including a non-positive possession ordinal) to
+  exit 3 so exit 2 means only source rejection, normalizes every polars scalar for
+  JSON, and bounds any residual serialization failure as a processing failure.
+  Focused tests pass 87/87 and lint is clean under the repo ruff rules.
+- What is still missing: independent re-review of the head carrying the D1–D3
   repairs; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any
