@@ -358,7 +358,11 @@ Example:
   and the Codex review of `542593f` (Q1: a List or Struct `game_id` matched and
   loaded but the emitted-event key count put the raw unhashable ID into a set and
   failed at `select_events`; the count now uses the same frozen grouping key as
-  duplicate inventory).
+  duplicate inventory), and the Codex review of `75797cb` (R1: an empty or
+  whitespace-only Binary `game_id` passed the blank check because `str(b"")` is the
+  non-empty text `b''`, so it was certified; blankness is now judged on the bytes'
+  own content. R2: duplicate-key reports emitted the frozen `game_id` key for list
+  or struct IDs; they now report the raw value as they already did for `play_id`).
   Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
@@ -404,9 +408,9 @@ Example:
   conflict check, with a cross-stage consistency test over a shared case set), withholds selection when a play ID is non-finite or non-numeric
   or a prefix drive is non-finite, and bounds any residual serialization failure as
   a processing failure.
-  Focused tests pass 180/180 and lint is clean under the repo ruff rules.
+  Focused tests pass 187/187 and lint is clean under the repo ruff rules.
 - What is still missing: independent exact-head re-review of the current branch head
-  (every repair commit through P1/P2 and the merge of main are pushed; the Q1
+  (every repair commit through Q1 and the merge of main are pushed; the R1/R2
   repair is local until assigned); operator assignment for any further repair push; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any

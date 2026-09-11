@@ -2198,3 +2198,73 @@ def test_q1_emitted_key_count_uses_the_shared_grouping_key():
     assert events["row_count"] == 2
     assert events["distinct_game_play_key_count"] == 1
     assert events["distinct_game_play_key_count"] == len({mod._grouping_key(r) for r in rows})
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of 75797cb (PR #269): R1 empty/blank Binary game_id certified,
+# R2 frozen game_id reported for duplicate keys
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("bad_id", [b"", b"   ", b"\t\n"])
+def test_r1_empty_or_blank_binary_game_id_is_never_certified(tmp_path, bad_id):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["game_id"] = bad_id
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "unresolved"
+    assert result["game"]["status"] == "unresolved"
+    assert result["game"]["reason"] == "matching_identity_without_game_id"
+    assert result["game"]["diagnostics"]["matching_tuples_without_game_id"] == 1
+    assert result["game"]["observed"] is None
+    assert result["inventory"] is None and result["events"] is None
+
+
+def test_r1_non_blank_binary_game_id_still_matches_with_a_typed_predicate(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["game_id"] = b"SYN_1999_01"
+    other = [dict(r, game_id=b"", home_team="SYD", away_team="SYC") for r in rows]
+    path = write_parquet(tmp_path, rows + other)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "read", result.get("rejection") or result.get("failure")
+    assert result["game"]["observed"]["game_id"] == {
+        "bytes_hex": b"SYN_1999_01".hex(), "byte_length": 11
+    }
+    assert result["game"]["game_id_predicate"]["python_type"] == "bytes"
+    assert result["inventory"]["keys"]["row_count"] == len(rows)  # the blank-ID game did not leak
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["events"]["status"] == "emitted"
+
+
+def test_r1_blank_check_judges_content_not_rendering():
+    blank = mod._game_id_blank
+    assert blank(None) and blank("") and blank("   ") and blank(b"") and blank(b" \t ")
+    assert blank(bytearray(b"  ")) and blank(memoryview(b""))
+    assert not blank(b"x") and not blank("x") and not blank(0) and not blank([])
+    assert not blank(b"b''")  # the literal text of a rendering is itself non-blank content
+
+
+@pytest.mark.parametrize("kind", ["list", "struct"])
+def test_r2_duplicate_key_reports_report_the_raw_game_id(tmp_path, kind):
+    game_id = [1999, 1] if kind == "list" else {"season": 1999, "n": 1}
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["game_id"] = game_id
+    rows.append(dict(rows[0]))  # identical duplicate of the first play
+    rows.append(dict(rows[1], yards_gained=99.0))  # conflicting duplicate of the second
+    path = write_parquet(tmp_path, rows)
+    result = run(path)
+    keys = result["inventory"]["keys"]
+    assert keys["identical_duplicate_keys"] == [
+        {"game_id": game_id, "play_id": 1.0, "occurrences": 2}
+    ]
+    assert len(keys["conflicting_duplicate_keys"]) == 1
+    conflict = keys["conflicting_duplicate_keys"][0]
+    assert conflict["game_id"] == game_id and conflict["play_id"] == 2.0
+    assert conflict["differing_columns"] == ["yards_gained"]
+    # No frozen-key sentinel or type tag reaches the output.
+    text = mod.dumps_bounded(result)[0]
+    assert "<seq>" not in text and "<map>" not in text and "<nan>" not in text
+    assert result["game"]["observed"]["game_id"] == game_id

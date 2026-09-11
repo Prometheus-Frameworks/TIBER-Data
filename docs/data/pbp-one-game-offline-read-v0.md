@@ -78,7 +78,8 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    `LA`→`LAR` canonicalization mirrors existing builders and raw source values are
    preserved verbatim. Zero matches, multiple matching game IDs, one game ID with more
    than one invariant identity tuple, or any matching tuple whose provider `game_id` is
-   null, empty, NaN, or ±infinity (`matching_identity_without_game_id`, with the null/blank
+   null, empty, whitespace-only (text or binary, judged on content, never on a `str()`
+   rendering), NaN, or ±infinity (`matching_identity_without_game_id`, with the null/blank
    and non-finite kinds counted separately in diagnostics) is
    `unresolved`; a missing or non-finite game ID is never certified as a match and no
    game scan runs under it. Season equality is
@@ -286,7 +287,10 @@ identity (counted as non-finite in diagnostics, no scan, no events) and a non-fi
 twin withholds a real finite match while a finite Float64 ID alone still matches with
 a typed predicate, and a List- or Struct-typed `game_id` matches, reads, resolves, and
 emits events with the distinct emitted-key count computed under the same frozen
-grouping key as duplicate inventory (value-equal list IDs are one key); a digest
+grouping key as duplicate inventory (value-equal list IDs are one key); an empty or
+whitespace-only Binary `game_id` is unusable identity like a blank string while a
+non-blank Binary ID still matches through a typed predicate; and duplicate-key reports
+carry the raw `game_id` (a list or struct stays itself, never a frozen key); a digest
 with a trailing or leading newline is a usage
 error before file access; negative byte counts and non-64-hex digests exit 3
 before file access while a well-formed wrong digest still exits 2; non-calendar dates

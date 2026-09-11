@@ -802,6 +802,22 @@ def _lazy_scan(content: bytes) -> Any:
     return pl.scan_parquet(io.BytesIO(content))
 
 
+def _game_id_blank(value: Any) -> bool:
+    """A null, empty, or whitespace-only provider game ID supplies no usable identity.
+
+    Text and binary values are checked on their own content (`b""` and `b"   "` are
+    blank, not the non-empty text `"b''"` that `str()` would render); every other type
+    is judged on its text rendering as before.
+    """
+    if value is None:
+        return True
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        return bytes(value).strip() == b""
+    if isinstance(value, str):
+        return value.strip() == ""
+    return str(value).strip() == ""
+
+
 def game_scan(content: bytes, game_id: Any) -> Any:
     """LazyFrame for exactly one game; the equality predicate is pushed into the scan.
 
@@ -877,7 +893,7 @@ def locate_game(
                 swapped_orientation += 1
         if season_ok and home == req_home and away == req_away and rec_date == request.game_date:
             game_id_value = rec.get("game_id")
-            if game_id_value is None or str(game_id_value).strip() == "":
+            if _game_id_blank(game_id_value):
                 # Identity fields agree but the provider game ID is missing: this can
                 # never be certified, and it must not be silently dropped either.
                 matches_without_game_id += 1
@@ -1016,7 +1032,7 @@ def inventory_duplicates(rows: list[dict[str, Any]]) -> dict[str, Any]:
         groups.setdefault(key, []).append(row)
     identical: list[dict[str, Any]] = []
     conflicting: list[dict[str, Any]] = []
-    for key, members in groups.items():
+    for members in groups.values():
         if len(members) < 2:
             continue
         first = members[0]
@@ -1025,10 +1041,12 @@ def inventory_duplicates(rows: list[dict[str, Any]]) -> dict[str, Any]:
             for column in set(first) | set(other):
                 if not _values_equal(first.get(column), other.get(column)):
                     differing.add(column)
-        # Report the raw play_id of the group (NaN stays NaN; the envelope is applied at
-        # the output boundary), never the internal canonical key.
+        # Report the raw game_id and play_id of the group (NaN stays NaN, a list stays a
+        # list; envelopes are applied at the output boundary), never the frozen key.
         entry = {
-            "game_id": key[0], "play_id": first.get("play_id"), "occurrences": len(members),
+            "game_id": first.get("game_id"),
+            "play_id": first.get("play_id"),
+            "occurrences": len(members),
         }
         if differing:
             entry["differing_columns"] = sorted(differing)
