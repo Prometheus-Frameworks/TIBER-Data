@@ -2148,3 +2148,53 @@ def test_p2_value_above_the_ceiling_withholds_selection(tmp_path, field):
     assert mod._play_id_numeric(
         result["possession"]["selection"]["selected_run"]["provider_drive"]
     ) == 10**4000
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of 542593f (PR #269): Q1 raw game_id in the emitted-key set
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("kind", ["list", "struct"])
+def test_q1_non_scalar_game_id_reads_and_emits_with_frozen_key_count(tmp_path, kind):
+    # Codex's case: a List(Int64) or Struct game_id matched and loaded, then failed at
+    # select_events because the raw ID went into a set. A parquet column has one type, so
+    # every row carries the non-scalar ID.
+    game_id = [1999, 1] if kind == "list" else {"season": 1999, "n": 1}
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["game_id"] = game_id
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "read", result.get("failure")
+    assert result["failure"] is None
+    assert result["game"]["status"] == "matched"
+    assert result["game"]["observed"]["game_id"] == game_id
+    expected_type = "list" if kind == "list" else "dict"
+    assert result["game"]["game_id_predicate"]["python_type"] == expected_type
+    assert result["inventory"]["keys"]["row_count"] == len(rows)
+    assert result["inventory"]["keys"]["distinct_game_play_key_count"] == len(rows)
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "resolved"
+    assert selection["selected_run"]["provider_drive"] == 4.0
+    events = result["events"]
+    assert events["status"] == "emitted"
+    assert events["row_count"] == 5
+    assert events["distinct_game_play_key_count"] == 5  # frozen key, same as inventory
+    assert all(e["game_id"] == game_id for e in events["rows"])
+    assert json.loads(mod.dumps_bounded(result)[0])["events"]["distinct_game_play_key_count"] == 5
+
+
+def test_q1_emitted_key_count_uses_the_shared_grouping_key():
+    # Two rows with value-equal list game IDs and value-equal float play IDs are one key
+    # under the shared rule, exactly as duplicate inventory counts them.
+    rows = [play(0.0, HOME, 2.0), play(-0.0, HOME, 2.0)]
+    rows[0]["game_id"], rows[1]["game_id"] = [0.0], [-0.0]
+    selection = {
+        "status": "resolved",
+        "selected_run": {"first_index": 0, "last_index": 1},
+    }
+    events = mod.select_events(rows, selection, {k: "x" for k in rows[0]})
+    assert events["row_count"] == 2
+    assert events["distinct_game_play_key_count"] == 1
+    assert events["distinct_game_play_key_count"] == len({mod._grouping_key(r) for r in rows})

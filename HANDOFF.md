@@ -354,7 +354,11 @@ Example:
   processing stage instead of withholding; the digit count and adjusted exponent are
   now derived from the compact spelling before any Decimal is built. P2: the bound
   was on the adjusted exponent, so `1.1e4000` counted as inside the documented
-  10**4000 ceiling; the ceiling and floor are now compared exactly and inclusively).
+  10**4000 ceiling; the ceiling and floor are now compared exactly and inclusively),
+  and the Codex review of `542593f` (Q1: a List or Struct `game_id` matched and
+  loaded but the emitted-event key count put the raw unhashable ID into a set and
+  failed at `select_events`; the count now uses the same frozen grouping key as
+  duplicate inventory).
   Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
@@ -400,9 +404,9 @@ Example:
   conflict check, with a cross-stage consistency test over a shared case set), withholds selection when a play ID is non-finite or non-numeric
   or a prefix drive is non-finite, and bounds any residual serialization failure as
   a processing failure.
-  Focused tests pass 177/177 and lint is clean under the repo ruff rules.
+  Focused tests pass 180/180 and lint is clean under the repo ruff rules.
 - What is still missing: independent exact-head re-review of the current branch head
-  (every repair commit through O1/O2 and the merge of main are pushed; the P1/P2
+  (every repair commit through P1/P2 and the merge of main are pushed; the Q1
   repair is local until assigned); operator assignment for any further repair push; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any

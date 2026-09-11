@@ -1408,7 +1408,9 @@ def select_events(
     emitted = window[:MAX_EVENT_ROWS]
     before = rows[max(0, first - MAX_BOUNDARY_EVENTS_PER_SIDE) : first]
     after = rows[last + 1 : last + 1 + MAX_BOUNDARY_EVENTS_PER_SIDE]
-    keys = {(r.get("game_id"), r.get("play_id")) for r in window}
+    # The same frozen (game_id, play_id) key as duplicate inventory: a List/Struct game
+    # ID or play ID counts instead of failing, and the count agrees with the inventory.
+    keys = {_grouping_key(r) for r in window}
     return {
         "status": "emitted",
         "reason": None,

@@ -284,7 +284,9 @@ order exactly, `0.9e-4000` is outside while `1e-4000` is inside); a NaN or infin
 Float64 `game_id` is unusable
 identity (counted as non-finite in diagnostics, no scan, no events) and a non-finite
 twin withholds a real finite match while a finite Float64 ID alone still matches with
-a typed predicate; a digest
+a typed predicate, and a List- or Struct-typed `game_id` matches, reads, resolves, and
+emits events with the distinct emitted-key count computed under the same frozen
+grouping key as duplicate inventory (value-equal list IDs are one key); a digest
 with a trailing or leading newline is a usage
 error before file access; negative byte counts and non-64-hex digests exit 3
 before file access while a well-formed wrong digest still exits 2; non-calendar dates
