@@ -15,7 +15,10 @@ spec.loader.exec_module(m)
 
 def test_replay_preserves_original_rows_and_only_adds_four():
     result = m.build()
-    assert result == json.loads((ROOT / m.OUTPUT_PATH).read_bytes())
+    # The original four-row replay remains an archived 72-row stage.
+    assert result == json.loads(subprocess.check_output(["git", "-C", str(ROOT), "show",
+        f"22e9843df74ced8f2856c6463c86b626a79683d1:{m.OUTPUT_PATH}"]))
+    assert result["records"] == json.loads((ROOT / m.OUTPUT_PATH).read_bytes())["records"][:72]
     original = json.loads(m.historical(m.OUTPUT_PATH))
     assert result["records"][:68] == original["records"]
     assert len(result["records"]) == 72
