@@ -325,7 +325,11 @@ Example:
   the Codex review of `b8ee0fd` (I1: NaN play IDs formed distinct grouping keys and
   bypassed the comparator; I2: a non-numeric play ID sorted last silently), and the
   Codex review of `84eabe9` (J1: a list- or struct-typed play ID crashed duplicate
-  grouping instead of reaching the unresolved path).
+  grouping instead of reaching the unresolved path), and the Codex review of the
+  merged head `874a96b` (K1: repr-based keys split value-equal non-scalars; K2:
+  nested NaN not compared recursively; K3: a non-scalar drive crashed occurrence
+  counting; K4: Int64 play IDs above 2**53 lost exact order through float; K5:
+  this handoff listed the already-pushed J1 commit as missing).
   Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
@@ -364,13 +368,15 @@ Example:
   exit 3 so exit 2 means only source rejection, normalizes every polars scalar for
   JSON including signed infinities and an explicit NaN envelope at the output
   boundary only (raw scalars including NaN are kept through NaN-aware duplicate
-  classification and possession processing, with NaN and unhashable play IDs
-  canonicalized only in the grouping key), withholds selection when a play ID is non-finite or non-numeric
+  classification and possession processing, with NaN and non-scalar play IDs and
+  drives canonicalized only in equality-consistent grouping keys, NaN-aware
+  equality applied recursively, and exact integer ordering for play IDs), withholds selection when a play ID is non-finite or non-numeric
   or a prefix drive is non-finite, and bounds any residual serialization failure as
   a processing failure.
-  Focused tests pass 138/138 and lint is clean under the repo ruff rules.
-- What is still missing: operator assignment to push the J1 repair commit, then
-  independent re-review of that head; an explicitly
+  Focused tests pass 150/150 and lint is clean under the repo ruff rules.
+- What is still missing: independent exact-head re-review of the current branch head
+  (every repair commit through J1 and the merge of main are pushed); operator
+  assignment for any further repair push; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any
   durable import, the database-enforced read-only verification of the deployed

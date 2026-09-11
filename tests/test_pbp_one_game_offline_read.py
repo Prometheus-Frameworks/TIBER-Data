@@ -1555,3 +1555,145 @@ def test_j1_hashable_key_part_pure_states():
     assert h({"a": 1}) == h({"a": 1})
     assert h([1]) != h((1,))  # type is part of the key
     hash(h([1])), hash(h({"a": 1}))  # both hashable
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of 874a96b (PR #269): K1 equality-consistent keys, K2 nested
+# NaN equality, K3 non-scalar drives, K4 exact integer ordering
+# ---------------------------------------------------------------------------
+
+
+def _nested_id_game(ids: list[Any]) -> list[dict[str, Any]]:
+    rows = []
+    for pid in ids:
+        row = play(0.0, AWAY, 1.0)
+        row["play_id"] = pid
+        rows.append(row)
+    return rows
+
+
+def test_k1_value_equal_lists_share_a_key_and_are_identical_duplicates(tmp_path):
+    path = write_parquet(tmp_path, _nested_id_game([[0.0], [-0.0]]))
+    keys = run(path)["inventory"]["keys"]
+    assert keys["distinct_game_play_key_count"] == 1
+    assert len(keys["identical_duplicate_keys"]) == 1
+    assert keys["conflicting_duplicate_keys"] == []
+
+
+def test_k1_value_equal_structs_share_a_key(tmp_path):
+    path = write_parquet(tmp_path, _nested_id_game([{"a": 0.0}, {"a": -0.0}]))
+    keys = run(path)["inventory"]["keys"]
+    assert keys["distinct_game_play_key_count"] == 1
+    assert len(keys["identical_duplicate_keys"]) == 1
+
+
+def test_k1_freeze_is_consistent_with_values_equal():
+    nan = float("nan")
+    cases = [
+        ([0.0], [-0.0], True), ([nan], [nan], True), ([nan], [None], False),
+        ([1, 2], [2, 1], False), ({"a": 1}, {"a": 1}, True), ({"a": nan}, {"a": nan}, True),
+        ({"a": [nan, 1.0]}, {"a": [nan, 1.0]}, True), ([1], (1,), False), (1, 1.0, True),
+    ]
+    for left, right, expected in cases:
+        assert mod._values_equal(left, right) is expected, (left, right)
+        assert (mod._freeze(left) == mod._freeze(right)) is expected, (left, right)
+        hash(mod._freeze(left)), hash(mod._freeze(right))
+
+
+def test_k2_nested_nan_rows_are_identical_duplicates(tmp_path):
+    nan = float("nan")
+    path = write_parquet(tmp_path, _nested_id_game([[nan, 1.0], [nan, 1.0]]))
+    keys = run(path)["inventory"]["keys"]
+    assert len(keys["identical_duplicate_keys"]) == 1
+    assert keys["conflicting_duplicate_keys"] == []
+
+
+def test_k2_nested_nan_versus_nested_null_is_a_conflict(tmp_path):
+    nan = float("nan")
+    path = write_parquet(tmp_path, _nested_id_game([[nan], [None]]))
+    keys = run(path)["inventory"]["keys"]
+    assert keys["identical_duplicate_keys"] == []
+    assert keys["distinct_game_play_key_count"] == 2  # different keys, so no group to conflict
+
+
+def test_k2_nested_nan_in_a_non_key_field_compares_recursively(tmp_path):
+    nan = float("nan")
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[0]["offense_players"] = [nan, 1.0]
+    rows.append(dict(rows[0]))
+    rows.append(dict(rows[0], offense_players=[nan, 2.0]))
+    path = write_parquet(tmp_path, rows)
+    keys = run(path)["inventory"]["keys"]
+    assert keys["identical_duplicate_keys"] == []
+    assert len(keys["conflicting_duplicate_keys"]) == 1
+    assert keys["conflicting_duplicate_keys"][0]["differing_columns"] == ["offense_players"]
+    assert keys["conflicting_duplicate_keys"][0]["occurrences"] == 3
+
+
+@pytest.mark.parametrize("kind", ["list", "struct"])
+def test_k3_non_scalar_drive_reaches_unresolved_path_with_inventory(tmp_path, kind):
+    # A parquet column has one type, so every drive is non-scalar in this fixture.
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        n = int(r["drive"])
+        r["drive"] = [n] if kind == "list" else {"n": n}
+        r["fixed_drive"] = None
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["status"] == "read", result.get("failure")
+    assert result["failure"] is None
+    assert result["inventory"]["keys"]["row_count"] == len(rows)
+    assert len(result["possession"]["runs"]) == 5  # non-scalar drives still bound runs
+    assert result["possession"]["selection"]["status"] == "unresolved"
+    assert result["possession"]["selection"]["reason"] == "provider_drive_not_orderable"
+    assert result["events"]["status"] == "withheld"
+    assert mod.dumps_bounded(result)[1]["status"] == "read"
+
+
+def test_k3_non_scalar_drive_occurrences_are_counted_by_frozen_key(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["drive"] = [int(r["drive"])]
+        r["fixed_drive"] = None
+    path = write_parquet(tmp_path, rows)
+    counts = mod.build_possession_sequence(
+        mod.load_game_rows(path.read_bytes(), SYN_GAME_ID)[0],
+        mod.inspect_schema(path.read_bytes()),
+    )["drive_occurrence_counts"]
+    assert all(v == 1 for v in counts.values()) and len(counts) == 5
+
+
+def test_k4_large_int64_play_ids_order_exactly(tmp_path):
+    rows = [
+        play(0.0, HOME, 2.0), play(0.0, AWAY, 1.0),
+    ]
+    rows[0]["play_id"] = 9007199254740993
+    rows[1]["play_id"] = 9007199254740992
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    ordered = [r["posteam"] for r in result["possession"]["runs"]]
+    assert ordered == [AWAY, HOME]  # 9007199254740992 (AWAY) sorts before ...993 (HOME)
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["events"]["rows"][0]["play_id"] == 9007199254740993
+
+
+def test_k4_large_integer_strings_order_exactly(tmp_path):
+    rows = [play(0.0, HOME, 2.0), play(0.0, AWAY, 1.0)]
+    rows[0]["play_id"] = "9007199254740993"
+    rows[1]["play_id"] = "9007199254740992"
+    path = write_parquet(tmp_path, rows)
+    result = run(path)
+    assert [r["posteam"] for r in result["possession"]["runs"]] == [AWAY, HOME]
+
+
+def test_k4_play_id_numeric_pure_states():
+    n = mod._play_id_numeric
+    assert n(9007199254740993) == 9007199254740993 and isinstance(n(9007199254740993), int)
+    assert n("9007199254740993") == 9007199254740993 and isinstance(n("9007199254740993"), int)
+    assert n(1.5) == 1.5 and n("1.5") == 1.5
+    assert n(True) is None and n(None) is None and n(float("nan")) is None
+    assert n(float("inf")) is None and n("inf") is None and n("nan") is None
+    assert n("oops") is None and n(b"1") is None and n([1]) is None
+    assert mod.play_id_order_class("nan") == "non_numeric"
+    assert mod.play_id_order_class("inf") == "non_finite"
+    assert mod.play_id_order_class("9007199254740993") == "finite"

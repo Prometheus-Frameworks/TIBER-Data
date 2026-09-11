@@ -326,10 +326,50 @@ def _is_non_finite(value: Any) -> bool:
 
 
 def _values_equal(left: Any, right: Any) -> bool:
-    """NaN-aware equality: two NaNs are equivalent; NaN is never equal to null or a number."""
+    """NaN-aware equality, applied recursively through lists and structs.
+
+    Two NaNs are equivalent (at any nesting depth); NaN is never equal to null or a
+    number. Sequences compare element-wise only when they are the same container type,
+    mirroring Python's own list/tuple inequality; structs compare by key set and value.
+    """
     if _is_nan(left) or _is_nan(right):
         return _is_nan(left) and _is_nan(right)
+    if isinstance(left, (list, tuple)) and isinstance(right, (list, tuple)):
+        if type(left) is not type(right) or len(left) != len(right):
+            return False
+        return all(_values_equal(a, b) for a, b in zip(left, right, strict=True))
+    if isinstance(left, dict) and isinstance(right, dict):
+        if left.keys() != right.keys():
+            return False
+        return all(_values_equal(left[k], right[k]) for k in left)
     return left == right
+
+
+def _play_id_numeric(play_id: Any) -> int | float | None:
+    """Exact numeric value of a finite play ID for ordering, or None.
+
+    Ints stay ints (no float rounding, so Int64 IDs above 2**53 keep their exact order),
+    finite floats stay floats, and numeric strings parse as int when integral and as a
+    finite float otherwise. Python compares int and float exactly, so mixed keys sort
+    correctly. bool, bytes, NaN, ±infinity, and unparseable values return None.
+    """
+    if play_id is None or isinstance(play_id, bool):
+        return None
+    if isinstance(play_id, int):
+        return play_id
+    if isinstance(play_id, float):
+        return play_id if math.isfinite(play_id) else None
+    if isinstance(play_id, str):
+        try:
+            return int(play_id)
+        except ValueError:
+            pass
+        try:
+            parsed = float(play_id)
+        except ValueError:
+            return None
+        return parsed if math.isfinite(parsed) else None
+    return None
 
 
 def validate_receipt_expectations(expected_bytes: int, expected_sha256: str) -> None:
@@ -418,21 +458,24 @@ def play_id_order_class(play_id: Any) -> str:
     if isinstance(play_id, bool) or not isinstance(play_id, (int, float, str)):
         # bytes and other types are never order evidence, even if float() would parse them.
         return PLAY_ID_ORDER_NON_NUMERIC
-    try:
-        value = float(play_id)
-    except (TypeError, ValueError):
-        return PLAY_ID_ORDER_NON_NUMERIC
-    if not math.isfinite(value):
-        return PLAY_ID_ORDER_NON_FINITE
-    return PLAY_ID_ORDER_FINITE
+    if _play_id_numeric(play_id) is not None:
+        return PLAY_ID_ORDER_FINITE
+    if isinstance(play_id, str):
+        # A string that parses only to ±infinity is non-finite; "nan" or garbage is unknown.
+        try:
+            parsed = float(play_id)
+        except ValueError:
+            return PLAY_ID_ORDER_NON_NUMERIC
+        return PLAY_ID_ORDER_NON_FINITE if math.isinf(parsed) else PLAY_ID_ORDER_NON_NUMERIC
+    return PLAY_ID_ORDER_NON_NUMERIC
 
 
-def _play_sort_key(row: dict[str, Any]) -> tuple[int, float]:
-    """Finite play IDs order the game; every other class carries no order and sorts last."""
-    play_id = row.get("play_id")
-    if play_id_order_class(play_id) != PLAY_ID_ORDER_FINITE:
-        return (1, 0.0)
-    return (0, float(play_id))
+def _play_sort_key(row: dict[str, Any]) -> tuple[int, int | float]:
+    """Finite play IDs order the game exactly; every other class sorts last."""
+    numeric = _play_id_numeric(row.get("play_id"))
+    if numeric is None:
+        return (1, 0)
+    return (0, numeric)
 
 
 class _NanKey:
@@ -447,16 +490,29 @@ class _NanKey:
 _NAN_KEY = _NanKey()
 
 
-def _hashable_key_part(value: Any) -> Any:
-    """Key-only representation: NaN shares one sentinel; unhashable values (list, struct)
-    are keyed by type and repr so grouping never fails. Row values are never altered."""
+def _freeze(value: Any) -> Any:
+    """Equality-consistent, hashable key form of a source value. Row values are never altered.
+
+    Two values receive the same frozen key exactly when `_values_equal` holds: NaN maps to
+    one sentinel at any depth, lists/tuples become typed tuples of frozen elements (so
+    [0.0] and [-0.0] share a key because 0.0 == -0.0, while a list and a tuple do not),
+    structs become sorted tuples of frozen items, and any residual unhashable value is
+    keyed by type and repr as a last resort.
+    """
     if _is_nan(value):
         return _NAN_KEY
+    if isinstance(value, (list, tuple)):
+        return ("<seq>", type(value).__name__, tuple(_freeze(v) for v in value))
+    if isinstance(value, dict):
+        return ("<map>", tuple(sorted((str(k), _freeze(v)) for k, v in value.items())))
     try:
         hash(value)
     except TypeError:
         return ("<unhashable>", type(value).__name__, repr(value))
     return value
+
+
+_hashable_key_part = _freeze
 
 
 def _grouping_key(row: dict[str, Any]) -> tuple[Any, Any]:
@@ -1049,7 +1105,8 @@ def build_possession_sequence(
         run["team_possession_ordinal"] = per_team[run["posteam"]]
     drive_occurrences: dict[Any, int] = {}
     for run in runs:
-        drive_value = run["provider_drive"]
+        # Frozen key so a non-scalar drive counts instead of crashing; the run keeps its raw value.
+        drive_value = _freeze(run["provider_drive"])
         drive_occurrences[drive_value] = drive_occurrences.get(drive_value, 0) + 1
     return {
         "basis": {
@@ -1118,14 +1175,13 @@ def select_possession(
     # The ordinal is a count over every earlier run (any team). Each of those runs must
     # itself be evidenced, or the count cannot be trusted. Conflicting duplicates that
     # disagree on team or drive are checked first because they can distort the count.
-    last_play = run["last_play_id"]
-    try:
-        conflicts = [
-            pid for pid in order_affecting_conflict_play_ids
-            if pid is not None and float(pid) <= float(last_play)
-        ]
-    except (TypeError, ValueError):
-        conflicts = list(order_affecting_conflict_play_ids)
+    last_numeric = _play_id_numeric(run["last_play_id"])
+    conflicts = []
+    for pid in order_affecting_conflict_play_ids:
+        pid_numeric = _play_id_numeric(pid)
+        # Exact comparison; anything not exactly orderable is treated as inside the prefix.
+        if pid_numeric is None or last_numeric is None or pid_numeric <= last_numeric:
+            conflicts.append(pid)
     if conflicts:
         return unresolved("conflicting_duplicate_in_prefix", run, affected_play_ids=conflicts)
     prefix = [r for r in sequence["runs"] if r["sequence_index"] <= run["sequence_index"]]
@@ -1134,11 +1190,15 @@ def select_possession(
         return unresolved("null_provider_drive_in_prefix", run, affected_runs=null_prefix)
     counts = sequence["drive_occurrence_counts"]
     non_contiguous = [
-        r["sequence_index"] for r in prefix if counts.get(str(r["provider_drive"]), 0) != 1
+        r["sequence_index"] for r in prefix
+        if counts.get(str(_freeze(r["provider_drive"])), 0) != 1
     ]
     if non_contiguous:
         return unresolved("provider_drive_not_contiguous", run, affected_runs=non_contiguous)
     try:
+        # bool is not a drive number; lists/structs/bytes raise TypeError or ValueError.
+        if any(isinstance(r["provider_drive"], bool) for r in prefix):
+            raise TypeError("bool is not a drive number")
         drive_values = [float(r["provider_drive"]) for r in prefix]
     except (TypeError, ValueError):
         return unresolved("provider_drive_not_orderable", run)
@@ -1151,12 +1211,12 @@ def select_possession(
         return unresolved("non_finite_provider_drive_in_prefix", run, affected_runs=non_finite)
     if any(earlier > later for earlier, later in zip(drive_values, drive_values[1:], strict=False)):
         return unresolved("provider_drive_order_non_monotone", run)
-    prefix_drives = {r["provider_drive"] for r in prefix}
+    prefix_drives = {_freeze(r["provider_drive"]) for r in prefix}
     foreign = [
         u for u in sequence["unattributed"]
         if u["index"] <= run["last_index"]
         and u["drive"] is not None
-        and u["drive"] not in prefix_drives
+        and _freeze(u["drive"]) not in prefix_drives
     ]
     if foreign:
         return unresolved(
