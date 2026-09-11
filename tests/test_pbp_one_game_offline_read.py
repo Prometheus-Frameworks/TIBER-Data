@@ -2065,3 +2065,86 @@ def test_o2_non_finite_twin_withholds_the_real_finite_match_too(tmp_path):
     assert result["status"] == "read"
     assert result["game"]["observed"]["game_id"] == 123.0
     assert result["game"]["game_id_predicate"]["python_type"] == "float"
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of fd31ffd (PR #269): P1 exponent spelling overflowed Decimal,
+# P2 magnitude ceiling enforced on the adjusted exponent instead of the exact value
+# ---------------------------------------------------------------------------
+
+
+def test_p1_absurd_exponent_spellings_are_bounded_before_decimal_construction():
+    n = mod._play_id_numeric
+    # Codex's case: passes the grammar, overflowed the decimal module's exponent range.
+    for text in ("1e9999999999999999999", "1e-9999999999999999999", "0.5E+" + "9" * 40):
+        assert n(text) is None, text
+        assert mod.play_id_order_class(text) == "non_numeric", text
+    assert n("0e9999999999999999999") == 0  # zero stays zero without touching Decimal
+    assert n("1e000000000000000000004000") == 10**4000  # leading exponent zeros are harmless
+
+
+@pytest.mark.parametrize("field", ["play_id", "drive"])
+def test_p1_absurd_exponent_in_source_withholds_instead_of_processing_failure(tmp_path, field):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r[field] = str(int(r[field]))
+        if field == "drive":
+            r["fixed_drive"] = None
+    for r in rows[:3]:
+        r[field] = "1e9999999999999999999"
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["status"] == "read", result.get("failure")
+    assert result["failure"] is None
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    expected = (
+        "non_numeric_play_id_breaks_play_order" if field == "play_id"
+        else "provider_drive_not_orderable"
+    )
+    assert selection["reason"] == expected
+    assert result["events"]["status"] == "withheld"
+
+
+def test_p2_magnitude_ceiling_and_floor_are_exact_and_inclusive():
+    n = mod._play_id_numeric
+    # Above the ceiling with the same adjusted exponent as the ceiling itself.
+    for text in ("1.1e4000", "9e4000", "9.99e4000", "10001e3996", "-1.1e4000"):
+        assert n(text) is None, text
+        assert mod.play_id_order_class(text) == "non_numeric", text
+    # Exactly at the ceiling, however spelled, is inside.
+    for text in ("1e4000", "0.1e4001", "10e3999", "10000e3996", "1.0e4000", "-1e4000"):
+        assert abs(n(text)) == 10**4000, text
+    # Below the floor with the same adjusted exponent as the floor itself.
+    for text in ("0.9e-4000", "9e-4001", "1e-4001"):
+        assert n(text) is None, text
+    for text in ("1e-4000", "10e-4001", "0.1e-3999"):
+        assert n(text) == mod.Fraction(1, 10**4000), text
+
+
+@pytest.mark.parametrize("field", ["play_id", "drive"])
+def test_p2_value_above_the_ceiling_withholds_selection(tmp_path, field):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r[field] = str(int(r[field]))
+        if field == "drive":
+            r["fixed_drive"] = None
+    for r in rows[3:7]:  # HOME drive 2
+        r[field] = "1.1e4000"
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["status"] == "read"
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    assert result["events"]["status"] == "withheld"
+    # The ceiling itself still orders exactly.
+    for r in rows[3:7]:
+        r[field] = "1e4000"
+    if field == "play_id":
+        return  # play IDs must stay unique and ascending; the drive case covers the ceiling
+    path = write_parquet(tmp_path, rows, name="ceiling.parquet")
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert mod._play_id_numeric(
+        result["possession"]["selection"]["selected_run"]["provider_drive"]
+    ) == 10**4000

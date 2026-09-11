@@ -117,8 +117,13 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    fractions of their binary value, and numeric strings are parsed exactly from their
    decimal spelling under a strict grammar (sign, digits, optional fraction, optional
    exponent; no whitespace, underscores, hex, or inf/nan spellings) inside a bounded
-   domain (at most 4000 significant digits and a decimal magnitude within 10**±4000;
-   a string such as `1e999999999` is never expanded and is an unknown order position),
+   domain: at most 4000 significant digits, and either zero or an absolute value in the
+   inclusive range 10**-4000 to 10**4000, compared exactly (`1e4000`, `0.1e4001`, and
+   `10e3999` are inside; `1.1e4000` and `9e4000` are outside). The digit count and the
+   exponent of the most significant digit are derived from the compact spelling before
+   any `Decimal` or `int` is constructed, so a string such as `1e999999999` or
+   `1e9999999999999999999` is never expanded and never overflows the decimal module;
+   it is an unknown order position,
    so `9007199254740993.0` and `9007199254740993e0` are the exact integer, never a
    rounded float. Python compares int and Fraction exactly, so mixed keys sort
    correctly. The sort itself runs inside the named processing stage `sort_game_rows`,
@@ -270,7 +275,13 @@ integral numeric-string drives order exactly; numeric strings outside the bounde
 domain (`1e999999999`, `1e-999999999`, more than 4000 digits) are unknown order
 positions that are never expanded, the domain edges (`1e4000`, 4000 digits) are exact,
 an out-of-domain play ID withholds selection promptly, and the row sort is the named
-processing stage `sort_game_rows`; a NaN or infinite Float64 `game_id` is unusable
+processing stage `sort_game_rows`; an exponent spelling that would overflow the decimal
+module (`1e9999999999999999999`) is bounded from the spelling alone and withholds as
+non-numeric for a play ID and as not orderable for a drive instead of failing a
+processing stage, and the magnitude bounds are exact and inclusive (`1.1e4000` and
+`9e4000` are outside and withhold, `1e4000`, `0.1e4001`, and `10e3999` are inside and
+order exactly, `0.9e-4000` is outside while `1e-4000` is inside); a NaN or infinite
+Float64 `game_id` is unusable
 identity (counted as non-finite in diagnostics, no scan, no events) and a non-finite
 twin withholds a real finite match while a finite Float64 ID alone still matches with
 a typed predicate; a digest

@@ -349,29 +349,58 @@ def _values_equal(left: Any, right: Any) -> bool:
 # Strict decimal grammar for a numeric play-ID string: optional sign, digits with an
 # optional fraction (or a bare fraction), optional exponent. No whitespace, underscores,
 # hex, or inf/nan spellings. Parsed exactly, never through float.
-_NUMERIC_STRING_RE = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?")
+_NUMERIC_STRING_RE = re.compile(
+    r"(?P<sign>[+-]?)(?:(?P<int>\d+)(?:\.(?P<frac>\d*))?|\.(?P<bare_frac>\d+))"
+    r"(?:[eE](?P<exp_sign>[+-]?)(?P<exp>\d+))?"
+)
 
 # Bounded numeric domain for numeric strings. The grammar alone is unbounded: a tiny
 # string such as "1e999999999" would expand into an integer with a billion digits and
-# hang the reader. A string whose significant digits or decimal magnitude exceed these
-# caps is outside the reader's bounded domain and is an unknown order position, never
-# order evidence. Ints and floats from parquet are bounded by their own types.
-_MAX_NUMERIC_STRING_DIGITS = 4000
-_MAX_NUMERIC_STRING_EXPONENT = 4000  # |exponent of the most significant digit|
+# hang the reader, and "1e9999999999999999999" overflows the decimal module's own
+# exponent range before anything is expanded. Every bound is therefore derived from the
+# COMPACT SPELLING (digit counts and the spelled exponent) before any Decimal or int is
+# constructed; the exact inclusive magnitude check runs only once the spelling proves
+# the value is representable. Outside the domain a string is an unknown order position,
+# never order evidence. Ints and floats from parquet are bounded by their own types.
+_MAX_NUMERIC_STRING_DIGITS = 4000  # significant (coefficient) digits, leading zeros dropped
+_MAX_NUMERIC_STRING_MAGNITUDE = Decimal("1e4000")  # inclusive ceiling on |value|
+_MIN_NUMERIC_STRING_MAGNITUDE = Decimal("1e-4000")  # inclusive floor on nonzero |value|
+_MAX_NUMERIC_STRING_ADJUSTED_EXPONENT = 4000  # any in-domain value has |adjusted| <= this
+_MAX_NUMERIC_STRING_EXPONENT_DIGITS = 12  # spelled exponent digits admitted to int()
 
 
 def _bounded_decimal(text: str) -> Decimal | None:
     """Exact Decimal for a numeric string inside the bounded domain, else None.
 
-    `Decimal(text)` stores digits and exponent compactly without expanding, so the bound
-    checks are cheap; expansion to an exact Fraction happens only inside the bounds.
+    Domain: at most 4000 significant digits, and either zero or an absolute value in the
+    inclusive range 10**-4000 ..= 10**4000. The digit count and the adjusted exponent are
+    computed from the spelling alone, so an absurd exponent never reaches `Decimal`;
+    the final magnitude comparison is exact (`1.1e4000` and `9e4000` are outside,
+    `1e4000`, `0.1e4001`, and `10e3999` are inside).
     """
-    if not _NUMERIC_STRING_RE.fullmatch(text):
+    match = _NUMERIC_STRING_RE.fullmatch(text)
+    if match is None:
         return None
-    dec = Decimal(text)
-    if len(dec.as_tuple().digits) > _MAX_NUMERIC_STRING_DIGITS:
+    int_part = match.group("int") or ""
+    frac_part = match.group("frac")
+    if frac_part is None:
+        frac_part = match.group("bare_frac") or ""
+    coefficient = (int_part + frac_part).lstrip("0")
+    if not coefficient:
+        return Decimal(0)  # zero at any spelled exponent has no magnitude
+    if len(coefficient) > _MAX_NUMERIC_STRING_DIGITS:
         return None
-    if dec != 0 and abs(dec.adjusted()) > _MAX_NUMERIC_STRING_EXPONENT:
+    exp_digits = (match.group("exp") or "0").lstrip("0") or "0"
+    if len(exp_digits) > _MAX_NUMERIC_STRING_EXPONENT_DIGITS:
+        return None
+    exponent = int(exp_digits) * (-1 if match.group("exp_sign") == "-" else 1)
+    # Exponent of the most significant digit, exactly as Decimal.adjusted() defines it.
+    adjusted = exponent - len(frac_part) + len(coefficient) - 1
+    if abs(adjusted) > _MAX_NUMERIC_STRING_ADJUSTED_EXPONENT:
+        return None
+    dec = Decimal(text)  # provably within the decimal module's exponent range
+    magnitude = abs(dec)
+    if magnitude > _MAX_NUMERIC_STRING_MAGNITUDE or magnitude < _MIN_NUMERIC_STRING_MAGNITUDE:
         return None
     return dec
 
