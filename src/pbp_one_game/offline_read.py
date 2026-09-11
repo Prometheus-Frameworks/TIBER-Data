@@ -146,6 +146,7 @@ NO_PLAY_STATUS_UNKNOWN_ABSENT = "unknown_absent_column"
 
 VALUE_STATUS_ABSENT = "absent_column"
 VALUE_STATUS_NULL = "null"
+VALUE_STATUS_NAN = "nan"
 VALUE_STATUS_FALSE_OR_ZERO = "explicit_false_or_zero"
 VALUE_STATUS_VALUE = "value"
 
@@ -227,7 +228,7 @@ class GameRequest:
     home_team: str
 
     def validate(self) -> None:
-        if not _DATE_RE.match(self.game_date):
+        if not _DATE_RE.fullmatch(self.game_date):
             raise ValueError("requested game_date must be YYYY-MM-DD")
         try:
             parsed = date.fromisoformat(self.game_date)
@@ -315,11 +316,20 @@ def season_matches(value: Any, requested: int) -> bool:
     return False
 
 
-def _nan_to_none(value: Any) -> Any:
-    """Internal scalar normalization: NaN becomes null; every other value stays raw."""
-    if isinstance(value, float) and math.isnan(value):
-        return None
-    return value
+def _is_nan(value: Any) -> bool:
+    return isinstance(value, float) and math.isnan(value)
+
+
+def _is_non_finite(value: Any) -> bool:
+    """True for ±infinity: a legal Float64 that carries no ordering evidence."""
+    return isinstance(value, float) and math.isinf(value)
+
+
+def _values_equal(left: Any, right: Any) -> bool:
+    """NaN-aware equality: two NaNs are equivalent; NaN is never equal to null or a number."""
+    if _is_nan(left) or _is_nan(right):
+        return _is_nan(left) and _is_nan(right)
+    return left == right
 
 
 def validate_receipt_expectations(expected_bytes: int, expected_sha256: str) -> None:
@@ -328,7 +338,8 @@ def validate_receipt_expectations(expected_bytes: int, expected_sha256: str) -> 
         raise ValueError("expected_bytes must be an integer byte count")
     if expected_bytes < 0:
         raise ValueError("expected_bytes must be a non-negative byte count")
-    if not isinstance(expected_sha256, str) or not _SHA256_RE.match(expected_sha256):
+    # fullmatch: a trailing newline must not slip past an end anchor.
+    if not isinstance(expected_sha256, str) or not _SHA256_RE.fullmatch(expected_sha256):
         raise ValueError("expected_sha256 must be exactly 64 hexadecimal characters")
 
 
@@ -342,7 +353,8 @@ def _jsonable(value: Any) -> Any:
         return value
     if isinstance(value, float):
         if math.isnan(value):
-            return None
+            # A source NaN is not a source null; keep the distinction in the output.
+            return {"float_nan": True}
         if math.isinf(value):
             # Legal Float64 values JSON cannot carry; kept distinct from finite, NaN, null.
             return {"float_infinity": "+" if value > 0 else "-"}
@@ -368,8 +380,10 @@ def classify_value(row: dict[str, Any], column: str, columns: set[str]) -> str:
     if column not in columns:
         return VALUE_STATUS_ABSENT
     value = row.get(column)
-    if value is None or (isinstance(value, float) and math.isnan(value)):
+    if value is None:
         return VALUE_STATUS_NULL
+    if _is_nan(value):
+        return VALUE_STATUS_NAN
     if isinstance(value, bool):
         return VALUE_STATUS_FALSE_OR_ZERO if value is False else VALUE_STATUS_VALUE
     if isinstance(value, (int, float)) and value == 0:
@@ -390,8 +404,9 @@ def classify_no_play(row: dict[str, Any], columns: set[str]) -> str:
 
 
 def _play_sort_key(row: dict[str, Any]) -> tuple[int, float]:
+    """Finite play IDs order the game; null, NaN, and ±infinity carry no order and sort last."""
     play_id = row.get("play_id")
-    if play_id is None or (isinstance(play_id, float) and math.isnan(play_id)):
+    if play_id is None or _is_nan(play_id) or _is_non_finite(play_id):
         return (1, 0.0)
     try:
         return (0, float(play_id))
@@ -411,7 +426,7 @@ def _normalize_date_value(value: Any) -> tuple[str | None, str]:
     if isinstance(value, date):
         return value.isoformat(), "date"
     text = str(value)
-    if _DATE_RE.match(text):
+    if _DATE_RE.fullmatch(text):
         return text, "string_exact"
     return text, "string_non_iso_date"
 
@@ -758,11 +773,10 @@ def load_game_rows(content: bytes, game_id: str) -> tuple[list[dict[str, Any]], 
         plan = lazy.explain()
         frame = lazy.collect()
         raw_rows = frame.to_dicts()
-    # Keep hashable, comparable raw scalars for duplicate classification and possession
-    # sequencing. Only NaN is normalized here (to null) because NaN != NaN would make
-    # identical rows look conflicting. All other JSON shaping (bytes, infinities, dates)
-    # happens once at the output boundary in dumps().
-    rows = [{k: _nan_to_none(v) for k, v in row.items()} for row in raw_rows]
+    # Keep raw source scalars (including NaN, which stays distinct from null) for duplicate
+    # classification and possession sequencing; comparisons are NaN-aware. All JSON
+    # shaping (bytes, NaN, infinities, dates) happens once at the output boundary.
+    rows = [dict(row) for row in raw_rows]
     rows.sort(key=_play_sort_key)
     strategy = {
         "logical_scope": f"rows where game_id == {game_id!r}",
@@ -786,7 +800,8 @@ def inventory_duplicates(rows: list[dict[str, Any]]) -> dict[str, Any]:
     null_key_rows = 0
     for row in rows:
         key = (row.get("game_id"), row.get("play_id"))
-        if key[0] is None or key[1] is None:
+        if key[0] is None or key[1] is None or _is_nan(key[1]):
+            # A NaN play ID is a missing key too; it is never a usable duplicate key.
             null_key_rows += 1
         groups.setdefault(key, []).append(row)
     identical: list[dict[str, Any]] = []
@@ -798,7 +813,7 @@ def inventory_duplicates(rows: list[dict[str, Any]]) -> dict[str, Any]:
         differing: set[str] = set()
         for other in members[1:]:
             for column in set(first) | set(other):
-                if first.get(column) != other.get(column):
+                if not _values_equal(first.get(column), other.get(column)):
                     differing.add(column)
         entry = {"game_id": key[0], "play_id": key[1], "occurrences": len(members)}
         if differing:
@@ -839,13 +854,19 @@ def inventory_fields(rows: list[dict[str, Any]], schema: dict[str, str]) -> dict
             if column not in columns:
                 report[column] = {"status": "absent", "dtype": None}
                 continue
-            counts = {VALUE_STATUS_NULL: 0, VALUE_STATUS_FALSE_OR_ZERO: 0, VALUE_STATUS_VALUE: 0}
+            counts = {
+                VALUE_STATUS_NULL: 0,
+                VALUE_STATUS_NAN: 0,
+                VALUE_STATUS_FALSE_OR_ZERO: 0,
+                VALUE_STATUS_VALUE: 0,
+            }
             for row in rows:
                 counts[classify_value(row, column, columns)] += 1
             report[column] = {
                 "status": "present",
                 "dtype": schema[column],
                 "null_rows": counts[VALUE_STATUS_NULL],
+                "nan_rows": counts[VALUE_STATUS_NAN],
                 "explicit_false_or_zero_rows": counts[VALUE_STATUS_FALSE_OR_ZERO],
                 "value_rows": counts[VALUE_STATUS_VALUE],
             }
@@ -920,11 +941,17 @@ def build_possession_sequence(
     runs: list[dict[str, Any]] = []
     unattributed: list[dict[str, Any]] = []
     play_id_null_rows = 0
+    play_id_non_finite_rows = 0
     for index, row in enumerate(rows):
-        if row.get("play_id") is None:
+        play_id = row.get("play_id")
+        if play_id is None or _is_nan(play_id):
             play_id_null_rows += 1
+        elif _is_non_finite(play_id):
+            play_id_non_finite_rows += 1
         posteam = canon_team(row.get("posteam")) if "posteam" in columns else None
         drive = row.get(drive_column) if drive_column else None
+        if _is_nan(drive):
+            drive = None  # a NaN drive is a missing drive number, not a drive
         if posteam is None:
             unattributed.append({"index": index, "play_id": row.get("play_id"), "drive": drive})
             continue
@@ -957,7 +984,8 @@ def build_possession_sequence(
         drive_occurrences[drive_value] = drive_occurrences.get(drive_value, 0) + 1
     return {
         "basis": {
-            "order": "rows sorted by play_id ascending (null play_id sorts last)",
+            "order": "rows sorted by finite play_id ascending; null, NaN, and non-finite "
+            "play_id carry no order and sort last",
             "run_rule": "maximal consecutive run of identical non-null posteam and identical "
             "provider drive value",
             "drive_column_used": drive_column,
@@ -969,6 +997,7 @@ def build_possession_sequence(
         "unattributed_rows": len(unattributed),
         "unattributed": unattributed,
         "play_id_null_rows": play_id_null_rows,
+        "play_id_non_finite_rows": play_id_non_finite_rows,
         "runs": runs,
         "drive_occurrence_counts": {str(k): v for k, v in drive_occurrences.items()},
     }
@@ -1000,6 +1029,9 @@ def select_possession(
         return unresolved("no_provider_drive_column")
     if sequence["play_id_null_rows"]:
         return unresolved("null_play_id_breaks_play_order")
+    if sequence["play_id_non_finite_rows"]:
+        # ±infinity serializes, but it is no evidence of a position in the game order.
+        return unresolved("non_finite_play_id_breaks_play_order")
     candidates = [r for r in sequence["runs"] if r["posteam"] == team]
     if request.ordinal < 1 or request.ordinal > len(candidates):
         return unresolved(
@@ -1037,6 +1069,13 @@ def select_possession(
         drive_values = [float(r["provider_drive"]) for r in prefix]
     except (TypeError, ValueError):
         return unresolved("provider_drive_not_orderable", run)
+    non_finite = [
+        r["sequence_index"] for r, v in zip(prefix, drive_values, strict=True)
+        if not math.isfinite(v)
+    ]
+    if non_finite:
+        # A serializable infinity is not a football drive ordinal.
+        return unresolved("non_finite_provider_drive_in_prefix", run, affected_runs=non_finite)
     if any(earlier > later for earlier, later in zip(drive_values, drive_values[1:], strict=False)):
         return unresolved("provider_drive_order_non_monotone", run)
     prefix_drives = {r["provider_drive"] for r in prefix}
@@ -1246,6 +1285,7 @@ def _read_verified_content(
             "basis": sequence["basis"],
             "unattributed_rows": sequence["unattributed_rows"],
             "play_id_null_rows": sequence["play_id_null_rows"],
+            "play_id_non_finite_rows": sequence["play_id_non_finite_rows"],
             "runs": compact_runs,
             "selection": None,
         }

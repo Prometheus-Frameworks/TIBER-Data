@@ -62,8 +62,9 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
 3. **Explicit game request.** Season, date (`YYYY-MM-DD`, a real zero-padded calendar
    date; `1999-99-99` or `2026-02-30` is a usage error before any file access), away
    team, home team. The expected byte count must be a non-negative integer and the
-   expected digest exactly 64 hexadecimal characters; a malformed expectation is a usage
-   error (exit 3), never a source rejection. The away and home codes must differ after
+   expected digest exactly 64 hexadecimal characters matched against the full string, so
+   a trailing newline is rejected; a malformed expectation is a usage error (exit 3),
+   never a source rejection. The away and home codes must differ after
    canonicalization, so an alias pair such as
    `LA` / `LAR` cannot describe an impossible same-team game; that is rejected before
    any file access.
@@ -114,7 +115,10 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    duplicate affecting team or drive at or before the selected run's last play; every
    prefix run has a non-null, contiguous (occurs once), non-decreasing provider drive;
    no unattributed (null `posteam`) row before the end of the selection carries a drive
-   value that no prefix run accounts for; and no null `play_id` breaks ordering. Neutral
+   value that no prefix run accounts for; no null, NaN, or non-finite `play_id` breaks
+   ordering (±infinity serializes but is no evidence of a position in the game order);
+   and no prefix run carries a non-finite provider drive (a NaN drive is treated as a
+   missing drive number, an infinite one as unresolvable ordering). Neutral
    administrative rows (null `posteam` with a null drive, or a drive already in the
    prefix) do not create possessions and do not block selection. Every unresolved case
    returns a typed reason and the affected runs or play IDs, keeps all runs in the
@@ -135,14 +139,15 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    `lineage.status` is `unknown`, `admission.status` is `not_admitted`,
    `governance_status` is `ungoverned`, `canonical` is `false`. Reader revision is
    recorded as `READER_VERSION` plus the SHA-256 of the reader module bytes. Internally,
-   rows keep raw hashable scalars (only NaN becomes null, so identical rows compare
-   equal) through duplicate classification and possession sequencing; JSON shaping
-   happens once at the output boundary. There, every scalar polars can return is
-   normalized: bytes become an explicit
+   rows keep raw source scalars, NaN included, through duplicate classification and
+   possession sequencing; duplicate comparison is NaN-aware (two NaNs are equivalent,
+   NaN never equals null or a number), so a NaN-versus-null disagreement is a conflict.
+   Field inventories count `nan_rows` separately from `null_rows`. JSON shaping happens
+   once at the output boundary. There, every scalar polars can return is normalized: bytes become an explicit
    `{bytes_hex, byte_length}` envelope, time and timedelta and Decimal values become
-   labeled envelopes, NaN becomes null, positive and negative infinity become signed
-   `{float_infinity}` envelopes distinct from finite, NaN, and null, and an unknown type
-   is reported by name. If
+   labeled envelopes, NaN becomes an explicit `{float_nan: true}` envelope distinct from
+   null, positive and negative infinity become signed `{float_infinity}` envelopes
+   distinct from finite, NaN, and null, and an unknown type is reported by name. If
    serialization still fails, the CLI returns a bounded `reader_processing_failure` at
    stage `serialize_result` (exit 5) instead of a traceback.
 10. **Source preservation.** The CLI never overwrites. `--out` is refused with exit 4 if
@@ -196,8 +201,12 @@ failure at stage `serialize_result`; a request whose away and home codes canonic
 one team (`LA`/`LAR`) is rejected before reading while a real alias match still
 resolves; positive and negative infinity serialize as signed envelopes and stay distinct
 from finite, NaN, and null; an infinite `play_id` or `drive` is classified and sequenced
-on its raw value and enveloped only in the output; identical rows containing NaN are
-identical duplicates, not conflicts; negative byte counts and non-64-hex digests exit 3
+on its raw value and enveloped only in the output, while an infinite `play_id` or an
+infinite provider drive in the counting prefix leaves selection unresolved with no event
+sample and a NaN drive is treated as missing; identical rows containing NaN are
+identical duplicates while a NaN-versus-null disagreement is a conflict, NaN is counted
+and emitted distinct from null, and a NaN `play_id` is a null key; a digest with a
+trailing or leading newline is a usage error before file access; negative byte counts and non-64-hex digests exit 3
 before file access while a well-formed wrong digest still exits 2; non-calendar dates
 exit 3 while a leap day validates;
 wrong home/away/date/season and the real target request against a synthetic file are

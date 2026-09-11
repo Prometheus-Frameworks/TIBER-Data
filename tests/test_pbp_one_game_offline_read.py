@@ -1068,7 +1068,7 @@ def test_d3_jsonable_normalizes_every_supported_scalar():
     assert out["t"] == "01:02:03"
     assert out["td"] == {"timedelta_seconds": 90.0}
     assert out["dec"] == {"decimal": "1.50"}
-    assert out["nan"] is None
+    assert out["nan"] == {"float_nan": True}
     assert out["obj"]["unsupported_type"] == "object"
     json.dumps(out)
 
@@ -1168,7 +1168,7 @@ def test_e2_jsonable_keeps_infinity_nan_null_and_finite_distinct():
     assert out == {
         "p": {"float_infinity": "+"},
         "n": {"float_infinity": "-"},
-        "nan": None,
+        "nan": {"float_nan": True},
         "z": 0.0,
         "none": None,
     }
@@ -1209,7 +1209,7 @@ def test_g1_infinite_key_values_are_processed_then_enveloped_at_output(tmp_path,
         assert runs[-1]["provider_drive"] == {"float_infinity": sign}
 
 
-def test_g1_internal_rows_keep_raw_scalars_and_only_nan_is_normalized(tmp_path):
+def test_g1_internal_rows_keep_raw_scalars_including_nan(tmp_path):
     rows = alternating_game(DEFAULT_POSSESSIONS)
     rows[0]["yards_gained"] = float("nan")
     rows[1]["yards_gained"] = float("inf")
@@ -1217,7 +1217,8 @@ def test_g1_internal_rows_keep_raw_scalars_and_only_nan_is_normalized(tmp_path):
     path = write_parquet(tmp_path, rows)
     content = path.read_bytes()
     loaded, _ = mod.load_game_rows(content, SYN_GAME_ID)
-    assert loaded[0]["yards_gained"] is None
+    nan_value = loaded[0]["yards_gained"]
+    assert isinstance(nan_value, float) and nan_value != nan_value  # raw NaN, not null
     assert loaded[1]["yards_gained"] == float("inf")
     assert loaded[2]["desc"] == b"\x01SYNTHETIC"
     assert all(isinstance(r["play_id"], float) for r in loaded)
@@ -1290,4 +1291,119 @@ def test_g3_leap_day_is_a_valid_calendar_date():
     with pytest.raises(ValueError):
         mod.GameRequest(
             season=2023, game_date="2023-02-29", away_team=AWAY, home_team=HOME
+        ).validate()
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of d77facb (PR #269): H1 non-finite play_id, H2 non-finite
+# drive, H3 NaN versus null, H4 trailing-newline digest
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("value", [float("inf"), float("-inf")])
+def test_h1_non_finite_play_id_withholds_selection_and_events(tmp_path, value):
+    # Codex's case: the infinite play ID belongs to the requested team's second drive.
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[10]["play_id"] = value  # a play inside HOME drive 4
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "read"
+    assert result["possession"]["play_id_non_finite_rows"] == 1
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    assert selection["reason"] == "non_finite_play_id_breaks_play_order"
+    assert result["events"]["status"] == "withheld"
+    assert result["events"]["rows"] == []
+    text, bounded = mod.dumps_bounded(result)
+    assert bounded["status"] == "read"
+
+
+@pytest.mark.parametrize("value", [float("inf"), float("-inf")])
+def test_h2_non_finite_drive_in_prefix_withholds_selection(tmp_path, value):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        if r["drive"] == 2.0:
+            r["drive"] = value
+            r["fixed_drive"] = value
+    path = write_parquet(tmp_path, rows)
+    for ordinal in (1, 2):
+        result = run(path, possession=mod.PossessionRequest(HOME, ordinal))
+        selection = result["possession"]["selection"]
+        assert selection["status"] == "unresolved", ordinal
+        assert selection["reason"] == "non_finite_provider_drive_in_prefix"
+        assert selection["affected_runs"] == [2]
+        assert result["events"]["status"] == "withheld"
+    # An away possession before the infinite drive is still evidenced.
+    assert run(path, possession=mod.PossessionRequest(AWAY, 1))["possession"]["selection"][
+        "status"
+    ] == "resolved"
+
+
+def test_h2_nan_drive_is_treated_as_missing_not_as_a_drive(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        if r["drive"] == 4.0:
+            r["drive"] = float("nan")
+            r["fixed_drive"] = float("nan")
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["selection"]["reason"] == "null_provider_drive_in_possession"
+    assert len(result["possession"]["runs"]) == 5  # NaN rows did not each become a run
+
+
+def test_h3_nan_versus_null_in_a_duplicate_is_a_conflict_not_identical(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[0]["yards_gained"] = float("nan")
+    rows.append(dict(rows[0], yards_gained=None))
+    path = write_parquet(tmp_path, rows)
+    keys = run(path)["inventory"]["keys"]
+    assert keys["identical_duplicate_keys"] == []
+    assert len(keys["conflicting_duplicate_keys"]) == 1
+    assert keys["conflicting_duplicate_keys"][0]["differing_columns"] == ["yards_gained"]
+
+
+def test_h3_nan_is_counted_and_emitted_distinct_from_null(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[0]["yards_gained"] = float("nan")
+    rows[1]["yards_gained"] = None
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(AWAY, 1))
+    field = result["inventory"]["fields"]["inventoried_families"]["event_outcome"]["yards_gained"]
+    assert field["nan_rows"] == 1 and field["null_rows"] == 1
+    emitted = json.loads(mod.dumps(result))["events"]["rows"]
+    by_id = {r["play_id"]: r["fields"]["yards_gained"] for r in emitted}
+    assert by_id[1.0] == {"float_nan": True}
+    assert by_id[2.0] is None
+
+
+def test_h3_values_equal_is_nan_aware():
+    nan = float("nan")
+    assert mod._values_equal(nan, nan)
+    assert not mod._values_equal(nan, None)
+    assert not mod._values_equal(None, nan)
+    assert not mod._values_equal(nan, 0.0)
+    assert mod._values_equal(None, None)
+    assert mod._values_equal(1.0, 1.0)
+
+
+def test_h3_nan_play_id_is_a_null_key(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[3]["play_id"] = float("nan")
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["inventory"]["keys"]["null_key_rows"] == 1
+    assert result["possession"]["selection"]["reason"] == "null_play_id_breaks_play_order"
+
+
+@pytest.mark.parametrize("digest", ["0" * 64 + "\n", "0" * 64 + "\r\n", "\n" + "0" * 64])
+def test_h4_digest_with_newline_is_a_usage_error_before_file_access(
+    tmp_path, monkeypatch, digest
+):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    monkeypatch.setattr(mod, "verify_source_bytes", lambda *a, **k: pytest.fail("read"))
+    with pytest.raises(ValueError):
+        mod.read_one_game(path=path, expected_bytes=10, expected_sha256=digest, request=REQ)
+    with pytest.raises(ValueError):
+        mod.GameRequest(
+            season=SYN_SEASON, game_date=SYN_DATE + "\n", away_team=AWAY, home_team=HOME
         ).validate()
