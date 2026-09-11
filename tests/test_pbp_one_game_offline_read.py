@@ -1097,3 +1097,77 @@ def test_d3_serialization_failure_is_bounded_processing_failure_exit_5(tmp_path,
     assert bounded["failure"]["stage"] == "serialize_result"
     assert bounded["failure"]["kind"] == "reader_processing_failure"
     assert json.loads(text)["failure"]["stage"] == "serialize_result"
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of e3b5c6b (PR #269): E1 alias same-team request, E2 infinities
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("away, home", [("LA", "LAR"), ("LAR", "LA"), ("LA", "LA")])
+def test_e1_alias_pair_that_canonicalizes_to_one_team_is_rejected_before_reading(
+    tmp_path, monkeypatch, away, home
+):
+    rows = [
+        dict(r, home_team=home, away_team=away) for r in alternating_game(DEFAULT_POSSESSIONS)
+    ]
+    path = write_parquet(tmp_path, rows)
+    monkeypatch.setattr(mod, "verify_source_bytes", lambda *a, **k: pytest.fail("read"))
+    request = mod.GameRequest(
+        season=SYN_SEASON, game_date=SYN_DATE, away_team=away, home_team=home
+    )
+    with pytest.raises(ValueError, match="canonicalization"):
+        run(path, request=request)
+
+
+def test_e1_cli_alias_pair_is_a_usage_error(tmp_path):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    args = _cli_args(path, tmp_path / "out.json")
+    args[args.index("--away") + 1] = "LA"
+    args[args.index("--home") + 1] = "LAR"
+    proc = _cli(args)
+    assert proc.returncode == 3
+    assert "canonicalization" in proc.stderr
+    assert not (tmp_path / "out.json").exists()
+
+
+def test_e1_distinct_teams_through_alias_still_match(tmp_path):
+    rows = [dict(r, home_team="LA") for r in alternating_game(DEFAULT_POSSESSIONS)]
+    for r in rows:
+        if r["posteam"] == HOME:
+            r["posteam"] = "LA"
+    path = write_parquet(tmp_path, rows)
+    request = mod.GameRequest(
+        season=SYN_SEASON, game_date=SYN_DATE, away_team=AWAY, home_team="LAR"
+    )
+    assert run(path, request=request)["game"]["status"] == "matched"
+
+
+@pytest.mark.parametrize("value, sign", [(float("inf"), "+"), (float("-inf"), "-")])
+def test_e2_infinite_floats_serialize_as_signed_envelopes(tmp_path, value, sign):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[3]["yards_gained"] = value
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["status"] == "read"
+    text, bounded = mod.dumps_bounded(result)
+    assert bounded["status"] == "read"
+    by_id = {r["play_id"]: r["fields"]["yards_gained"] for r in result["events"]["rows"]}
+    assert by_id[4.0] == {"float_infinity": sign}
+    assert by_id[5.0] == 3.0
+    first_row = json.loads(text)["events"]["rows"][0]
+    assert first_row["fields"]["yards_gained"] == {"float_infinity": sign}
+
+
+def test_e2_jsonable_keeps_infinity_nan_null_and_finite_distinct():
+    out = mod._jsonable(
+        {"p": float("inf"), "n": float("-inf"), "nan": float("nan"), "z": 0.0, "none": None}
+    )
+    assert out == {
+        "p": {"float_infinity": "+"},
+        "n": {"float_infinity": "-"},
+        "nan": None,
+        "z": 0.0,
+        "none": None,
+    }
+    json.dumps(out, allow_nan=False)

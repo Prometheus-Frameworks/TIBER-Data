@@ -230,8 +230,12 @@ class GameRequest:
             raise ValueError("requested game_date must be YYYY-MM-DD")
         if not self.away_team or not self.home_team:
             raise ValueError("requested away_team and home_team are required")
-        if self.away_team == self.home_team:
-            raise ValueError("requested away_team and home_team must differ")
+        if canon_team(self.away_team) == canon_team(self.home_team):
+            # Compared after canonicalization so an alias pair such as LA / LAR cannot
+            # describe an impossible same-team game.
+            raise ValueError(
+                "requested away_team and home_team must differ after canonicalization"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -311,7 +315,12 @@ def _jsonable(value: Any) -> Any:
     if value is None or isinstance(value, (bool, int, str)):
         return value
     if isinstance(value, float):
-        return None if math.isnan(value) else value
+        if math.isnan(value):
+            return None
+        if math.isinf(value):
+            # Legal Float64 values JSON cannot carry; kept distinct from finite, NaN, null.
+            return {"float_infinity": "+" if value > 0 else "-"}
+        return value
     if isinstance(value, (bytes, bytearray, memoryview)):
         raw = bytes(value)
         return {"bytes_hex": raw.hex(), "byte_length": len(raw)}

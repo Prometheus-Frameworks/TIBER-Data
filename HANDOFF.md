@@ -314,7 +314,9 @@ Example:
   PR #269 (C1: a matching tuple with a null game ID was certified; C2: argparse
   usage errors exited 2), and the Codex re-review of `9b88311` (D1: non-positive
   possession ordinal exited 0; D2: a fractional season matched by int truncation;
-  D3: a bytes field crashed serialization). Owning repository is
+  D3: a bytes field crashed serialization), and the Codex review of `e3b5c6b`
+  (E1: an `LA`/`LAR` alias pair passed as a two-team request; E2: infinite floats
+  escaped JSON normalization). Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
   (CLI), `tests/test_pbp_one_game_offline_read.py` (synthetic fixtures),
@@ -333,7 +335,8 @@ Example:
   receipt with its read stage, and returns a defect in its own post-parse processing
   as a distinct `reader_processing_failure` with its stage, never as a parser or
   source failure; requires
-  explicit season/date/away/home; resolves exactly one game from the five invariant
+  explicit season/date/away/home whose teams differ after canonicalization; resolves
+  exactly one game from the five invariant
   identity columns only, never certifies a match whose provider game ID is null or
   empty or whose season is not exactly equal, reporting event-varying and game-level descriptor values
   without using them to reject; reads lazily with the game filter pushed into the
@@ -348,10 +351,11 @@ Example:
   CLI refuses to write over the input, any alias of it, or any existing path, and
   routes malformed invocations (including a non-positive possession ordinal) to
   exit 3 so exit 2 means only source rejection, normalizes every polars scalar for
-  JSON, and bounds any residual serialization failure as a processing failure.
-  Focused tests pass 87/87 and lint is clean under the repo ruff rules.
-- What is still missing: independent re-review of the head carrying the D1–D3
-  repairs; an explicitly
+  JSON including signed infinities, and bounds any residual serialization failure
+  as a processing failure.
+  Focused tests pass 95/95 and lint is clean under the repo ruff rules.
+- What is still missing: operator assignment to push the E1/E2 repair commit, then
+  independent re-review of that head; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any
   durable import, the database-enforced read-only verification of the deployed

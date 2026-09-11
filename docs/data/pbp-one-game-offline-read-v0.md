@@ -59,7 +59,10 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
 2. **One format.** Parquet, read with `polars`, an existing declared dependency in
    `pyproject.toml`. No new dependency was added and no multi-format framework exists.
    `pyarrow` is the parquet backend polars already declares.
-3. **Explicit game request.** Season, date (`YYYY-MM-DD`), away team, home team.
+3. **Explicit game request.** Season, date (`YYYY-MM-DD`), away team, home team. The
+   away and home codes must differ after canonicalization, so an alias pair such as
+   `LA` / `LAR` cannot describe an impossible same-team game; that is rejected before
+   any file access.
    **Invariant identity** is exactly `game_id`, `season`, `game_date`, `home_team`,
    `away_team`; only these decide whether a game's metadata is consistent, and only these
    are projected across the file to locate the game. **Game-level descriptors** (`week`,
@@ -130,7 +133,9 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    recorded as `READER_VERSION` plus the SHA-256 of the reader module bytes. Every
    scalar polars can return is normalized for JSON: bytes become an explicit
    `{bytes_hex, byte_length}` envelope, time and timedelta and Decimal values become
-   labeled envelopes, NaN becomes null, and an unknown type is reported by name. If
+   labeled envelopes, NaN becomes null, positive and negative infinity become signed
+   `{float_infinity}` envelopes distinct from finite, NaN, and null, and an unknown type
+   is reported by name. If
    serialization still fails, the CLI returns a bounded `reader_processing_failure` at
    stage `serialize_result` (exit 5) instead of a traceback.
 10. **Source preservation.** The CLI never overwrites. `--out` is refused with exit 4 if
@@ -180,7 +185,10 @@ certified; argparse usage errors and a non-positive possession ordinal exit 3 wh
 `--help` exits 0; season values of 1999, 1999.0, and "1999" match while 1999.5,
 1998.999, "1999.0", " 1999", true, and null do not; bytes in an emitted field serialize
 as a hex envelope and a forced serialization failure is a bounded exit-5 processing
-failure at stage `serialize_result`;
+failure at stage `serialize_result`; a request whose away and home codes canonicalize to
+one team (`LA`/`LAR`) is rejected before reading while a real alias match still
+resolves; positive and negative infinity serialize as signed envelopes and stay distinct
+from finite, NaN, and null;
 wrong home/away/date/season and the real target request against a synthetic file are
 unresolved with no fallback; conflicting `game_date` or `home_team` inside one game is
 conflicting metadata while varying `time_of_day` or `week` is not; identical versus
