@@ -51,6 +51,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
+from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
@@ -345,30 +346,34 @@ def _values_equal(left: Any, right: Any) -> bool:
     return left == right
 
 
-def _play_id_numeric(play_id: Any) -> int | float | None:
-    """Exact numeric value of a finite play ID for ordering, or None.
+# Strict decimal grammar for a numeric play-ID string: optional sign, digits with an
+# optional fraction (or a bare fraction), optional exponent. No whitespace, underscores,
+# hex, or inf/nan spellings. Parsed exactly, never through float.
+_NUMERIC_STRING_RE = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?")
 
-    Ints stay ints (no float rounding, so Int64 IDs above 2**53 keep their exact order),
-    finite floats stay floats, and numeric strings parse as int when integral and as a
-    finite float otherwise. Python compares int and float exactly, so mixed keys sort
-    correctly. bool, bytes, NaN, ±infinity, and unparseable values return None.
+
+def _play_id_numeric(play_id: Any) -> int | Fraction | None:
+    """The single lossless numeric representation used by every ordering stage.
+
+    Returns an exact value or None. Ints stay ints; finite floats become exact Fractions
+    of their binary value; numeric strings are parsed exactly from their decimal spelling
+    (`9007199254740993.0` and `9007199254740993e0` are the integer 9007199254740993, not
+    a rounded float) and become an int when integral, else an exact Fraction. Python
+    compares int and Fraction exactly, so every stage that orders or compares play IDs
+    through this function agrees. bool, bytes, NaN, ±infinity, and unparseable values
+    return None and are never order evidence.
     """
     if play_id is None or isinstance(play_id, bool):
         return None
     if isinstance(play_id, int):
         return play_id
     if isinstance(play_id, float):
-        return play_id if math.isfinite(play_id) else None
+        return Fraction(play_id) if math.isfinite(play_id) else None
     if isinstance(play_id, str):
-        try:
-            return int(play_id)
-        except ValueError:
-            pass
-        try:
-            parsed = float(play_id)
-        except ValueError:
+        if not _NUMERIC_STRING_RE.fullmatch(play_id):
             return None
-        return parsed if math.isfinite(parsed) else None
+        exact = Fraction(Decimal(play_id))
+        return exact.numerator if exact.denominator == 1 else exact
     return None
 
 
@@ -461,7 +466,8 @@ def play_id_order_class(play_id: Any) -> str:
     if _play_id_numeric(play_id) is not None:
         return PLAY_ID_ORDER_FINITE
     if isinstance(play_id, str):
-        # A string that parses only to ±infinity is non-finite; "nan" or garbage is unknown.
+        # Outside the strict numeric grammar: an infinity spelling is non-finite; "nan",
+        # whitespace, underscores, hex, or garbage is an unknown order position.
         try:
             parsed = float(play_id)
         except ValueError:
@@ -470,7 +476,7 @@ def play_id_order_class(play_id: Any) -> str:
     return PLAY_ID_ORDER_NON_NUMERIC
 
 
-def _play_sort_key(row: dict[str, Any]) -> tuple[int, int | float]:
+def _play_sort_key(row: dict[str, Any]) -> tuple[int, int | Fraction]:
     """Finite play IDs order the game exactly; every other class sorts last."""
     numeric = _play_id_numeric(row.get("play_id"))
     if numeric is None:
@@ -1081,7 +1087,13 @@ def build_possession_sequence(
             unattributed.append({"index": index, "play_id": row.get("play_id"), "drive": drive})
             continue
         current = runs[-1] if runs else None
-        if current and current["posteam"] == posteam and current["provider_drive"] == drive:
+        # Run extension uses the same recursive equality as duplicate classification and
+        # key freezing, so all three stages obey one equivalence relation.
+        if (
+            current
+            and current["posteam"] == posteam
+            and _values_equal(current["provider_drive"], drive)
+        ):
             current["last_index"] = index
             current["last_play_id"] = row.get("play_id")
             current["attributed_row_count"] += 1

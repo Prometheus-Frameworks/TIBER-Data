@@ -329,7 +329,10 @@ Example:
   merged head `874a96b` (K1: repr-based keys split value-equal non-scalars; K2:
   nested NaN not compared recursively; K3: a non-scalar drive crashed occurrence
   counting; K4: Int64 play IDs above 2**53 lost exact order through float; K5:
-  this handoff listed the already-pushed J1 commit as missing).
+  this handoff listed the already-pushed J1 commit as missing), and the Codex review
+  of `91710f3` (L1: decimal-spelled integral strings still rounded through float;
+  L2: run extension compared drives with raw equality), consolidated into one
+  lossless numeric representation and one equivalence relation for every stage.
   Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
@@ -370,10 +373,12 @@ Example:
   boundary only (raw scalars including NaN are kept through NaN-aware duplicate
   classification and possession processing, with NaN and non-scalar play IDs and
   drives canonicalized only in equality-consistent grouping keys, NaN-aware
-  equality applied recursively, and exact integer ordering for play IDs), withholds selection when a play ID is non-finite or non-numeric
+  equality applied recursively at grouping, comparison, and run extension, and one
+  lossless numeric representation for play-ID ordering across sorting and the
+  conflict check, with a cross-stage consistency test over a shared case set), withholds selection when a play ID is non-finite or non-numeric
   or a prefix drive is non-finite, and bounds any residual serialization failure as
   a processing failure.
-  Focused tests pass 150/150 and lint is clean under the repo ruff rules.
+  Focused tests pass 157/157 and lint is clean under the repo ruff rules.
 - What is still missing: independent exact-head re-review of the current branch head
   (every repair commit through J1 and the merge of main are pushed); operator
   assignment for any further repair push; an explicitly

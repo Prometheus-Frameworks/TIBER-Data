@@ -106,10 +106,17 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    `affects_possession_order` flag when `posteam`, `drive`, or `fixed_drive` disagree),
    and all rows are retained. Neither count is an official snap denominator; no snap
    count is derived.
-7. **Possession sequence.** Rows are ordered by `play_id` using its exact numeric value:
-   integers stay integers (an Int64 ID above 2**53 keeps its exact order rather than
-   collapsing through float), finite floats stay floats, and numeric strings parse as int
-   when integral. Python compares int and float exactly, so mixed keys sort correctly. A possession is a maximal run
+7. **Possession sequence.** Rows are ordered by `play_id` through one lossless numeric
+   representation shared by every ordering stage (sorting, run extension, the
+   order-affecting conflict check): integers stay integers, finite floats become exact
+   fractions of their binary value, and numeric strings are parsed exactly from their
+   decimal spelling under a strict grammar (sign, digits, optional fraction, optional
+   exponent; no whitespace, underscores, hex, or inf/nan spellings), so
+   `9007199254740993.0` and `9007199254740993e0` are the exact integer, never a rounded
+   float. Python compares int and Fraction exactly, so mixed keys sort correctly. Run
+   extension, duplicate grouping, and occurrence counting all use the same recursive
+   NaN-aware equality and its consistent freeze, so one equivalence relation governs
+   every stage; a cross-stage test feeds one shared case set through all of them. A possession is a maximal run
    of identical non-null `posteam` and identical provider `drive` value (fallback
    `fixed_drive`, disclosed in `basis.drive_column_used`). A team's N-th possession is
    the N-th such run for that team in play order and is **never** equated with provider
@@ -230,8 +237,12 @@ classify duplicates by content, and withhold selection instead of failing groupi
 value-equal lists and structs (`[0.0]` versus `[-0.0]`) share one key and are identical
 duplicates, nested NaNs compare equal recursively while nested NaN versus null does not,
 list- or struct-typed drives still bound runs and count occurrences and are reported as
-not orderable, and Int64 play IDs above 2**53 (as integers or integer strings) keep exact
-ascending order; a digest with a trailing or leading newline is a usage
+not orderable, and Int64 play IDs above 2**53 (as integers, integer strings, or
+decimal- and exponent-spelled integral strings) keep exact ascending order including in
+the order-affecting conflict check; equivalent nested-NaN drives extend one run; and a
+cross-stage test asserts that freeze equality, recursive value equality, order-class
+membership, sort order, run extension, grouping, and occurrence counts agree over one
+shared case set; a digest with a trailing or leading newline is a usage
 error before file access; negative byte counts and non-64-hex digests exit 3
 before file access while a well-formed wrong digest still exits 2; non-calendar dates
 exit 3 while a leap day validates;

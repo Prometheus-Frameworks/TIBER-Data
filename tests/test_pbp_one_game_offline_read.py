@@ -1697,3 +1697,123 @@ def test_k4_play_id_numeric_pure_states():
     assert mod.play_id_order_class("nan") == "non_numeric"
     assert mod.play_id_order_class("inf") == "non_finite"
     assert mod.play_id_order_class("9007199254740993") == "finite"
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of 91710f3 (PR #269): L1 exact numeric strings, L2 run
+# extension equality, plus the cross-stage consistency invariant they share
+# ---------------------------------------------------------------------------
+
+
+def test_l1_decimal_spelled_integral_strings_order_exactly(tmp_path):
+    rows = [play(0.0, HOME, 2.0), play(0.0, AWAY, 1.0)]
+    rows[0]["play_id"] = "9007199254740993.0"
+    rows[1]["play_id"] = "9007199254740992.0"
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert [r["posteam"] for r in result["possession"]["runs"]] == [AWAY, HOME]
+    assert result["events"]["rows"][0]["play_id"] == "9007199254740993.0"
+
+
+def test_l1_exponent_spelled_strings_order_exactly(tmp_path):
+    rows = [play(0.0, HOME, 2.0), play(0.0, AWAY, 1.0)]
+    rows[0]["play_id"] = "9007199254740993e0"
+    rows[1]["play_id"] = "90071992547409920e-1"
+    path = write_parquet(tmp_path, rows)
+    result = run(path)
+    assert [r["posteam"] for r in result["possession"]["runs"]] == [AWAY, HOME]
+
+
+def test_l1_order_affecting_conflict_check_uses_exact_strings(tmp_path):
+    rows = [play(0.0, AWAY, 1.0), play(0.0, HOME, 2.0), play(0.0, HOME, 2.0)]
+    rows[0]["play_id"] = "9007199254740992.0"
+    rows[1]["play_id"] = "9007199254740993.0"
+    rows[2]["play_id"] = "9007199254740994.0"
+    rows.append(dict(rows[2], posteam=AWAY, defteam=HOME))  # conflicting dup on the last play
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(AWAY, 1))
+    # The conflict is on play ...994, after AWAY's first possession (...992): still resolved.
+    assert result["possession"]["selection"]["status"] == "resolved"
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["possession"]["selection"]["reason"] == "conflicting_duplicate_in_prefix"
+
+
+def test_l1_play_id_numeric_is_lossless_and_strict():
+    n = mod._play_id_numeric
+    assert n("9007199254740993.0") == 9007199254740993 and isinstance(n("9007199254740993.0"), int)
+    assert n("9007199254740993e0") == 9007199254740993
+    assert n("1e400") == 10**400
+    assert n("0.1") == mod.Fraction(1, 10) and n(0.1) == mod.Fraction(0.1)
+    assert n("0.1") != n(0.1)  # decimal 0.1 is not the binary float 0.1: exact, not rounded
+    assert n("-3") == -3 and n("+3") == 3 and n(".5") == mod.Fraction(1, 2) and n("5.") == 5
+    for bad in (" 1", "1 ", "1_000", "0x10", "1e", "e1", "1.2.3", "nan", "inf", "", "1/2"):
+        assert n(bad) is None, bad
+    assert mod.play_id_order_class("1e400") == "finite"
+    assert mod.play_id_order_class("inf") == "non_finite"
+    assert mod.play_id_order_class(" 1") == "non_numeric"
+
+
+def test_l2_equivalent_nested_nan_drives_extend_one_run(tmp_path):
+    nan = float("nan")
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["drive"] = [nan] if r["drive"] == 1.0 else [float(r["drive"])]
+        r["fixed_drive"] = None
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(AWAY, 1))
+    assert len(result["possession"]["runs"]) == 5  # the [nan] rows formed ONE run
+    assert result["possession"]["runs"][0]["attributed_row_count"] == 3
+    assert result["possession"]["selection"]["reason"] == "provider_drive_not_orderable"
+
+
+# One shared case set, every stage: the invariant behind H, I, J, K, and L.
+_SHARED_VALUES: list[Any] = [
+    None, float("nan"), float("inf"), float("-inf"), True, 0, 0.0, -0.0, 1, 1.0, 2,
+    9007199254740992, 9007199254740993, "9007199254740993", "9007199254740993.0",
+    "9007199254740993e0", "0.1", 0.1, "inf", "nan", "oops", "", " 1", b"1",
+    [1], [1.0], (1,), [0.0], [-0.0], [float("nan")], [None], {"a": 1}, {"a": 1.0},
+    {"a": float("nan")}, {"a": [float("nan"), 1.0]},
+]
+
+
+def test_cross_stage_equivalence_and_order_are_consistent():
+    values = _SHARED_VALUES
+    for left in values:
+        for right in values:
+            eq = mod._values_equal(left, right)
+            assert eq is mod._values_equal(right, left), (left, right)  # symmetric
+            assert (mod._freeze(left) == mod._freeze(right)) is eq, (left, right)
+            hash(mod._freeze(left))
+        assert mod._values_equal(left, left)  # reflexive, NaN included
+    # Order evidence: exactly the "finite" class has a numeric value, and ordering by the
+    # sort key equals ordering by that exact numeric value.
+    finite = [v for v in values if mod.play_id_order_class(v) == "finite"]
+    assert all(mod._play_id_numeric(v) is not None for v in finite)
+    assert all(
+        mod._play_id_numeric(v) is None for v in values if mod.play_id_order_class(v) != "finite"
+    )
+    by_key = sorted(finite, key=lambda v: mod._play_sort_key({"play_id": v}))
+    by_exact = sorted(finite, key=lambda v: mod._play_id_numeric(v))
+    assert [mod._play_id_numeric(v) for v in by_key] == [mod._play_id_numeric(v) for v in by_exact]
+    assert mod._play_id_numeric("9007199254740993.0") > mod._play_id_numeric(9007199254740992)
+    assert mod._play_id_numeric(9007199254740993) == mod._play_id_numeric("9007199254740993e0")
+
+
+def test_cross_stage_run_extension_grouping_and_counts_share_one_relation(tmp_path):
+    # Every pair of equivalent drive values must extend a run, group under one key, and
+    # count once; every non-equivalent pair must split.
+    nan = float("nan")
+    pairs = [
+        ([nan], [nan], True), ([0.0], [-0.0], True), ([1.0], [2.0], False), ([nan], [None], False),
+    ]
+    for left, right, same in pairs:
+        rows = [play(1.0, HOME, 9.0), play(2.0, HOME, 9.0)]
+        rows[0]["drive"], rows[1]["drive"] = left, right
+        rows[0]["fixed_drive"] = rows[1]["fixed_drive"] = None
+        path = write_parquet(tmp_path, rows, name=f"pair_{abs(hash(repr((left, right))))}.parquet")
+        content = path.read_bytes()
+        loaded, _ = mod.load_game_rows(content, SYN_GAME_ID)
+        seq = mod.build_possession_sequence(loaded, mod.inspect_schema(content))
+        assert (len(seq["runs"]) == 1) is same, (left, right)
+        assert (len(seq["drive_occurrence_counts"]) == 1) is same, (left, right)
+        assert (mod._freeze(left) == mod._freeze(right)) is same, (left, right)
