@@ -115,8 +115,10 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    duplicate affecting team or drive at or before the selected run's last play; every
    prefix run has a non-null, contiguous (occurs once), non-decreasing provider drive;
    no unattributed (null `posteam`) row before the end of the selection carries a drive
-   value that no prefix run accounts for; no null, NaN, or non-finite `play_id` breaks
-   ordering (±infinity serializes but is no evidence of a position in the game order);
+   value that no prefix run accounts for; no null, NaN, non-finite, or non-numeric
+   `play_id` breaks ordering (±infinity serializes but is no evidence of a position in
+   the game order; an unparseable ID has an unknown position; a parseable numeric string
+   orders normally);
    and no prefix run carries a non-finite provider drive (a NaN drive is treated as a
    missing drive number, an infinite one as unresolvable ordering). Neutral
    administrative rows (null `posteam` with a null drive, or a drive already in the
@@ -142,6 +144,10 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    rows keep raw source scalars, NaN included, through duplicate classification and
    possession sequencing; duplicate comparison is NaN-aware (two NaNs are equivalent,
    NaN never equals null or a number), so a NaN-versus-null disagreement is a conflict.
+   Duplicate grouping canonicalizes only the key: every NaN `play_id` shares one group
+   (distinct from the null-`play_id` group, both counted as missing keys) while the rows'
+   raw values are untouched, so grouped NaN rows are compared by content and reported
+   with their raw play ID.
    Field inventories count `nan_rows` separately from `null_rows`. JSON shaping happens
    once at the output boundary. There, every scalar polars can return is normalized: bytes become an explicit
    `{bytes_hex, byte_length}` envelope, time and timedelta and Decimal values become
@@ -205,8 +211,11 @@ on its raw value and enveloped only in the output, while an infinite `play_id` o
 infinite provider drive in the counting prefix leaves selection unresolved with no event
 sample and a NaN drive is treated as missing; identical rows containing NaN are
 identical duplicates while a NaN-versus-null disagreement is a conflict, NaN is counted
-and emitted distinct from null, and a NaN `play_id` is a null key; a digest with a
-trailing or leading newline is a usage error before file access; negative byte counts and non-64-hex digests exit 3
+and emitted distinct from null, and a NaN `play_id` is a null key; two NaN play IDs group
+together and compare identical or conflicting by content, NaN and null play IDs are
+distinct missing keys, a non-numeric play ID withholds selection while parseable numeric
+strings still order and resolve; a digest with a trailing or leading newline is a usage
+error before file access; negative byte counts and non-64-hex digests exit 3
 before file access while a well-formed wrong digest still exits 2; non-calendar dates
 exit 3 while a leap day validates;
 wrong home/away/date/season and the real target request against a synthetic file are

@@ -1407,3 +1407,90 @@ def test_h4_digest_with_newline_is_a_usage_error_before_file_access(
         mod.GameRequest(
             season=SYN_SEASON, game_date=SYN_DATE + "\n", away_team=AWAY, home_team=HOME
         ).validate()
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of b8ee0fd (PR #269): I1 NaN play_id grouping, I2 non-numeric IDs
+# ---------------------------------------------------------------------------
+
+
+def test_i1_two_nan_play_ids_group_together_and_compare_identical(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[3]["play_id"] = float("nan")
+    rows.append(dict(rows[3]))
+    path = write_parquet(tmp_path, rows)
+    result = run(path)
+    keys = result["inventory"]["keys"]
+    assert keys["null_key_rows"] == 2
+    assert keys["distinct_game_play_key_count"] == len(rows) - 1
+    assert len(keys["identical_duplicate_keys"]) == 1
+    assert keys["conflicting_duplicate_keys"] == []
+    emitted = json.loads(mod.dumps(result))["inventory"]["keys"]["identical_duplicate_keys"][0]
+    assert emitted["play_id"] == {"float_nan": True}  # raw NaN reported, not the internal key
+
+
+def test_i1_nan_play_id_pair_with_differing_content_is_a_conflict(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[3]["play_id"] = float("nan")
+    rows.append(dict(rows[3], yards_gained=99.0))
+    path = write_parquet(tmp_path, rows)
+    keys = run(path)["inventory"]["keys"]
+    assert keys["identical_duplicate_keys"] == []
+    assert len(keys["conflicting_duplicate_keys"]) == 1
+    assert keys["conflicting_duplicate_keys"][0]["differing_columns"] == ["yards_gained"]
+
+
+def test_i1_nan_and_null_play_ids_are_distinct_missing_keys(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[3]["play_id"] = float("nan")
+    rows.append(dict(rows[3], play_id=None))
+    path = write_parquet(tmp_path, rows)
+    keys = run(path)["inventory"]["keys"]
+    assert keys["null_key_rows"] == 2
+    assert keys["distinct_game_play_key_count"] == len(rows)  # NaN key and null key differ
+    assert keys["identical_duplicate_keys"] == [] and keys["conflicting_duplicate_keys"] == []
+
+
+def test_i1_grouping_key_canonicalizes_nan_only():
+    nan_a, nan_b = float("nan"), float("nan")
+    assert mod._grouping_key({"game_id": "g", "play_id": nan_a}) == mod._grouping_key(
+        {"game_id": "g", "play_id": nan_b}
+    )
+    assert mod._grouping_key({"game_id": "g", "play_id": None}) != mod._grouping_key(
+        {"game_id": "g", "play_id": nan_a}
+    )
+    assert mod._grouping_key({"game_id": "g", "play_id": 1.0}) == ("g", 1.0)
+
+
+@pytest.mark.parametrize("bad_id", ["oops", "", "1e400x"])
+def test_i2_non_numeric_play_id_withholds_selection(tmp_path, bad_id):
+    rows = [dict(r, play_id=str(r["play_id"])) for r in alternating_game(DEFAULT_POSSESSIONS)]
+    extra = play(99.0, HOME, 9.0)
+    extra["play_id"] = bad_id
+    rows.append(extra)
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "read"
+    assert result["possession"]["play_id_non_numeric_rows"] == 1
+    assert result["possession"]["selection"]["reason"] == "non_numeric_play_id_breaks_play_order"
+    assert result["events"]["status"] == "withheld"
+    assert result["events"]["rows"] == []
+
+
+def test_i2_parseable_string_play_ids_still_order_and_resolve(tmp_path):
+    rows = [dict(r, play_id=str(r["play_id"])) for r in alternating_game(DEFAULT_POSSESSIONS)]
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["play_id_non_numeric_rows"] == 0
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["possession"]["selection"]["selected_run"]["provider_drive"] == 4.0
+
+
+def test_i2_play_id_order_class_pure_states():
+    c = mod.play_id_order_class
+    assert c(1.0) == "finite" and c(7) == "finite" and c("30") == "finite"
+    assert c(None) == "null" and c(float("nan")) == "null"
+    assert c(float("inf")) == "non_finite" and c(float("-inf")) == "non_finite"
+    assert c("inf") == "non_finite"
+    assert c("oops") == "non_numeric" and c("") == "non_numeric" and c(True) == "non_numeric"
+    assert c(b"1") == "non_numeric" and c([1]) == "non_numeric"

@@ -321,7 +321,9 @@ Example:
   count or digest reached verification; G3: non-calendar dates passed validation),
   and the Codex review of `d77facb` (H1/H2: non-finite play IDs or drives could
   resolve a possession; H3: NaN was collapsed into null before duplicate
-  classification; H4: a digest with a trailing newline passed the end anchor).
+  classification; H4: a digest with a trailing newline passed the end anchor), and
+  the Codex review of `b8ee0fd` (I1: NaN play IDs formed distinct grouping keys and
+  bypassed the comparator; I2: a non-numeric play ID sorted last silently).
   Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
@@ -360,11 +362,12 @@ Example:
   exit 3 so exit 2 means only source rejection, normalizes every polars scalar for
   JSON including signed infinities and an explicit NaN envelope at the output
   boundary only (raw scalars including NaN are kept through NaN-aware duplicate
-  classification and possession processing), withholds selection when a play ID or
-  a prefix drive is non-finite, and bounds any residual serialization failure as a
-  processing failure.
-  Focused tests pass 125/125 and lint is clean under the repo ruff rules.
-- What is still missing: operator assignment to push the H1–H4 repair commit, then
+  classification and possession processing, with NaN play IDs canonicalized only in
+  the grouping key), withholds selection when a play ID is non-finite or non-numeric
+  or a prefix drive is non-finite, and bounds any residual serialization failure as
+  a processing failure.
+  Focused tests pass 134/134 and lint is clean under the repo ruff rules.
+- What is still missing: operator assignment to push the I1/I2 repair commit, then
   independent re-review of that head; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any

@@ -403,15 +403,58 @@ def classify_no_play(row: dict[str, Any], columns: set[str]) -> str:
     return NO_PLAY_STATUS_OTHER
 
 
-def _play_sort_key(row: dict[str, Any]) -> tuple[int, float]:
-    """Finite play IDs order the game; null, NaN, and ±infinity carry no order and sort last."""
-    play_id = row.get("play_id")
-    if play_id is None or _is_nan(play_id) or _is_non_finite(play_id):
-        return (1, 0.0)
+PLAY_ID_ORDER_FINITE = "finite"
+PLAY_ID_ORDER_NULL = "null"  # None or NaN: a missing key
+PLAY_ID_ORDER_NON_FINITE = "non_finite"  # ±infinity: serializable, not an order position
+PLAY_ID_ORDER_NON_NUMERIC = "non_numeric"  # unparseable: an unknown order position
+
+
+def play_id_order_class(play_id: Any) -> str:
+    """Classify a play ID by whether it evidences a position in the game order."""
+    if play_id is None or _is_nan(play_id):
+        return PLAY_ID_ORDER_NULL
+    if _is_non_finite(play_id):
+        return PLAY_ID_ORDER_NON_FINITE
+    if isinstance(play_id, bool) or not isinstance(play_id, (int, float, str)):
+        # bytes and other types are never order evidence, even if float() would parse them.
+        return PLAY_ID_ORDER_NON_NUMERIC
     try:
-        return (0, float(play_id))
+        value = float(play_id)
     except (TypeError, ValueError):
+        return PLAY_ID_ORDER_NON_NUMERIC
+    if not math.isfinite(value):
+        return PLAY_ID_ORDER_NON_FINITE
+    return PLAY_ID_ORDER_FINITE
+
+
+def _play_sort_key(row: dict[str, Any]) -> tuple[int, float]:
+    """Finite play IDs order the game; every other class carries no order and sorts last."""
+    play_id = row.get("play_id")
+    if play_id_order_class(play_id) != PLAY_ID_ORDER_FINITE:
         return (1, 0.0)
+    return (0, float(play_id))
+
+
+class _NanKey:
+    """Canonical grouping key for a NaN play ID: every NaN groups together."""
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:
+        return "<nan play_id>"
+
+
+_NAN_KEY = _NanKey()
+
+
+def _grouping_key(row: dict[str, Any]) -> tuple[Any, Any]:
+    """(game_id, play_id) with NaN canonicalized so separately loaded NaNs share a group.
+
+    Only the KEY is canonicalized; the row's raw play_id is untouched, so the NaN-aware
+    comparator can still tell NaN from null when members of a group are compared.
+    """
+    play_id = row.get("play_id")
+    return (row.get("game_id"), _NAN_KEY if _is_nan(play_id) else play_id)
 
 
 def _normalize_date_value(value: Any) -> tuple[str | None, str]:
@@ -799,9 +842,9 @@ def inventory_duplicates(rows: list[dict[str, Any]]) -> dict[str, Any]:
     groups: dict[tuple[Any, Any], list[dict[str, Any]]] = {}
     null_key_rows = 0
     for row in rows:
-        key = (row.get("game_id"), row.get("play_id"))
-        if key[0] is None or key[1] is None or _is_nan(key[1]):
-            # A NaN play ID is a missing key too; it is never a usable duplicate key.
+        key = _grouping_key(row)
+        if key[0] is None or key[1] is None or key[1] is _NAN_KEY:
+            # A null or NaN play ID is a missing key; both are counted, kept distinct.
             null_key_rows += 1
         groups.setdefault(key, []).append(row)
     identical: list[dict[str, Any]] = []
@@ -815,19 +858,29 @@ def inventory_duplicates(rows: list[dict[str, Any]]) -> dict[str, Any]:
             for column in set(first) | set(other):
                 if not _values_equal(first.get(column), other.get(column)):
                     differing.add(column)
-        entry = {"game_id": key[0], "play_id": key[1], "occurrences": len(members)}
+        # Report the raw play_id of the group (NaN stays NaN; the envelope is applied at
+        # the output boundary), never the internal canonical key.
+        entry = {
+            "game_id": key[0], "play_id": first.get("play_id"), "occurrences": len(members),
+        }
         if differing:
             entry["differing_columns"] = sorted(differing)
             entry["affects_possession_order"] = bool(differing & ORDER_AFFECTING_COLUMNS)
             conflicting.append(entry)
         else:
             identical.append(entry)
-    conflicting_play_ids = {d["play_id"] for d in conflicting}
+    conflicting_keys = {
+        key for key, members in groups.items()
+        if len(members) > 1 and any(
+            not _values_equal(members[0].get(c), other.get(c))
+            for other in members[1:] for c in set(members[0]) | set(other)
+        )
+    }
     for row in rows:
-        key = (row.get("game_id"), row.get("play_id"))
+        key = _grouping_key(row)
         if len(groups[key]) == 1:
             row["_duplicate_status"] = "unique"
-        elif key[1] in conflicting_play_ids:
+        elif key in conflicting_keys:
             row["_duplicate_status"] = "conflicting_duplicate"
         else:
             row["_duplicate_status"] = "identical_duplicate"
@@ -942,12 +995,15 @@ def build_possession_sequence(
     unattributed: list[dict[str, Any]] = []
     play_id_null_rows = 0
     play_id_non_finite_rows = 0
+    play_id_non_numeric_rows = 0
     for index, row in enumerate(rows):
-        play_id = row.get("play_id")
-        if play_id is None or _is_nan(play_id):
+        order_class = play_id_order_class(row.get("play_id"))
+        if order_class == PLAY_ID_ORDER_NULL:
             play_id_null_rows += 1
-        elif _is_non_finite(play_id):
+        elif order_class == PLAY_ID_ORDER_NON_FINITE:
             play_id_non_finite_rows += 1
+        elif order_class == PLAY_ID_ORDER_NON_NUMERIC:
+            play_id_non_numeric_rows += 1
         posteam = canon_team(row.get("posteam")) if "posteam" in columns else None
         drive = row.get(drive_column) if drive_column else None
         if _is_nan(drive):
@@ -984,8 +1040,8 @@ def build_possession_sequence(
         drive_occurrences[drive_value] = drive_occurrences.get(drive_value, 0) + 1
     return {
         "basis": {
-            "order": "rows sorted by finite play_id ascending; null, NaN, and non-finite "
-            "play_id carry no order and sort last",
+            "order": "rows sorted by finite play_id ascending; null, NaN, non-finite, and "
+            "non-numeric play_id carry no order and sort last",
             "run_rule": "maximal consecutive run of identical non-null posteam and identical "
             "provider drive value",
             "drive_column_used": drive_column,
@@ -998,6 +1054,7 @@ def build_possession_sequence(
         "unattributed": unattributed,
         "play_id_null_rows": play_id_null_rows,
         "play_id_non_finite_rows": play_id_non_finite_rows,
+        "play_id_non_numeric_rows": play_id_non_numeric_rows,
         "runs": runs,
         "drive_occurrence_counts": {str(k): v for k, v in drive_occurrences.items()},
     }
@@ -1032,6 +1089,9 @@ def select_possession(
     if sequence["play_id_non_finite_rows"]:
         # ±infinity serializes, but it is no evidence of a position in the game order.
         return unresolved("non_finite_play_id_breaks_play_order")
+    if sequence["play_id_non_numeric_rows"]:
+        # An unparseable ID has an unknown position; it could change which run is N-th.
+        return unresolved("non_numeric_play_id_breaks_play_order")
     candidates = [r for r in sequence["runs"] if r["posteam"] == team]
     if request.ordinal < 1 or request.ordinal > len(candidates):
         return unresolved(
@@ -1286,6 +1346,7 @@ def _read_verified_content(
             "unattributed_rows": sequence["unattributed_rows"],
             "play_id_null_rows": sequence["play_id_null_rows"],
             "play_id_non_finite_rows": sequence["play_id_non_finite_rows"],
+            "play_id_non_numeric_rows": sequence["play_id_non_numeric_rows"],
             "runs": compact_runs,
             "selection": None,
         }
