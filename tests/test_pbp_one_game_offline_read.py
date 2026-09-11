@@ -1494,3 +1494,64 @@ def test_i2_play_id_order_class_pure_states():
     assert c("inf") == "non_finite"
     assert c("oops") == "non_numeric" and c("") == "non_numeric" and c(True) == "non_numeric"
     assert c(b"1") == "non_numeric" and c([1]) == "non_numeric"
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of 84eabe9 (PR #269): J1 non-scalar play IDs must reach the
+# unresolved path, never a grouping crash
+# ---------------------------------------------------------------------------
+
+
+def _non_scalar_game(kind: str) -> list[dict[str, Any]]:
+    ids = [[1], [2], [3], [3]] if kind == "list" else [{"a": 1}, {"a": 2}, {"a": 3}, {"a": 3}]
+    teams = [AWAY, HOME, HOME, HOME]
+    drives = [1.0, 2.0, 2.0, 2.0]
+    rows = []
+    for pid, team, drive in zip(ids, teams, drives, strict=True):
+        row = play(0.0, team, drive)
+        row["play_id"] = pid
+        rows.append(row)
+    return rows
+
+
+@pytest.mark.parametrize("kind", ["list", "struct"])
+def test_j1_non_scalar_play_ids_group_hashably_and_withhold_selection(tmp_path, kind):
+    rows = _non_scalar_game(kind)
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["status"] == "read", result.get("failure")
+    assert result["failure"] is None
+    keys = result["inventory"]["keys"]
+    assert keys["row_count"] == 4
+    assert keys["distinct_game_play_key_count"] == 3  # the two [3] / {"a": 3} rows group
+    assert len(keys["identical_duplicate_keys"]) == 1
+    assert keys["identical_duplicate_keys"][0]["play_id"] == rows[2]["play_id"]  # raw value
+    assert result["possession"]["play_id_non_numeric_rows"] == 4
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    assert selection["reason"] == "non_numeric_play_id_breaks_play_order"
+    assert result["events"]["status"] == "withheld"
+    text, bounded = mod.dumps_bounded(result)
+    assert bounded["status"] == "read"
+    emitted = json.loads(text)["inventory"]["keys"]["identical_duplicate_keys"][0]["play_id"]
+    assert emitted == rows[2]["play_id"]
+
+
+def test_j1_non_scalar_play_id_conflict_is_detected_by_content(tmp_path):
+    rows = _non_scalar_game("list")
+    rows[3]["yards_gained"] = 99.0
+    path = write_parquet(tmp_path, rows)
+    keys = run(path)["inventory"]["keys"]
+    assert keys["identical_duplicate_keys"] == []
+    assert len(keys["conflicting_duplicate_keys"]) == 1
+    assert keys["conflicting_duplicate_keys"][0]["differing_columns"] == ["yards_gained"]
+
+
+def test_j1_hashable_key_part_pure_states():
+    h = mod._hashable_key_part
+    assert h(1.0) == 1.0 and h("x") == "x" and h(None) is None
+    assert h(float("nan")) is mod._NAN_KEY
+    assert h([1, 2]) == h([1, 2]) and h([1, 2]) != h([2, 1])
+    assert h({"a": 1}) == h({"a": 1})
+    assert h([1]) != h((1,))  # type is part of the key
+    hash(h([1])), hash(h({"a": 1}))  # both hashable

@@ -447,14 +447,27 @@ class _NanKey:
 _NAN_KEY = _NanKey()
 
 
+def _hashable_key_part(value: Any) -> Any:
+    """Key-only representation: NaN shares one sentinel; unhashable values (list, struct)
+    are keyed by type and repr so grouping never fails. Row values are never altered."""
+    if _is_nan(value):
+        return _NAN_KEY
+    try:
+        hash(value)
+    except TypeError:
+        return ("<unhashable>", type(value).__name__, repr(value))
+    return value
+
+
 def _grouping_key(row: dict[str, Any]) -> tuple[Any, Any]:
     """(game_id, play_id) with NaN canonicalized so separately loaded NaNs share a group.
 
     Only the KEY is canonicalized; the row's raw play_id is untouched, so the NaN-aware
-    comparator can still tell NaN from null when members of a group are compared.
+    comparator can still tell NaN from null when members of a group are compared, and a
+    non-scalar play ID still reaches the unresolved-possession path instead of crashing
+    grouping.
     """
-    play_id = row.get("play_id")
-    return (row.get("game_id"), _NAN_KEY if _is_nan(play_id) else play_id)
+    return (_hashable_key_part(row.get("game_id")), _hashable_key_part(row.get("play_id")))
 
 
 def _normalize_date_value(value: Any) -> tuple[str | None, str]:

@@ -145,9 +145,11 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    possession sequencing; duplicate comparison is NaN-aware (two NaNs are equivalent,
    NaN never equals null or a number), so a NaN-versus-null disagreement is a conflict.
    Duplicate grouping canonicalizes only the key: every NaN `play_id` shares one group
-   (distinct from the null-`play_id` group, both counted as missing keys) while the rows'
-   raw values are untouched, so grouped NaN rows are compared by content and reported
-   with their raw play ID.
+   (distinct from the null-`play_id` group, both counted as missing keys), and an
+   unhashable play ID such as a list or struct is keyed by type and repr so grouping
+   never fails, while the rows' raw values are untouched, so grouped rows are compared by
+   content and reported with their raw play ID. A non-scalar play ID therefore reaches
+   the documented unresolved-possession path rather than a processing failure.
    Field inventories count `nan_rows` separately from `null_rows`. JSON shaping happens
    once at the output boundary. There, every scalar polars can return is normalized: bytes become an explicit
    `{bytes_hex, byte_length}` envelope, time and timedelta and Decimal values become
@@ -214,7 +216,8 @@ identical duplicates while a NaN-versus-null disagreement is a conflict, NaN is 
 and emitted distinct from null, and a NaN `play_id` is a null key; two NaN play IDs group
 together and compare identical or conflicting by content, NaN and null play IDs are
 distinct missing keys, a non-numeric play ID withholds selection while parseable numeric
-strings still order and resolve; a digest with a trailing or leading newline is a usage
+strings still order and resolve, and list- or struct-typed play IDs group hashably,
+classify duplicates by content, and withhold selection instead of failing grouping; a digest with a trailing or leading newline is a usage
 error before file access; negative byte counts and non-64-hex digests exit 3
 before file access while a well-formed wrong digest still exits 2; non-calendar dates
 exit 3 while a leap day validates;
