@@ -332,7 +332,12 @@ Example:
   this handoff listed the already-pushed J1 commit as missing), and the Codex review
   of `91710f3` (L1: decimal-spelled integral strings still rounded through float;
   L2: run extension compared drives with raw equality), consolidated into one
-  lossless numeric representation and one equivalence relation for every stage.
+  lossless numeric representation and one equivalence relation for every stage,
+  and the Codex review of `cf9afee` (M1: a scalar NaN drive was collapsed into
+  null before run extension, so a NaN-then-null pair of same-team rows merged into
+  one run although the equivalence relation holds them distinct; the raw drive is
+  now kept through sequencing and selection alone treats null and NaN alike as a
+  missing drive number).
   Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
@@ -378,10 +383,10 @@ Example:
   conflict check, with a cross-stage consistency test over a shared case set), withholds selection when a play ID is non-finite or non-numeric
   or a prefix drive is non-finite, and bounds any residual serialization failure as
   a processing failure.
-  Focused tests pass 157/157 and lint is clean under the repo ruff rules.
+  Focused tests pass 160/160 and lint is clean under the repo ruff rules.
 - What is still missing: independent exact-head re-review of the current branch head
-  (every repair commit through J1 and the merge of main are pushed); operator
-  assignment for any further repair push; an explicitly
+  (every repair commit through L2 and the merge of main are pushed; the M1 repair
+  is local until assigned); operator assignment for any further repair push; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any
   durable import, the database-enforced read-only verification of the deployed

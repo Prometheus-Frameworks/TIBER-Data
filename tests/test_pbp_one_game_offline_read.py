@@ -1804,6 +1804,10 @@ def test_cross_stage_run_extension_grouping_and_counts_share_one_relation(tmp_pa
     # count once; every non-equivalent pair must split.
     nan = float("nan")
     pairs = [
+        # scalar drives (M1: the scalar NaN/null pair must split exactly like the nested one)
+        (nan, nan, True), (0.0, -0.0, True), (1.0, 2.0, False), (nan, None, False),
+        (None, None, True),
+        # nested drives
         ([nan], [nan], True), ([0.0], [-0.0], True), ([1.0], [2.0], False), ([nan], [None], False),
     ]
     for left, right, same in pairs:
@@ -1817,3 +1821,62 @@ def test_cross_stage_run_extension_grouping_and_counts_share_one_relation(tmp_pa
         assert (len(seq["runs"]) == 1) is same, (left, right)
         assert (len(seq["drive_occurrence_counts"]) == 1) is same, (left, right)
         assert (mod._freeze(left) == mod._freeze(right)) is same, (left, right)
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of cf9afee (PR #269): M1 scalar NaN drive collapsed into null
+# before run extension
+# ---------------------------------------------------------------------------
+
+
+def test_m1_scalar_nan_and_null_drives_are_distinct_runs_with_raw_values(tmp_path):
+    # Codex's case: consecutive same-team rows with drive NaN then drive null.
+    rows = [play(1.0, HOME, float("nan")), play(2.0, HOME, None), play(3.0, HOME, None)]
+    path = write_parquet(tmp_path, rows)
+    content = path.read_bytes()
+    loaded, _ = mod.load_game_rows(content, SYN_GAME_ID)
+    seq = mod.build_possession_sequence(loaded, mod.inspect_schema(content))
+    runs = seq["runs"]
+    assert len(runs) == 2  # NaN versus null is not equivalent: two runs, not one
+    assert mod._is_nan(runs[0]["provider_drive"])  # raw NaN kept, not collapsed to None
+    assert runs[1]["provider_drive"] is None and runs[1]["attributed_row_count"] == 2
+    assert seq["drive_occurrence_counts"] == {"<nan>": 1, "None": 1}
+    # Selection treats both as a missing drive number; neither certifies a possession.
+    for ordinal in (1, 2):
+        selection = mod.select_possession(seq, mod.PossessionRequest(HOME, ordinal))
+        assert selection["status"] == "unresolved"
+        assert selection["reason"] == "null_provider_drive_in_possession"
+    # The NaN envelope is applied only at the output boundary.
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    text, _ = mod.dumps_bounded(result)
+    emitted = [r["provider_drive"] for r in json.loads(text)["possession"]["runs"]]
+    assert emitted == [{"float_nan": True}, None]
+    assert result["events"]["status"] == "withheld"
+
+
+def test_m1_nan_drive_earlier_in_prefix_withholds_like_a_null_drive(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        if r["drive"] == 1.0:
+            r["drive"] = float("nan")
+            r["fixed_drive"] = float("nan")
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    selection = result["possession"]["selection"]
+    assert selection["reason"] == "null_provider_drive_in_prefix"
+    assert selection["affected_runs"] == [1]
+    assert mod._is_nan(result["possession"]["runs"][0]["provider_drive"])
+    assert result["events"]["status"] == "withheld"
+
+
+def test_m1_unattributed_row_with_nan_drive_is_neutral_like_a_null_drive(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows.insert(4, play(4.5, None, float("nan"), desc="SYNTHETIC timeout, NaN drive"))
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["possession"]["unattributed_rows"] == 1
+    content = path.read_bytes()
+    loaded, _ = mod.load_game_rows(content, SYN_GAME_ID)
+    seq = mod.build_possession_sequence(loaded, mod.inspect_schema(content))
+    assert mod._is_nan(seq["unattributed"][0]["drive"])  # raw value kept, not collapsed

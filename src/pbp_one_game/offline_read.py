@@ -485,12 +485,13 @@ def _play_sort_key(row: dict[str, Any]) -> tuple[int, int | Fraction]:
 
 
 class _NanKey:
-    """Canonical grouping key for a NaN play ID: every NaN groups together."""
+    """Canonical frozen key for a NaN source value (play ID, drive, or nested): every NaN
+    freezes to this one sentinel, which is distinct from the null key `None`."""
 
     __slots__ = ()
 
     def __repr__(self) -> str:
-        return "<nan play_id>"
+        return "<nan>"
 
 
 _NAN_KEY = _NanKey()
@@ -1080,9 +1081,10 @@ def build_possession_sequence(
         elif order_class == PLAY_ID_ORDER_NON_NUMERIC:
             play_id_non_numeric_rows += 1
         posteam = canon_team(row.get("posteam")) if "posteam" in columns else None
+        # The raw drive value is kept: a NaN drive stays NaN (distinct from null) through
+        # run extension, occurrence counting, and inventory, and is enveloped only at the
+        # output boundary. Selection treats NaN as a missing drive number (_drive_missing).
         drive = row.get(drive_column) if drive_column else None
-        if _is_nan(drive):
-            drive = None  # a NaN drive is a missing drive number, not a drive
         if posteam is None:
             unattributed.append({"index": index, "play_id": row.get("play_id"), "drive": drive})
             continue
@@ -1142,6 +1144,15 @@ def build_possession_sequence(
     }
 
 
+def _drive_missing(value: Any) -> bool:
+    """A null or NaN provider drive is a missing drive number, never a drive.
+
+    The two states stay distinct through sequencing and output; only selection treats
+    them alike, because neither is evidence of a possession's drive.
+    """
+    return value is None or _is_nan(value)
+
+
 def select_possession(
     sequence: dict[str, Any],
     request: PossessionRequest,
@@ -1181,7 +1192,7 @@ def select_possession(
             team_possession_runs_observed=len(candidates),
         )
     run = candidates[request.ordinal - 1]
-    if run["provider_drive"] is None:
+    if _drive_missing(run["provider_drive"]):
         return unresolved("null_provider_drive_in_possession", run)
 
     # The ordinal is a count over every earlier run (any team). Each of those runs must
@@ -1197,7 +1208,7 @@ def select_possession(
     if conflicts:
         return unresolved("conflicting_duplicate_in_prefix", run, affected_play_ids=conflicts)
     prefix = [r for r in sequence["runs"] if r["sequence_index"] <= run["sequence_index"]]
-    null_prefix = [r["sequence_index"] for r in prefix if r["provider_drive"] is None]
+    null_prefix = [r["sequence_index"] for r in prefix if _drive_missing(r["provider_drive"])]
     if null_prefix:
         return unresolved("null_provider_drive_in_prefix", run, affected_runs=null_prefix)
     counts = sequence["drive_occurrence_counts"]
@@ -1227,7 +1238,7 @@ def select_possession(
     foreign = [
         u for u in sequence["unattributed"]
         if u["index"] <= run["last_index"]
-        and u["drive"] is not None
+        and not _drive_missing(u["drive"])
         and _freeze(u["drive"]) not in prefix_drives
     ]
     if foreign:

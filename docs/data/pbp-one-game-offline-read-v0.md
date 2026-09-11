@@ -130,7 +130,9 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    the game order; an unparseable ID has an unknown position; a parseable numeric string
    orders normally);
    and no prefix run carries a non-finite provider drive (a NaN drive is treated as a
-   missing drive number, an infinite one as unresolvable ordering). Neutral
+   missing drive number, an infinite one as unresolvable ordering; the raw NaN is kept
+   distinct from null through run extension, occurrence counting, and output, so a NaN
+   drive and a null drive on consecutive same-team rows are two runs). Neutral
    administrative rows (null `posteam` with a null drive, or a drive already in the
    prefix) do not create possessions and do not block selection. Every unresolved case
    returns a typed reason and the affected runs or play IDs, keeps all runs in the
@@ -242,7 +244,11 @@ decimal- and exponent-spelled integral strings) keep exact ascending order inclu
 the order-affecting conflict check; equivalent nested-NaN drives extend one run; and a
 cross-stage test asserts that freeze equality, recursive value equality, order-class
 membership, sort order, run extension, grouping, and occurrence counts agree over one
-shared case set; a digest with a trailing or leading newline is a usage
+shared case set, for scalar drive pairs as well as nested ones; a scalar NaN drive
+followed by a null drive forms two runs with the raw NaN kept and enveloped only in the
+output, a NaN drive in the selected run or earlier in the prefix withholds selection as
+a missing drive number, and an unattributed row with a NaN drive stays neutral; a digest
+with a trailing or leading newline is a usage
 error before file access; negative byte counts and non-64-hex digests exit 3
 before file access while a well-formed wrong digest still exits 2; non-calendar dates
 exit 3 while a leap day validates;
