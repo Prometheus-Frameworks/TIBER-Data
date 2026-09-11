@@ -743,11 +743,16 @@ def _lazy_scan(content: bytes) -> Any:
     return pl.scan_parquet(io.BytesIO(content))
 
 
-def game_scan(content: bytes, game_id: str) -> Any:
-    """LazyFrame for exactly one game; the equality predicate is pushed into the scan."""
+def game_scan(content: bytes, game_id: Any) -> Any:
+    """LazyFrame for exactly one game; the equality predicate is pushed into the scan.
+
+    `game_id` is the RAW typed value observed in the source (Int64, Utf8, ...), never a
+    string rendering of it, so the predicate compares like with like. The ID is
+    normalized only for output.
+    """
     import polars as pl
 
-    return _lazy_scan(content).filter(pl.col("game_id") == game_id)
+    return _lazy_scan(content).filter(pl.col("game_id") == pl.lit(game_id))
 
 
 def locate_game(
@@ -830,31 +835,45 @@ def locate_game(
         location["status"] = "unresolved"
         location["reason"] = "matching_identity_without_game_id"
         return location
-    game_ids = sorted({str(m["game_id"]) for m in matches})
     if not matches:
         location["status"] = "unresolved"
         location["reason"] = "no_matching_game"
         return location
-    if len(game_ids) > 1:
+    # Distinct matched IDs by the shared equality-consistent key; the RAW typed value is
+    # kept (an Int64 game_id stays an int) so scan predicates compare like with like.
+    distinct_ids: dict[Any, Any] = {}
+    for m in matches:
+        distinct_ids.setdefault(_freeze(m["game_id"]), m["game_id"])
+    if len(distinct_ids) > 1:
         location["status"] = "unresolved"
         location["reason"] = "multiple_matching_games"
-        location["diagnostics"]["matching_game_ids"] = game_ids
+        location["diagnostics"]["matching_game_ids"] = sorted(
+            (_jsonable(v) for v in distinct_ids.values()), key=str
+        )
         return location
-    game_id = game_ids[0]
-    tuples_for_game = [rec for rec in distinct if str(rec.get("game_id")) == game_id]
+    game_id = next(iter(distinct_ids.values()))
+    tuples_for_game = [rec for rec in distinct if _values_equal(rec.get("game_id"), game_id)]
     if len(tuples_for_game) > 1:
         location["status"] = "unresolved"
         location["reason"] = "conflicting_game_metadata"
         location["diagnostics"]["conflicting_identity_tuples"] = [
             _jsonable(rec) for rec in tuples_for_game
         ]
-        location["observed"] = {"game_id": game_id}
+        location["observed"] = {"game_id": _jsonable(game_id)}
         return location
     observed = _jsonable(tuples_for_game[0])
     _, basis = _normalize_date_value(tuples_for_game[0].get("game_date"))
     location["status"] = "matched"
     location["observed"] = observed
     location["date_match_basis"] = basis
+    location["game_id_predicate"] = {
+        "source_dtype": schema.get("game_id"),
+        "python_type": type(game_id).__name__,
+        "note": "The raw typed source value is pushed into every game scan; it is "
+        "normalized for JSON only in `observed`.",
+    }
+    # Private handoff of the raw value to the read path; stripped before output.
+    location["_game_id_raw"] = game_id
     location["descriptors"] = _describe_game_descriptors(content, game_id, present_descriptors)
     if basis.startswith("datetime"):
         location["timezone"] = (
@@ -865,7 +884,7 @@ def locate_game(
 
 
 def _describe_game_descriptors(
-    content: bytes, game_id: str, descriptor_columns: list[str]
+    content: bytes, game_id: Any, descriptor_columns: list[str]
 ) -> dict[str, Any]:
     """Distinct values of game-level descriptor columns for the matched game only."""
     if not descriptor_columns:
@@ -885,8 +904,11 @@ def _describe_game_descriptors(
     return report
 
 
-def load_game_rows(content: bytes, game_id: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """Materialize only the located game's rows (all columns) via a pushed-down filter."""
+def load_game_rows(content: bytes, game_id: Any) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Materialize only the located game's rows (all columns) via a pushed-down filter.
+
+    `game_id` is the raw typed value from `locate_game`, not a string rendering of it.
+    """
     with _engine_stage("load_game_rows"):
         lazy = game_scan(content, game_id)
         plan = lazy.explain()
@@ -1218,20 +1240,24 @@ def select_possession(
     ]
     if non_contiguous:
         return unresolved("provider_drive_not_contiguous", run, affected_runs=non_contiguous)
-    try:
-        # bool is not a drive number; lists/structs/bytes raise TypeError or ValueError.
-        if any(isinstance(r["provider_drive"], bool) for r in prefix):
-            raise TypeError("bool is not a drive number")
-        drive_values = [float(r["provider_drive"]) for r in prefix]
-    except (TypeError, ValueError):
+    # Drive numbers obey the same classifier and the same lossless numeric representation
+    # as play IDs: bool, bytes, lists, structs, and unparseable strings are not orderable;
+    # ±infinity is serializable but no drive ordinal; finite values compare exactly, so
+    # Int64 drives above 2**53 never collapse through float.
+    classes = [play_id_order_class(r["provider_drive"]) for r in prefix]
+    if any(c == PLAY_ID_ORDER_NON_NUMERIC for c in classes):
         return unresolved("provider_drive_not_orderable", run)
     non_finite = [
-        r["sequence_index"] for r, v in zip(prefix, drive_values, strict=True)
-        if not math.isfinite(v)
+        r["sequence_index"] for r, c in zip(prefix, classes, strict=True)
+        if c == PLAY_ID_ORDER_NON_FINITE
     ]
     if non_finite:
         # A serializable infinity is not a football drive ordinal.
         return unresolved("non_finite_provider_drive_in_prefix", run, affected_runs=non_finite)
+    drive_values = [_play_id_numeric(r["provider_drive"]) for r in prefix]
+    if any(v is None for v in drive_values):
+        # Unreachable once nulls/NaN are excluded above; kept so a gap never certifies.
+        return unresolved("provider_drive_not_orderable", run)
     if any(earlier > later for earlier, later in zip(drive_values, drive_values[1:], strict=False)):
         return unresolved("provider_drive_order_non_monotone", run)
     prefix_drives = {_freeze(r["provider_drive"]) for r in prefix}
@@ -1401,6 +1427,8 @@ def _read_verified_content(
     schema = inspect_schema(content)
     with _processing_stage("locate_game_matching"):
         location = locate_game(content, schema, request)
+        # The raw typed game ID drives the scans below; only its JSON form is emitted.
+        game_id_raw = location.pop("_game_id_raw", None)
     partial["game"] = location
     result: dict[str, Any] = {
         "status": None,
@@ -1417,7 +1445,7 @@ def _read_verified_content(
         receipt["times"]["processing_time"] = _now_iso()
         return result
 
-    rows, read_strategy = load_game_rows(content, str(location["observed"]["game_id"]))
+    rows, read_strategy = load_game_rows(content, game_id_raw)
     with _processing_stage("inventory_duplicates"):
         duplicates = inventory_duplicates(rows)
     with _processing_stage("inventory_fields"):

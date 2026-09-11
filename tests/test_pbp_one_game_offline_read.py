@@ -1880,3 +1880,89 @@ def test_m1_unattributed_row_with_nan_drive_is_neutral_like_a_null_drive(tmp_pat
     loaded, _ = mod.load_game_rows(content, SYN_GAME_ID)
     seq = mod.build_possession_sequence(loaded, mod.inspect_schema(content))
     assert mod._is_nan(seq["unattributed"][0]["drive"])  # raw value kept, not collapsed
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of bd87222 (PR #269): N1 numeric game_id predicate, N2 exact
+# drive monotonicity
+# ---------------------------------------------------------------------------
+
+
+def test_n1_numeric_game_id_is_read_with_a_typed_predicate(tmp_path):
+    # Codex's case: an Int64 game_id column. The match must stay typed so every game scan
+    # compares like with like instead of failing on a string-versus-integer predicate.
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["game_id"] = 123
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "read", result.get("rejection") or result.get("failure")
+    assert result["game"]["observed"]["game_id"] == 123
+    assert result["game"]["game_id_predicate"]["python_type"] == "int"
+    assert "_game_id_raw" not in result["game"]
+    assert result["inventory"]["keys"]["row_count"] == len(rows)
+    assert result["inventory"]["read_strategy"]["selection_pushed_into_scan"] is True
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["possession"]["selection"]["selected_run"]["provider_drive"] == 4.0
+    assert result["events"]["status"] == "emitted"
+    assert all(e["game_id"] == 123 for e in result["events"]["rows"])
+    assert json.loads(mod.dumps_bounded(result)[0])["game"]["observed"]["game_id"] == 123
+
+
+def test_n1_numeric_game_id_twins_and_neighbours_keep_typed_identity(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["game_id"] = 123
+    other = [dict(r, game_id=124, home_team="SYD", away_team="SYC") for r in rows]
+    path = write_parquet(tmp_path, rows + other)
+    result = run(path)
+    assert result["status"] == "read"
+    assert result["game"]["observed"]["game_id"] == 123
+    assert result["inventory"]["keys"]["row_count"] == len(rows)  # no neighbour rows leaked
+    twin = [dict(r, game_id=124) for r in rows]
+    path = write_parquet(tmp_path, rows + twin, name="twins.parquet")
+    result = run(path)
+    assert result["game"]["reason"] == "multiple_matching_games"
+    assert result["game"]["diagnostics"]["matching_game_ids"] == [123, 124]
+
+
+def test_n2_large_int64_drives_compare_exactly_in_monotonicity_check(tmp_path):
+    big, small = 9007199254740993, 9007199254740992  # float() collapses these onto one value
+    # Codex's case: a decreasing Int64 drive prefix that float conversion would hide.
+    rows = [play(1, AWAY, big), play(2, AWAY, big), play(3, HOME, small), play(4, HOME, small)]
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    assert selection["reason"] == "provider_drive_order_non_monotone"
+    assert result["events"]["status"] == "withheld"
+    # The exact ascending order still resolves.
+    rows = [play(1, AWAY, small), play(2, AWAY, small), play(3, HOME, big), play(4, HOME, big)]
+    path = write_parquet(tmp_path, rows, name="ascending.parquet")
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["possession"]["selection"]["selected_run"]["provider_drive"] == big
+
+
+def test_n2_drive_orderability_uses_the_shared_classifier(tmp_path):
+    # bytes parse under float() but are never drive evidence; the shared classifier says so.
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["drive"] = str(int(r["drive"])).encode()
+        r["fixed_drive"] = None
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["possession"]["selection"]["reason"] == "provider_drive_not_orderable"
+    assert result["events"]["status"] == "withheld"
+    # Integer-valued numeric strings remain orderable and compare exactly.
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["drive"] = f"{int(r['drive']) + 9007199254740990}.0"
+        r["fixed_drive"] = None
+    path = write_parquet(tmp_path, rows, name="strings.parquet")
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    for r in result["possession"]["runs"]:
+        assert mod._play_id_numeric(r["provider_drive"]) == mod._play_id_numeric(
+            f"{r['sequence_index'] + 9007199254740990}"
+        )

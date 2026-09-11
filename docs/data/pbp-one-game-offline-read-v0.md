@@ -88,7 +88,10 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
 4. **Lazy, bounded reads.** Both reads are `polars.scan_parquet` over the verified
    in-memory bytes. The identity scan projects identity columns only. The game read
    pushes `game_id == <matched>` into the parquet scan node (the query plan shows the
-   selection inside the scan, not as a separate filter) so only the located game's rows
+   selection inside the scan, not as a separate filter), where `<matched>` is the raw
+   typed source value (an Int64 ID stays an integer; it is rendered for JSON only in
+   `game.observed`, and `game.game_id_predicate` discloses the dtype and Python type
+   used), so only the located game's rows
    are materialized, with all columns because full-row content is needed to classify
    duplicate keys. The output discloses this as `inventory.read_strategy`: logical scope
    is one game; physical I/O may still decode row groups that parquet statistics cannot
@@ -123,7 +126,11 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    drive number N. Because N is a count over every earlier run, selection resolves only
    when the **entire prefix** up to the selected run is evidenced: no conflicting
    duplicate affecting team or drive at or before the selected run's last play; every
-   prefix run has a non-null, contiguous (occurs once), non-decreasing provider drive;
+   prefix run has a non-null, contiguous (occurs once), non-decreasing provider drive
+   (drives obey the same classifier and the same lossless numeric representation as
+   play IDs: bool, bytes, list, struct, and unparseable strings are not orderable,
+   finite values compare exactly, so Int64 drives above 2**53 never collapse through
+   float);
    no unattributed (null `posteam`) row before the end of the selection carries a drive
    value that no prefix run accounts for; no null, NaN, non-finite, or non-numeric
    `play_id` breaks ordering (±infinity serializes but is no evidence of a position in
@@ -247,7 +254,13 @@ membership, sort order, run extension, grouping, and occurrence counts agree ove
 shared case set, for scalar drive pairs as well as nested ones; a scalar NaN drive
 followed by a null drive forms two runs with the raw NaN kept and enveloped only in the
 output, a NaN drive in the selected run or earlier in the prefix withholds selection as
-a missing drive number, and an unattributed row with a NaN drive stays neutral; a digest
+a missing drive number, and an unattributed row with a NaN drive stays neutral; an
+Int64 `game_id` column matches and reads with the raw typed value pushed into every
+game scan (no string rendering is compared against a numeric column), neighbouring
+numeric IDs do not leak rows and numeric twins are multiple matches; a decreasing
+Int64 drive prefix above 2**53 is non-monotone rather than collapsing through float
+while the exact ascending order resolves, bytes drives are not orderable, and
+integral numeric-string drives order exactly; a digest
 with a trailing or leading newline is a usage
 error before file access; negative byte counts and non-64-hex digests exit 3
 before file access while a well-formed wrong digest still exits 2; non-calendar dates

@@ -337,7 +337,12 @@ Example:
   null before run extension, so a NaN-then-null pair of same-team rows merged into
   one run although the equivalence relation holds them distinct; the raw drive is
   now kept through sequencing and selection alone treats null and NaN alike as a
-  missing drive number).
+  missing drive number), and the Codex review of `bd87222` (N1: a numeric `game_id`
+  match was rendered to a string and compared against the numeric column in every
+  game scan, failing as a parse error; the raw typed ID now drives the scans. N2:
+  the drive monotonicity check converted drives through float, so Int64 drives
+  above 2**53 collapsed and a decreasing prefix certified a possession; drives now
+  use the same classifier and lossless numeric representation as play IDs).
   Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
@@ -383,9 +388,9 @@ Example:
   conflict check, with a cross-stage consistency test over a shared case set), withholds selection when a play ID is non-finite or non-numeric
   or a prefix drive is non-finite, and bounds any residual serialization failure as
   a processing failure.
-  Focused tests pass 160/160 and lint is clean under the repo ruff rules.
+  Focused tests pass 164/164 and lint is clean under the repo ruff rules.
 - What is still missing: independent exact-head re-review of the current branch head
-  (every repair commit through L2 and the merge of main are pushed; the M1 repair
+  (every repair commit through M1 and the merge of main are pushed; the N1/N2 repair
   is local until assigned); operator assignment for any further repair push; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any
