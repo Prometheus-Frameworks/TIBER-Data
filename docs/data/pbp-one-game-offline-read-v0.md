@@ -59,8 +59,12 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
 2. **One format.** Parquet, read with `polars`, an existing declared dependency in
    `pyproject.toml`. No new dependency was added and no multi-format framework exists.
    `pyarrow` is the parquet backend polars already declares.
-3. **Explicit game request.** Season, date (`YYYY-MM-DD`), away team, home team. The
-   away and home codes must differ after canonicalization, so an alias pair such as
+3. **Explicit game request.** Season, date (`YYYY-MM-DD`, a real zero-padded calendar
+   date; `1999-99-99` or `2026-02-30` is a usage error before any file access), away
+   team, home team. The expected byte count must be a non-negative integer and the
+   expected digest exactly 64 hexadecimal characters; a malformed expectation is a usage
+   error (exit 3), never a source rejection. The away and home codes must differ after
+   canonicalization, so an alias pair such as
    `LA` / `LAR` cannot describe an impossible same-team game; that is rejected before
    any file access.
    **Invariant identity** is exactly `game_id`, `season`, `game_date`, `home_team`,
@@ -130,8 +134,11 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    is never substituted for retrieval, ingestion, publication, or admission time.
    `lineage.status` is `unknown`, `admission.status` is `not_admitted`,
    `governance_status` is `ungoverned`, `canonical` is `false`. Reader revision is
-   recorded as `READER_VERSION` plus the SHA-256 of the reader module bytes. Every
-   scalar polars can return is normalized for JSON: bytes become an explicit
+   recorded as `READER_VERSION` plus the SHA-256 of the reader module bytes. Internally,
+   rows keep raw hashable scalars (only NaN becomes null, so identical rows compare
+   equal) through duplicate classification and possession sequencing; JSON shaping
+   happens once at the output boundary. There, every scalar polars can return is
+   normalized: bytes become an explicit
    `{bytes_hex, byte_length}` envelope, time and timedelta and Decimal values become
    labeled envelopes, NaN becomes null, positive and negative infinity become signed
    `{float_infinity}` envelopes distinct from finite, NaN, and null, and an unknown type
@@ -188,7 +195,11 @@ as a hex envelope and a forced serialization failure is a bounded exit-5 process
 failure at stage `serialize_result`; a request whose away and home codes canonicalize to
 one team (`LA`/`LAR`) is rejected before reading while a real alias match still
 resolves; positive and negative infinity serialize as signed envelopes and stay distinct
-from finite, NaN, and null;
+from finite, NaN, and null; an infinite `play_id` or `drive` is classified and sequenced
+on its raw value and enveloped only in the output; identical rows containing NaN are
+identical duplicates, not conflicts; negative byte counts and non-64-hex digests exit 3
+before file access while a well-formed wrong digest still exits 2; non-calendar dates
+exit 3 while a leap day validates;
 wrong home/away/date/season and the real target request against a synthetic file are
 unresolved with no fallback; conflicting `game_date` or `home_team` inside one game is
 conflicting metadata while varying `time_of_day` or `week` is not; identical versus

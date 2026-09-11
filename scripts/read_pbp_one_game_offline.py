@@ -42,6 +42,7 @@ from src.pbp_one_game.offline_read import (  # noqa: E402
     SourceDeclaration,
     dumps_bounded,
     read_one_game,
+    validate_receipt_expectations,
 )
 
 
@@ -94,6 +95,9 @@ def main(argv: list[str] | None = None) -> int:
         season=args.season, game_date=args.date, away_team=args.away, home_team=args.home
     )
     try:
+        # Malformed receipt expectations and requests are usage errors (exit 3); they are
+        # never allowed to reach verification, where exit 2 means the source failed.
+        validate_receipt_expectations(args.expected_bytes, args.expected_sha256)
         request.validate()
     except ValueError as exc:
         print(f"invalid request: {exc}", file=sys.stderr)

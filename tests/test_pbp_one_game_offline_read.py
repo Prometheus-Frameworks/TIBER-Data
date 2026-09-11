@@ -1048,9 +1048,10 @@ def test_d3_bytes_in_emitted_field_serialize_as_explicit_hex_envelope(tmp_path):
     result = run(path, possession=mod.PossessionRequest(HOME, 1))
     assert result["status"] == "read"
     text = mod.dumps(result)  # must not raise
-    desc = result["events"]["rows"][0]["fields"]["desc"]
+    # Raw bytes stay raw internally; the hex envelope is applied at the output boundary.
+    assert result["events"]["rows"][0]["fields"]["desc"] == b"\x00\xffSYNTHETIC"
+    desc = json.loads(text)["events"]["rows"][0]["fields"]["desc"]
     assert desc == {"bytes_hex": b"\x00\xffSYNTHETIC".hex(), "byte_length": 11}
-    assert '"bytes_hex"' in text
 
 
 def test_d3_jsonable_normalizes_every_supported_scalar():
@@ -1152,11 +1153,12 @@ def test_e2_infinite_floats_serialize_as_signed_envelopes(tmp_path, value, sign)
     assert result["status"] == "read"
     text, bounded = mod.dumps_bounded(result)
     assert bounded["status"] == "read"
-    by_id = {r["play_id"]: r["fields"]["yards_gained"] for r in result["events"]["rows"]}
+    raw_by_id = {r["play_id"]: r["fields"]["yards_gained"] for r in result["events"]["rows"]}
+    assert raw_by_id[4.0] == value  # raw float kept internally
+    emitted = json.loads(text)["events"]["rows"]
+    by_id = {r["play_id"]: r["fields"]["yards_gained"] for r in emitted}
     assert by_id[4.0] == {"float_infinity": sign}
     assert by_id[5.0] == 3.0
-    first_row = json.loads(text)["events"]["rows"][0]
-    assert first_row["fields"]["yards_gained"] == {"float_infinity": sign}
 
 
 def test_e2_jsonable_keeps_infinity_nan_null_and_finite_distinct():
@@ -1171,3 +1173,121 @@ def test_e2_jsonable_keeps_infinity_nan_null_and_finite_distinct():
         "none": None,
     }
     json.dumps(out, allow_nan=False)
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of 752dce2 (PR #269): G1 infinity keys, G2 receipt args, G3 dates
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("column, value", [
+    ("play_id", float("inf")), ("play_id", float("-inf")),
+    ("drive", float("inf")), ("drive", float("-inf")),
+])
+def test_g1_infinite_key_values_are_processed_then_enveloped_at_output(tmp_path, column, value):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows.append(play(99.0, HOME, 9.0))
+    rows[-1][column] = value
+    rows.append(dict(rows[-1]))  # identical duplicate of the infinite-keyed row
+    if column == "drive":
+        rows[-1]["fixed_drive"] = value
+        rows[-2]["fixed_drive"] = value
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "read", result.get("failure")
+    keys = result["inventory"]["keys"]
+    assert keys["row_count"] == len(rows)
+    assert len(keys["identical_duplicate_keys"]) == 1
+    text, bounded = mod.dumps_bounded(result)
+    assert bounded["status"] == "read"
+    sign = "+" if value > 0 else "-"
+    dup = json.loads(text)["inventory"]["keys"]["identical_duplicate_keys"][0]
+    if column == "play_id":
+        assert dup["play_id"] == {"float_infinity": sign}
+    else:
+        runs = json.loads(text)["possession"]["runs"]
+        assert runs[-1]["provider_drive"] == {"float_infinity": sign}
+
+
+def test_g1_internal_rows_keep_raw_scalars_and_only_nan_is_normalized(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[0]["yards_gained"] = float("nan")
+    rows[1]["yards_gained"] = float("inf")
+    rows[2]["desc"] = b"\x01SYNTHETIC"
+    path = write_parquet(tmp_path, rows)
+    content = path.read_bytes()
+    loaded, _ = mod.load_game_rows(content, SYN_GAME_ID)
+    assert loaded[0]["yards_gained"] is None
+    assert loaded[1]["yards_gained"] == float("inf")
+    assert loaded[2]["desc"] == b"\x01SYNTHETIC"
+    assert all(isinstance(r["play_id"], float) for r in loaded)
+
+
+def test_g1_identical_rows_with_nan_are_identical_duplicates_not_conflicts(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    rows[0]["yards_gained"] = float("nan")
+    rows.append(dict(rows[0]))
+    path = write_parquet(tmp_path, rows)
+    keys = run(path)["inventory"]["keys"]
+    assert len(keys["identical_duplicate_keys"]) == 1
+    assert keys["conflicting_duplicate_keys"] == []
+
+
+@pytest.mark.parametrize("expected_bytes, sha", [
+    (-1, "0" * 64), (10, "not-a-sha256"), (10, "0" * 63), (10, "0" * 65), (10, "g" * 64),
+])
+def test_g2_malformed_receipt_expectations_are_usage_errors_before_file_access(
+    tmp_path, monkeypatch, expected_bytes, sha
+):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    monkeypatch.setattr(mod, "verify_source_bytes", lambda *a, **k: pytest.fail("read"))
+    with pytest.raises(ValueError):
+        mod.read_one_game(
+            path=path, expected_bytes=expected_bytes, expected_sha256=sha, request=REQ
+        )
+    args = _cli_args(path, tmp_path / "out.json")
+    args[args.index("--expected-bytes") + 1] = str(expected_bytes)
+    args[args.index("--expected-sha256") + 1] = sha
+    proc = _cli(args)
+    assert proc.returncode == 3, proc.stderr
+    assert not (tmp_path / "out.json").exists()
+
+
+def test_g2_uppercase_hex_digest_is_accepted_and_compared_case_insensitively(tmp_path):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    args = receipt_args(path)
+    result = mod.read_one_game(
+        path=path, expected_bytes=args["expected_bytes"],
+        expected_sha256=args["expected_sha256"].upper(), request=REQ,
+    )
+    assert result["receipt"]["source"]["receipt_status"] == "verified"
+
+
+def test_g2_wrong_but_well_formed_expectations_still_exit_2(tmp_path):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    args = _cli_args(path, tmp_path / "out.json")
+    args[args.index("--expected-sha256") + 1] = "0" * 64
+    assert _cli(args).returncode == 2
+
+
+@pytest.mark.parametrize("bad_date", ["1999-99-99", "2026-02-30", "1999-00-01", "1999-1-1"])
+def test_g3_non_calendar_dates_are_usage_errors_before_file_access(tmp_path, monkeypatch, bad_date):
+    path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
+    monkeypatch.setattr(mod, "verify_source_bytes", lambda *a, **k: pytest.fail("read"))
+    request = mod.GameRequest(
+        season=SYN_SEASON, game_date=bad_date, away_team=AWAY, home_team=HOME
+    )
+    with pytest.raises(ValueError):
+        run(path, request=request)
+    args = _cli_args(path, tmp_path / "out.json")
+    args[args.index("--date") + 1] = bad_date
+    proc = _cli(args)
+    assert proc.returncode == 3, proc.stderr
+
+
+def test_g3_leap_day_is_a_valid_calendar_date():
+    mod.GameRequest(season=2024, game_date="2024-02-29", away_team=AWAY, home_team=HOME).validate()
+    with pytest.raises(ValueError):
+        mod.GameRequest(
+            season=2023, game_date="2023-02-29", away_team=AWAY, home_team=HOME
+        ).validate()

@@ -167,6 +167,7 @@ PROCESSING_STAGES: tuple[str, ...] = (
 )
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
 
 class SourceRejected(Exception):
@@ -228,6 +229,14 @@ class GameRequest:
     def validate(self) -> None:
         if not _DATE_RE.match(self.game_date):
             raise ValueError("requested game_date must be YYYY-MM-DD")
+        try:
+            parsed = date.fromisoformat(self.game_date)
+        except ValueError as exc:
+            raise ValueError(
+                f"requested game_date {self.game_date!r} is not a calendar date"
+            ) from exc
+        if parsed.isoformat() != self.game_date:
+            raise ValueError("requested game_date must be a zero-padded ISO calendar date")
         if not self.away_team or not self.home_team:
             raise ValueError("requested away_team and home_team are required")
         if canon_team(self.away_team) == canon_team(self.home_team):
@@ -304,6 +313,23 @@ def season_matches(value: Any, requested: int) -> bool:
     if isinstance(value, str):
         return value == str(requested)
     return False
+
+
+def _nan_to_none(value: Any) -> Any:
+    """Internal scalar normalization: NaN becomes null; every other value stays raw."""
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    return value
+
+
+def validate_receipt_expectations(expected_bytes: int, expected_sha256: str) -> None:
+    """Malformed receipt declarations are usage errors, never evidence about the source."""
+    if isinstance(expected_bytes, bool) or not isinstance(expected_bytes, int):
+        raise ValueError("expected_bytes must be an integer byte count")
+    if expected_bytes < 0:
+        raise ValueError("expected_bytes must be a non-negative byte count")
+    if not isinstance(expected_sha256, str) or not _SHA256_RE.match(expected_sha256):
+        raise ValueError("expected_sha256 must be exactly 64 hexadecimal characters")
 
 
 def _jsonable(value: Any) -> Any:
@@ -732,7 +758,11 @@ def load_game_rows(content: bytes, game_id: str) -> tuple[list[dict[str, Any]], 
         plan = lazy.explain()
         frame = lazy.collect()
         raw_rows = frame.to_dicts()
-    rows = [{k: _jsonable(v) for k, v in row.items()} for row in raw_rows]
+    # Keep hashable, comparable raw scalars for duplicate classification and possession
+    # sequencing. Only NaN is normalized here (to null) because NaN != NaN would make
+    # identical rows look conflicting. All other JSON shaping (bytes, infinities, dates)
+    # happens once at the output boundary in dumps().
+    rows = [{k: _nan_to_none(v) for k, v in row.items()} for row in raw_rows]
     rows.sort(key=_play_sort_key)
     strategy = {
         "logical_scope": f"rows where game_id == {game_id!r}",
@@ -1128,6 +1158,7 @@ def read_one_game(
 ) -> dict[str, Any]:
     """Run the full offline path. Returns a result dict; never raises on rejection."""
     declaration = declaration or SourceDeclaration()
+    validate_receipt_expectations(expected_bytes, expected_sha256)
     request.validate()
     if possession is not None:
         possession.validate()
