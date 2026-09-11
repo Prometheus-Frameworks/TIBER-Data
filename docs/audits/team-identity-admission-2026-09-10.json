@@ -1,0 +1,45 @@
+{
+  "schema_version": "team_identity_admission_mechanical_audit_v1",
+  "status": "branch_prepared_independent_review_pending",
+  "proposal_commit": "22e9843df74ced8f2856c6463c86b626a79683d1",
+  "authorization": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/268#issuecomment-5627117154",
+  "original_records": 72,
+  "prepared_records": 75,
+  "added_sleeper_ids": [
+    "9487",
+    "8112",
+    "10219"
+  ],
+  "new_confidence": "medium",
+  "new_match_method": "name_exact",
+  "original_records_preserved": true,
+  "consumer_bundle_regenerated": false,
+  "merge_performed": false,
+  "deployment_performed": false,
+  "production_release_performed": false,
+  "data_269_touched": false,
+  "focused_tests_passed": 74,
+  "artifacts": [
+    {
+      "path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v2.json",
+      "sha256": "02e360f58837f620e26b071992f90c444486388e692e39c5dcffc23f63e8a0c9"
+    },
+    {
+      "path": "exports/promoted/draft_review/team_identity_admission_v1.json",
+      "sha256": "4ed7a6e7d0310c0f3b3e3c70a53f7d7ec0fb0c22dbd931702ea5efc4399f84ef"
+    },
+    {
+      "path": "docs/audits/team-identity-proposal-2026-09-10.json",
+      "sha256": "8d121f172f5517d318c0b179161666a652f7a7a4028119cc2376ee7584689573"
+    },
+    {
+      "path": "docs/audits/team-identity-proposal-2026-09-10.md",
+      "sha256": "9da00981fd69a54d1b76cdeeb9945b52d690132d1522cdb548a210a1dea21c42"
+    },
+    {
+      "path": "exports/promoted/draft_review/evidence_admission_v1.json",
+      "sha256": "603e52409c5d07820bc58c5c0b7d6df91e4eb7cdc31326633d1c24e35c34811c"
+    }
+  ],
+  "archived_proposal_and_prior_receipt_byte_identical": true
+}

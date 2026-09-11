@@ -302,3 +302,45 @@ Example:
   are provider-declared agreements, missing timestamps are current clocks, or
   historical data establishes current role/forecast/transaction recommendations.
 - Audit-trigger status: independent exact-head review pending in the linked PR.
+
+## Current handoff — #267 three Team historical identity proposals
+
+- Active task: authorized preparation and independent review of exactly Parker
+  Washington/9487, Drake London/8112 and Chris Rodriguez/10219. Task class:
+  provenance/source audit plus downstream handoff preparation.
+- Files touched: paired `docs/audits/team-identity-proposal-2026-09-10` MD/JSON,
+  `scripts/audit_team_identity_proposal.py`, focused tests and this append.
+- Now true: proposed V2-compatible name_exact/medium rows, exact pinned source
+  inspection, collision checks and per-field weekly denominators are reviewable.
+  Current promoted 72 rows and accepted receipt remain unchanged.
+- Missing: independent exact-head review and operator admission. Review receipt
+  belongs in the linked PR; proposal consumer permission remains false.
+- Must not assume: preparation/review admits identity, candidate team is current
+  or historical team, name matching is provider verification, or missing weeks
+  are zeros. No source acquisition, promotion, consumer regeneration, merge or
+  production release was performed.
+- Audit triggers: identity and source-use/downstream semantics; exact-head
+  independent review pending.
+
+## Current handoff — #267 / #268 three-identity admission preparation
+
+- Active task: user-authorized data artifact and downstream handoff preparation
+  for exactly Parker Washington/9487, Drake London/8112 and Chris Rodriguez/10219.
+  [Authorization](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/268#issuecomment-5627117154)
+  covers branch admission/promotion changes and independent review only.
+- Files touched: separate Team receipt, additive 75-row V2 artifact, offline
+  materializer, archived proposal crosswalk replay adjustment, legacy overwrite
+  guard, focused tests, paired mechanical audit, inventory and identity docs.
+- Now true: original 72 rows and all source/candidate bytes retained; exactly
+  three medium/name_exact additions; previous receipt and archived proposal
+  unchanged. Scope/denominators/unknowns remain explicit. Legacy regeneration
+  cannot discard the extension. Focused suites pass 74 tests.
+- Missing: independent exact-commit review of these mechanical changes, then
+  separate operator decisions for merge/deployment and downstream consumption.
+- Must not assume: branch preparation activates production or consumers; these
+  identities resolve Watson/Lloyd/Dobbins/Gainwell; provider IDs agree; candidate
+  JAX context supersedes historical WAS; absent weeks are zero or games played.
+  No consumer bundle regeneration, merge, deployment or release performed.
+  Data #269 is untouched.
+- Audit-trigger status: builder mechanical audit completed; independent exact
+  commit review pending and recorded separately in PR #268.

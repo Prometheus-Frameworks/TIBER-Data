@@ -1,0 +1,903 @@
+{
+  "schema_version": "team_identity_admission_v1",
+  "status": "accepted_for_branch_preparation",
+  "scope": "three_historical_identity_edges_only",
+  "proposal_commit": "22e9843df74ced8f2856c6463c86b626a79683d1",
+  "proposal_path": "docs/audits/team-identity-proposal-2026-09-10.json",
+  "proposal_sha256": "8d121f172f5517d318c0b179161666a652f7a7a4028119cc2376ee7584689573",
+  "operator_acceptance": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/268#issuecomment-5627117154",
+  "proposal_review": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/268#issuecomment-5627016520",
+  "identity_records": [
+    {
+      "provider": "sleeper",
+      "provider_player_id": "9487",
+      "provider_canonical_id": "sleeper:9487",
+      "tiber_player_id": "00-0038606",
+      "player_name": "Parker Washington",
+      "position": "WR",
+      "team": "JAX",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "8112",
+      "provider_canonical_id": "sleeper:8112",
+      "tiber_player_id": "00-0037238",
+      "player_name": "Drake London",
+      "position": "WR",
+      "team": "ATL",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "10219",
+      "provider_canonical_id": "sleeper:10219",
+      "tiber_player_id": "00-0038611",
+      "player_name": "Chris Rodriguez Jr.",
+      "position": "RB",
+      "team": "JAX",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    }
+  ],
+  "consumer_scope": {
+    "consumer": "TIBER-Fantasy Draft Review / issue 360",
+    "season": 2025,
+    "weeks": [
+      1,
+      18
+    ],
+    "period_basis": "documented 2025 regular-season week boundary; game_type/game_id absent",
+    "mode": "retrospective_descriptive_only",
+    "exact_approved_identity_required": true,
+    "outcome_fields": [
+      "targets",
+      "receptions",
+      "rushing_attempts",
+      "receiving_yards",
+      "receiving_tds",
+      "rushing_yards",
+      "rushing_tds",
+      "passing_yards",
+      "passing_tds",
+      "interceptions"
+    ],
+    "usage_fields": [
+      "target_share",
+      "air_yards_share"
+    ],
+    "air_yards": "excluded: zero origin ambiguous after legacy defaulting",
+    "unavailable_usage_fields": [
+      "routes_run",
+      "route_participation",
+      "team_rushing_attempts",
+      "rush_share",
+      "red_zone_targets",
+      "red_zone_carries",
+      "snap_share"
+    ],
+    "join_policy": "season/week/GSIS exact; cross-lane context or position conflict blocks joined derivations",
+    "missing_usage_policy": "retain independent outcomes; usage unavailable, never fabricate a row",
+    "missing_week_policy": "unknown, not bye/DNP/injury/zero",
+    "aggregation_policy": "same explicit calendar window; report recorded weeks and nonnull denominators; average weekly share is not season share",
+    "scoring": "raw statistics only; no league fantasy points or scoring subtotal in this grant",
+    "source_acquired_at": null,
+    "source_updated_at": null,
+    "original_release_hash": null,
+    "package_version": null,
+    "forecast_allowed": false,
+    "refresh_allowed": false,
+    "public_rights_receipt": "Accepted scoped terms/attribution assessment in reviewed proposal and operator acceptance; no blanket provider admission.",
+    "attribution_required": "nflverse contributors; source and CC-BY-4.0 links; identify TIBER filtering/aggregation; retain supplied notices"
+  },
+  "sources": [
+    {
+      "path": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "sha256": "45a69f2176104249d3ea416ccdd71dadd8196c6f5dfe3f1bf4e303580ecf47cd"
+    },
+    {
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac"
+    },
+    {
+      "path": "exports/candidates/identity_crosswalk/identity_crosswalk_review_v0.csv",
+      "sha256": "3f7002c33e6ef31a07e1a63db10f3ecbeefcb0328f78e083893973f55ea137f8"
+    },
+    {
+      "path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
+      "sha256": "30a8e17370270e2fa5d055c7a771f19af2fe7bd89282cd2373f7704a492412cb"
+    },
+    {
+      "path": "data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json",
+      "sha256": "f241112115c9a625abead3410db89db6b4a8b603ce1dd663a45ff0697563e3a2"
+    },
+    {
+      "path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v2.json",
+      "sha256": "c0e5c32a20b0397ff22e994a0fd48ec16907b5909f0880e0ebd3c7c89f0f9809"
+    },
+    {
+      "path": "exports/promoted/draft_review/evidence_admission_v1.json",
+      "sha256": "603e52409c5d07820bc58c5c0b7d6df91e4eb7cdc31326633d1c24e35c34811c"
+    },
+    {
+      "path": "scripts/audit_draft_review_evidence_admission.py",
+      "sha256": "da63168f1465e4e9f4a1f499e0a2154d69c74d82a88b1ace5809f49d417d023c"
+    }
+  ],
+  "limitations": [
+    "Recorded weeks are observations, not certified games played.",
+    "Missing weeks are unknown, never zero, bye or DNP.",
+    "Weeks 1\u201318 are the documented 2025 regular-season boundary; game_type/game_id absent.",
+    "Candidate team is dated identity context; historical team remains the weekly source team.",
+    "No provider-ID agreement: Sleeper GSIS and ESPN evidence are null; name_exact remains medium.",
+    "No current role, injury, roster eligibility, ownership, forecast, ranking or transaction authority.",
+    "Terms assessment remains dated 2026-09-07; original acquisition receipt/clocks are unavailable.",
+    "No new source acquisition or refreshed terms assessment occurred."
+  ],
+  "historical_validation": {
+    "usage_rows": 6326,
+    "outcome_rows": 6394,
+    "usage_regular_season_rows": 6043,
+    "outcome_regular_season_rows": 6106,
+    "regular_season_position_conflicts": [
+      {
+        "season": 2025,
+        "week": 1,
+        "player_id": "00-0037745",
+        "usage_position": "RB",
+        "outcome_position": "WR"
+      },
+      {
+        "season": 2025,
+        "week": 3,
+        "player_id": "00-0037745",
+        "usage_position": "RB",
+        "outcome_position": "WR"
+      },
+      {
+        "season": 2025,
+        "week": 4,
+        "player_id": "00-0037745",
+        "usage_position": "RB",
+        "outcome_position": "WR"
+      },
+      {
+        "season": 2025,
+        "week": 5,
+        "player_id": "00-0037745",
+        "usage_position": "RB",
+        "outcome_position": "WR"
+      },
+      {
+        "season": 2025,
+        "week": 9,
+        "player_id": "00-0039305",
+        "usage_position": "TE",
+        "outcome_position": "RB"
+      },
+      {
+        "season": 2025,
+        "week": 10,
+        "player_id": "00-0039305",
+        "usage_position": "TE",
+        "outcome_position": "RB"
+      },
+      {
+        "season": 2025,
+        "week": 11,
+        "player_id": "00-0039305",
+        "usage_position": "TE",
+        "outcome_position": "RB"
+      },
+      {
+        "season": 2025,
+        "week": 14,
+        "player_id": "00-0037745",
+        "usage_position": "RB",
+        "outcome_position": "WR"
+      },
+      {
+        "season": 2025,
+        "week": 18,
+        "player_id": "00-0039305",
+        "usage_position": "TE",
+        "outcome_position": "RB"
+      }
+    ],
+    "subjects": [
+      {
+        "sleeper_id": "9487",
+        "inspected_gsis": "00-0038606",
+        "identity_status": "proposed_unadmitted",
+        "usage_weeks": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          15,
+          16,
+          17,
+          18
+        ],
+        "outcome_weeks": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          15,
+          16,
+          17,
+          18
+        ],
+        "historical_teams": [
+          "JAX"
+        ],
+        "position_conflict": false,
+        "excluded_usage_weeks": [
+          19
+        ],
+        "excluded_outcome_weeks": [
+          19
+        ],
+        "missing_usage_weeks": [],
+        "outcome_denominators": {
+          "targets": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1
+            ]
+          },
+          "receptions": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              4
+            ]
+          },
+          "rushing_attempts": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              5,
+              6,
+              9,
+              11,
+              12,
+              13,
+              15,
+              16,
+              18
+            ]
+          },
+          "receiving_yards": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              4
+            ]
+          },
+          "receiving_tds": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              4,
+              6,
+              7,
+              9,
+              11,
+              13,
+              15,
+              17
+            ]
+          },
+          "rushing_yards": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              5,
+              6,
+              9,
+              11,
+              12,
+              13,
+              15,
+              16,
+              18
+            ]
+          },
+          "rushing_tds": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              9,
+              10,
+              11,
+              12,
+              13,
+              15,
+              16,
+              17,
+              18
+            ]
+          },
+          "passing_yards": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              9,
+              10,
+              11,
+              12,
+              13,
+              15,
+              16,
+              17,
+              18
+            ]
+          },
+          "passing_tds": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              9,
+              10,
+              11,
+              12,
+              13,
+              15,
+              16,
+              17,
+              18
+            ]
+          },
+          "interceptions": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              9,
+              10,
+              11,
+              12,
+              13,
+              15,
+              16,
+              17,
+              18
+            ]
+          }
+        },
+        "usage_denominators": {
+          "target_share": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1
+            ]
+          },
+          "air_yards_share": {
+            "recorded_weeks": 16,
+            "nonnull_weeks": 16,
+            "null_weeks": [],
+            "zero_weeks": [
+              1
+            ]
+          }
+        },
+        "historical_positions": [
+          "WR"
+        ]
+      },
+      {
+        "sleeper_id": "8112",
+        "inspected_gsis": "00-0037238",
+        "identity_status": "proposed_unadmitted",
+        "usage_weeks": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          9,
+          10,
+          11,
+          16,
+          17,
+          18
+        ],
+        "outcome_weeks": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          9,
+          10,
+          11,
+          16,
+          17,
+          18
+        ],
+        "historical_teams": [
+          "ATL"
+        ],
+        "position_conflict": false,
+        "excluded_usage_weeks": [],
+        "excluded_outcome_weeks": [],
+        "missing_usage_weeks": [],
+        "outcome_denominators": {
+          "targets": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": []
+          },
+          "receptions": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": []
+          },
+          "rushing_attempts": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              4,
+              6,
+              7,
+              9,
+              10,
+              11,
+              16,
+              17,
+              18
+            ]
+          },
+          "receiving_yards": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": []
+          },
+          "receiving_tds": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              7,
+              11,
+              16,
+              17
+            ]
+          },
+          "rushing_yards": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              4,
+              6,
+              7,
+              9,
+              10,
+              11,
+              16,
+              17,
+              18
+            ]
+          },
+          "rushing_tds": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              4,
+              6,
+              7,
+              9,
+              10,
+              11,
+              16,
+              17,
+              18
+            ]
+          },
+          "passing_yards": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              4,
+              6,
+              7,
+              9,
+              10,
+              11,
+              16,
+              17,
+              18
+            ]
+          },
+          "passing_tds": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              4,
+              6,
+              7,
+              9,
+              10,
+              11,
+              16,
+              17,
+              18
+            ]
+          },
+          "interceptions": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              1,
+              2,
+              3,
+              4,
+              6,
+              7,
+              9,
+              10,
+              11,
+              16,
+              17,
+              18
+            ]
+          }
+        },
+        "usage_denominators": {
+          "target_share": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": []
+          },
+          "air_yards_share": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": []
+          }
+        },
+        "historical_positions": [
+          "WR"
+        ]
+      },
+      {
+        "sleeper_id": "10219",
+        "inspected_gsis": "00-0038611",
+        "identity_status": "proposed_unadmitted",
+        "usage_weeks": [
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11,
+          13,
+          14,
+          16,
+          18
+        ],
+        "outcome_weeks": [
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11,
+          13,
+          14,
+          16,
+          18
+        ],
+        "historical_teams": [
+          "WAS"
+        ],
+        "position_conflict": false,
+        "excluded_usage_weeks": [],
+        "excluded_outcome_weeks": [],
+        "missing_usage_weeks": [],
+        "outcome_denominators": {
+          "targets": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              3,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              14
+            ]
+          },
+          "receptions": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              3,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              13,
+              14
+            ]
+          },
+          "rushing_attempts": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": []
+          },
+          "receiving_yards": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              3,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              13,
+              14
+            ]
+          },
+          "receiving_tds": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              3,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              11,
+              13,
+              14,
+              16,
+              18
+            ]
+          },
+          "rushing_yards": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": []
+          },
+          "rushing_tds": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              3,
+              4,
+              5,
+              8,
+              11,
+              14
+            ]
+          },
+          "passing_yards": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              3,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              11,
+              13,
+              14,
+              16,
+              18
+            ]
+          },
+          "passing_tds": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              3,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              11,
+              13,
+              14,
+              16,
+              18
+            ]
+          },
+          "interceptions": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              3,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              11,
+              13,
+              14,
+              16,
+              18
+            ]
+          }
+        },
+        "usage_denominators": {
+          "target_share": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              3,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              14
+            ]
+          },
+          "air_yards_share": {
+            "recorded_weeks": 12,
+            "nonnull_weeks": 12,
+            "null_weeks": [],
+            "zero_weeks": [
+              3,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              14,
+              16
+            ]
+          }
+        },
+        "historical_positions": [
+          "RB"
+        ]
+      }
+    ]
+  },
+  "consumer_bundle_regeneration_authorized": false,
+  "merge_authorized": false,
+  "production_deployment_authorized": false,
+  "production_release_authorized": false,
+  "artifact_generated_at": "2026-09-10T23:54:26Z"
+}
