@@ -305,6 +305,11 @@ Example:
 
 ## Current handoff — Research #22 offline one-game PBP validation/read v0
 
+- Current task update (2026-09-12): the implementation repair/re-review loop completed
+  clean at `313d28a1575142feb81d1e44aff4ab7c77efe08d`. Joe assigned a documentation-only
+  follow-up to archive the independent receipt in the existing reader document and
+  reconcile this handoff. Only these two Markdown files change in this follow-up;
+  reader, CLI, initialization module, tests, and all other files remain byte-identical.
 - Active task: first PR of the Research #22 2026 PBP scope — a local, read-only
   one-game play-by-play receipt verifier and bounded reader with synthetic tests
   and the requested storage/import compatibility plan, revised after the
@@ -410,12 +415,15 @@ Example:
   `docs/data/pbp-one-game-offline-read-v0.md` (reader doc plus compatibility plan),
   and this handoff. No contract, schema, raw, candidate, promoted, README, or
   support-claim file changed. No new dependency was added.
-- Audit-trigger status: **audit pending.** The reader introduces a team alias
+- Audit-trigger status: **implementation audit completed at `313d28a`.**
+  The reader introduces a team alias
   map, game-identity matching, and provenance/status wording, which the pinned
   AGENTS.md treats as identity and source/provenance semantics regardless of
-  file path. One independent review round (Codex, read-only) has occurred and
-  its findings are repaired on this branch; independent re-review of the exact
-  revised head is required before merge.
+  file path. The [independent result](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/269#issuecomment-5646256106)
+  reports no major issues at that head. The committed receipt in
+  `docs/data/pbp-one-game-offline-read-v0.md` pins the head/base/tree, source comment,
+  code/test blobs, and validation limitations. Review of this documentation-only
+  descendant is a separate PR receipt; the archive does not certify its own edits.
 - What is now true: the reader hashes exact bytes before parsing and rejects missing,
   wrong-size, wrong-digest, or non-parquet input with no side effect, turns a
   failure in one of four named parquet engine stages into a bounded `parse_failure`
@@ -454,8 +462,8 @@ Example:
   import in this executor before test collection. No dependency declaration changed.
   The full suite was not rerun for this bounded repair. Earlier full-suite receipts
   remain attributed to their own revisions and environments.
-- What is still missing: independent exact-head re-review of the current branch head
-  after X1, then Joe's separate merge/deployment decision; an explicitly
+- What is still missing: Joe's separate merge/deployment decision after review of the
+  receipt-only documentation change on PR #269; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any
   durable import, the database-enforced read-only verification of the deployed
@@ -468,7 +476,9 @@ Example:
   ([operator handoff](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/269#issuecomment-5645857667)).
   Fable pushed S1–S3 at `a626361` and handed off; it has stopped editing this PR.
   Merge, deployment, real-data access, ingestion, admission, and broader redesign
-  remain outside this assignment. Audit status remains pending fresh independent review.
+  remain outside this assignment. The implementation audit is complete; Joe's later
+  archival assignment permits these two documentation edits and independent review,
+  with no merge or deployment.
 - What must not be assumed: this PR does not verify that the 2026 game exists in any
   source or in Railway; synthetic tests prove software behavior only; the reader's
   output is not ingestion, admission, promotion, or a Research activation; no Team,

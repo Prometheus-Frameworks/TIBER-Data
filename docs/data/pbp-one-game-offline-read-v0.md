@@ -1,7 +1,7 @@
 # Offline one-game PBP validation and bounded read v0 (Research #22 first PR)
 
-**Status:** implementation for operator review, revised after the 2026-09-10 independent
-branch review (findings F1–F5 plus documentation and error-handling corrections). This PR
+**Status:** independent implementation review completed at `313d28a` on 2026-09-12;
+the review receipt is archived below for the operator's merge decision. This PR
 adds a local, read-only reader and synthetic tests. It performs no acquisition, database
 write, schema change, ingestion, admission, promotion, Research activation, or
 deployment. Real 2026 game availability remains **unverified** until a separately
@@ -15,11 +15,73 @@ authorized source read.
 - Task class (AGENTS.md): provenance / source audit task plus a read-only builder with
   matching tests. No contract under `src/contracts/**`, no `schemas/**`, no
   `data/raw/**` or `exports/promoted/**` change, no support-claim change.
-- **Audit status: pending.** The reader introduces a team alias map (`LA`→`LAR`,
+- **Implementation audit status: completed at the pinned revision below.**
+  The reader introduces a team alias map (`LA`→`LAR`,
   mirroring existing builders), game-identity matching, and provenance/status wording.
   Under the pinned AGENTS.md those are identity and source/provenance semantics, which
-  trigger the auditor function regardless of file path. Independent review is required
-  before merge; the first review round is recorded in the commit history of this branch.
+  trigger the auditor function regardless of file path. The independent review result
+  is preserved here as a committed audit record. The receipt-only documentation change
+  receives its own review on PR #269; this archive does not approve that change itself.
+
+## Archived independent implementation audit — 2026-09-12
+
+This section records the independent auditor's published result; the coordinating
+Codex implementer transcribed it under Joe's documentation-only follow-up assignment.
+It does not create a second independent audit or attribute implementer tests to the auditor.
+
+| Receipt item | Pinned evidence |
+| --- | --- |
+| Home PR | [TIBER-Data #269](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/269) |
+| Reviewed head | `313d28a1575142feb81d1e44aff4ab7c77efe08d` |
+| Reviewed tree | `c2fe5796b3129576185b495d33c27e9341162049` |
+| Review base | `793329ff77a1764bb61cd70ce4b4b26e7180ae0c` |
+| Governing instructions | `AGENTS.md` at the reviewed head, Git blob `7fdc142c1a621ed254ca752f89474fff918a4bd1` |
+| Independent reviewer | `chatgpt-codex-connector[bot]` |
+| Assignment | [Exact-head review request, comment 5646243940](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/269#issuecomment-5646243940) |
+| Published result | [Review result, comment 5646256106](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/269#issuecomment-5646256106), posted `2026-09-12T13:43:36Z` |
+| Result as published | "Didn't find any major issues." No actionable findings accompanied that result. |
+| Archival retrieval | Re-read the live PR/result before preparation on `2026-09-12`; local pin receipt recorded at `2026-09-12T15:46:57Z` |
+
+The assignment covered X1's unattributed-drive boundary repair and the complete
+six-file diff for material defects, regressions, and source-use boundaries, using
+bounded synthetic evidence. Earlier review findings and their repairs remain in the
+branch history and PR discussion; their UI thread-resolution status is not changed
+by this archive. The result is a clean implementation review of the named revision,
+not a claim that every possible defect has been excluded.
+
+The following implementation/test blobs are unchanged by this archival follow-up:
+
+| Path | Git blob at reviewed head |
+| --- | --- |
+| `src/pbp_one_game/__init__.py` | `c572c728526e93715bcd81db7b54a4d797b3e894` |
+| `src/pbp_one_game/offline_read.py` | `6fa6d000f7a69e60345951f23331fca6ac0dfeaa` |
+| `scripts/read_pbp_one_game_offline.py` | `759d3b2c62a96c8f1e546d6b8bfbdb789ee5fc10` |
+| `tests/test_pbp_one_game_offline_read.py` | `9ab0137d12bc2ecd8394881977a02322e1312967` |
+
+**Validation attribution.** Coordinating Codex ran 254 focused synthetic tests,
+Ruff, and diff checks successfully on the reviewed source tree. The isolated runtime
+was Python 3.12, Polars 1.44.2 with its compatibility runtime, pytest 9.1.1, and
+Ruff 0.16.7. The standard Polars runtime crashed during import in that executor;
+repository dependency declarations were not changed. The final focused command was
+`python -m pytest -q -p no:cacheprovider tests/test_pbp_one_game_offline_read.py`,
+bounded by an external 180-second timeout. Ruff checked the reader, CLI, and focused
+test file with `--no-cache`. The published source tree was verified equal to the
+tested local tree before the feature ref was updated.
+
+Those are implementer receipts. The independent review comment does not report a
+separate 254-test run. The full suite was not rerun for the takeover repairs; earlier
+full-suite completions, timeouts, skips, baseline failure reports, and environment
+errors remain attributed only to their own revisions and executors. No football
+source file, actual game, stored TIBER row, or chart-to-PBP match was verified here.
+
+**Disposition.** Implementation audit completed at the pinned head. This receipt
+archives that completed review in the existing documentation to satisfy the committed
+audit-output requirement without adding an artifact family or changing code. The
+documentation-only descendant's review is recorded separately on PR #269; any later
+implementation change invalidates an assumption of unchanged code and needs its own
+review. Merge, automatic Railway production deployment, real-data access, ingestion,
+admission, and Research activation remain separate operator decisions. This archive
+does not authorize any of them.
 
 ## Pinned revisions and initial working-tree state
 
