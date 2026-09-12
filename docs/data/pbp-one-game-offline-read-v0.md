@@ -60,7 +60,7 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    `pyproject.toml`. No new dependency was added and no multi-format framework exists.
    `pyarrow` is the parquet backend polars already declares.
 3. **Explicit game request.** Season (an integer argument, never a boolean, float,
-   string, or container), date (`YYYY-MM-DD`, a real zero-padded calendar
+   string, or container), date (a string in `YYYY-MM-DD` form, a real zero-padded calendar
    date; `1999-99-99` or `2026-02-30` is a usage error before any file access), away
    team, home team. The expected byte count must be a non-negative integer and the
    expected digest exactly 64 hexadecimal characters matched against the full string, so
@@ -130,7 +130,9 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    decimal spelling under a strict grammar (sign, digits, optional fraction, optional
    exponent; no whitespace, underscores, hex, or inf/nan spellings) inside a bounded
    domain: at most 4000 significant digits, and either zero or an absolute value in the
-   inclusive range 10**-4000 to 10**4000, compared exactly (`1e4000`, `0.1e4001`, and
+   inclusive range 10**-4000 to 10**4000, compared exactly with context-free
+   `Decimal.copy_abs()` so caller precision, traps, and exponent limits cannot round
+   an outside value onto the boundary or alter acceptance (`1e4000`, `0.1e4001`, and
    `10e3999` are inside; `1.1e4000` and `9e4000` are outside). The digit count and the
    exponent of the most significant digit are derived from the compact spelling before
    any `Decimal` or `int` is constructed, so a string such as `1e999999999` or

@@ -391,6 +391,12 @@ Example:
   pair. Sequencing and event-window counts share that helper; raw values are retained.
   Four synthetic regressions cover an unaccounted drive, an already-accounted drive,
   and evidence after the selected prefix.
+  The review of `fa57f96` found W1/W2: Decimal `abs()` rounded a value just above
+  the numeric ceiling under the caller's context, and non-string date arguments
+  escaped validation as TypeError. Magnitude comparison now uses exact, context-free
+  `copy_abs()`, and dates require strings before the full-string/calendar checks.
+  Twelve synthetic cases cover low/default/high precision with strict traps and
+  exponent limits, near-ceiling play IDs/drives, exact boundaries, and date types.
   Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
@@ -436,14 +442,14 @@ Example:
   conflict check, with a cross-stage consistency test over a shared case set), withholds selection when a play ID is non-finite or non-numeric
   or a prefix drive is non-finite, and bounds any residual serialization failure as
   a processing failure.
-  Focused tests pass 236/236 and lint is clean under the repo ruff rules. This repair
+  Focused tests pass 248/248 and lint is clean under the repo ruff rules. This repair
   was tested with Python 3.12, Polars 1.44.2's compatibility runtime, pytest 9.1.1,
   and Ruff 0.16.7 in an isolated environment; the standard Polars runtime failed on
   import in this executor before test collection. No dependency declaration changed.
   The full suite was not rerun for this bounded repair. Earlier full-suite receipts
   remain attributed to their own revisions and environments.
 - What is still missing: independent exact-head re-review of the current branch head
-  after V1, then Joe's separate merge/deployment decision; an explicitly
+  after W1/W2, then Joe's separate merge/deployment decision; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any
   durable import, the database-enforced read-only verification of the deployed

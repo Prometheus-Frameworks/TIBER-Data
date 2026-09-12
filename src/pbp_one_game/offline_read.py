@@ -231,7 +231,7 @@ class GameRequest:
     def validate(self) -> None:
         if isinstance(self.season, bool) or not isinstance(self.season, int):
             raise ValueError("requested season must be an integer")
-        if not _DATE_RE.fullmatch(self.game_date):
+        if not isinstance(self.game_date, str) or not _DATE_RE.fullmatch(self.game_date):
             raise ValueError("requested game_date must be YYYY-MM-DD")
         try:
             parsed = date.fromisoformat(self.game_date)
@@ -425,7 +425,9 @@ def _bounded_decimal(text: str) -> Decimal | None:
     if abs(adjusted) > _MAX_NUMERIC_STRING_ADJUSTED_EXPONENT:
         return None
     dec = Decimal(text)  # provably within the decimal module's exponent range
-    magnitude = abs(dec)
+    # abs(Decimal) applies the caller's precision/exponent context and can round an
+    # out-of-domain value onto the inclusive boundary. copy_abs is exact and quiet.
+    magnitude = dec.copy_abs()
     if magnitude > _MAX_NUMERIC_STRING_MAGNITUDE or magnitude < _MIN_NUMERIC_STRING_MAGNITUDE:
         return None
     return dec

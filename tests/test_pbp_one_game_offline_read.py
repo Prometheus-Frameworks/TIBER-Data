@@ -2519,3 +2519,44 @@ def test_v1_third_team_after_selection_does_not_invalidate_prefix(tmp_path):
     assert result["possession"]["unattributed_rows"] == 1
     assert result["events"]["unattributed_rows_in_window"] == 0
     assert result["events"]["boundary_after"][0]["fields"]["posteam"] == "SYC"
+
+
+@pytest.mark.parametrize("precision", [2, 28, 4000])
+def test_w1_numeric_domain_is_independent_of_decimal_context(precision):
+    from decimal import Inexact, Overflow, Rounded, localcontext
+
+    just_above = "1." + "0" * 3998 + "1e4000"
+    with localcontext() as ctx:
+        ctx.prec, ctx.Emax, ctx.Emin = precision, 9, -9
+        for signal in (Inexact, Overflow, Rounded):
+            ctx.traps[signal] = True
+        ctx.clear_flags()
+        for spelling in (just_above, "-" + just_above):
+            assert mod._bounded_decimal(spelling) is None
+            assert mod.play_id_order_class(spelling) == "non_numeric"
+        for spelling in ("1e4000", "-1e4000", "1e-4000", "-1e-4000", "0"):
+            assert mod._bounded_decimal(spelling) == mod.Decimal(spelling)
+            assert mod.play_id_order_class(spelling) == "finite"
+        assert not any(ctx.flags.values())
+
+
+@pytest.mark.parametrize("column", ["play_id", "drive"])
+def test_w1_near_ceiling_value_withholds_instead_of_rounding_into_domain(tmp_path, column):
+    rows = [play(1, HOME, 1)]
+    rows[0][column] = "1." + "0" * 3998 + "1e4000"
+    result = run(write_parquet(tmp_path, rows), possession=mod.PossessionRequest(HOME, 1))
+    assert result["status"] == "read"
+    assert result["possession"]["selection"]["status"] == "unresolved"
+    assert result["events"]["status"] == "withheld"
+    assert result["events"]["rows"] == []
+
+
+@pytest.mark.parametrize("bad_date", [None, 19990101, b"1999-01-01", [], {}, True, 1999.0])
+def test_w2_non_string_date_is_usage_error_before_source_access(tmp_path, monkeypatch, bad_date):
+    monkeypatch.setattr(mod, "verify_source_bytes", lambda *a, **k: pytest.fail("source accessed"))
+    request = mod.GameRequest(SYN_SEASON, bad_date, AWAY, HOME)
+    with pytest.raises(ValueError, match="game_date must be YYYY-MM-DD"):
+        mod.read_one_game(
+            path=tmp_path / "absent.parquet", expected_bytes=0, expected_sha256="00" * 32,
+            request=request,
+        )
