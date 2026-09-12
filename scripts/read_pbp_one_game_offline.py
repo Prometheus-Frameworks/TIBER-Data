@@ -109,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     if possession is not None:
         try:
-            possession.validate()
+            possession.validate(request)
         except ValueError as exc:
             # A non-positive ordinal is a malformed invocation, never source evidence.
             print(f"invalid request: {exc}", file=sys.stderr)

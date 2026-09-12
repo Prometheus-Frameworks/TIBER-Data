@@ -378,6 +378,13 @@ Example:
   unattributed-drive gate and uses the same rule in event-window counts, preserving
   every raw source value. Eight synthetic cases cover null, empty, and whitespace
   codes on their own drive and inside an already evidenced drive.
+  The review of `ab54d22` found U1–U3: non-integer requested seasons reached source
+  matching; list/struct source team identities crashed alias lookup; and possession
+  requests could name a team outside the requested matchup. Requested seasons now
+  require integers excluding booleans, source home/away codes share the usable-team
+  guard while retaining raw conflict evidence, and CLI/library possession requests
+  must name a canonical team in the matchup before file access. Twenty-four new
+  synthetic cases cover rejection, unresolved identity, conflict retention, and aliases.
   Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
@@ -423,14 +430,14 @@ Example:
   conflict check, with a cross-stage consistency test over a shared case set), withholds selection when a play ID is non-finite or non-numeric
   or a prefix drive is non-finite, and bounds any residual serialization failure as
   a processing failure.
-  Focused tests pass 208/208 and lint is clean under the repo ruff rules. This repair
+  Focused tests pass 232/232 and lint is clean under the repo ruff rules. This repair
   was tested with Python 3.12, Polars 1.44.2's compatibility runtime, pytest 9.1.1,
   and Ruff 0.16.7 in an isolated environment; the standard Polars runtime failed on
   import in this executor before test collection. No dependency declaration changed.
   The full suite was not rerun for this bounded repair. Earlier full-suite receipts
   remain attributed to their own revisions and environments.
 - What is still missing: independent exact-head re-review of the current branch head
-  after T1, then Joe's separate merge/deployment decision; an explicitly
+  after U1–U3, then Joe's separate merge/deployment decision; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any
   durable import, the database-enforced read-only verification of the deployed

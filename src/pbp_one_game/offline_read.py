@@ -229,6 +229,8 @@ class GameRequest:
     home_team: str
 
     def validate(self) -> None:
+        if isinstance(self.season, bool) or not isinstance(self.season, int):
+            raise ValueError("requested season must be an integer")
         if not _DATE_RE.fullmatch(self.game_date):
             raise ValueError("requested game_date must be YYYY-MM-DD")
         try:
@@ -266,11 +268,15 @@ class PossessionRequest:
     team: str
     ordinal: int  # 1-based: the team's N-th possession in play order
 
-    def validate(self) -> None:
+    def validate(self, game: GameRequest | None = None) -> None:
         if not _team_code_present(self.team):
             raise ValueError("requested possession team is required and must not be blank")
         if isinstance(self.ordinal, bool) or not isinstance(self.ordinal, int) or self.ordinal < 1:
             raise ValueError("requested possession ordinal must be a positive integer (1-based)")
+        if game is not None and canon_team(self.team) not in {
+            canon_team(game.away_team), canon_team(game.home_team),
+        }:
+            raise ValueError("requested possession team must belong to the requested matchup")
 
 
 @dataclass(frozen=True, slots=True)
@@ -887,13 +893,19 @@ def locate_game(
     matches_with_non_finite_game_id = 0
     same_teams_any_orientation = 0
     swapped_orientation = 0
+    unusable_team_tuples = 0
     date_bases: set[str] = set()
     for rec in distinct:
         rec_date, basis = _normalize_date_value(rec.get("game_date"))
         date_bases.add(basis)
         season_ok = season_matches(rec.get("season"), request.season)
-        home = canon_team(rec.get("home_team"))
-        away = canon_team(rec.get("away_team"))
+        raw_home, raw_away = rec.get("home_team"), rec.get("away_team")
+        if not _team_code_present(raw_home) or not _team_code_present(raw_away):
+            # Unsupported source identities cannot be alias-map keys or matches. Keep
+            # their raw tuple in `distinct` for same-game metadata conflict detection.
+            unusable_team_tuples += 1
+            continue
+        home, away = canon_team(raw_home), canon_team(raw_away)
         if season_ok and {home, away} == {req_home, req_away}:
             same_teams_any_orientation += 1
             if home == req_away and away == req_home and rec_date == request.game_date:
@@ -917,6 +929,7 @@ def locate_game(
         "swapped_home_away_on_requested_date": swapped_orientation,
         "matching_tuples_without_game_id": matches_without_game_id,
         "matching_tuples_with_non_finite_game_id": matches_with_non_finite_game_id,
+        "identity_tuples_with_unusable_team": unusable_team_tuples,
         "game_date_value_bases": sorted(date_bases),
     }
     if matches_without_game_id or matches_with_non_finite_game_id:
@@ -1515,7 +1528,7 @@ def read_one_game(
     validate_receipt_expectations(expected_bytes, expected_sha256)
     request.validate()
     if possession is not None:
-        possession.validate()
+        possession.validate(request)
     source_path = Path(path)
     receipt = _base_receipt(
         supplied_path=str(path),

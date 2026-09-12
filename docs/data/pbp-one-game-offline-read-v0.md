@@ -59,7 +59,8 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
 2. **One format.** Parquet, read with `polars`, an existing declared dependency in
    `pyproject.toml`. No new dependency was added and no multi-format framework exists.
    `pyarrow` is the parquet backend polars already declares.
-3. **Explicit game request.** Season, date (`YYYY-MM-DD`, a real zero-padded calendar
+3. **Explicit game request.** Season (an integer argument, never a boolean, float,
+   string, or container), date (`YYYY-MM-DD`, a real zero-padded calendar
    date; `1999-99-99` or `2026-02-30` is a usage error before any file access), away
    team, home team. The expected byte count must be a non-negative integer and the
    expected digest exactly 64 hexadecimal characters matched against the full string, so
@@ -70,7 +71,14 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    source identity). The away and home codes must differ after
    canonicalization, so an alias pair such as
    `LA` / `LAR` cannot describe an impossible same-team game; that is rejected before
-   any file access.
+   any file access. The canonical possession team must belong to that requested
+   matchup; a different team is also a usage error before file access, even when
+   contradictory source rows name it. CLI and library share this validation.
+   Source home/away identities must also be non-blank strings before alias lookup.
+   Unsupported types and missing/blank codes cannot match and are counted in
+   `identity_tuples_with_unusable_team`; their raw tuples remain available for
+   same-game metadata conflict detection. They produce unresolved identity, not a
+   reader-processing failure.
    **Invariant identity** is exactly `game_id`, `season`, `game_date`, `home_team`,
    `away_team`; only these decide whether a game's metadata is consistent, and only these
    are projected across the file to locate the game. **Game-level descriptors** (`week`,

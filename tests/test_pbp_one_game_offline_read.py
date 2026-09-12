@@ -193,7 +193,7 @@ def test_verified_receipt_records_exact_bytes_and_reader_revision(tmp_path):
 )
 def test_wrong_identity_is_unresolved_not_substituted(tmp_path, request_):
     path = write_parquet(tmp_path, alternating_game(DEFAULT_POSSESSIONS))
-    result = run(path, request=request_, possession=mod.PossessionRequest(HOME, 2))
+    result = run(path, request=request_, possession=mod.PossessionRequest(request_.home_team, 2))
     assert result["status"] == "unresolved"
     assert result["game"]["status"] == "unresolved"
     assert result["game"]["reason"] == "no_matching_game"
@@ -2426,3 +2426,63 @@ def test_t1_unknown_source_team_inside_known_drive_preserves_raw_value(tmp_path,
     assert result["events"]["row_count"] == 3
     serialized = json.loads(mod.dumps(result))
     assert serialized["events"]["rows"][1]["fields"]["posteam"] == unknown_team
+
+
+# Review of ab54d22: request types/matchup and unusable source team identities.
+@pytest.mark.parametrize("season", [1999.0, 1999.5, True, False, "1999", None, [1999]])
+def test_u1_requested_season_requires_integer_before_source_access(tmp_path, monkeypatch, season):
+    monkeypatch.setattr(mod, "verify_source_bytes", lambda *a, **k: pytest.fail("source accessed"))
+    request = mod.GameRequest(season, SYN_DATE, AWAY, HOME)
+    with pytest.raises(ValueError, match="season must be an integer"):
+        mod.read_one_game(
+            path=tmp_path / "absent.parquet", expected_bytes=0, expected_sha256="00" * 32,
+            request=request,
+        )
+
+
+@pytest.mark.parametrize("column", ["home_team", "away_team"])
+@pytest.mark.parametrize("value", [[HOME], {"team": HOME}, b"SYA", 7, None, "   "])
+def test_u2_unusable_source_team_is_unresolved(tmp_path, monkeypatch, column, value):
+    rows = [dict(r, **{column: value}) for r in alternating_game(DEFAULT_POSSESSIONS)]
+    path = write_parquet(tmp_path, rows)
+    monkeypatch.setattr(mod, "game_scan", lambda *a, **k: pytest.fail("game scan attempted"))
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["status"] == "unresolved"
+    assert result["game"]["reason"] == "no_matching_game"
+    assert result["game"]["diagnostics"]["identity_tuples_with_unusable_team"] == 1
+    assert result["events"] is None
+
+
+def test_u3_possession_outside_requested_matchup_rejected_before_source_access(
+    tmp_path, monkeypatch,
+):
+    path = write_parquet(tmp_path, [play(1, "SYC", 1)])
+    monkeypatch.setattr(mod, "verify_source_bytes", lambda *a, **k: pytest.fail("source accessed"))
+    with pytest.raises(ValueError, match="possession team must belong to the requested matchup"):
+        run(path, possession=mod.PossessionRequest("SYC", 1))
+
+
+def test_u3_cli_matchup_mismatch_is_usage_error_without_output(tmp_path):
+    path = write_parquet(tmp_path, [play(1, "SYC", 1)])
+    out = tmp_path / "result.json"
+    proc = _cli(_cli_args(path, out) + ["--possession-team", "SYC", "--possession-ordinal", "1"])
+    assert proc.returncode == 3, proc.stdout + proc.stderr
+    assert "requested matchup" in proc.stderr
+    assert not out.exists()
+
+
+@pytest.mark.parametrize("possession_team", ["LA", "LAR"])
+def test_u3_possession_matchup_accepts_canonical_alias(tmp_path, possession_team):
+    path = write_parquet(tmp_path, [play(1, "LA", 1, home_team="LA")])
+    request = mod.GameRequest(SYN_SEASON, SYN_DATE, AWAY, "LAR")
+    result = run(path, request=request, possession=mod.PossessionRequest(possession_team, 1))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["events"]["rows"][0]["fields"]["posteam"] == "LA"
+
+
+def test_u2_invalid_team_on_matched_game_still_conflicts(tmp_path):
+    rows = [play(1, HOME, 1), play(2, HOME, 1, home_team="   ")]
+    result = run(write_parquet(tmp_path, rows))
+    assert result["game"]["reason"] == "conflicting_game_metadata"
+    assert result["game"]["diagnostics"]["identity_tuples_with_unusable_team"] == 1
+    assert result["events"] is None
