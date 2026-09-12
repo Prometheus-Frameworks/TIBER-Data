@@ -1418,18 +1418,29 @@ def select_possession(
         return unresolved("provider_drive_spelling_ambiguous", run, affected_runs=ambiguous)
     if any(earlier > later for earlier, later in zip(drive_values, drive_values[1:], strict=False)):
         return unresolved("provider_drive_order_non_monotone", run)
-    prefix_drives = {_freeze(r["provider_drive"]) for r in prefix}
-    foreign = [
+    # Every prefix drive has one attributed run (checked above). Merely appearing
+    # somewhere in the prefix does not place a teamless row inside that drive.
+    prefix_runs_by_drive = {_freeze(r["provider_drive"]): r for r in prefix}
+    unknown_prefix = [
         u for u in sequence["unattributed"]
         if u["index"] <= run["last_index"]
         and not _drive_missing(u["drive"])
-        and _freeze(u["drive"]) not in prefix_drives
     ]
+    foreign = [u for u in unknown_prefix if _freeze(u["drive"]) not in prefix_runs_by_drive]
     if foreign:
         return unresolved(
             "unattributed_drive_value_in_prefix",
             run,
             affected_play_ids=[u["play_id"] for u in foreign],
+        )
+    outside = []
+    for u in unknown_prefix:
+        matching_run = prefix_runs_by_drive[_freeze(u["drive"])]
+        if not matching_run["first_index"] <= u["index"] <= matching_run["last_index"]:
+            outside.append(u["play_id"])
+    if outside:
+        return unresolved(
+            "unattributed_drive_outside_run_in_prefix", run, affected_play_ids=outside,
         )
     result.update(status="resolved", reason="possession_semantics_supported", selected_run=run)
     result["note"] = (

@@ -158,7 +158,9 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    float);
    no unattributed (missing, blank, non-string, or outside the matched home/away pair
    after canonicalization) `posteam` row before the end of the selection carries a drive
-   value that no prefix run accounts for; no null, NaN, non-finite, or non-numeric
+   value that no prefix run accounts for, or lies outside the matching attributed
+   run's first/last row boundaries (`unattributed_drive_outside_run_in_prefix`, with
+   affected play IDs); no null, NaN, non-finite, or non-numeric
    `play_id` breaks ordering (±infinity serializes but is no evidence of a position in
    the game order; an unparseable ID has an unknown position; a parseable numeric string
    orders normally); no two rows carry distinct raw spellings of one numeric play ID
@@ -173,8 +175,10 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    missing drive number, an infinite one as unresolvable ordering; the raw NaN is kept
    distinct from null through run extension, occurrence counting, and output, so a NaN
    drive and a null drive on consecutive same-team rows are two runs). Neutral
-   administrative rows (unattributed `posteam` with a null drive, or a drive already in the
-   prefix) do not create possessions and do not block selection. Every unresolved case
+   administrative rows (unattributed `posteam` with a null/NaN drive, or a matching
+   drive inside its attributed run's boundaries) do not create possessions and do not
+   block selection. A drive value's presence elsewhere in the prefix is insufficient.
+   Every unresolved case
    returns a typed reason and the affected runs or play IDs, keeps all runs in the
    output, and emits no arbitrary event sample. Source team values are never rewritten:
    blank text stays blank and null stays null in the raw event fields. Both the game

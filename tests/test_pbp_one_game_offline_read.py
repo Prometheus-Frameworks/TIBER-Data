@@ -2560,3 +2560,32 @@ def test_w2_non_string_date_is_usage_error_before_source_access(tmp_path, monkey
             path=tmp_path / "absent.parquet", expected_bytes=0, expected_sha256="00" * 32,
             request=request,
         )
+
+
+@pytest.mark.parametrize("unknown_team", [None, "SYC", "   "])
+def test_x1_unattributed_drive_reuse_outside_its_run_withholds(tmp_path, unknown_team):
+    rows = [play(1, HOME, 1), play(2, AWAY, 2), play(3, unknown_team, 1), play(4, HOME, 3)]
+    result = run(write_parquet(tmp_path, rows), possession=mod.PossessionRequest(HOME, 2))
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    assert selection["reason"] == "unattributed_drive_outside_run_in_prefix"
+    assert selection["affected_play_ids"] == [3]
+    assert result["events"]["status"] == "withheld"
+    assert result["events"]["rows"] == []
+
+
+@pytest.mark.parametrize("unknown_play", [0, 2])
+def test_x1_unknown_team_before_or_after_matching_run_is_not_inside(tmp_path, unknown_play):
+    rows = [play(1, HOME, 1), play(unknown_play, None, 1), play(3, AWAY, 2), play(4, HOME, 3)]
+    result = run(write_parquet(tmp_path, rows), possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["selection"]["reason"] == "unattributed_drive_outside_run_in_prefix"
+    assert result["possession"]["selection"]["affected_play_ids"] == [unknown_play]
+    assert result["events"]["rows"] == []
+
+
+def test_x1_unattributed_row_inside_matching_run_is_neutral(tmp_path):
+    rows = [play(1, HOME, 1), play(2, None, 1), play(3, HOME, 1), play(4, AWAY, 2)]
+    result = run(write_parquet(tmp_path, rows), possession=mod.PossessionRequest(HOME, 1))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["events"]["unattributed_rows_in_window"] == 1
+    assert result["events"]["row_count"] == 3
