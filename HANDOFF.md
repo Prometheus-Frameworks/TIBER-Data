@@ -303,6 +303,189 @@ Example:
   historical data establishes current role/forecast/transaction recommendations.
 - Audit-trigger status: independent exact-head review pending in the linked PR.
 
+## Current handoff — Research #22 offline one-game PBP validation/read v0
+
+- Current task update (2026-09-12): the implementation repair/re-review loop completed
+  clean at `313d28a1575142feb81d1e44aff4ab7c77efe08d`. Joe assigned a documentation-only
+  follow-up to archive the independent receipt in the existing reader document and
+  reconcile this handoff. Only these two Markdown files change in this follow-up;
+  reader, CLI, initialization module, tests, and all other files remain byte-identical.
+- Active task: first PR of the Research #22 2026 PBP scope — a local, read-only
+  one-game play-by-play receipt verifier and bounded reader with synthetic tests
+  and the requested storage/import compatibility plan, revised after the
+  2026-09-10 independent branch review of head `2da2f604` (findings F1–F5 plus
+  documentation and error-handling corrections) and the follow-up precheck finding
+  R1 (parse_failure mislabeling), and the Codex exact-head review of `0ae4208` on
+  PR #269 (C1: a matching tuple with a null game ID was certified; C2: argparse
+  usage errors exited 2), and the Codex re-review of `9b88311` (D1: non-positive
+  possession ordinal exited 0; D2: a fractional season matched by int truncation;
+  D3: a bytes field crashed serialization), and the Codex review of `e3b5c6b`
+  (E1: an `LA`/`LAR` alias pair passed as a two-team request; E2: infinite floats
+  escaped JSON normalization), and the Codex review of `752dce2` (G1: infinity
+  envelopes applied before duplicate/possession processing; G2: malformed byte
+  count or digest reached verification; G3: non-calendar dates passed validation),
+  and the Codex review of `d77facb` (H1/H2: non-finite play IDs or drives could
+  resolve a possession; H3: NaN was collapsed into null before duplicate
+  classification; H4: a digest with a trailing newline passed the end anchor), and
+  the Codex review of `b8ee0fd` (I1: NaN play IDs formed distinct grouping keys and
+  bypassed the comparator; I2: a non-numeric play ID sorted last silently), and the
+  Codex review of `84eabe9` (J1: a list- or struct-typed play ID crashed duplicate
+  grouping instead of reaching the unresolved path), and the Codex review of the
+  merged head `874a96b` (K1: repr-based keys split value-equal non-scalars; K2:
+  nested NaN not compared recursively; K3: a non-scalar drive crashed occurrence
+  counting; K4: Int64 play IDs above 2**53 lost exact order through float; K5:
+  this handoff listed the already-pushed J1 commit as missing), and the Codex review
+  of `91710f3` (L1: decimal-spelled integral strings still rounded through float;
+  L2: run extension compared drives with raw equality), consolidated into one
+  lossless numeric representation and one equivalence relation for every stage,
+  and the Codex review of `cf9afee` (M1: a scalar NaN drive was collapsed into
+  null before run extension, so a NaN-then-null pair of same-team rows merged into
+  one run although the equivalence relation holds them distinct; the raw drive is
+  now kept through sequencing and selection alone treats null and NaN alike as a
+  missing drive number), and the Codex review of `bd87222` (N1: a numeric `game_id`
+  match was rendered to a string and compared against the numeric column in every
+  game scan, failing as a parse error; the raw typed ID now drives the scans. N2:
+  the drive monotonicity check converted drives through float, so Int64 drives
+  above 2**53 collapsed and a decreasing prefix certified a possession; drives now
+  use the same classifier and lossless numeric representation as play IDs), and the
+  Codex review of `7d55214` (O1: the numeric-string grammar had no magnitude bound,
+  so `1e999999999` tried to expand into a billion-digit integer and hung the reader
+  from the row sort, outside any bounded stage; numeric strings now live in a bounded
+  domain and the sort is a named processing stage. O2: a NaN or infinite Float64
+  `game_id` passed the non-empty check and was certified as a match; non-finite IDs
+  are now unusable identity like null and blank ones), and the Codex review of
+  `fd31ffd` (P1: an exponent spelling such as `1e9999999999999999999` passed the
+  grammar but overflowed the decimal module before the bound checks ran, failing a
+  processing stage instead of withholding; the digit count and adjusted exponent are
+  now derived from the compact spelling before any Decimal is built. P2: the bound
+  was on the adjusted exponent, so `1.1e4000` counted as inside the documented
+  10**4000 ceiling; the ceiling and floor are now compared exactly and inclusively),
+  and the Codex review of `542593f` (Q1: a List or Struct `game_id` matched and
+  loaded but the emitted-event key count put the raw unhashable ID into a set and
+  failed at `select_events`; the count now uses the same frozen grouping key as
+  duplicate inventory), and the Codex review of `75797cb` (R1: an empty or
+  whitespace-only Binary `game_id` passed the blank check because `str(b"")` is the
+  non-empty text `b''`, so it was certified; blankness is now judged on the bytes'
+  own content. R2: duplicate-key reports emitted the frozen `game_id` key for list
+  or struct IDs; they now report the raw value as they already did for `play_id`),
+  and the Codex review of `c134a0e` (S1: distinct numeric-string spellings of one
+  play ID such as `"1"` and `"1.0"` shared a sort key but not a grouping key, so the
+  stable sort kept an arbitrary physical order and certified a possession; tied rows
+  are now counted and withhold selection. S2: consecutive same-team drives spelled
+  `"2"` then `"2.0"` split into two runs that each counted once yet compared equal,
+  so the ordinal advanced without evidence; a prefix containing distinct spellings of
+  one numeric drive now withholds as spelling-ambiguous. S3: whitespace-only team
+  codes passed request validation and could match an equally blank source identity;
+  blank away, home, and possession codes are now usage errors before file access).
+  The subsequent Codex review of `a626361` found T1: blank source `posteam` values
+  still counted as real teams, allowing an unaccounted possession to certify a later
+  ordinal. The repair routes unusable source team codes through the existing
+  unattributed-drive gate and uses the same rule in event-window counts, preserving
+  every raw source value. Eight synthetic cases cover null, empty, and whitespace
+  codes on their own drive and inside an already evidenced drive.
+  The review of `ab54d22` found U1–U3: non-integer requested seasons reached source
+  matching; list/struct source team identities crashed alias lookup; and possession
+  requests could name a team outside the requested matchup. Requested seasons now
+  require integers excluding booleans, source home/away codes share the usable-team
+  guard while retaining raw conflict evidence, and CLI/library possession requests
+  must name a canonical team in the matchup before file access. Twenty-four new
+  synthetic cases cover rejection, unresolved identity, conflict retention, and aliases.
+  The review of `24581d1` found V1: a usable but out-of-matchup source `posteam`
+  still counted as a third real team and could misnumber a later possession. Source
+  attribution now requires membership in the already-matched invariant home/away
+  pair. Sequencing and event-window counts share that helper; raw values are retained.
+  Four synthetic regressions cover an unaccounted drive, an already-accounted drive,
+  and evidence after the selected prefix.
+  The review of `fa57f96` found W1/W2: Decimal `abs()` rounded a value just above
+  the numeric ceiling under the caller's context, and non-string date arguments
+  escaped validation as TypeError. Magnitude comparison now uses exact, context-free
+  `copy_abs()`, and dates require strings before the full-string/calendar checks.
+  Twelve synthetic cases cover low/default/high precision with strict traps and
+  exponent limits, near-ceiling play IDs/drives, exact boundaries, and date types.
+  The review of `fc6f096` found X1: an unattributed row could reuse an earlier drive
+  number outside that drive's attributed boundaries and still certify the prefix.
+  A known drive now excuses such a row only inside its matching run's first/last
+  row bounds; otherwise selection reports the affected play IDs and withholds events.
+  Six synthetic cases cover reused drives, before/after boundaries, and an inside-run
+  control. Null/NaN-drive administrative rows retain their existing neutral behavior.
+  Owning repository is
+  TIBER-Data; Fantasy's old importers and bronze table are reference only.
+- Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
+  (CLI), `tests/test_pbp_one_game_offline_read.py` (synthetic fixtures),
+  `docs/data/pbp-one-game-offline-read-v0.md` (reader doc plus compatibility plan),
+  and this handoff. No contract, schema, raw, candidate, promoted, README, or
+  support-claim file changed. No new dependency was added.
+- Audit-trigger status: **implementation audit completed at `313d28a`.**
+  The reader introduces a team alias
+  map, game-identity matching, and provenance/status wording, which the pinned
+  AGENTS.md treats as identity and source/provenance semantics regardless of
+  file path. The [independent result](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/269#issuecomment-5646256106)
+  reports no major issues at that head. The committed receipt in
+  `docs/data/pbp-one-game-offline-read-v0.md` pins the head/base/tree, source comment,
+  code/test blobs, and validation limitations. Review of this documentation-only
+  descendant is a separate PR receipt; the archive does not certify its own edits.
+- What is now true: the reader hashes exact bytes before parsing and rejects missing,
+  wrong-size, wrong-digest, or non-parquet input with no side effect, turns a
+  failure in one of four named parquet engine stages into a bounded `parse_failure`
+  receipt with its read stage, and returns a defect in its own post-parse processing
+  as a distinct `reader_processing_failure` with its stage, never as a parser or
+  source failure; requires
+  explicit season/calendar-date/away/home whose teams differ after canonicalization
+  and well-formed receipt expectations, all validated before file access; resolves
+  exactly one game from the five invariant
+  identity columns only, never certifies a match whose provider game ID is null or
+  empty or whose season is not exactly equal, reporting event-varying and game-level descriptor values
+  without using them to reject; reads lazily with the game filter pushed into the
+  parquet scan and discloses physical versus logical read scope; distinguishes
+  absent/null/explicit-zero/value states and keeps a null play type unknown;
+  classifies duplicate keys as identical or conflicting without discarding; derives a
+  team's N-th possession from ordered posteam runs bounded by provider drive, never
+  equates it with drive number N, and withholds selection when any earlier run, an
+  unattributed drive value, or an order-affecting conflicting duplicate could alter
+  the count; caps output at 40 events plus two boundaries per side with explicit
+  truncation; never invents retrieval, publication, ingestion, or admission; and the
+  CLI refuses to write over the input, any alias of it, or any existing path, and
+  routes malformed invocations (including a non-positive possession ordinal) to
+  exit 3 so exit 2 means only source rejection, normalizes every polars scalar for
+  JSON including signed infinities and an explicit NaN envelope at the output
+  boundary only (raw scalars including NaN are kept through NaN-aware duplicate
+  classification and possession processing, with NaN and non-scalar play IDs and
+  drives canonicalized only in equality-consistent grouping keys, NaN-aware
+  equality applied recursively at grouping, comparison, and run extension, and one
+  lossless numeric representation for play-ID ordering across sorting and the
+  conflict check, with a cross-stage consistency test over a shared case set), withholds selection when a play ID is non-finite or non-numeric
+  or a prefix drive is non-finite, and bounds any residual serialization failure as
+  a processing failure.
+  Focused tests pass 254/254 and lint is clean under the repo ruff rules. This repair
+  was tested with Python 3.12, Polars 1.44.2's compatibility runtime, pytest 9.1.1,
+  and Ruff 0.16.7 in an isolated environment; the standard Polars runtime failed on
+  import in this executor before test collection. No dependency declaration changed.
+  The full suite was not rerun for this bounded repair. Earlier full-suite receipts
+  remain attributed to their own revisions and environments.
+- What is still missing: Joe's separate merge/deployment decision after review of the
+  receipt-only documentation change on PR #269; an explicitly
+  authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
+  offline read; separately, for any claim of verified stored TIBER evidence or any
+  durable import, the database-enforced read-only verification of the deployed
+  bronze schema and rows and the receipt-contract decision in the compatibility
+  plan; a Replit account-level binding check if the operator wants one (the
+  operator's read-only Railway inspection established that production deploys only
+  from `main`, which is the basis on which the repair commits were pushed).
+- Current repair authority: Joe assigned Codex the bounded repair/push/re-review loop
+  on 2026-09-12, superseding the per-push approval requirement for this task only
+  ([operator handoff](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/269#issuecomment-5645857667)).
+  Fable pushed S1–S3 at `a626361` and handed off; it has stopped editing this PR.
+  Merge, deployment, real-data access, ingestion, admission, and broader redesign
+  remain outside this assignment. The implementation audit is complete; Joe's later
+  archival assignment permits these two documentation edits and independent review,
+  with no merge or deployment.
+- What must not be assumed: this PR does not verify that the 2026 game exists in any
+  source or in Railway; synthetic tests prove software behavior only; the reader's
+  output is not ingestion, admission, promotion, or a Research activation; no Team,
+  FORGE, Forecast, or ledger consumer may read it; the upstream release URL and its
+  observed metadata are external observations, not TIBER receipts; the Railway
+  receipt does not speak for Replit or any unconnected provider setting.
+
 ## Current handoff — #267 three Team historical identity proposals
 
 - Active task: authorized preparation and independent review of exactly Parker
