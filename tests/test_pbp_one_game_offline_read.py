@@ -2486,3 +2486,36 @@ def test_u2_invalid_team_on_matched_game_still_conflicts(tmp_path):
     assert result["game"]["reason"] == "conflicting_game_metadata"
     assert result["game"]["diagnostics"]["identity_tuples_with_unusable_team"] == 1
     assert result["events"] is None
+
+
+@pytest.mark.parametrize("third_team", ["SYC", " SYA "])
+def test_v1_source_team_outside_matchup_withholds_unaccounted_drive(tmp_path, third_team):
+    rows = [play(1, HOME, 1), play(2, third_team, 2), play(3, HOME, 3)]
+    result = run(write_parquet(tmp_path, rows), possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["unattributed_rows"] == 1
+    assert [r["posteam"] for r in result["possession"]["runs"]] == [HOME, HOME]
+    selection = result["possession"]["selection"]
+    assert selection["reason"] == "unattributed_drive_value_in_prefix"
+    assert selection["affected_play_ids"] == [2]
+    assert result["events"]["status"] == "withheld"
+    assert result["events"]["rows"] == []
+
+
+def test_v1_third_team_on_known_drive_remains_raw_and_unattributed(tmp_path):
+    rows = [play(1, HOME, 1), play(2, "SYC", 1), play(3, HOME, 1)]
+    result = run(write_parquet(tmp_path, rows), possession=mod.PossessionRequest(HOME, 1))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert len(result["possession"]["runs"]) == 1
+    assert result["possession"]["unattributed_rows"] == 1
+    assert result["events"]["unattributed_rows_in_window"] == 1
+    assert result["events"]["row_count"] == 3
+    assert json.loads(mod.dumps(result))["events"]["rows"][1]["fields"]["posteam"] == "SYC"
+
+
+def test_v1_third_team_after_selection_does_not_invalidate_prefix(tmp_path):
+    rows = [play(1, HOME, 1), play(2, "SYC", 2)]
+    result = run(write_parquet(tmp_path, rows), possession=mod.PossessionRequest(HOME, 1))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["possession"]["unattributed_rows"] == 1
+    assert result["events"]["unattributed_rows_in_window"] == 0
+    assert result["events"]["boundary_after"][0]["fields"]["posteam"] == "SYC"

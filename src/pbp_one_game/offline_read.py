@@ -304,6 +304,19 @@ def canon_team(code: str | None) -> str | None:
     return TEAM_CODE_CANONICAL_MAP.get(code, code)
 
 
+def _source_possession_team(row: dict[str, Any], columns: set[str]) -> str | None:
+    """Attribute only to a usable team in this row's already-matched invariant matchup.
+
+    The public reader certifies home/away consistency before loading game rows. This
+    helper never repairs a source code or converts a third team into either opponent.
+    """
+    names = ("posteam", "home_team", "away_team")
+    if any(name not in columns or not _team_code_present(row.get(name)) for name in names):
+        return None
+    team, home, away = (canon_team(row[name]) for name in names)
+    return team if team in {home, away} else None
+
+
 def reader_code_sha256() -> str:
     return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
@@ -1209,10 +1222,9 @@ def build_possession_sequence(
             play_id_non_finite_rows += 1
         elif order_class == PLAY_ID_ORDER_NON_NUMERIC:
             play_id_non_numeric_rows += 1
-        raw_posteam = row.get("posteam") if "posteam" in columns else None
-        # Missing, blank, or non-string source codes cannot evidence a team. Keep the
-        # row unchanged and use the existing unattributed-drive gate for selection.
-        posteam = canon_team(raw_posteam) if _team_code_present(raw_posteam) else None
+        # Unusable or out-of-matchup codes cannot evidence a possession team. Keep
+        # source values unchanged and use the existing unattributed-drive gate.
+        posteam = _source_possession_team(row, columns)
         # The raw drive value is kept: a NaN drive stays NaN (distinct from null) through
         # run extension, occurrence counting, and inventory, and is enveloped only at the
         # output boundary. Selection treats NaN as a missing drive number (_drive_missing).
@@ -1277,6 +1289,8 @@ def build_possession_sequence(
             "provider drive value",
             "drive_column_used": drive_column,
             "posteam_column_present": "posteam" in columns,
+            "team_attribution_rule": "usable source posteam whose canonical code belongs "
+            "to the matched invariant home/away pair; all other values are unattributed",
             "team_ordinal_rule": "N-th run whose posteam is the team, counted in play order; "
             "never equated with provider drive number N; resolved only when every run in "
             "the prefix up to the selection is itself evidenced",
@@ -1493,9 +1507,7 @@ def select_events(
         "row_count": len(window),
         "distinct_game_play_key_count": len(keys),
         "unattributed_rows_in_window": sum(
-            1 for r in window if (
-                "posteam" not in columns or not _team_code_present(r.get("posteam"))
-            )
+            1 for r in window if _source_possession_team(r, columns) is None
         ),
         "emitted_row_count": len(emitted),
         "truncated": truncated,
