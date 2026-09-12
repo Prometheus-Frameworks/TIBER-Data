@@ -239,8 +239,10 @@ class GameRequest:
             ) from exc
         if parsed.isoformat() != self.game_date:
             raise ValueError("requested game_date must be a zero-padded ISO calendar date")
-        if not self.away_team or not self.home_team:
-            raise ValueError("requested away_team and home_team are required")
+        if not _team_code_present(self.away_team) or not _team_code_present(self.home_team):
+            # Whitespace-only codes are as absent as empty ones; an absent identity must
+            # never reach the file, where it could match an equally blank source value.
+            raise ValueError("requested away_team and home_team are required and must not be blank")
         if canon_team(self.away_team) == canon_team(self.home_team):
             # Compared after canonicalization so an alias pair such as LA / LAR cannot
             # describe an impossible same-team game.
@@ -265,8 +267,8 @@ class PossessionRequest:
     ordinal: int  # 1-based: the team's N-th possession in play order
 
     def validate(self) -> None:
-        if not self.team:
-            raise ValueError("requested possession team is required")
+        if not _team_code_present(self.team):
+            raise ValueError("requested possession team is required and must not be blank")
         if isinstance(self.ordinal, bool) or not isinstance(self.ordinal, int) or self.ordinal < 1:
             raise ValueError("requested possession ordinal must be a positive integer (1-based)")
 
@@ -283,6 +285,11 @@ class SourceDeclaration:
 # ---------------------------------------------------------------------------
 # Small pure helpers
 # ---------------------------------------------------------------------------
+
+
+def _team_code_present(code: Any) -> bool:
+    """A requested team code must be a non-blank string; whitespace alone is absent."""
+    return isinstance(code, str) and code.strip() != ""
 
 
 def canon_team(code: str | None) -> str | None:
@@ -1226,6 +1233,20 @@ def build_possession_sequence(
     for run in runs:
         per_team[run["posteam"]] = per_team.get(run["posteam"], 0) + 1
         run["team_possession_ordinal"] = per_team[run["posteam"]]
+    # Numerically tied play IDs with DISTINCT raw spellings ("1" and "1.0", "01", "1e0")
+    # share one exact sort key but are separate grouping keys, so the stable sort would
+    # keep their arbitrary physical order without any duplicate-conflict report. Such
+    # rows carry no evidenced relative order; selection withholds on them. Identical raw
+    # spellings are not ties here: duplicate inventory classifies those.
+    spellings_by_value: dict[Any, set[Any]] = {}
+    for row in rows:
+        numeric = _play_id_numeric(row.get("play_id"))
+        if numeric is not None:
+            spellings_by_value.setdefault(numeric, set()).add(_freeze(row.get("play_id")))
+    tied_values = {value for value, spellings in spellings_by_value.items() if len(spellings) > 1}
+    play_id_tied_rows = sum(
+        1 for row in rows if _play_id_numeric(row.get("play_id")) in tied_values
+    ) if tied_values else 0
     drive_occurrences: dict[Any, int] = {}
     for run in runs:
         # Frozen key so a non-scalar drive counts instead of crashing; the run keeps its raw value.
@@ -1234,7 +1255,8 @@ def build_possession_sequence(
     return {
         "basis": {
             "order": "rows sorted by finite play_id ascending; null, NaN, non-finite, and "
-            "non-numeric play_id carry no order and sort last",
+            "non-numeric play_id carry no order and sort last; numerically tied play IDs "
+            "with distinct raw spellings have no evidenced relative order",
             "run_rule": "maximal consecutive run of identical non-null posteam and identical "
             "provider drive value",
             "drive_column_used": drive_column,
@@ -1248,6 +1270,7 @@ def build_possession_sequence(
         "play_id_null_rows": play_id_null_rows,
         "play_id_non_finite_rows": play_id_non_finite_rows,
         "play_id_non_numeric_rows": play_id_non_numeric_rows,
+        "play_id_tied_rows": play_id_tied_rows,
         "runs": runs,
         "drive_occurrence_counts": {str(k): v for k, v in drive_occurrences.items()},
     }
@@ -1294,6 +1317,10 @@ def select_possession(
     if sequence["play_id_non_numeric_rows"]:
         # An unparseable ID has an unknown position; it could change which run is N-th.
         return unresolved("non_numeric_play_id_breaks_play_order")
+    if sequence["play_id_tied_rows"]:
+        # Distinct spellings of one numeric value ("1" and "1.0") have no evidenced
+        # relative order; their physical order is arbitrary and could change the count.
+        return unresolved("tied_play_id_breaks_play_order")
     candidates = [r for r in sequence["runs"] if r["posteam"] == team]
     if request.ordinal < 1 or request.ordinal > len(candidates):
         return unresolved(
@@ -1345,6 +1372,18 @@ def select_possession(
     if any(v is None for v in drive_values):
         # Unreachable once nulls/NaN are excluded above; kept so a gap never certifies.
         return unresolved("provider_drive_not_orderable", run)
+    # Distinct raw spellings of one numeric drive ("2" then "2.0") split runs and count
+    # as separate occurrences while comparing equal here, so the provider ordinal never
+    # evidently advanced. The sequence is ambiguous; nothing is certified on it.
+    spellings_by_drive: dict[Any, set[Any]] = {}
+    for r, value in zip(prefix, drive_values, strict=True):
+        spellings_by_drive.setdefault(value, set()).add(_freeze(r["provider_drive"]))
+    ambiguous = [
+        r["sequence_index"] for r, value in zip(prefix, drive_values, strict=True)
+        if len(spellings_by_drive[value]) > 1
+    ]
+    if ambiguous:
+        return unresolved("provider_drive_spelling_ambiguous", run, affected_runs=ambiguous)
     if any(earlier > later for earlier, later in zip(drive_values, drive_values[1:], strict=False)):
         return unresolved("provider_drive_order_non_monotone", run)
     prefix_drives = {_freeze(r["provider_drive"]) for r in prefix}
@@ -1560,6 +1599,7 @@ def _read_verified_content(
             "play_id_null_rows": sequence["play_id_null_rows"],
             "play_id_non_finite_rows": sequence["play_id_non_finite_rows"],
             "play_id_non_numeric_rows": sequence["play_id_non_numeric_rows"],
+            "play_id_tied_rows": sequence["play_id_tied_rows"],
             "runs": compact_runs,
             "selection": None,
         }

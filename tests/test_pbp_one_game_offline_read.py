@@ -2268,3 +2268,131 @@ def test_r2_duplicate_key_reports_report_the_raw_game_id(tmp_path, kind):
     text = mod.dumps_bounded(result)[0]
     assert "<seq>" not in text and "<map>" not in text and "<nan>" not in text
     assert result["game"]["observed"]["game_id"] == game_id
+
+
+# ---------------------------------------------------------------------------
+# Codex exact-head review of c134a0e (PR #269): S1 numerically tied play-ID spellings,
+# S2 numerically equal drive spellings, S3 whitespace-only team requests
+# ---------------------------------------------------------------------------
+
+
+def test_s1_distinct_spellings_of_one_play_id_withhold_selection(tmp_path):
+    # Codex's case: consecutive HOME rows at "1" and "1.0" with drives 1 and 2 resolved
+    # possession #2 on an arbitrary physical order.
+    rows = [play("1", HOME, "1"), play("1.0", HOME, "2")]
+    for r in rows:
+        r["fixed_drive"] = None
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["status"] == "read"
+    assert result["possession"]["play_id_tied_rows"] == 2
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    assert selection["reason"] == "tied_play_id_breaks_play_order"
+    assert result["events"]["status"] == "withheld"
+    assert result["inventory"]["keys"]["identical_duplicate_keys"] == []  # a tie is not a duplicate
+
+
+@pytest.mark.parametrize("spelling", ["01", "1e0", "+1", "1.00"])
+def test_s1_every_alternate_spelling_ties_with_the_plain_one(tmp_path, spelling):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["play_id"] = str(int(r["play_id"]))
+    rows[1]["play_id"] = spelling  # numerically equal to rows[0]'s "1"
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["play_id_tied_rows"] == 2
+    assert result["possession"]["selection"]["reason"] == "tied_play_id_breaks_play_order"
+    assert result["events"]["status"] == "withheld"
+
+
+def test_s1_identical_spellings_are_duplicates_not_ties_and_distinct_values_still_order(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["play_id"] = str(int(r["play_id"]))
+    rows.append(dict(rows[0]))  # identical duplicate of "1": inventory, not a tie
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["play_id_tied_rows"] == 0
+    assert result["inventory"]["keys"]["identical_duplicate_keys"][0]["play_id"] == "1"
+    assert result["possession"]["selection"]["status"] == "resolved"
+    # Mixed spellings of DIFFERENT values are ordinary exact ordering, not ties.
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for i, r in enumerate(rows):
+        r["play_id"] = f"{int(r['play_id'])}.0" if i % 2 else str(int(r["play_id"]))
+    path = write_parquet(tmp_path, rows, name="mixed.parquet")
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["play_id_tied_rows"] == 0
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["possession"]["selection"]["selected_run"]["provider_drive"] == 4.0
+
+
+def test_s2_distinct_spellings_of_one_drive_withhold_the_possession_whose_prefix_has_both(tmp_path):
+    # Codex's case: HOME drive "2" continues as "2.0"; the ordinal never evidently advanced.
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["drive"] = str(int(r["drive"]))
+        r["fixed_drive"] = None
+    rows[5]["drive"] = rows[6]["drive"] = "2.0"  # last two plays of HOME drive 2
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert len(result["possession"]["runs"]) == 6  # raw equality still splits the runs
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    assert selection["reason"] == "provider_drive_spelling_ambiguous"
+    assert selection["affected_runs"] == [2, 3]
+    assert result["events"]["status"] == "withheld"
+    # HOME #1's prefix (AWAY "1", HOME "2") contains no ambiguity and still resolves.
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["possession"]["selection"]["selected_run"]["provider_drive"] == "2"
+    # Every later possession carries the ambiguity in its prefix.
+    result = run(path, possession=mod.PossessionRequest(AWAY, 2))
+    assert result["possession"]["selection"]["reason"] == "provider_drive_spelling_ambiguous"
+
+
+def test_s2_consistent_numeric_string_drives_still_resolve(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["drive"] = f"{int(r['drive'])}.0"
+        r["fixed_drive"] = None
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["possession"]["selection"]["selected_run"]["provider_drive"] == "4.0"
+
+
+@pytest.mark.parametrize("blank", ["", " ", "   ", "\t\n"])
+def test_s3_blank_team_codes_are_usage_errors_before_file_access(tmp_path, blank, monkeypatch):
+    monkeypatch.setattr(pl, "scan_parquet", lambda *a, **k: pytest.fail("file accessed"))
+    monkeypatch.setattr(pl, "read_parquet_schema", lambda *a, **k: pytest.fail("file accessed"))
+    for away, home in ((blank, HOME), (AWAY, blank)):
+        request = mod.GameRequest(
+            season=SYN_SEASON, game_date=SYN_DATE, away_team=away, home_team=home
+        )
+        with pytest.raises(ValueError, match="must not be blank"):
+            request.validate()
+    with pytest.raises(ValueError, match="must not be blank"):
+        mod.PossessionRequest(team=blank, ordinal=1).validate()
+    assert not mod._team_code_present(blank) and mod._team_code_present("SYA")
+    assert not mod._team_code_present(None) and not mod._team_code_present(3)
+
+
+def test_s3_blank_team_request_never_matches_a_blank_source_identity(tmp_path):
+    rows = alternating_game(DEFAULT_POSSESSIONS)
+    for r in rows:
+        r["home_team"] = "   "
+    path = write_parquet(tmp_path, rows)
+    out = tmp_path / "out.json"
+    args = _cli_args(path, out)
+    args[args.index("--home") + 1] = "   "
+    completed = _cli(args)
+    assert completed.returncode == 3, completed.stderr
+    assert "must not be blank" in completed.stderr
+    assert not out.exists()
+    # The same blank request through the library is rejected before verification.
+    request = mod.GameRequest(
+        season=SYN_SEASON, game_date=SYN_DATE, away_team=AWAY, home_team="   "
+    )
+    with pytest.raises(ValueError):
+        request.validate()

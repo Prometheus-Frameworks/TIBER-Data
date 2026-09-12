@@ -64,7 +64,10 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    team, home team. The expected byte count must be a non-negative integer and the
    expected digest exactly 64 hexadecimal characters matched against the full string, so
    a trailing newline is rejected; a malformed expectation is a usage error (exit 3),
-   never a source rejection. The away and home codes must differ after
+   never a source rejection. The away, home, and possession team codes must be
+   non-blank strings (whitespace alone is as absent as an empty string and is a usage
+   error before any file access, so a blank request can never match an equally blank
+   source identity). The away and home codes must differ after
    canonicalization, so an alias pair such as
    `LA` / `LAR` cannot describe an impossible same-team game; that is rejected before
    any file access.
@@ -147,7 +150,14 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    value that no prefix run accounts for; no null, NaN, non-finite, or non-numeric
    `play_id` breaks ordering (±infinity serializes but is no evidence of a position in
    the game order; an unparseable ID has an unknown position; a parseable numeric string
-   orders normally);
+   orders normally); no two rows carry distinct raw spellings of one numeric play ID
+   (`"1"` and `"1.0"`, `"01"`, `"1e0"` share one exact sort key but are separate
+   grouping keys, so their physical order is arbitrary and unevidenced:
+   `tied_play_id_breaks_play_order`, counted in `play_id_tied_rows`; identical raw
+   spellings are duplicates, classified by the inventory instead); no two prefix runs
+   carry distinct raw spellings of one numeric drive (`"2"` then `"2.0"` would split
+   runs and count twice while comparing equal, so the provider ordinal never evidently
+   advanced: `provider_drive_spelling_ambiguous`);
    and no prefix run carries a non-finite provider drive (a NaN drive is treated as a
    missing drive number, an infinite one as unresolvable ordering; the raw NaN is kept
    distinct from null through run extension, occurrence counting, and output, so a NaN
@@ -290,7 +300,13 @@ emits events with the distinct emitted-key count computed under the same frozen
 grouping key as duplicate inventory (value-equal list IDs are one key); an empty or
 whitespace-only Binary `game_id` is unusable identity like a blank string while a
 non-blank Binary ID still matches through a typed predicate; and duplicate-key reports
-carry the raw `game_id` (a list or struct stays itself, never a frozen key); a digest
+carry the raw `game_id` (a list or struct stays itself, never a frozen key); distinct
+numeric-string spellings of one play ID (`"1"`/`"1.0"`, `"01"`, `"1e0"`) are counted as
+tied rows and withhold selection while identical spellings stay duplicates and distinct
+values still order; consecutive same-team drives spelled `"2"` then `"2.0"` withhold the
+possession whose prefix contains both as spelling-ambiguous while an earlier possession
+whose prefix does not is unaffected; whitespace-only away, home, or possession team codes
+are usage errors before file access (library `ValueError`, CLI exit 3); a digest
 with a trailing or leading newline is a usage
 error before file access; negative byte counts and non-64-hex digests exit 3
 before file access while a well-formed wrong digest still exits 2; non-calendar dates
