@@ -288,7 +288,7 @@ class SourceDeclaration:
 
 
 def _team_code_present(code: Any) -> bool:
-    """A requested team code must be a non-blank string; whitespace alone is absent."""
+    """A usable team code is a non-blank string; unusable source codes are unattributed."""
     return isinstance(code, str) and code.strip() != ""
 
 
@@ -1173,7 +1173,7 @@ def build_possession_sequence(
     `fixed_drive`, disclosed) bounds runs so that two consecutive possessions by the
     same team (e.g. either side of halftime) are not merged. If no drive column exists,
     runs are bounded by posteam change only and no provider drive association is
-    possible. Rows with null posteam are recorded as unattributed together with any
+    possible. Rows without a usable posteam are recorded as unattributed together with any
     drive value they carry, so a later selection can tell a neutral administrative row
     from evidence of a possession the run count did not see.
     """
@@ -1196,7 +1196,10 @@ def build_possession_sequence(
             play_id_non_finite_rows += 1
         elif order_class == PLAY_ID_ORDER_NON_NUMERIC:
             play_id_non_numeric_rows += 1
-        posteam = canon_team(row.get("posteam")) if "posteam" in columns else None
+        raw_posteam = row.get("posteam") if "posteam" in columns else None
+        # Missing, blank, or non-string source codes cannot evidence a team. Keep the
+        # row unchanged and use the existing unattributed-drive gate for selection.
+        posteam = canon_team(raw_posteam) if _team_code_present(raw_posteam) else None
         # The raw drive value is kept: a NaN drive stays NaN (distinct from null) through
         # run extension, occurrence counting, and inventory, and is enveloped only at the
         # output boundary. Selection treats NaN as a missing drive number (_drive_missing).
@@ -1257,7 +1260,7 @@ def build_possession_sequence(
             "order": "rows sorted by finite play_id ascending; null, NaN, non-finite, and "
             "non-numeric play_id carry no order and sort last; numerically tied play IDs "
             "with distinct raw spellings have no evidenced relative order",
-            "run_rule": "maximal consecutive run of identical non-null posteam and identical "
+            "run_rule": "maximal consecutive run of identical usable posteam and identical "
             "provider drive value",
             "drive_column_used": drive_column,
             "posteam_column_present": "posteam" in columns,
@@ -1477,7 +1480,9 @@ def select_events(
         "row_count": len(window),
         "distinct_game_play_key_count": len(keys),
         "unattributed_rows_in_window": sum(
-            1 for r in window if ("posteam" not in columns or r.get("posteam") is None)
+            1 for r in window if (
+                "posteam" not in columns or not _team_code_present(r.get("posteam"))
+            )
         ),
         "emitted_row_count": len(emitted),
         "truncated": truncated,

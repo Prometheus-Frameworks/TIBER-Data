@@ -135,7 +135,7 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    extension, duplicate grouping, and occurrence counting all use the same recursive
    NaN-aware equality and its consistent freeze, so one equivalence relation governs
    every stage; a cross-stage test feeds one shared case set through all of them. A possession is a maximal run
-   of identical non-null `posteam` and identical provider `drive` value (fallback
+   of identical usable `posteam` (a non-blank string) and identical provider `drive` value (fallback
    `fixed_drive`, disclosed in `basis.drive_column_used`). A team's N-th possession is
    the N-th such run for that team in play order and is **never** equated with provider
    drive number N. Because N is a count over every earlier run, selection resolves only
@@ -146,7 +146,7 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    play IDs: bool, bytes, list, struct, and unparseable strings are not orderable,
    finite values compare exactly, so Int64 drives above 2**53 never collapse through
    float);
-   no unattributed (null `posteam`) row before the end of the selection carries a drive
+   no unattributed (missing, blank, or non-string `posteam`) row before the end of the selection carries a drive
    value that no prefix run accounts for; no null, NaN, non-finite, or non-numeric
    `play_id` breaks ordering (±infinity serializes but is no evidence of a position in
    the game order; an unparseable ID has an unknown position; a parseable numeric string
@@ -162,10 +162,12 @@ Review round 1 reviewed head `2da2f604872143bde6eb89fe68c20e4d13edf7cd` against 
    missing drive number, an infinite one as unresolvable ordering; the raw NaN is kept
    distinct from null through run extension, occurrence counting, and output, so a NaN
    drive and a null drive on consecutive same-team rows are two runs). Neutral
-   administrative rows (null `posteam` with a null drive, or a drive already in the
+   administrative rows (unattributed `posteam` with a null drive, or a drive already in the
    prefix) do not create possessions and do not block selection. Every unresolved case
    returns a typed reason and the affected runs or play IDs, keeps all runs in the
-   output, and emits no arbitrary event sample.
+   output, and emits no arbitrary event sample. Source team values are never rewritten:
+   blank text stays blank and null stays null in the raw event fields. Both the game
+   sequence and `events.unattributed_rows_in_window` use the same usable-team rule.
 8. **Bounded events.** At most 40 event rows from the selected possession window plus up
    to two boundary rows before and after, each marked with its duplicate status, raw
    `penalty`, raw `play_deleted`, and a derived no-play status with four values:

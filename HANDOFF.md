@@ -372,6 +372,12 @@ Example:
   one numeric drive now withholds as spelling-ambiguous. S3: whitespace-only team
   codes passed request validation and could match an equally blank source identity;
   blank away, home, and possession codes are now usage errors before file access).
+  The subsequent Codex review of `a626361` found T1: blank source `posteam` values
+  still counted as real teams, allowing an unaccounted possession to certify a later
+  ordinal. The repair routes unusable source team codes through the existing
+  unattributed-drive gate and uses the same rule in event-window counts, preserving
+  every raw source value. Eight synthetic cases cover null, empty, and whitespace
+  codes on their own drive and inside an already evidenced drive.
   Owning repository is
   TIBER-Data; Fantasy's old importers and bronze table are reference only.
 - Files touched: `src/pbp_one_game/` (new library), `scripts/read_pbp_one_game_offline.py`
@@ -417,10 +423,14 @@ Example:
   conflict check, with a cross-stage consistency test over a shared case set), withholds selection when a play ID is non-finite or non-numeric
   or a prefix drive is non-finite, and bounds any residual serialization failure as
   a processing failure.
-  Focused tests pass 200/200 and lint is clean under the repo ruff rules.
+  Focused tests pass 208/208 and lint is clean under the repo ruff rules. This repair
+  was tested with Python 3.12, Polars 1.44.2's compatibility runtime, pytest 9.1.1,
+  and Ruff 0.16.7 in an isolated environment; the standard Polars runtime failed on
+  import in this executor before test collection. No dependency declaration changed.
+  The full suite was not rerun for this bounded repair. Earlier full-suite receipts
+  remain attributed to their own revisions and environments.
 - What is still missing: independent exact-head re-review of the current branch head
-  (every repair commit through R1/R2 and the merge of main are pushed; the S1–S3
-  repair is local until assigned); operator assignment for any further repair push; an explicitly
+  after T1, then Joe's separate merge/deployment decision; an explicitly
   authorized real input (exact bytes and digest) for the NE at SEA 2026-09-09
   offline read; separately, for any claim of verified stored TIBER evidence or any
   durable import, the database-enforced read-only verification of the deployed
@@ -428,6 +438,12 @@ Example:
   plan; a Replit account-level binding check if the operator wants one (the
   operator's read-only Railway inspection established that production deploys only
   from `main`, which is the basis on which the repair commits were pushed).
+- Current repair authority: Joe assigned Codex the bounded repair/push/re-review loop
+  on 2026-09-12, superseding the per-push approval requirement for this task only
+  ([operator handoff](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/269#issuecomment-5645857667)).
+  Fable pushed S1–S3 at `a626361` and handed off; it has stopped editing this PR.
+  Merge, deployment, real-data access, ingestion, admission, and broader redesign
+  remain outside this assignment. Audit status remains pending fresh independent review.
 - What must not be assumed: this PR does not verify that the 2026 game exists in any
   source or in Railway; synthetic tests prove software behavior only; the reader's
   output is not ingestion, admission, promotion, or a Research activation; no Team,

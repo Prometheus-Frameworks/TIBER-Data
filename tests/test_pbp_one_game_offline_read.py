@@ -2396,3 +2396,33 @@ def test_s3_blank_team_request_never_matches_a_blank_source_identity(tmp_path):
     )
     with pytest.raises(ValueError):
         request.validate()
+
+
+@pytest.mark.parametrize("unknown_team", [None, "", "   ", "\t\n"])
+def test_t1_unknown_source_team_on_its_own_drive_withholds_ordinal(tmp_path, unknown_team):
+    rows = [play(1, HOME, 1), play(2, unknown_team, 2), play(3, HOME, 3)]
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 2))
+    assert result["game"]["status"] == "matched"
+    assert result["possession"]["unattributed_rows"] == 1
+    assert [r["posteam"] for r in result["possession"]["runs"]] == [HOME, HOME]
+    selection = result["possession"]["selection"]
+    assert selection["status"] == "unresolved"
+    assert selection["reason"] == "unattributed_drive_value_in_prefix"
+    assert selection["affected_play_ids"] == [2]
+    assert result["events"]["status"] == "withheld"
+    assert result["events"]["rows"] == []
+
+
+@pytest.mark.parametrize("unknown_team", [None, "", "   ", "\t\n"])
+def test_t1_unknown_source_team_inside_known_drive_preserves_raw_value(tmp_path, unknown_team):
+    rows = [play(1, HOME, 1), play(2, unknown_team, 1), play(3, HOME, 1)]
+    path = write_parquet(tmp_path, rows)
+    result = run(path, possession=mod.PossessionRequest(HOME, 1))
+    assert result["possession"]["selection"]["status"] == "resolved"
+    assert result["possession"]["unattributed_rows"] == 1
+    assert len(result["possession"]["runs"]) == 1
+    assert result["events"]["unattributed_rows_in_window"] == 1
+    assert result["events"]["row_count"] == 3
+    serialized = json.loads(mod.dumps(result))
+    assert serialized["events"]["rows"][1]["fields"]["posteam"] == unknown_team
