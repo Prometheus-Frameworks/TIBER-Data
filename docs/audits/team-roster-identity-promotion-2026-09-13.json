@@ -1,0 +1,21 @@
+{
+  "task_class": [
+    "data_artifact",
+    "downstream_handoff",
+    "versioned_receipt_contract"
+  ],
+  "audit_kind": "builder_mechanical_validation",
+  "independent_review": "pending_separate_review",
+  "baseline_commit": "c0a7d1e98161c23f64f67c075f81eb71d6ba693a",
+  "promotion_sha256": "215d2b47edb204a138d30725b4e2e3974993f105271667d665c651b825408c85",
+  "identity_delta": 0,
+  "historical_row_delta": 0,
+  "historical_use_cohort_size": 19,
+  "excluded_player_ids": [
+    "13301"
+  ],
+  "original_preparation_receipt_changed": false,
+  "source_acquisition": false,
+  "merge_authorized": false,
+  "deployment_authorized": false
+}
