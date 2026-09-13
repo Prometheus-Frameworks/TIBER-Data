@@ -105,6 +105,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
+    if (ROOT / 'exports/promoted/draft_review/team_roster_identity_admission_v1.json').exists():
+        raise ValueError('The nineteen-row Team extension is prepared; use materialize_team_roster_identity_admission.py. This legacy command would discard accepted rows.')
     rendered = json.dumps(build(), indent=1, allow_nan=False) + '\n'
     target = ROOT / OUTPUT_PATH
     if args.check:

@@ -527,3 +527,28 @@ Example:
   Data #269 is untouched.
 - Audit-trigger status: builder mechanical audit completed; independent exact
   commit review pending and recorded separately in PR #268.
+
+## Current handoff — nineteen historical Team identities, 2026-09-13
+
+- Active task: operator-accepted data artifact and downstream handoff preparation.
+- Files touched: additive 94-row V2 crosswalk; separate team_roster_identity_admission_v1
+  receipt; new offline materializer/tests; prior CLI overwrite guard/tests; identity
+  docs and paired preparation audit.
+- Now true: original 75 identities unchanged; exactly nineteen reviewed additions;
+  14 medium name_exact, 3 high gsis_direct, 2 high espn_bridge. All reviewed source
+  bytes and prior receipts retained. 94 focused tests and deterministic replay pass.
+- Missing: independent implementation review; matching Fantasy bundle integration
+  and its own validation/review; separate merge/production decisions. Proposal
+  review is recorded separately and cannot certify these implementation files.
+- Must not assume: Antonio has 2025 evidence, historical teams equal current teams,
+  recorded weeks are games played, empty flags establish health/eligibility, or
+  historical admission authorizes a roster move, prediction or production release.
+- Audit-trigger status: builder mechanical audit completed in the paired
+  docs/audits/team-roster-identity-admission-2026-09-13 files; independent
+  implementation review pending. Conversation acceptance is recorded in the
+  separate receipt without inventing a GitHub operator comment.
+
+
+## 2026-09-13 — PR #271 P2 index correction
+
+Operator accepted review discussion_r3999767711 and authorized the bounded repair and next review. Updated docs/contracts/promoted-artifacts-index.md to inventory the 94-row revision, 26/8/60 method counts, and nineteen-row preparation receipt. No identity, source, receipt authority, generated artifact or support window changed. This is a documentation/handoff repair; fresh independent review is pending. Merge, promotion and deployment require separate authorization.

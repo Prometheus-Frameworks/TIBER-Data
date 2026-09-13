@@ -1,0 +1,125 @@
+{
+  "schema_version": "team_roster_identity_preparation_audit_v1",
+  "date": "2026-09-13",
+  "task_class": [
+    "data_artifact",
+    "downstream_handoff"
+  ],
+  "audit_kind": "builder_mechanical_validation",
+  "implementation_independent_review": "pending",
+  "baseline_commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+  "source_proposal_review": {
+    "source": "independent_agent_review_in_operator_conversation",
+    "review_date": "2026-09-13",
+    "proposal_sha256": "a00fbfe876db14372a170c3a579971537c5074b1632f2688e3b2e09c6a775e8b",
+    "review_sha256": "471237237f5be9fce7185f12464084bfd8dc9f25e3d85e91f648b30d7b50b996",
+    "result": "no_material_findings_on_nineteen_edge_proposal",
+    "public_receipt_url": null,
+    "implementation_review": "pending_separate_review"
+  },
+  "operator_acceptance": {
+    "source": "operator_conversation",
+    "date": "2026-09-13",
+    "operator_message": "Okay sounds good",
+    "public_receipt_url": null,
+    "context": "Acceptance followed independent proposal review and an explanation that transferred players retain their historical weekly teams.",
+    "scope": "nineteen reviewed historical identity edges; Data branch materialization and matching Fantasy consumer integration preparation; no merge or production release"
+  },
+  "files": [
+    {
+      "path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v2.json",
+      "sha256": "72521b56b1edd92fbb1feac974ab2608a599004f378974192e885278a4007011"
+    },
+    {
+      "path": "exports/promoted/draft_review/team_roster_identity_admission_v1.json",
+      "sha256": "cc61d1e236138e1c1e6685fb444c3db81da1188d7cfcc895b278164916e9be4f"
+    },
+    {
+      "path": "scripts/materialize_team_roster_identity_admission.py",
+      "sha256": "1e5e6aeece41a11c1c2a3cce3bcf41ef42fd10298ab3b0926098c56cc34b41ff"
+    },
+    {
+      "path": "scripts/materialize_team_identity_admission.py",
+      "sha256": "73457ca204b9b8e1aa84178458ca6a28b123cc293d3a0497e6205758444e116b"
+    },
+    {
+      "path": "tests/test_team_roster_identity_admission.py",
+      "sha256": "b5c4f47f98798dd349316ece08163ca0f40de60c000d368ba395acf54dfb66f2"
+    },
+    {
+      "path": "tests/test_team_identity_admission.py",
+      "sha256": "d43b2706732db87c6b7e5a409488f18300d97103b14fd1cfb068212a176677fe"
+    }
+  ],
+  "validation": {
+    "focused_tests_passed": 94,
+    "original_identity_rows_preserved": 75,
+    "new_identity_rows": 19,
+    "total_identity_rows": 94,
+    "cohort_outcome_observations": 248,
+    "cohort_usage_observations": 248,
+    "unknown_calendar_slots": 94,
+    "excluded_observations_per_lane": 9,
+    "source_pins_unchanged": [
+      {
+        "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+        "path": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+        "sha256": "45a69f2176104249d3ea416ccdd71dadd8196c6f5dfe3f1bf4e303580ecf47cd"
+      },
+      {
+        "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+        "path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v2.json",
+        "sha256": "02e360f58837f620e26b071992f90c444486388e692e39c5dcffc23f63e8a0c9"
+      },
+      {
+        "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+        "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+        "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac"
+      },
+      {
+        "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+        "path": "exports/candidates/identity_crosswalk/identity_crosswalk_review_v0.csv",
+        "sha256": "3f7002c33e6ef31a07e1a63db10f3ecbeefcb0328f78e083893973f55ea137f8"
+      },
+      {
+        "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+        "path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
+        "sha256": "30a8e17370270e2fa5d055c7a771f19af2fe7bd89282cd2373f7704a492412cb"
+      },
+      {
+        "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+        "path": "data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json",
+        "sha256": "f241112115c9a625abead3410db89db6b4a8b603ce1dd663a45ff0697563e3a2"
+      },
+      {
+        "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+        "path": "exports/promoted/draft_review/evidence_admission_v1.json",
+        "sha256": "603e52409c5d07820bc58c5c0b7d6df91e4eb7cdc31326633d1c24e35c34811c"
+      },
+      {
+        "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+        "path": "exports/promoted/draft_review/team_identity_admission_v1.json",
+        "sha256": "4ed7a6e7d0310c0f3b3e3c70a53f7d7ec0fb0c22dbd931702ea5efc4399f84ef"
+      }
+    ],
+    "deterministic_replay": "passed",
+    "optimized_cli_replay": "passed",
+    "legacy_overwrite_guards": "passed"
+  },
+  "excluded_player_ids": [
+    "13301"
+  ],
+  "limitations": [
+    "Recorded weeks are observations, not certified games played; missing weeks are unknown, never zero, bye or DNP.",
+    "Only 2025 weeks 1–18; game_type/game_id absent. Historical teams remain weekly source teams, separately from current Sleeper teams.",
+    "Fourteen name_exact identities remain medium confidence; three gsis_direct and two espn_bridge identities remain high confidence.",
+    "Raw candidate evidence is preserved. GSIS whitespace is trimmed only to check agreement for the existing reviewed mapping.",
+    "V2 row source_updated_at is the candidate-generation clock, not the provider update time. Original acquisition/update clocks remain unavailable.",
+    "No original Sleeper dump or original name-candidate census was replayed; this is admission of existing committed candidates.",
+    "Terms assessment remains dated 2026-09-07; original acquisition terms receipt is unavailable; no new acquisition or terms assessment.",
+    "No current role, health, eligibility, ownership, forecast, regression, ranking, league points or transaction authority.",
+    "Proposal review does not certify this implementation. Merge and production require a separate operator decision."
+  ],
+  "merge_authorized": false,
+  "production_release_authorized": false
+}

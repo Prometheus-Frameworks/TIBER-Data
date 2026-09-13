@@ -76,7 +76,7 @@ because it would drop accepted rows. Its schema-only --check remains available.
 No schema, V1 artifact, source statistics or candidate evidence is changed.
 The accepted historical-use receipt does not assert deployed consumer readiness.
 
-## Current branch preparation — Data #267 / #268
+## Archived 75-row preparation — Data #267 / #268
 
 The review branch contains **75 records**: all original 72 unchanged plus Parker
 Washington/9487, Drake London/8112 and Chris Rodriguez/10219. Match-method counts
@@ -116,3 +116,20 @@ historical WAS observations stay distinct. Unknown source clocks and original
 acquisition/terms limitations remain; no forecast, current role, roster or
 transaction authority is introduced. See the paired
 [mechanical preparation audit](../audits/team-identity-admission-2026-09-10.md).
+
+## Current nineteen-edge preparation — 2026-09-13
+
+The review branch now contains 94 records: the previous 75 unchanged plus nineteen
+operator-accepted historical identities. Method counts are 26 gsis_direct,
+8 espn_bridge and 60 name_exact. Confidence and historical attribution are
+preserved. Antonio Williams remains excluded from 2025 admission.
+
+Use `python scripts/materialize_team_roster_identity_admission.py --check` for
+current replay. The previous three-row materializer CLI now refuses both modes
+while this new receipt exists; its imported builder remains a historical replay.
+The accepted scope, exact records, raw candidate evidence, source pins, weekly
+denominators and conversation acceptance are in
+`exports/promoted/draft_review/team_roster_identity_admission_v1.json`.
+See the [preparation audit](../audits/team-roster-identity-admission-2026-09-13.md).
+Only branch and matching consumer preparation are authorized; independent
+implementation review and operator merge/production decisions remain separate.

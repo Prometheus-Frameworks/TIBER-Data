@@ -1,0 +1,4676 @@
+{
+  "schema_version": "team_roster_identity_admission_v1",
+  "status": "accepted_for_branch_and_consumer_preparation",
+  "scope": "nineteen_historical_identity_edges_only",
+  "artifact_generated_at": "2026-09-13T12:59:02Z",
+  "baseline_commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+  "operator_acceptance": {
+    "source": "operator_conversation",
+    "date": "2026-09-13",
+    "operator_message": "Okay sounds good",
+    "public_receipt_url": null,
+    "context": "Acceptance followed independent proposal review and an explanation that transferred players retain their historical weekly teams.",
+    "scope": "nineteen reviewed historical identity edges; Data branch materialization and matching Fantasy consumer integration preparation; no merge or production release"
+  },
+  "proposal_review": {
+    "source": "independent_agent_review_in_operator_conversation",
+    "review_date": "2026-09-13",
+    "proposal_sha256": "a00fbfe876db14372a170c3a579971537c5074b1632f2688e3b2e09c6a775e8b",
+    "review_sha256": "471237237f5be9fce7185f12464084bfd8dc9f25e3d85e91f648b30d7b50b996",
+    "result": "no_material_findings_on_nineteen_edge_proposal",
+    "public_receipt_url": null,
+    "implementation_review": "pending_separate_review"
+  },
+  "identity_records": [
+    {
+      "provider": "sleeper",
+      "provider_player_id": "10444",
+      "provider_canonical_id": "sleeper:10444",
+      "tiber_player_id": "00-0038979",
+      "player_name": "Cedric Tillman",
+      "position": "WR",
+      "team": "CLE",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "10218",
+      "provider_canonical_id": "sleeper:10218",
+      "tiber_player_id": "00-0038618",
+      "player_name": "Xavier Hutchinson",
+      "position": "WR",
+      "team": "HOU",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "8127",
+      "provider_canonical_id": "sleeper:8127",
+      "tiber_player_id": "00-0038046",
+      "player_name": "Charlie Kolar",
+      "position": "TE",
+      "team": "LAC",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "11571",
+      "provider_canonical_id": "sleeper:11571",
+      "tiber_player_id": "00-0039798",
+      "player_name": "Isaiah Davis",
+      "position": "RB",
+      "team": "NYJ",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "11575",
+      "provider_canonical_id": "sleeper:11575",
+      "tiber_player_id": "00-0039875",
+      "player_name": "Ray Davis",
+      "position": "RB",
+      "team": "BUF",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "5022",
+      "provider_canonical_id": "sleeper:5022",
+      "tiber_player_id": "00-0034351",
+      "player_name": "Dallas Goedert",
+      "position": "TE",
+      "team": "PHI",
+      "confidence": "high",
+      "match_method": "gsis_direct",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "5892",
+      "provider_canonical_id": "sleeper:5892",
+      "tiber_player_id": "00-0035685",
+      "player_name": "David Montgomery",
+      "position": "RB",
+      "team": "HOU",
+      "confidence": "high",
+      "match_method": "gsis_direct",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "5927",
+      "provider_canonical_id": "sleeper:5927",
+      "tiber_player_id": "00-0035659",
+      "player_name": "Terry McLaurin",
+      "position": "WR",
+      "team": "WAS",
+      "confidence": "high",
+      "match_method": "gsis_direct",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "6768",
+      "provider_canonical_id": "sleeper:6768",
+      "tiber_player_id": "00-0036212",
+      "player_name": "Tua Tagovailoa",
+      "position": "QB",
+      "team": "ATL",
+      "confidence": "high",
+      "match_method": "espn_bridge",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "6819",
+      "provider_canonical_id": "sleeper:6819",
+      "tiber_player_id": "00-0036252",
+      "player_name": "Michael Pittman",
+      "position": "WR",
+      "team": "PIT",
+      "confidence": "high",
+      "match_method": "espn_bridge",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "7525",
+      "provider_canonical_id": "sleeper:7525",
+      "tiber_player_id": "00-0036912",
+      "player_name": "DeVonta Smith",
+      "position": "WR",
+      "team": "PHI",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "8142",
+      "provider_canonical_id": "sleeper:8142",
+      "tiber_player_id": "00-0037664",
+      "player_name": "Alec Pierce",
+      "position": "WR",
+      "team": "IND",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "8146",
+      "provider_canonical_id": "sleeper:8146",
+      "tiber_player_id": "00-0037740",
+      "player_name": "Garrett Wilson",
+      "position": "WR",
+      "team": "NYJ",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "8161",
+      "provider_canonical_id": "sleeper:8161",
+      "tiber_player_id": "00-0038128",
+      "player_name": "Malik Willis",
+      "position": "QB",
+      "team": "MIA",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "9508",
+      "provider_canonical_id": "sleeper:9508",
+      "tiber_player_id": "00-0039032",
+      "player_name": "Tyjae Spears",
+      "position": "RB",
+      "team": "TEN",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "10213",
+      "provider_canonical_id": "sleeper:10213",
+      "tiber_player_id": "00-0038563",
+      "player_name": "Tre Tucker",
+      "position": "WR",
+      "team": "LV",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "11834",
+      "provider_canonical_id": "sleeper:11834",
+      "tiber_player_id": "00-0039424",
+      "player_name": "Devaughn Vele",
+      "position": "WR",
+      "team": "NO",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "12048",
+      "provider_canonical_id": "sleeper:12048",
+      "tiber_player_id": "00-0039299",
+      "player_name": "George Holani",
+      "position": "RB",
+      "team": "SEA",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    },
+    {
+      "provider": "sleeper",
+      "provider_player_id": "12507",
+      "provider_canonical_id": "sleeper:12507",
+      "tiber_player_id": "00-0040666",
+      "player_name": "Omarion Hampton",
+      "position": "RB",
+      "team": "LAC",
+      "confidence": "medium",
+      "match_method": "name_exact",
+      "source": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "source_updated_at": "2026-08-08T18:17:13Z"
+    }
+  ],
+  "candidate_evidence": [
+    {
+      "tiber_player_id": "00-0038979",
+      "player_name": "Cedric Tillman",
+      "position": "WR",
+      "sleeper_id": "10444",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4369863",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Cedric Tillman",
+        "sleeper_team": "CLE"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0038618",
+      "player_name": "Xavier Hutchinson",
+      "position": "WR",
+      "sleeper_id": "10218",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4686422",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Xavier Hutchinson",
+        "sleeper_team": "HOU"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0038046",
+      "player_name": "Charlie Kolar",
+      "position": "TE",
+      "sleeper_id": "8127",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4241263",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Charlie Kolar",
+        "sleeper_team": "LAC"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0039798",
+      "player_name": "Isaiah Davis",
+      "position": "RB",
+      "sleeper_id": "11571",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4695404",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Isaiah Davis",
+        "sleeper_team": "NYJ"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0039875",
+      "player_name": "Ray Davis",
+      "position": "RB",
+      "sleeper_id": "11575",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4429501",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Ray Davis",
+        "sleeper_team": "BUF"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0034351",
+      "player_name": "Dallas Goedert",
+      "position": "TE",
+      "sleeper_id": "5022",
+      "match_tier": "gsis_direct",
+      "evidence": {
+        "sleeper_gsis_id": "00-0034351",
+        "coverage_espn_id": "3121023",
+        "sleeper_espn_id": 3121023,
+        "sleeper_name": "Dallas Goedert",
+        "sleeper_team": "PHI"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0035685",
+      "player_name": "David Montgomery",
+      "position": "RB",
+      "sleeper_id": "5892",
+      "match_tier": "gsis_direct",
+      "evidence": {
+        "sleeper_gsis_id": " 00-0035685",
+        "coverage_espn_id": "4035538",
+        "sleeper_espn_id": 4035538,
+        "sleeper_name": "David Montgomery",
+        "sleeper_team": "HOU"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0035659",
+      "player_name": "Terry McLaurin",
+      "position": "WR",
+      "sleeper_id": "5927",
+      "match_tier": "gsis_direct",
+      "evidence": {
+        "sleeper_gsis_id": " 00-0035659",
+        "coverage_espn_id": "3121422",
+        "sleeper_espn_id": 3121422,
+        "sleeper_name": "Terry McLaurin",
+        "sleeper_team": "WAS"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0036212",
+      "player_name": "Tua Tagovailoa",
+      "position": "QB",
+      "sleeper_id": "6768",
+      "match_tier": "espn_bridge",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4241479",
+        "sleeper_espn_id": 4241479,
+        "sleeper_name": "Tua Tagovailoa",
+        "sleeper_team": "ATL"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0036252",
+      "player_name": "Michael Pittman",
+      "position": "WR",
+      "sleeper_id": "6819",
+      "match_tier": "espn_bridge",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4035687",
+        "sleeper_espn_id": 4035687,
+        "sleeper_name": "Michael Pittman",
+        "sleeper_team": "PIT"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0036912",
+      "player_name": "DeVonta Smith",
+      "position": "WR",
+      "sleeper_id": "7525",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4241478",
+        "sleeper_espn_id": null,
+        "sleeper_name": "DeVonta Smith",
+        "sleeper_team": "PHI"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0037664",
+      "player_name": "Alec Pierce",
+      "position": "WR",
+      "sleeper_id": "8142",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4360078",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Alec Pierce",
+        "sleeper_team": "IND"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0037740",
+      "player_name": "Garrett Wilson",
+      "position": "WR",
+      "sleeper_id": "8146",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4569618",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Garrett Wilson",
+        "sleeper_team": "NYJ"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0038128",
+      "player_name": "Malik Willis",
+      "position": "QB",
+      "sleeper_id": "8161",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4242512",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Malik Willis",
+        "sleeper_team": "MIA"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0039032",
+      "player_name": "Tyjae Spears",
+      "position": "RB",
+      "sleeper_id": "9508",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4428557",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Tyjae Spears",
+        "sleeper_team": "TEN"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0038563",
+      "player_name": "Tre Tucker",
+      "position": "WR",
+      "sleeper_id": "10213",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4428718",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Tre Tucker",
+        "sleeper_team": "LV"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0039424",
+      "player_name": "Devaughn Vele",
+      "position": "WR",
+      "sleeper_id": "11834",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4569559",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Devaughn Vele",
+        "sleeper_team": "NO"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0039299",
+      "player_name": "George Holani",
+      "position": "RB",
+      "sleeper_id": "12048",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4429835",
+        "sleeper_espn_id": null,
+        "sleeper_name": "George Holani",
+        "sleeper_team": "SEA"
+      },
+      "last_coverage_season": 2025
+    },
+    {
+      "tiber_player_id": "00-0040666",
+      "player_name": "Omarion Hampton",
+      "position": "RB",
+      "sleeper_id": "12507",
+      "match_tier": "name_exact",
+      "evidence": {
+        "sleeper_gsis_id": null,
+        "coverage_espn_id": "4685382",
+        "sleeper_espn_id": null,
+        "sleeper_name": "Omarion Hampton",
+        "sleeper_team": "LAC"
+      },
+      "last_coverage_season": 2025
+    }
+  ],
+  "historical_validation": [
+    {
+      "player_id": "10444",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        10,
+        11,
+        12,
+        13,
+        14,
+        16,
+        17,
+        18
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        10,
+        11,
+        12,
+        13,
+        14,
+        16,
+        17,
+        18
+      ],
+      "unknown_calendar_weeks": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        15
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "CLE"
+      ],
+      "historical_positions": [
+        "WR"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": []
+        },
+        "receptions": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": [
+            13
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            10,
+            11,
+            12,
+            13,
+            14,
+            16,
+            17,
+            18
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": [
+            13
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": [
+            3,
+            4,
+            10,
+            11,
+            12,
+            13,
+            14,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            10,
+            11,
+            12,
+            13,
+            14,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            10,
+            11,
+            12,
+            13,
+            14,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            10,
+            11,
+            12,
+            13,
+            14,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            10,
+            11,
+            12,
+            13,
+            14,
+            16,
+            17,
+            18
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            10,
+            11,
+            12,
+            13,
+            14,
+            16,
+            17,
+            18
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": []
+        },
+        "air_yards_share": {
+          "recorded_weeks": 12,
+          "nonnull_weeks": 12,
+          "zero_weeks": []
+        }
+      }
+    },
+    {
+      "player_id": "10218",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "unknown_calendar_weeks": [
+        6,
+        10
+      ],
+      "excluded_outcome_weeks": [
+        19,
+        20
+      ],
+      "excluded_usage_weeks": [
+        19,
+        20
+      ],
+      "historical_teams": [
+        "HOU"
+      ],
+      "historical_positions": [
+        "WR"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            12
+          ]
+        },
+        "receptions": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            12,
+            14
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            9,
+            11,
+            13,
+            14,
+            15,
+            16,
+            18
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            12,
+            14
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            7,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            9,
+            11,
+            13,
+            14,
+            15,
+            16,
+            18
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            12
+          ]
+        },
+        "air_yards_share": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            12
+          ]
+        }
+      }
+    },
+    {
+      "player_id": "8127",
+      "outcome_weeks": [
+        3,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "usage_weeks": [
+        3,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "unknown_calendar_weeks": [
+        1,
+        2,
+        4,
+        7,
+        18
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "BAL"
+      ],
+      "historical_positions": [
+        "TE"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            12,
+            15
+          ]
+        },
+        "receptions": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            6,
+            11,
+            12,
+            15,
+            17
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            3,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            6,
+            11,
+            12,
+            15,
+            17
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            3,
+            5,
+            6,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            3,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            3,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            3,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            3,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            3,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            12,
+            15
+          ]
+        },
+        "air_yards_share": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            10,
+            12,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "player_id": "11571",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "unknown_calendar_weeks": [
+        9,
+        18
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "NYJ"
+      ],
+      "historical_positions": [
+        "RB"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            3,
+            12,
+            14
+          ]
+        },
+        "receptions": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            3,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            2,
+            3,
+            13
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            3,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            2,
+            3,
+            13
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            16,
+            17
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            3,
+            12,
+            14
+          ]
+        },
+        "air_yards_share": {
+          "recorded_weeks": 16,
+          "nonnull_weeks": 16,
+          "zero_weeks": [
+            1,
+            3,
+            7,
+            12,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "player_id": "11575",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "unknown_calendar_weeks": [
+        7
+      ],
+      "excluded_outcome_weeks": [
+        19,
+        20
+      ],
+      "excluded_usage_weeks": [
+        19,
+        20
+      ],
+      "historical_teams": [
+        "BUF"
+      ],
+      "historical_positions": [
+        "RB"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            2,
+            4,
+            5,
+            9,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        "receptions": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            2,
+            3,
+            4,
+            5,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            3,
+            6,
+            9,
+            11,
+            12,
+            14,
+            15
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            2,
+            3,
+            4,
+            5,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            3,
+            6,
+            9,
+            11,
+            12,
+            14,
+            15
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            2,
+            4,
+            5,
+            9,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        "air_yards_share": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            2,
+            4,
+            5,
+            9,
+            11,
+            12,
+            13,
+            14,
+            17
+          ]
+        }
+      }
+    },
+    {
+      "player_id": "5022",
+      "outcome_weeks": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "usage_weeks": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "unknown_calendar_weeks": [
+        2,
+        9,
+        18
+      ],
+      "excluded_outcome_weeks": [
+        19
+      ],
+      "excluded_usage_weeks": [
+        19
+      ],
+      "historical_teams": [
+        "PHI"
+      ],
+      "historical_positions": [
+        "TE"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": []
+        },
+        "receptions": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": []
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": []
+        },
+        "receiving_tds": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            7,
+            10,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": []
+        },
+        "air_yards_share": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": []
+        }
+      }
+    },
+    {
+      "player_id": "5892",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "unknown_calendar_weeks": [
+        8
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "DET"
+      ],
+      "historical_positions": [
+        "RB"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            16
+          ]
+        },
+        "receptions": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            4,
+            15,
+            16
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "receiving_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            4,
+            10,
+            15,
+            16
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "rushing_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            4,
+            6,
+            7,
+            10,
+            11,
+            12,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            16
+          ]
+        },
+        "air_yards_share": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            16
+          ]
+        }
+      }
+    },
+    {
+      "player_id": "5927",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        8,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        8,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "unknown_calendar_weeks": [
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "WAS"
+      ],
+      "historical_positions": [
+        "WR"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": []
+        },
+        "receptions": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": []
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            8,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": []
+        },
+        "receiving_tds": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            14,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            8,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            8,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            8,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            8,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            8,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": []
+        },
+        "air_yards_share": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": []
+        }
+      }
+    },
+    {
+      "player_id": "6768",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15
+      ],
+      "unknown_calendar_weeks": [
+        12,
+        16,
+        17,
+        18
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "MIA"
+      ],
+      "historical_positions": [
+        "QB"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            13,
+            14,
+            15
+          ]
+        },
+        "receptions": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            13,
+            14,
+            15
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": [
+            2,
+            8,
+            11
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            13,
+            14,
+            15
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            13,
+            14,
+            15
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": [
+            2,
+            8,
+            11,
+            14
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            13,
+            14,
+            15
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": []
+        },
+        "passing_tds": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": [
+            7,
+            9,
+            11,
+            13
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": [
+            4,
+            5,
+            8,
+            11,
+            14
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            13,
+            14,
+            15
+          ]
+        },
+        "air_yards_share": {
+          "recorded_weeks": 14,
+          "nonnull_weeks": 14,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            13,
+            14,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "player_id": "6819",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "unknown_calendar_weeks": [
+        11
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "IND"
+      ],
+      "historical_positions": [
+        "WR"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "receptions": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "receiving_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            2,
+            6,
+            9,
+            10,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "air_yards_share": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        }
+      }
+    },
+    {
+      "player_id": "7525",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "unknown_calendar_weeks": [
+        9
+      ],
+      "excluded_outcome_weeks": [
+        19
+      ],
+      "excluded_usage_weeks": [
+        19
+      ],
+      "historical_teams": [
+        "PHI"
+      ],
+      "historical_positions": [
+        "WR"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "receptions": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "receiving_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            8,
+            11,
+            12,
+            13,
+            14,
+            15,
+            17,
+            18
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "air_yards_share": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        }
+      }
+    },
+    {
+      "player_id": "8142",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "unknown_calendar_weeks": [
+        4,
+        5,
+        11
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "IND"
+      ],
+      "historical_positions": [
+        "WR"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": []
+        },
+        "receptions": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            17
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            17
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            6,
+            7,
+            8,
+            9,
+            12,
+            14,
+            15,
+            17
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": []
+        },
+        "air_yards_share": {
+          "recorded_weeks": 15,
+          "nonnull_weeks": 15,
+          "zero_weeks": []
+        }
+      }
+    },
+    {
+      "player_id": "8146",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        10
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        10
+      ],
+      "unknown_calendar_weeks": [
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "NYJ"
+      ],
+      "historical_positions": [
+        "WR"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": []
+        },
+        "receptions": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": [
+            10
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            10
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": [
+            10
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": [
+            2,
+            6,
+            10
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            10
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            10
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            10
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            10
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            10
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": []
+        },
+        "air_yards_share": {
+          "recorded_weeks": 7,
+          "nonnull_weeks": 7,
+          "zero_weeks": []
+        }
+      }
+    },
+    {
+      "player_id": "8161",
+      "outcome_weeks": [
+        11,
+        12,
+        16,
+        17
+      ],
+      "usage_weeks": [
+        11,
+        12,
+        16,
+        17
+      ],
+      "unknown_calendar_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        13,
+        14,
+        15,
+        18
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "GB"
+      ],
+      "historical_positions": [
+        "QB"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": [
+            11,
+            12,
+            16,
+            17
+          ]
+        },
+        "receptions": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": [
+            11,
+            12,
+            16,
+            17
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": []
+        },
+        "receiving_yards": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": [
+            11,
+            12,
+            16,
+            17
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": [
+            11,
+            12,
+            16,
+            17
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": []
+        },
+        "rushing_tds": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": [
+            11,
+            12,
+            16
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": []
+        },
+        "passing_tds": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": [
+            12
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": [
+            11,
+            12,
+            16,
+            17
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": [
+            11,
+            12,
+            16,
+            17
+          ]
+        },
+        "air_yards_share": {
+          "recorded_weeks": 4,
+          "nonnull_weeks": 4,
+          "zero_weeks": [
+            11,
+            12,
+            16,
+            17
+          ]
+        }
+      }
+    },
+    {
+      "player_id": "9508",
+      "outcome_weeks": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "usage_weeks": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "unknown_calendar_weeks": [
+        1,
+        2,
+        3,
+        4,
+        10
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "TEN"
+      ],
+      "historical_positions": [
+        "RB"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            5
+          ]
+        },
+        "receptions": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            5
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": []
+        },
+        "receiving_yards": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            5
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": []
+        },
+        "rushing_tds": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            5,
+            6,
+            7,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            17,
+            18
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            5
+          ]
+        },
+        "air_yards_share": {
+          "recorded_weeks": 13,
+          "nonnull_weeks": 13,
+          "zero_weeks": [
+            5,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "player_id": "10213",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "unknown_calendar_weeks": [
+        8
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "LV"
+      ],
+      "historical_positions": [
+        "WR"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "receptions": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            15
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            6,
+            7,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            15
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            2,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            6,
+            7,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            17
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        },
+        "air_yards_share": {
+          "recorded_weeks": 17,
+          "nonnull_weeks": 17,
+          "zero_weeks": []
+        }
+      }
+    },
+    {
+      "player_id": "11834",
+      "outcome_weeks": [
+        1,
+        2,
+        5,
+        8,
+        10,
+        12,
+        13,
+        14,
+        15
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        5,
+        8,
+        10,
+        12,
+        13,
+        14,
+        15
+      ],
+      "unknown_calendar_weeks": [
+        3,
+        4,
+        6,
+        7,
+        9,
+        11,
+        16,
+        17,
+        18
+      ],
+      "excluded_outcome_weeks": [],
+      "excluded_usage_weeks": [],
+      "historical_teams": [
+        "NO"
+      ],
+      "historical_positions": [
+        "WR"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        },
+        "receptions": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            2,
+            5,
+            8,
+            10,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        },
+        "receiving_tds": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            5,
+            8,
+            10,
+            12,
+            14,
+            15
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            2,
+            5,
+            8,
+            10,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            2,
+            5,
+            8,
+            10,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            2,
+            5,
+            8,
+            10,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            2,
+            5,
+            8,
+            10,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            2,
+            5,
+            8,
+            10,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        },
+        "air_yards_share": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        }
+      }
+    },
+    {
+      "player_id": "12048",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11
+      ],
+      "unknown_calendar_weeks": [
+        8,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "excluded_outcome_weeks": [
+        21,
+        22
+      ],
+      "excluded_usage_weeks": [
+        21,
+        22
+      ],
+      "historical_teams": [
+        "SEA"
+      ],
+      "historical_positions": [
+        "RB"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        "receptions": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        "receiving_yards": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        "receiving_tds": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        "rushing_tds": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            11
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        "air_yards_share": {
+          "recorded_weeks": 10,
+          "nonnull_weeks": 10,
+          "zero_weeks": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11
+          ]
+        }
+      }
+    },
+    {
+      "player_id": "12507",
+      "outcome_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        14,
+        15,
+        16,
+        17
+      ],
+      "usage_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        14,
+        15,
+        16,
+        17
+      ],
+      "unknown_calendar_weeks": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        18
+      ],
+      "excluded_outcome_weeks": [
+        19
+      ],
+      "excluded_usage_weeks": [
+        19
+      ],
+      "historical_teams": [
+        "LAC"
+      ],
+      "historical_positions": [
+        "RB"
+      ],
+      "denominators": {
+        "targets": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        },
+        "receptions": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        },
+        "rushing_attempts": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        },
+        "receiving_yards": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        },
+        "receiving_tds": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            15,
+            16,
+            17
+          ]
+        },
+        "rushing_yards": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        },
+        "rushing_tds": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            2,
+            5,
+            14,
+            15
+          ]
+        },
+        "passing_yards": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "passing_tds": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "interceptions": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "target_share": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        },
+        "air_yards_share": {
+          "recorded_weeks": 9,
+          "nonnull_weeks": 9,
+          "zero_weeks": []
+        }
+      }
+    }
+  ],
+  "consumer_scope": {
+    "consumer": "TIBER-Fantasy Draft Review / issue 360",
+    "season": 2025,
+    "weeks": [
+      1,
+      18
+    ],
+    "period_basis": "documented 2025 regular-season week boundary; game_type/game_id absent",
+    "mode": "retrospective_descriptive_only",
+    "exact_approved_identity_required": true,
+    "outcome_fields": [
+      "targets",
+      "receptions",
+      "rushing_attempts",
+      "receiving_yards",
+      "receiving_tds",
+      "rushing_yards",
+      "rushing_tds",
+      "passing_yards",
+      "passing_tds",
+      "interceptions"
+    ],
+    "usage_fields": [
+      "target_share",
+      "air_yards_share"
+    ],
+    "air_yards": "excluded: zero origin ambiguous after legacy defaulting",
+    "unavailable_usage_fields": [
+      "routes_run",
+      "route_participation",
+      "team_rushing_attempts",
+      "rush_share",
+      "red_zone_targets",
+      "red_zone_carries",
+      "snap_share"
+    ],
+    "join_policy": "season/week/GSIS exact; cross-lane context or position conflict blocks joined derivations",
+    "missing_usage_policy": "retain independent outcomes; usage unavailable, never fabricate a row",
+    "missing_week_policy": "unknown, not bye/DNP/injury/zero",
+    "aggregation_policy": "same explicit calendar window; report recorded weeks and nonnull denominators; average weekly share is not season share",
+    "scoring": "raw statistics only; no league fantasy points or scoring subtotal in this grant",
+    "source_acquired_at": null,
+    "source_updated_at": null,
+    "original_release_hash": null,
+    "package_version": null,
+    "forecast_allowed": false,
+    "refresh_allowed": false,
+    "public_rights_receipt": "Accepted scoped terms/attribution assessment in reviewed proposal and operator acceptance; no blanket provider admission.",
+    "attribution_required": "nflverse contributors; source and CC-BY-4.0 links; identify TIBER filtering/aggregation; retain supplied notices"
+  },
+  "sources": [
+    {
+      "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+      "path": "exports/candidates/identity_crosswalk/identity_crosswalk_candidates_v0.json",
+      "sha256": "45a69f2176104249d3ea416ccdd71dadd8196c6f5dfe3f1bf4e303580ecf47cd"
+    },
+    {
+      "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+      "path": "exports/promoted/identity_crosswalk/tiber_identity_crosswalk_v2.json",
+      "sha256": "02e360f58837f620e26b071992f90c444486388e692e39c5dcffc23f63e8a0c9"
+    },
+    {
+      "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac"
+    },
+    {
+      "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+      "path": "exports/candidates/identity_crosswalk/identity_crosswalk_review_v0.csv",
+      "sha256": "3f7002c33e6ef31a07e1a63db10f3ecbeefcb0328f78e083893973f55ea137f8"
+    },
+    {
+      "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+      "path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
+      "sha256": "30a8e17370270e2fa5d055c7a771f19af2fe7bd89282cd2373f7704a492412cb"
+    },
+    {
+      "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+      "path": "data/processed/evidence/player_weekly_ppr_outcomes_2025.source_backed.json",
+      "sha256": "f241112115c9a625abead3410db89db6b4a8b603ce1dd663a45ff0697563e3a2"
+    },
+    {
+      "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+      "path": "exports/promoted/draft_review/evidence_admission_v1.json",
+      "sha256": "603e52409c5d07820bc58c5c0b7d6df91e4eb7cdc31326633d1c24e35c34811c"
+    },
+    {
+      "commit": "e65791d3169c0234b80bdb4bfb00c3ed848d64dd",
+      "path": "exports/promoted/draft_review/team_identity_admission_v1.json",
+      "sha256": "4ed7a6e7d0310c0f3b3e3c70a53f7d7ec0fb0c22dbd931702ea5efc4399f84ef"
+    }
+  ],
+  "excluded_player_ids": [
+    "13301"
+  ],
+  "exclusion_context": "Antonio Williams is outside the approved 2025 cohort. The manager identifies him as a rookie without 2025 NFL evidence; no history is fabricated or acquired.",
+  "consumer_bundle_regeneration_authorized": true,
+  "merge_authorized": false,
+  "production_deployment_authorized": false,
+  "production_release_authorized": false,
+  "limitations": [
+    "Recorded weeks are observations, not certified games played; missing weeks are unknown, never zero, bye or DNP.",
+    "Only 2025 weeks 1–18; game_type/game_id absent. Historical teams remain weekly source teams, separately from current Sleeper teams.",
+    "Fourteen name_exact identities remain medium confidence; three gsis_direct and two espn_bridge identities remain high confidence.",
+    "Raw candidate evidence is preserved. GSIS whitespace is trimmed only to check agreement for the existing reviewed mapping.",
+    "V2 row source_updated_at is the candidate-generation clock, not the provider update time. Original acquisition/update clocks remain unavailable.",
+    "No original Sleeper dump or original name-candidate census was replayed; this is admission of existing committed candidates.",
+    "Terms assessment remains dated 2026-09-07; original acquisition terms receipt is unavailable; no new acquisition or terms assessment.",
+    "No current role, health, eligibility, ownership, forecast, regression, ranking, league points or transaction authority.",
+    "Proposal review does not certify this implementation. Merge and production require a separate operator decision."
+  ]
+}
