@@ -17,7 +17,10 @@ spec.loader.exec_module(m)
 
 def test_exact_replay_preserves_72_and_medium_three():
     result = m.build()
-    assert result == json.loads((ROOT / m.OUTPUT_PATH).read_bytes())
+    # This earlier materializer replays its archived 75-row stage.
+    assert result == json.loads(subprocess.check_output(['git', '-C', str(ROOT), 'show',
+        f'e65791d3169c0234b80bdb4bfb00c3ed848d64dd:{m.OUTPUT_PATH}']))
+    assert result['records'] == json.loads((ROOT / m.OUTPUT_PATH).read_bytes())['records'][:75]
     old = json.loads(m.historical(m.OUTPUT_PATH))
     assert result['records'][:72] == old['records']
     additions = result['records'][72:]
@@ -101,9 +104,11 @@ def test_legacy_materializer_cannot_discard_three_rows(check):
     assert (ROOT / m.OUTPUT_PATH).read_bytes() == before
 
 
-def test_new_cli_check_and_idempotent_write():
+def test_earlier_cli_cannot_discard_nineteen_rows():
     before = (ROOT / m.OUTPUT_PATH).read_bytes()
     for args in [[], ['--check']]:
-        subprocess.run([sys.executable, str(ROOT / 'scripts/materialize_team_identity_admission.py'), *args],
-                       cwd=ROOT, check=True, capture_output=True)
+        result = subprocess.run([sys.executable, str(ROOT / 'scripts/materialize_team_identity_admission.py'), *args],
+                                cwd=ROOT, text=True, capture_output=True)
+        assert result.returncode != 0
+        assert 'would discard accepted rows' in result.stderr
         assert (ROOT / m.OUTPUT_PATH).read_bytes() == before
