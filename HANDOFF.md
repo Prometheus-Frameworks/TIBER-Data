@@ -551,4 +551,4 @@ Example:
 
 ## 2026-09-13 — PR #271 P2 index correction
 
-Operator accepted review discussion_r3999767711 and authorized the bounded repair and next review. Updated docs/contracts/promoted-artifacts-index.md to inventory the 94-row revision, 26/8/60 method counts, and nineteen-row preparation receipt. No identity, source, receipt authority, generated artifact or support window changed. This is a documentation/handoff repair; fresh independent review is pending. Merge, promotion and deployment remain separately authorized.
+Operator accepted review discussion_r3999767711 and authorized the bounded repair and next review. Updated docs/contracts/promoted-artifacts-index.md to inventory the 94-row revision, 26/8/60 method counts, and nineteen-row preparation receipt. No identity, source, receipt authority, generated artifact or support window changed. This is a documentation/handoff repair; fresh independent review is pending. Merge, promotion and deployment require separate authorization.
