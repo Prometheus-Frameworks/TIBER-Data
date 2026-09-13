@@ -552,3 +552,12 @@ Example:
 ## 2026-09-13 — PR #271 P2 index correction
 
 Operator accepted review discussion_r3999767711 and authorized the bounded repair and next review. Updated docs/contracts/promoted-artifacts-index.md to inventory the 94-row revision, 26/8/60 method counts, and nineteen-row preparation receipt. No identity, source, receipt authority, generated artifact or support window changed. This is a documentation/handoff repair; fresh independent review is pending. Merge, promotion and deployment require separate authorization.
+
+
+## Current handoff — nineteen-player historical promotion, 2026-09-13
+
+- Now true: a separate operator-conversation receipt approves bounded historical use of the exact nineteen prepared identities and matching consumer activation implementation. Earlier receipts, the 94-row crosswalk, all sources and limitations remain unchanged. Antonio Williams is excluded.
+- Changes: versioned promotion receipt, deterministic offline materializer, adversarial tests, contract, index and paired mechanical audit. No acquisition, identity matching, predictions or current-team substitution.
+- Missing: independent review of these activation changes and separate authorization for merge or any deployment. The corresponding Fantasy consumer must pin this receipt and keep all original 75 profiles unchanged.
+- Must not assume: historical-use approval authorizes a production or preview release, roster cuts, transactions, current roles, health or eligibility. Source clocks and original terms receipt remain unavailable.
+- Audit status: builder mechanical replay complete; independent implementation review is separate. See docs/audits/team-roster-identity-promotion-2026-09-13.{md,json}.
