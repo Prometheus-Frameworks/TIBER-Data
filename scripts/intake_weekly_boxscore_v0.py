@@ -103,6 +103,16 @@ def acquire(season, week, destination):
         if prior['requested_scope'] != receipt['requested_scope'] or any((target/n).read_bytes() != raw for n, raw in contents.items()):
             raise ValueError('Existing immutable snapshot differs')
         return target, 'unchanged'
+    # Older unadmitted snapshots used dated directory names. Preserve their
+    # original receipt and path when validated source bytes match exactly.
+    for existing in sorted(destination.glob(f'{season}_w{week:02d}_*')):
+        if not existing.is_dir():
+            continue
+        prior = json.loads((existing / 'receipt.json').read_bytes())
+        prior_contents = {n: (existing/n).read_bytes() for n in contents}
+        validate_receipt(prior, prior_contents)
+        if prior['requested_scope'] == receipt['requested_scope'] and prior_contents == contents:
+            return existing, 'unchanged'
     staging = Path(tempfile.mkdtemp(prefix='.intake-', dir=destination))
     try:
         for name, raw in contents.items():

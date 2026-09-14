@@ -1,0 +1,26 @@
+{
+  "task": "PR #273 bounded review repair",
+  "classification": [
+    "data artifact task",
+    "downstream handoff"
+  ],
+  "baseline_head": "abf06d1d3f5650c5e0fd6f5b6781ca03ddba40c8",
+  "p1": {
+    "disposition": "not reproduced on published head",
+    "support_commit": "a17c2c89f2b7f69fc69691d706290ed882629672",
+    "head_parent": "a17c2c89f2b7f69fc69691d706290ed882629672",
+    "evidence": "GitHub Git commit API plus fresh single-branch remote clone, ancestor check and offline prepare"
+  },
+  "p2": {
+    "disposition": "repaired",
+    "behavior": "Validate existing same-scope dated snapshot bytes and reuse original receipt/path; corrupt snapshots fail closed"
+  },
+  "validation": {
+    "data_tests": 29,
+    "new_regression_fails_before_fix": true
+  },
+  "source_bytes_changed": false,
+  "candidate_revisions_changed": false,
+  "audit_status": "fresh independent review pending",
+  "consumer_admitted": false
+}

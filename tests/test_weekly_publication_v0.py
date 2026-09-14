@@ -3,6 +3,7 @@ import importlib.util
 import json
 from pathlib import Path
 import sys
+import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -44,6 +45,26 @@ class PublicationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d, patch.object(intake,'asset',side_effect=[assets['player'],{**assets['player'],'id':1}]), patch.object(intake,'fetch',side_effect=fake_fetch):
             with self.assertRaisesRegex(ValueError,'changed'):intake.acquire(2026,1,Path(d))
             self.assertEqual(list(Path(d).iterdir()),[])
+
+    def test_intake_reuses_committed_dated_snapshot_without_rewriting_receipt(self):
+        r=json.loads((SOURCE/'receipt.json').read_bytes())
+        content={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}
+        assets={k:{'id':v['asset_id'],'size':v['byte_count'],'digest':'sha256:'+v['sha256'],
+            'updated_at':v['release_asset_updated_at']} for k,v in r['sources'].items()}
+        def fake_fetch(url,cap=0):
+            return content['LICENSE.md' if url==intake.LICENSE_URL else 'player.csv' if 'stats_player/' in url else 'team.csv']
+        with tempfile.TemporaryDirectory() as d, patch.object(intake,'asset',side_effect=lambda year,kind:assets[kind]), patch.object(intake,'fetch',side_effect=fake_fetch):
+            existing=Path(d)/SOURCE.name
+            shutil.copytree(SOURCE,existing)
+            before={p.name:p.read_bytes() for p in existing.iterdir()}
+            actual,status=intake.acquire(2026,1,Path(d))
+            self.assertEqual((actual,status),(existing,'unchanged'))
+            self.assertEqual(list(Path(d).iterdir()),[existing])
+            self.assertEqual(before,{p.name:p.read_bytes() for p in existing.iterdir()})
+            # A corrupt legacy snapshot must not be silently reused or replaced.
+            (existing/'player.csv').write_bytes(b'corrupt')
+            with self.assertRaisesRegex(ValueError,'digest'): intake.acquire(2026,1,Path(d))
+            self.assertEqual(list(Path(d).iterdir()),[existing])
 
     def test_prepare_rejects_fixture_receipt_at_publication_boundary(self):
         content={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md','receipt.json')}
