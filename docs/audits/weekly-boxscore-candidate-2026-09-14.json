@@ -1,0 +1,326 @@
+{
+  "schema_version": "weekly_boxscore_candidate_audit_v0",
+  "status": "prepared_local_independent_review_pending",
+  "data_base_commit": "93ac73af22da063f37694939a3494bcdf82ae1d4",
+  "source_support_commit": "66e4fc0695b26de25d086eabde54dd02f45de0ce",
+  "candidate": {
+    "path": "exports/candidates/weekly_boxscore/2026_w01_20260914.v0.json",
+    "sha256": "f111e24de2df4ba8b65d39d9b9d6645913a01f1755a6c988c4df235e646e22ef",
+    "bytes": 1945059
+  },
+  "scope": {
+    "season": 2026,
+    "season_type": "REG",
+    "week": 1
+  },
+  "coverage": {
+    "source_player_rows_in_scope": 1041,
+    "player_rows": 1040,
+    "unattributed_player_rows": 1,
+    "team_rows": 30,
+    "game_ids": [
+      "2026_01_ARI_LAC",
+      "2026_01_ATL_PIT",
+      "2026_01_BAL_IND",
+      "2026_01_BUF_HOU",
+      "2026_01_CHI_CAR",
+      "2026_01_CLE_JAX",
+      "2026_01_DAL_NYG",
+      "2026_01_GB_MIN",
+      "2026_01_MIA_LV",
+      "2026_01_NE_SEA",
+      "2026_01_NO_DET",
+      "2026_01_NYJ_TEN",
+      "2026_01_SF_LA",
+      "2026_01_TB_CIN",
+      "2026_01_WAS_PHI"
+    ],
+    "game_count": 15,
+    "positions": {
+      "C": 10,
+      "CB": 109,
+      "DB": 17,
+      "DE": 72,
+      "DL": 3,
+      "DT": 98,
+      "FB": 3,
+      "FS": 6,
+      "G": 18,
+      "ILB": 3,
+      "K": 30,
+      "LB": 167,
+      "LS": 7,
+      "MLB": 4,
+      "NT": 3,
+      "OL": 1,
+      "OLB": 7,
+      "OT": 35,
+      "P": 29,
+      "QB": 35,
+      "RB": 83,
+      "S": 4,
+      "SAF": 82,
+      "TE": 74,
+      "WR": 140
+    },
+    "excluded_out_of_scope_rows": {
+      "player": 0,
+      "team": 0
+    },
+    "full_week_completeness": "unverified",
+    "game_finality": "unverified",
+    "player_universe": "all identity-resolved source rows in scope; unattributed rows separate; not an active-roster or participation census"
+  },
+  "validation": {
+    "source_hashes": "matched",
+    "duplicate_keys": 0,
+    "opponent_pairs": "matched",
+    "metric_conflicts": [
+      {
+        "game_id": "2026_01_ATL_PIT",
+        "team": "ATL",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 75,
+        "team_value": 77
+      },
+      {
+        "game_id": "2026_01_ATL_PIT",
+        "team": "PIT",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 388,
+        "team_value": 407
+      },
+      {
+        "game_id": "2026_01_BAL_IND",
+        "team": "BAL",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 270,
+        "team_value": 269
+      },
+      {
+        "game_id": "2026_01_BAL_IND",
+        "team": "IND",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 189,
+        "team_value": 201
+      },
+      {
+        "game_id": "2026_01_BUF_HOU",
+        "team": "BUF",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 359,
+        "team_value": 383
+      },
+      {
+        "game_id": "2026_01_BUF_HOU",
+        "team": "HOU",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 295,
+        "team_value": 322
+      },
+      {
+        "game_id": "2026_01_CHI_CAR",
+        "team": "CAR",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 336,
+        "team_value": 366
+      },
+      {
+        "game_id": "2026_01_CHI_CAR",
+        "team": "CHI",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 282,
+        "team_value": 319
+      },
+      {
+        "game_id": "2026_01_CLE_JAX",
+        "team": "JAX",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 220,
+        "team_value": 242
+      },
+      {
+        "game_id": "2026_01_DAL_NYG",
+        "team": "DAL",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 242,
+        "team_value": 309
+      },
+      {
+        "game_id": "2026_01_GB_MIN",
+        "team": "GB",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 454,
+        "team_value": 469
+      },
+      {
+        "game_id": "2026_01_GB_MIN",
+        "team": "MIN",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 172,
+        "team_value": 176
+      },
+      {
+        "game_id": "2026_01_NE_SEA",
+        "team": "NE",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 205,
+        "team_value": 221
+      },
+      {
+        "game_id": "2026_01_NO_DET",
+        "team": "NO",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 465,
+        "team_value": 483
+      },
+      {
+        "game_id": "2026_01_NYJ_TEN",
+        "team": "NYJ",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 156,
+        "team_value": 168
+      },
+      {
+        "game_id": "2026_01_NYJ_TEN",
+        "team": "TEN",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 164,
+        "team_value": 190
+      },
+      {
+        "game_id": "2026_01_SF_LA",
+        "team": "LA",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 259,
+        "team_value": 255
+      },
+      {
+        "game_id": "2026_01_TB_CIN",
+        "team": "TB",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 132,
+        "team_value": 143
+      },
+      {
+        "game_id": "2026_01_WAS_PHI",
+        "team": "PHI",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 215,
+        "team_value": 225
+      },
+      {
+        "game_id": "2026_01_WAS_PHI",
+        "team": "WAS",
+        "field": "receiving_air_yards",
+        "status": "conflict",
+        "player_sum": 256,
+        "team_value": 317
+      }
+    ],
+    "missing_columns": {
+      "player": [],
+      "team": []
+    },
+    "null_values": {
+      "player": {
+        "completions": 0,
+        "attempts": 0,
+        "passing_yards": 0,
+        "passing_tds": 0,
+        "passing_interceptions": 0,
+        "sacks_suffered": 0,
+        "sack_fumbles_lost": 0,
+        "carries": 0,
+        "rushing_yards": 0,
+        "rushing_tds": 0,
+        "rushing_fumbles_lost": 0,
+        "receptions": 0,
+        "targets": 0,
+        "receiving_yards": 0,
+        "receiving_tds": 0,
+        "receiving_fumbles_lost": 0,
+        "fumbles_lost_total": 0,
+        "passing_2pt_conversions": 0,
+        "rushing_2pt_conversions": 0,
+        "receiving_2pt_conversions": 0,
+        "receiving_air_yards": 0,
+        "receiving_yards_after_catch": 0,
+        "passing_first_downs": 0,
+        "rushing_first_downs": 0,
+        "receiving_first_downs": 0
+      },
+      "team": {
+        "completions": 0,
+        "attempts": 0,
+        "passing_yards": 0,
+        "passing_tds": 0,
+        "passing_interceptions": 0,
+        "sacks_suffered": 0,
+        "sack_fumbles_lost": 0,
+        "carries": 0,
+        "rushing_yards": 0,
+        "rushing_tds": 0,
+        "rushing_fumbles_lost": 0,
+        "receptions": 0,
+        "targets": 0,
+        "receiving_yards": 0,
+        "receiving_tds": 0,
+        "receiving_fumbles_lost": 0,
+        "fumbles_lost_total": 0,
+        "passing_2pt_conversions": 0,
+        "rushing_2pt_conversions": 0,
+        "receiving_2pt_conversions": 0,
+        "receiving_air_yards": 0,
+        "receiving_yards_after_catch": 0,
+        "passing_first_downs": 0,
+        "rushing_first_downs": 0,
+        "receiving_first_downs": 0
+      }
+    },
+    "independent_review": "pending"
+  },
+  "implementer_checks": {
+    "focused_synthetic_tests_passed": 18,
+    "source_value_comparisons_passed": 26775,
+    "byte_reproduction_passed": true,
+    "team_metric_matches": 730,
+    "team_metric_discrepancies": 20,
+    "independent_review": "pending",
+    "existing_output_guard": "passed",
+    "promoted_path_guard": "passed"
+  },
+  "release_constraints": {
+    "receiving_air_yards": "audit_only_pending_definition_reconciliation",
+    "historical_replay": "not_run",
+    "full_week_completeness": "unverified",
+    "game_finality": "unverified",
+    "source_admission": false,
+    "consumer_activation": false,
+    "scheduler_activation": false,
+    "database_write": false,
+    "remote_push": false,
+    "pr_created": false,
+    "merged": false,
+    "deployed": false
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "schema_version": "weekly_intake_publication_audit_v0",
+  "date": "2026-09-14",
+  "status": "reviewed_preparation_only",
+  "authority": "Joe approved the recommended next weekly intake/publication slice; no activation.",
+  "raw_support": {
+    "2026": "66e4fc0695b26de25d086eabde54dd02f45de0ce",
+    "2025": "316a2a0d2871dd547ab94b47ff00dc7426af1e19",
+    "schedule": "a65a5047f7993d42db1b77db949caacf0e718353"
+  },
+  "latest_candidate_sha256": "3395a281e21b4db9947e6598a89cdeff5884d53358c66059b7b11267f6a6782a",
+  "candidate_revisions": [
+    {
+      "previous_sha256": null,
+      "revision": 1,
+      "sha256": "8949232741474b47e5ace1565a1e3cf5d401d07b523bb699dc0821026bb3500e"
+    },
+    {
+      "previous_sha256": "8949232741474b47e5ace1565a1e3cf5d401d07b523bb699dc0821026bb3500e",
+      "revision": 2,
+      "sha256": "3395a281e21b4db9947e6598a89cdeff5884d53358c66059b7b11267f6a6782a"
+    }
+  ],
+  "validation": {
+    "data_tests_passed": 28,
+    "historical_weeks": 18,
+    "historical_games": 272,
+    "historical_identified_observations": 18522,
+    "historical_schedule_membership": "matched all 18 weeks",
+    "historical_air_yard_conflicts": 371,
+    "other_historical_metric_conflicts": 0,
+    "current_games": 15,
+    "current_scheduled_games": 16,
+    "missing_game_ids": [
+      "2026_01_DEN_KC"
+    ],
+    "current_air_yard_conflicts": 20,
+    "actual_repeat_publication": "unchanged"
+  },
+  "independent_review": {
+    "reviewer": "independent read-only audit agent",
+    "initial_candidate": "18 tests and exact reproduction passed",
+    "findings": [
+      {
+        "priority": "P2",
+        "finding": "Production receipt fixture/source validation",
+        "status": "repaired in publication wrapper"
+      },
+      {
+        "priority": "P2",
+        "finding": "Preview omitted schedule provenance",
+        "status": "repaired"
+      },
+      {
+        "priority": "P2",
+        "finding": "Offline license validated self-declared digest only",
+        "status": "repaired"
+      }
+    ],
+    "final_review": "No remaining material findings within preparation-only scope; independently reran 27 Data and 42 Fantasy tests before final added test cases."
+  },
+  "not_done": [
+    "source admission",
+    "runtime pin activation",
+    "scheduler",
+    "leaders UI",
+    "Sleeper identity expansion",
+    "merge",
+    "deployment"
+  ],
+  "limitations": [
+    "Source receipts are separate non-atomic reads.",
+    "Schedule has no certified final status; all finality remains unknown.",
+    "Replay is retrospective corrected history, not an as-of backtest.",
+    "Receiving air yards remain audit-only; charting unavailable.",
+    "Local preparation and independent review do not constitute promotion."
+  ]
+}

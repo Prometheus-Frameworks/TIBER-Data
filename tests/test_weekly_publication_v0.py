@@ -1,0 +1,103 @@
+import copy
+import importlib.util
+import json
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
+import publish_weekly_boxscore_candidate_v0 as pub
+import intake_weekly_boxscore_v0 as intake
+from test_weekly_boxscore_candidate_v0 import fixtures,encode,receipt,box
+
+ROOT=Path(__file__).resolve().parents[1]
+SOURCE=ROOT/'data/raw/weekly_boxscore/2026_w01_20260914'
+
+class PublicationTests(unittest.TestCase):
+    def candidate(self):
+        p,t=map(encode,fixtures())
+        return box.build_candidate(p,t,receipt(p,t))
+
+    def test_real_receipt_validates_and_fixture_flags_fail(self):
+        r=json.loads((SOURCE/'receipt.json').read_bytes())
+        content={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}
+        intake.validate_receipt(r,content)
+        for key in ('fixture','demo','synthetic','test_fixture'):
+            altered={**r,key:False}
+            with self.assertRaisesRegex(ValueError,'Fixture'): intake.validate_receipt(altered,content)
+        altered=copy.deepcopy(r);altered['sources']['player']['source_url']='https://example.org/fixture.csv'
+        with self.assertRaises(ValueError): intake.validate_receipt(altered,content)
+
+    def test_intake_noop_and_release_race_fail_closed(self):
+        r=json.loads((SOURCE/'receipt.json').read_bytes())
+        content={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}
+        assets={k:{'id':v['asset_id'],'size':v['byte_count'],'digest':'sha256:'+v['sha256'],
+            'updated_at':v['release_asset_updated_at']} for k,v in r['sources'].items()}
+        def fake_fetch(url,cap=0):
+            return content['LICENSE.md' if url==intake.LICENSE_URL else 'player.csv' if 'stats_player/' in url else 'team.csv']
+        with tempfile.TemporaryDirectory() as d, patch.object(intake,'asset',side_effect=lambda year,kind:assets[kind]), patch.object(intake,'fetch',side_effect=fake_fetch):
+            first,status=intake.acquire(2026,1,Path(d));before=(first/'receipt.json').read_bytes()
+            second,status=intake.acquire(2026,1,Path(d))
+            self.assertEqual(status,'unchanged');self.assertEqual(first,second)
+            self.assertEqual(before,(second/'receipt.json').read_bytes())
+        with tempfile.TemporaryDirectory() as d, patch.object(intake,'asset',side_effect=[assets['player'],{**assets['player'],'id':1}]), patch.object(intake,'fetch',side_effect=fake_fetch):
+            with self.assertRaisesRegex(ValueError,'changed'):intake.acquire(2026,1,Path(d))
+            self.assertEqual(list(Path(d).iterdir()),[])
+
+    def test_prepare_rejects_fixture_receipt_at_publication_boundary(self):
+        content={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md','receipt.json')}
+        r=json.loads(content['receipt.json']);r['test_fixture']=True
+        content['receipt.json']=json.dumps(r).encode()
+        with patch.object(pub,'committed',side_effect=lambda root,commit,path:content[path.name]):
+            with self.assertRaisesRegex(ValueError,'Fixture'):pub.prepare(ROOT,SOURCE,'a'*40)
+
+    def test_changed_license_rejected_even_when_receipt_hash_matches(self):
+        r=json.loads((SOURCE/'receipt.json').read_bytes())
+        content={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}
+        content['LICENSE.md']=b'Changed terms'
+        r['attribution']['license_sha256']=pub.sha(content['LICENSE.md'])
+        with self.assertRaisesRegex(ValueError,'License'):intake.validate_receipt(r,content)
+
+    def test_publication_wrapper_rejects_uncommitted_support(self):
+        with tempfile.TemporaryDirectory(dir=ROOT) as d:
+            with self.assertRaises(Exception): pub.prepare(ROOT,Path(d),'0'*40)
+
+    def test_no_schedule_never_means_complete(self):
+        c=pub.coverage(self.candidate())
+        self.assertIsNone(c['scheduled_game_ids']);self.assertFalse(c['full_week_final'])
+
+    def schedule(self, extra=False, conflict=False):
+        return encode([{'game_id':'SYNTHETIC_GAME','season':2026,'week':1,'game_type':'REG',
+            'home_team':'AAA','away_team':'CCC' if conflict else 'BBB','home_score':21,'away_score':7}]+
+            ([{'game_id':'SYNTHETIC_MISSING','season':2026,'week':1,'game_type':'REG',
+            'home_team':'DDD','away_team':'EEE','home_score':'','away_score':''}] if extra else []))
+
+    def test_schedule_match_does_not_certify_finality(self):
+        c=pub.coverage(self.candidate(),self.schedule())
+        self.assertEqual(c['schedule_coverage'],'matched');self.assertEqual(c['game_finality'],'unknown')
+
+    def test_missing_game_reported(self):
+        c=pub.coverage(self.candidate(),self.schedule(extra=True))
+        self.assertEqual(c['missing_game_ids'],['SYNTHETIC_MISSING'])
+
+    def test_schedule_conflict_and_duplicates_rejected(self):
+        with self.assertRaises(ValueError): pub.coverage(self.candidate(),self.schedule(conflict=True))
+        raw=self.schedule();raw+=raw.splitlines(keepends=True)[1]
+        with self.assertRaises(ValueError): pub.coverage(self.candidate(),raw)
+
+    def test_noop_correction_and_prior_bytes_preserved(self):
+        e={'candidate':self.candidate()}
+        with tempfile.TemporaryDirectory() as d:
+            first=pub.publish(e,Path(d)); path=Path(first['stream'])/(first['sha256']+'.json'); before=path.read_bytes()
+            again=pub.publish(e,Path(d));self.assertEqual(again['status'],'unchanged')
+            updated=copy.deepcopy(e);updated['candidate']['players'][0]['observed']['receiving_yards']=31
+            second=pub.publish(updated,Path(d))
+            self.assertNotEqual(first['sha256'],second['sha256']);self.assertEqual(path.read_bytes(),before)
+            index=json.loads((Path(first['stream'])/'index.json').read_bytes())
+            self.assertEqual(len(index['revisions']),2)
+            self.assertEqual(index['revisions'][1]['previous_sha256'],first['sha256'])
+            path.write_bytes(b'corrupt')
+            with self.assertRaises(ValueError):pub.publish(updated,Path(d))
+
+if __name__=='__main__':unittest.main()

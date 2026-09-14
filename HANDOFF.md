@@ -561,3 +561,12 @@ Operator accepted review discussion_r3999767711 and authorized the bounded repai
 - Missing: independent review of these activation changes and separate authorization for merge or any deployment. The corresponding Fantasy consumer must pin this receipt and keep all original 75 profiles unchanged.
 - Must not assume: historical-use approval authorizes a production or preview release, roster cuts, transactions, current roles, health or eligibility. Source clocks and original terms receipt remain unavailable.
 - Audit status: builder mechanical replay complete; independent implementation review is separate. See docs/audits/team-roster-identity-promotion-2026-09-13.{md,json}.
+
+## 2026-09-14 — Weekly intake/publication preparation
+
+- Active task: authorized next slice following the offline box-score candidate; contract/data-artifact/downstream handoff.
+- Files: four new weekly intake/publication/replay scripts, focused publication tests, raw 2025 and schedule snapshots, candidate revision inventory, contract and paired audit reports.
+- Now true: repeatable hash-checked CSV intake, committed-source offline preparation, schedule membership coverage, immutable candidate revisions, completed-season raw replay.
+- Still missing: source admission, accepted runtime pin, final-status evidence, scheduler, leaders UI, roster identity activation and production release.
+- Must not assume: preparation/replay/review grants promotion; schedule scores certify finality; receiving air yards reconcile; missing charting means low usage; source IDs establish ownership.
+- Audit: independent review completed with two P2 findings repaired; exact local validation and source pins in `docs/audits/weekly-intake-publication-2026-09-14.{md,json}`. No merge, remote publication, source promotion or deployment.
