@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 from build_weekly_boxscore_candidate_v0 import build_candidate
 from intake_weekly_boxscore_v0 import validate_receipt, AUDITED_LICENSE_SHA256, LICENSE_URL
-from datetime import datetime
+from intake_weekly_schedule_v0 import validate_schedule_receipt
 
 VERSION = 'weekly_boxscore_publication_candidate_v0'
 
@@ -86,26 +86,7 @@ def prepare(root, source_dir, source_commit, schedule_dir=None, schedule_commit=
         schedule_receipt = json.loads(committed(root, schedule_commit, schedule_dir/'receipt.json'))
         schedule_raw = committed(root, schedule_commit, schedule_dir/'games.csv')
         license_raw = committed(root, schedule_commit, schedule_dir/'LICENSE.md')
-        if (sha(license_raw) != AUDITED_LICENSE_SHA256
-                or schedule_receipt['attribution']['license_sha256'] != AUDITED_LICENSE_SHA256
-                or schedule_receipt['attribution']['name'] != 'nflverse contributors'
-                or schedule_receipt['attribution']['license'] != 'CC BY 4.0'
-                or schedule_receipt['attribution']['license_source_url'] != LICENSE_URL):
-            raise ValueError('Schedule license mismatch')
-        if (schedule_receipt.get('status') != 'unadmitted_schedule_snapshot'
-                or schedule_receipt.get('source_family') != 'nflverse/nflverse-data/schedules'
-                or schedule_receipt.get('schema_version') != 'weekly_schedule_source_candidate_v0'
-                or schedule_receipt.get('source_url') != 'https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv'
-                or schedule_receipt.get('release_digest_matched') is not True
-                or schedule_receipt.get('sha256') != sha(schedule_raw)
-                or schedule_receipt.get('byte_count') != len(schedule_raw)
-                or any(k in schedule_receipt for k in ('test_fixture','fixture','demo','synthetic'))):
-            raise ValueError('Schedule receipt mismatch')
-        if type(schedule_receipt.get('asset_id')) is not int or schedule_receipt['asset_id'] <= 0:
-            raise ValueError('Invalid schedule asset')
-        for key in ('release_asset_updated_at', 'retrieval_started_at', 'retrieval_completed_at'):
-            if datetime.fromisoformat(schedule_receipt[key].replace('Z', '+00:00')).tzinfo is None:
-                raise ValueError('Invalid schedule clock')
+        validate_schedule_receipt(schedule_receipt, schedule_raw, license_raw)
         schedule_receipt = {**schedule_receipt, 'source_support_commit': schedule_commit}
     return {'schema_version': VERSION, 'status': 'candidate_needs_review', 'consumer_admitted': False,
         'candidate': candidate, 'coverage': coverage(candidate, schedule_raw),
@@ -126,7 +107,17 @@ def publish(envelope, directory):
         index = json.loads(index_path.read_bytes()) if index_path.exists() else {'consumer_admitted': False, 'revisions': []}
         if index.get('consumer_admitted') is not False:
             raise ValueError('Invalid candidate inventory')
-        for entry in index['revisions']:
+        if not isinstance(index.get('revisions'), list):
+            raise ValueError('Invalid revision chain')
+        previous = None
+        for number, entry in enumerate(index['revisions'], 1):
+            if (not isinstance(entry, dict) or type(entry.get('revision')) is not int
+                    or entry['revision'] != number or 'previous_sha256' not in entry
+                    or entry['previous_sha256'] != previous
+                    or not isinstance(entry.get('sha256'), str)
+                    or not re.fullmatch('[0-9a-f]{64}', entry['sha256'])):
+                raise ValueError('Invalid revision chain')
+            previous = entry['sha256']
             path = stream/(entry['sha256']+'.json')
             if sha(path.read_bytes()) != entry['sha256']:
                 raise ValueError('Revision inventory corruption')

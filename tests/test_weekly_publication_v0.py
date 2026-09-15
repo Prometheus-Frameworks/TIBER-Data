@@ -10,6 +10,7 @@ from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
 import publish_weekly_boxscore_candidate_v0 as pub
 import intake_weekly_boxscore_v0 as intake
+import intake_weekly_schedule_v0 as schedule_intake
 from test_weekly_boxscore_candidate_v0 import fixtures,encode,receipt,box
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -65,6 +66,46 @@ class PublicationTests(unittest.TestCase):
             (existing/'player.csv').write_bytes(b'corrupt')
             with self.assertRaisesRegex(ValueError,'digest'): intake.acquire(2026,1,Path(d))
             self.assertEqual(list(Path(d).iterdir()),[existing])
+
+    def test_schedule_reuse_validates_receipt_and_preserves_bytes(self):
+        source=next((ROOT/'data/raw/weekly_schedule').glob('*/receipt.json')).parent
+        raw=(source/'games.csv').read_bytes(); license_raw=(source/'LICENSE.md').read_bytes()
+        receipt_bytes=(source/'receipt.json').read_bytes(); r=json.loads(receipt_bytes)
+        asset={'id':r['asset_id'],'size':len(raw),'digest':'sha256:'+pub.sha(raw),'updated_at':r['release_asset_updated_at']}
+        mutations=[lambda r:r.update(schema_version='bad'),lambda r:r.update(sha256='0'*64),
+            lambda r:r.update(asset_id=True),lambda r:r.update(retrieval_started_at='invalid'),
+            lambda r:r['attribution'].update(license='unknown'),lambda r:r.update(fixture=False),
+            lambda r:r.update(limitations=[])]
+        with tempfile.TemporaryDirectory() as d, patch.object(schedule_intake,'schedule_asset',return_value=asset), patch.object(schedule_intake,'fetch',side_effect=lambda url,*args:raw if url==schedule_intake.URL else license_raw):
+            target=Path(d)/pub.sha(raw); shutil.copytree(source,target)
+            self.assertEqual(schedule_intake.acquire_schedule(Path(d)),target)
+            self.assertEqual((target/'receipt.json').read_bytes(),receipt_bytes)
+            for mutate in mutations:
+                altered=copy.deepcopy(r); mutate(altered)
+                bad=json.dumps(altered).encode();(target/'receipt.json').write_bytes(bad)
+                with self.assertRaises(ValueError):schedule_intake.acquire_schedule(Path(d))
+                self.assertEqual((target/'receipt.json').read_bytes(),bad)
+            (target/'receipt.json').write_bytes(b'{broken')
+            with self.assertRaises(ValueError):schedule_intake.acquire_schedule(Path(d))
+            (target/'receipt.json').unlink()
+            with self.assertRaises(FileNotFoundError):schedule_intake.acquire_schedule(Path(d))
+            self.assertEqual(list(Path(d).iterdir()),[target])
+
+    def test_revision_chain_corruption_rejected_before_noop_or_append(self):
+        first={'candidate':self.candidate()}; second=copy.deepcopy(first)
+        second['candidate']['players'][0]['observed']['receiving_yards']=42
+        third=copy.deepcopy(second);third['candidate']['players'][0]['observed']['receiving_yards']=43
+        mutations=[lambda r:r.reverse(),lambda r:r[1].update(revision=9),
+            lambda r:r[0].update(revision=True),lambda r:r[1].update(previous_sha256='0'*64),
+            lambda r:r[0].pop('previous_sha256'),lambda r:r[0].update(sha256='../bad')]
+        for mutate in mutations:
+            with tempfile.TemporaryDirectory() as d:
+                pub.publish(first,Path(d));result=pub.publish(second,Path(d));stream=Path(result['stream'])
+                index=stream/'index.json';value=json.loads(index.read_bytes());mutate(value['revisions'])
+                index.write_bytes(pub.canonical(value));before={p.name:p.read_bytes() for p in stream.iterdir()}
+                for candidate in (second,third):
+                    with self.assertRaisesRegex(ValueError,'revision chain'):pub.publish(candidate,Path(d))
+                    self.assertEqual(before,{p.name:p.read_bytes() for p in stream.iterdir()})
 
     def test_prepare_rejects_fixture_receipt_at_publication_boundary(self):
         content={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md','receipt.json')}
