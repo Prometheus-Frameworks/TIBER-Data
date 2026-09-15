@@ -73,7 +73,7 @@ class PublicationTests(unittest.TestCase):
         receipt_bytes=(source/'receipt.json').read_bytes(); r=json.loads(receipt_bytes)
         asset={'id':r['asset_id'],'size':len(raw),'digest':'sha256:'+pub.sha(raw),'updated_at':r['release_asset_updated_at']}
         mutations=[lambda r:r.update(schema_version='bad'),lambda r:r.update(sha256='0'*64),
-            lambda r:r.update(asset_id=True),lambda r:r.update(retrieval_started_at='invalid'),
+            lambda r:r.update(asset_id=1),lambda r:r.update(asset_id=True),lambda r:r.update(retrieval_started_at='invalid'),
             lambda r:r['attribution'].update(license='unknown'),lambda r:r.update(fixture=False),
             lambda r:r.update(limitations=[])]
         with tempfile.TemporaryDirectory() as d, patch.object(schedule_intake,'schedule_asset',return_value=asset), patch.object(schedule_intake,'fetch',side_effect=lambda url,*args:raw if url==schedule_intake.URL else license_raw):

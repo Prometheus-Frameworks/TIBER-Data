@@ -58,7 +58,10 @@ def acquire_schedule(destination):
     destination.mkdir(parents=True,exist_ok=True); target=destination/digest(raw)
     if target.exists():
         if (target/'games.csv').read_bytes()!=raw or (target/'LICENSE.md').read_bytes()!=license_raw: raise ValueError('Existing snapshot differs')
-        validate_schedule_receipt(json.loads((target/'receipt.json').read_bytes()),raw,license_raw)
+        saved=json.loads((target/'receipt.json').read_bytes())
+        validate_schedule_receipt(saved,raw,license_raw)
+        if saved['asset_id']!=before['id']:
+            raise ValueError('Existing schedule receipt asset mismatch')
         return target
     staging=Path(tempfile.mkdtemp(prefix='.schedule-',dir=destination))
     try:
