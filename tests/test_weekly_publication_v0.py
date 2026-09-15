@@ -121,6 +121,40 @@ class PublicationTests(unittest.TestCase):
             source['release_asset_updated_at']=source['release_asset_updated_at'].replace('Z','+00:00')
         intake.validate_reused_assets(prior,r['sources'])
 
+    def test_receipt_clocks_fail_closed_in_both_directory_formats(self):
+        r=json.loads((SOURCE/'receipt.json').read_bytes())
+        contents={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}
+        assets={k:{'id':v['asset_id'],'size':v['byte_count'],'digest':'sha256:'+v['sha256'],
+            'updated_at':v['release_asset_updated_at']} for k,v in r['sources'].items()}
+        def fake_fetch(url,*args):
+            return contents['LICENSE.md' if url==intake.LICENSE_URL else 'player.csv' if 'stats_player/' in url else 'team.csv']
+        mutations=[('invalid compiled',lambda r:r.update(snapshot_compiled_at='invalid')),
+            ('naive compiled',lambda r:r.update(snapshot_compiled_at='2026-09-14T13:16:53')),
+            ('early compiled',lambda r:r.update(snapshot_compiled_at='2000-01-01T00:00:00Z'))]
+        for kind in ('player','team'):
+            mutations.append((kind+' reversed',lambda r,k=kind:r['sources'][k].update(retrieval_completed_at='2000-01-01T00:00:00Z')))
+        for legacy in (False,True):
+            for label,mutate in mutations:
+                with self.subTest(legacy=legacy,mutation=label), tempfile.TemporaryDirectory() as d, patch.object(intake,'asset',side_effect=lambda year,k:assets[k]), patch.object(intake,'fetch',side_effect=fake_fetch):
+                    if legacy:
+                        target=Path(d)/SOURCE.name;shutil.copytree(SOURCE,target)
+                    else:target,_=intake.acquire(2026,1,Path(d))
+                    saved=json.loads((target/'receipt.json').read_bytes());mutate(saved)
+                    (target/'receipt.json').write_bytes(pub.canonical(saved))
+                    before={p.name:p.read_bytes() for p in target.iterdir()}
+                    with self.assertRaises(ValueError):intake.acquire(2026,1,Path(d))
+                    self.assertEqual(before,{p.name:p.read_bytes() for p in target.iterdir()})
+                    self.assertEqual(list(Path(d).iterdir()),[target])
+
+    def test_receipt_clock_order_uses_instants_and_allows_equality(self):
+        r=json.loads((SOURCE/'receipt.json').read_bytes())
+        contents={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}
+        r['snapshot_compiled_at']='2026-09-14T10:00:00-04:00'
+        for source in r['sources'].values():
+            source['retrieval_started_at']='2026-09-14T15:00:00+02:00'
+            source['retrieval_completed_at']='2026-09-14T14:00:00Z'
+        intake.validate_receipt(r,contents)
+
     def test_standalone_builder_validates_source_lane_before_output(self):
         for mutation in ('valid','fixture','test_fixture','url','license'):
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory(dir=ROOT/'exports/candidates/weekly_boxscore') as d:

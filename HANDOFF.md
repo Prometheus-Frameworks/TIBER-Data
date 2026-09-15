@@ -570,3 +570,7 @@ Operator accepted review discussion_r3999767711 and authorized the bounded repai
 - Still missing: source admission, accepted runtime pin, final-status evidence, scheduler, leaders UI, roster identity activation and production release.
 - Must not assume: preparation/replay/review grants promotion; schedule scores certify finality; receiving air yards reconcile; missing charting means low usage; source IDs establish ownership.
 - Audit: independent review completed with two P2 findings repaired; exact local validation and source pins in `docs/audits/weekly-intake-publication-2026-09-14.{md,json}`. No merge, remote publication, source promotion or deployment.
+
+## 2026-09-15 — Weekly receipt review R6
+
+Bounded data-artifact/downstream validation repair for #273 finding4011499271. Receipt compilation and retrieval ordering now validated, including dated/content-keyed reuse; 36 weekly tests pass. Changed intake validator, publication tests and paired R6 audit. Raw/candidate artifacts unchanged; no acquisition or admission. Independent exact-head review pending. Joe authorizes repair/push/re-review only; stop before merge, activation or deployment.

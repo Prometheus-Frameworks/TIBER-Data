@@ -39,6 +39,14 @@ def asset(season, kind):
         raise ValueError('Release digest unavailable')
     return a
 
+def receipt_clock(value):
+    if not isinstance(value, str):
+        raise ValueError('Source clock must be a timestamp')
+    dt = datetime.fromisoformat(value.replace('Z', '+00:00'))
+    if dt.tzinfo is None:
+        raise ValueError('Source clock must include offset')
+    return dt
+
 def validate_receipt(receipt, contents):
     if receipt.get('schema_version') != RECEIPT_SCHEMA or receipt.get('status') != 'unadmitted_candidate_source_snapshot':
         raise ValueError('Unsupported source receipt')
@@ -47,15 +55,17 @@ def validate_receipt(receipt, contents):
     scope = receipt['requested_scope']
     if type(scope.get('season')) is not int or not 1900 <= scope['season'] <= 2200 or scope.get('season_type') != 'REG' or type(scope.get('week')) is not int or not 1 <= scope['week'] <= 18:
         raise ValueError('Invalid explicit scope')
+    compiled = receipt_clock(receipt.get('snapshot_compiled_at'))
     for kind in ('player', 'team'):
         p = receipt['sources'][kind]
         url = f"https://github.com/nflverse/nflverse-data/releases/download/stats_{kind}/stats_{kind}_week_{scope['season']}.csv"
         if p['source_url'] != url or p['file'] != kind + '.csv' or type(p['asset_id']) is not int or p['asset_id'] <= 0 or p.get('release_digest_matched') is not True:
             raise ValueError('Unsupported source family or asset')
-        for key in ('release_asset_updated_at', 'retrieval_started_at', 'retrieval_completed_at'):
-            dt = datetime.fromisoformat(p[key].replace('Z', '+00:00'))
-            if dt.tzinfo is None:
-                raise ValueError('Source clock must include offset')
+        receipt_clock(p['release_asset_updated_at'])
+        started = receipt_clock(p['retrieval_started_at'])
+        completed = receipt_clock(p['retrieval_completed_at'])
+        if not started <= completed <= compiled:
+            raise ValueError('Source clock ordering invalid')
         raw = contents[kind + '.csv']
         if len(raw) != p['byte_count'] or digest(raw) != p['sha256']:
             raise ValueError('Source digest mismatch')
