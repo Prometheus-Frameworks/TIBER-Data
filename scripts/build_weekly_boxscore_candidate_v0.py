@@ -201,8 +201,8 @@ def main() -> None:
             raise ValueError(f"Uncommitted source support: {name}")
         contents[name] = raw
     receipt = json.loads(contents["receipt.json"])
-    if hashlib.sha256(contents["LICENSE.md"]).hexdigest() != receipt["attribution"]["license_sha256"]:
-        raise ValueError("License snapshot mismatch")
+    from intake_weekly_boxscore_v0 import validate_receipt
+    validate_receipt(receipt, contents)
     candidate = build_candidate(contents["player.csv"], contents["team.csv"], receipt)
     candidate["source_support_commit"] = source_commit
     output.parent.mkdir(parents=True, exist_ok=True)

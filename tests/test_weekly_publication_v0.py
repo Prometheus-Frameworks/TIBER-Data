@@ -73,7 +73,7 @@ class PublicationTests(unittest.TestCase):
         receipt_bytes=(source/'receipt.json').read_bytes(); r=json.loads(receipt_bytes)
         asset={'id':r['asset_id'],'size':len(raw),'digest':'sha256:'+pub.sha(raw),'updated_at':r['release_asset_updated_at']}
         mutations=[lambda r:r.update(schema_version='bad'),lambda r:r.update(sha256='0'*64),
-            lambda r:r.update(asset_id=1),lambda r:r.update(asset_id=True),lambda r:r.update(retrieval_started_at='invalid'),
+            lambda r:r.update(asset_id=1),lambda r:r.update(asset_id=True),lambda r:r.update(release_asset_updated_at='2000-01-01T00:00:00Z'),lambda r:r.update(retrieval_started_at='invalid'),
             lambda r:r['attribution'].update(license='unknown'),lambda r:r.update(fixture=False),
             lambda r:r.update(limitations=[])]
         with tempfile.TemporaryDirectory() as d, patch.object(schedule_intake,'schedule_asset',return_value=asset), patch.object(schedule_intake,'fetch',side_effect=lambda url,*args:raw if url==schedule_intake.URL else license_raw):
@@ -90,6 +90,48 @@ class PublicationTests(unittest.TestCase):
             (target/'receipt.json').unlink()
             with self.assertRaises(FileNotFoundError):schedule_intake.acquire_schedule(Path(d))
             self.assertEqual(list(Path(d).iterdir()),[target])
+
+    def test_boxscore_reuse_binds_both_assets_in_both_directory_formats(self):
+        r=json.loads((SOURCE/'receipt.json').read_bytes())
+        contents={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}
+        assets={k:{'id':v['asset_id'],'size':v['byte_count'],'digest':'sha256:'+v['sha256'],
+            'updated_at':v['release_asset_updated_at']} for k,v in r['sources'].items()}
+        def fake_fetch(url,*args):
+            return contents['LICENSE.md' if url==intake.LICENSE_URL else 'player.csv' if 'stats_player/' in url else 'team.csv']
+        for legacy in (False,True):
+            for kind in ('player','team'):
+                with self.subTest(legacy=legacy,kind=kind), tempfile.TemporaryDirectory() as d, patch.object(intake,'asset',side_effect=lambda year,k:assets[k]), patch.object(intake,'fetch',side_effect=fake_fetch):
+                    if legacy:
+                        target=Path(d)/SOURCE.name;shutil.copytree(SOURCE,target)
+                    else:target,_=intake.acquire(2026,1,Path(d))
+                    saved=json.loads((target/'receipt.json').read_bytes());saved['sources'][kind]['asset_id']=1
+                    (target/'receipt.json').write_bytes(pub.canonical(saved))
+                    before={p.name:p.read_bytes() for p in target.iterdir()}
+                    with self.assertRaisesRegex(ValueError,'asset'):intake.acquire(2026,1,Path(d))
+                    self.assertEqual(before,{p.name:p.read_bytes() for p in target.iterdir()})
+                    self.assertEqual(list(Path(d).iterdir()),[target])
+
+    def test_standalone_builder_validates_source_lane_before_output(self):
+        for mutation in ('valid','fixture','test_fixture','url','license'):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory(dir=ROOT/'exports/candidates/weekly_boxscore') as d:
+                source=Path(d)/'source';source.mkdir();out=Path(d)/'candidate.json'
+                contents={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md','receipt.json')}
+                r=json.loads(contents['receipt.json'])
+                if mutation in ('fixture','test_fixture'):r[mutation]=False
+                elif mutation=='url':r['sources']['player']['source_url']='https://example.test/unsupported'
+                elif mutation=='license':
+                    contents['LICENSE.md']=b'Changed terms';r['attribution']['license_sha256']=pub.sha(contents['LICENSE.md'])
+                contents['receipt.json']=pub.canonical(r)
+                for name,raw in contents.items():(source/name).write_bytes(raw)
+                def fake_git(args,**kwargs):
+                    return str(ROOT)+'\n' if args[1]=='rev-parse' else contents[Path(args[2]).name]
+                argv=['builder','--source-dir',str(source),'--source-commit','a'*40,'--output',str(out)]
+                with patch.object(sys,'argv',argv),patch.object(box.subprocess,'check_output',side_effect=fake_git):
+                    if mutation=='valid':
+                        with patch('builtins.print'):box.main()
+                    else:
+                        with self.assertRaises(ValueError):box.main()
+                self.assertEqual(out.exists(),mutation=='valid')
 
     def test_revision_chain_corruption_rejected_before_noop_or_append(self):
         first={'candidate':self.candidate()}; second=copy.deepcopy(first)

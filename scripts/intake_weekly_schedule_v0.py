@@ -62,6 +62,8 @@ def acquire_schedule(destination):
         validate_schedule_receipt(saved,raw,license_raw)
         if saved['asset_id']!=before['id']:
             raise ValueError('Existing schedule receipt asset mismatch')
+        if datetime.fromisoformat(saved['release_asset_updated_at'].replace('Z','+00:00')) != datetime.fromisoformat(before['updated_at'].replace('Z','+00:00')):
+            raise ValueError('Existing schedule release timestamp mismatch')
         return target
     staging=Path(tempfile.mkdtemp(prefix='.schedule-',dir=destination))
     try:

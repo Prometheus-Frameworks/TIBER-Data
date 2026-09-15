@@ -63,6 +63,11 @@ def validate_receipt(receipt, contents):
     if a['name'] != 'nflverse contributors' or a['license'] != 'CC BY 4.0' or a['license_source_url'] != LICENSE_URL or digest(contents['LICENSE.md']) != a['license_sha256'] or a['license_sha256'] != AUDITED_LICENSE_SHA256:
         raise ValueError('License snapshot mismatch')
 
+def validate_reused_assets(prior, sources):
+    for kind in ('player', 'team'):
+        if prior['sources'][kind]['asset_id'] != sources[kind]['asset_id']:
+            raise ValueError('Existing box-score receipt asset mismatch')
+
 def acquire(season, week, destination):
     if not 1900 <= season <= 2200 or not 1 <= week <= 18:
         raise ValueError('Invalid scope')
@@ -102,6 +107,7 @@ def acquire(season, week, destination):
         validate_receipt(prior, {n: (target/n).read_bytes() for n in contents})
         if prior['requested_scope'] != receipt['requested_scope'] or any((target/n).read_bytes() != raw for n, raw in contents.items()):
             raise ValueError('Existing immutable snapshot differs')
+        validate_reused_assets(prior, sources)
         return target, 'unchanged'
     # Older unadmitted snapshots used dated directory names. Preserve their
     # original receipt and path when validated source bytes match exactly.
@@ -112,6 +118,7 @@ def acquire(season, week, destination):
         prior_contents = {n: (existing/n).read_bytes() for n in contents}
         validate_receipt(prior, prior_contents)
         if prior['requested_scope'] == receipt['requested_scope'] and prior_contents == contents:
+            validate_reused_assets(prior, sources)
             return existing, 'unchanged'
     staging = Path(tempfile.mkdtemp(prefix='.intake-', dir=destination))
     try:
