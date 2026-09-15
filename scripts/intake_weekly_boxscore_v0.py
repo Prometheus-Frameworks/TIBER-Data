@@ -67,6 +67,10 @@ def validate_reused_assets(prior, sources):
     for kind in ('player', 'team'):
         if prior['sources'][kind]['asset_id'] != sources[kind]['asset_id']:
             raise ValueError('Existing box-score receipt asset mismatch')
+        saved = datetime.fromisoformat(prior['sources'][kind]['release_asset_updated_at'].replace('Z', '+00:00'))
+        fetched = datetime.fromisoformat(sources[kind]['release_asset_updated_at'].replace('Z', '+00:00'))
+        if saved != fetched:
+            raise ValueError('Existing box-score release timestamp mismatch')
 
 def acquire(season, week, destination):
     if not 1900 <= season <= 2200 or not 1 <= week <= 18:

@@ -104,12 +104,22 @@ class PublicationTests(unittest.TestCase):
                     if legacy:
                         target=Path(d)/SOURCE.name;shutil.copytree(SOURCE,target)
                     else:target,_=intake.acquire(2026,1,Path(d))
-                    saved=json.loads((target/'receipt.json').read_bytes());saved['sources'][kind]['asset_id']=1
+                    saved=json.loads((target/'receipt.json').read_bytes());saved['sources'][kind]['release_asset_updated_at']='2000-01-01T00:00:00Z'
                     (target/'receipt.json').write_bytes(pub.canonical(saved))
                     before={p.name:p.read_bytes() for p in target.iterdir()}
-                    with self.assertRaisesRegex(ValueError,'asset'):intake.acquire(2026,1,Path(d))
+                    with self.assertRaisesRegex(ValueError,'timestamp'):intake.acquire(2026,1,Path(d))
                     self.assertEqual(before,{p.name:p.read_bytes() for p in target.iterdir()})
                     self.assertEqual(list(Path(d).iterdir()),[target])
+                    saved['sources'][kind]['release_asset_updated_at']=r['sources'][kind]['release_asset_updated_at']
+                    saved['sources'][kind]['asset_id']=1
+                    (target/'receipt.json').write_bytes(pub.canonical(saved))
+                    with self.assertRaisesRegex(ValueError,'asset'):intake.acquire(2026,1,Path(d))
+
+    def test_reused_asset_timestamps_accept_equivalent_offsets(self):
+        r=json.loads((SOURCE/'receipt.json').read_bytes());prior=copy.deepcopy(r)
+        for source in prior['sources'].values():
+            source['release_asset_updated_at']=source['release_asset_updated_at'].replace('Z','+00:00')
+        intake.validate_reused_assets(prior,r['sources'])
 
     def test_standalone_builder_validates_source_lane_before_output(self):
         for mutation in ('valid','fixture','test_fixture','url','license'):
