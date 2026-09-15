@@ -574,3 +574,7 @@ Operator accepted review discussion_r3999767711 and authorized the bounded repai
 ## 2026-09-15 — Weekly receipt review R6
 
 Bounded data-artifact/downstream validation repair for #273 finding4011499271. Receipt compilation and retrieval ordering now validated, including dated/content-keyed reuse; 36 weekly tests pass. Changed intake validator, publication tests and paired R6 audit. Raw/candidate artifacts unchanged; no acquisition or admission. Independent exact-head review pending. Joe authorizes repair/push/re-review only; stop before merge, activation or deployment.
+
+## 2026-09-15 — Weekly receipt review R7
+
+Downstream finding 4019849956 exposed one producer-side provenance invariant: release asset update must not postdate retrieval completion. Both source assets and immutable-directory paths are covered; 36 weekly tests pass. Raw/candidate artifacts remain unchanged. Fresh review pending; stop before merge, admission, activation, or deployment.

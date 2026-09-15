@@ -61,10 +61,10 @@ def validate_receipt(receipt, contents):
         url = f"https://github.com/nflverse/nflverse-data/releases/download/stats_{kind}/stats_{kind}_week_{scope['season']}.csv"
         if p['source_url'] != url or p['file'] != kind + '.csv' or type(p['asset_id']) is not int or p['asset_id'] <= 0 or p.get('release_digest_matched') is not True:
             raise ValueError('Unsupported source family or asset')
-        receipt_clock(p['release_asset_updated_at'])
+        updated = receipt_clock(p['release_asset_updated_at'])
         started = receipt_clock(p['retrieval_started_at'])
         completed = receipt_clock(p['retrieval_completed_at'])
-        if not started <= completed <= compiled:
+        if updated > completed or not started <= completed <= compiled:
             raise ValueError('Source clock ordering invalid')
         raw = contents[kind + '.csv']
         if len(raw) != p['byte_count'] or digest(raw) != p['sha256']:

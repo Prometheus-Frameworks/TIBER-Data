@@ -133,6 +133,7 @@ class PublicationTests(unittest.TestCase):
             ('early compiled',lambda r:r.update(snapshot_compiled_at='2000-01-01T00:00:00Z'))]
         for kind in ('player','team'):
             mutations.append((kind+' reversed',lambda r,k=kind:r['sources'][k].update(retrieval_completed_at='2000-01-01T00:00:00Z')))
+            mutations.append((kind+' updated after retrieval',lambda r,k=kind:r['sources'][k].update(release_asset_updated_at='2099-01-01T00:00:00Z')))
         for legacy in (False,True):
             for label,mutate in mutations:
                 with self.subTest(legacy=legacy,mutation=label), tempfile.TemporaryDirectory() as d, patch.object(intake,'asset',side_effect=lambda year,k:assets[k]), patch.object(intake,'fetch',side_effect=fake_fetch):
