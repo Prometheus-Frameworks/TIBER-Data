@@ -91,6 +91,14 @@ class PublicationTests(unittest.TestCase):
             with self.assertRaises(FileNotFoundError):schedule_intake.acquire_schedule(Path(d))
             self.assertEqual(list(Path(d).iterdir()),[target])
 
+    def test_schedule_receipt_rejects_release_after_retrieval(self):
+        source=next((ROOT/'data/raw/weekly_schedule').glob('*/receipt.json')).parent
+        raw=(source/'games.csv').read_bytes();license_raw=(source/'LICENSE.md').read_bytes()
+        r=json.loads((source/'receipt.json').read_bytes())
+        r['release_asset_updated_at']='2099-01-01T00:00:00Z'
+        with self.assertRaisesRegex(ValueError,'clock order'):
+            schedule_intake.validate_schedule_receipt(r,raw,license_raw)
+
     def test_boxscore_reuse_binds_both_assets_in_both_directory_formats(self):
         r=json.loads((SOURCE/'receipt.json').read_bytes())
         contents={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}

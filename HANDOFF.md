@@ -578,3 +578,7 @@ Bounded data-artifact/downstream validation repair for #273 finding4011499271. R
 ## 2026-09-15 — Weekly receipt review R7
 
 Downstream finding 4019849956 exposed one producer-side provenance invariant: release asset update must not postdate retrieval completion. Both source assets and immutable-directory paths are covered; 36 weekly tests pass. Raw/candidate artifacts remain unchanged. Fresh review pending; stop before merge, admission, activation, or deployment.
+
+## 2026-09-15 — Weekly receipt review R8
+
+Repaired #273 P2 4020572558 by applying the same release-before-retrieval invariant to schedule receipts. Fresh, retained, and publication-preparation paths share this validator; 37 weekly tests pass. Raw/candidate artifacts unchanged. Fresh review pending; stop before merge, admission, activation, or deployment.
