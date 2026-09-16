@@ -24,7 +24,7 @@ def validate_schedule_receipt(receipt, raw, license_raw):
         dt=datetime.fromisoformat(value.replace('Z','+00:00'))
         if dt.tzinfo is None: raise ValueError('Invalid schedule clock')
         dates.append(dt)
-    if dates[0]>dates[2] or dates[1]>dates[2]: raise ValueError('Invalid schedule clock order')
+    if not dates[0]<=dates[1]<=dates[2]: raise ValueError('Invalid schedule clock order')
     expected_attribution={'name':'nflverse contributors','license':'CC BY 4.0',
         'license_url':'https://creativecommons.org/licenses/by/4.0/',
         'license_source_url':LICENSE_URL,'license_sha256':AUDITED_LICENSE_SHA256}

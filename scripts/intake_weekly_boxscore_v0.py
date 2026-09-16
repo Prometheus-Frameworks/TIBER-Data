@@ -66,7 +66,7 @@ def validate_receipt(receipt, contents):
         updated = receipt_clock(p['release_asset_updated_at'])
         started = receipt_clock(p['retrieval_started_at'])
         completed = receipt_clock(p['retrieval_completed_at'])
-        if updated > completed or not started <= completed <= compiled:
+        if not updated <= started <= completed <= compiled:
             raise ValueError('Source clock ordering invalid')
         raw = contents[kind + '.csv']
         if len(raw) != p['byte_count'] or digest(raw) != p['sha256']:

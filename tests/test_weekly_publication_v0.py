@@ -160,11 +160,32 @@ class PublicationTests(unittest.TestCase):
                     self.assertEqual(before,{p.name:p.read_bytes() for p in target.iterdir()})
                     self.assertEqual(list(Path(d).iterdir()),[target])
 
+    def test_asset_updates_cannot_fall_inside_retrieval_window(self):
+        r=json.loads((SOURCE/'receipt.json').read_bytes())
+        contents={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}
+        for kind in ('player','team'):
+            with self.subTest(kind=kind):
+                altered=copy.deepcopy(r)
+                altered['sources'][kind].update(release_asset_updated_at='2026-09-14T12:01:00Z',
+                    retrieval_started_at='2026-09-14T12:00:00Z',retrieval_completed_at='2026-09-14T12:02:00Z')
+                with self.assertRaisesRegex(ValueError,'clock ordering'):
+                    intake.validate_receipt(altered,contents)
+        source=next((ROOT/'data/raw/weekly_schedule').glob('*/receipt.json')).parent
+        schedule=json.loads((source/'receipt.json').read_bytes())
+        schedule.update(release_asset_updated_at='2026-09-14T12:01:00Z',
+            retrieval_started_at='2026-09-14T12:00:00Z',retrieval_completed_at='2026-09-14T12:02:00Z')
+        with self.subTest(kind='schedule'):
+            with self.assertRaisesRegex(ValueError,'clock order'):
+                schedule_intake.validate_schedule_receipt(schedule,(source/'games.csv').read_bytes(),(source/'LICENSE.md').read_bytes())
+        schedule['release_asset_updated_at']='2026-09-14T08:00:00-04:00'
+        schedule_intake.validate_schedule_receipt(schedule,(source/'games.csv').read_bytes(),(source/'LICENSE.md').read_bytes())
+
     def test_receipt_clock_order_uses_instants_and_allows_equality(self):
         r=json.loads((SOURCE/'receipt.json').read_bytes())
         contents={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}
         r['snapshot_compiled_at']='2026-09-14T10:00:00-04:00'
         for source in r['sources'].values():
+            source['release_asset_updated_at']='2026-09-14T09:00:00-04:00'
             source['retrieval_started_at']='2026-09-14T15:00:00+02:00'
             source['retrieval_completed_at']='2026-09-14T14:00:00Z'
         intake.validate_receipt(r,contents)

@@ -586,3 +586,7 @@ Repaired #273 P2 4020572558 by applying the same release-before-retrieval invari
 ## 2026-09-16 — Weekly review R9
 
 Repaired #273 P2s 4020954441/4020954445: validate optional declared CSV row counts and reject half-supplied schedule directory/commit arguments before reading support. Six regressions failed before repair; 38 weekly tests pass. Raw/candidate artifacts unchanged. Fantasy #386 remains clean at 8dcb5657. Fresh Data review pending; stop before merge, admission, activation, or deployment.
+
+## 2026-09-16 — Weekly review R10
+
+Accepted #273 P2s 4021462803/4021462809 after reproducing three failing subcases. Intake obtains asset metadata before retrieval starts; player/team and schedule validators now enforce update <= start as well as the existing completion bounds. Changed two intake validators, publication tests and paired R10 audit; 39 weekly tests pass, including equivalent-offset equality. Raw/candidate bytes unchanged. Builder audit complete; independent new-head review pending. No new source acquisition, admission, activation, merge or deployment; partial coverage and unknown finality remain.
