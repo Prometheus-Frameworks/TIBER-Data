@@ -30,6 +30,11 @@ class PublicationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'Fixture'): intake.validate_receipt(altered,content)
         altered=copy.deepcopy(r);altered['sources']['player']['source_url']='https://example.org/fixture.csv'
         with self.assertRaises(ValueError): intake.validate_receipt(altered,content)
+        for kind in ('player','team'):
+            altered=copy.deepcopy(r);altered['sources'][kind]['row_count']+=1
+            with self.assertRaisesRegex(ValueError,'row count'):intake.validate_receipt(altered,content)
+            altered=copy.deepcopy(r);altered['sources'][kind]['row_count']=True
+            with self.assertRaisesRegex(ValueError,'row count'):intake.validate_receipt(altered,content)
 
     def test_intake_noop_and_release_race_fail_closed(self):
         r=json.loads((SOURCE/'receipt.json').read_bytes())
@@ -219,6 +224,14 @@ class PublicationTests(unittest.TestCase):
     def test_publication_wrapper_rejects_uncommitted_support(self):
         with tempfile.TemporaryDirectory(dir=ROOT) as d:
             with self.assertRaises(Exception): pub.prepare(ROOT,Path(d),'0'*40)
+
+    def test_schedule_publication_arguments_are_an_optional_pair(self):
+        cases=((ROOT,None),(None,'a'*40))
+        for schedule_dir,schedule_commit in cases:
+            with self.subTest(schedule_dir=schedule_dir,schedule_commit=schedule_commit), patch.object(pub,'committed') as committed:
+                with self.assertRaisesRegex(ValueError,'pair'):
+                    pub.prepare(ROOT,SOURCE,'a'*40,schedule_dir,schedule_commit)
+                committed.assert_not_called()
 
     def test_no_schedule_never_means_complete(self):
         c=pub.coverage(self.candidate())

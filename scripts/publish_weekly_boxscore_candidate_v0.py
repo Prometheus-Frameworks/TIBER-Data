@@ -70,6 +70,8 @@ def coverage(candidate, schedule_raw=None):
     return result
 
 def prepare(root, source_dir, source_commit, schedule_dir=None, schedule_commit=None, replay_week=None):
+    if (schedule_dir is None) != (schedule_commit is None):
+        raise ValueError('Schedule directory and commit must be supplied as a pair')
     names = ('player.csv', 'team.csv', 'receipt.json', 'LICENSE.md')
     contents = {n: committed(root, source_commit, source_dir/n) for n in names}
     receipt = json.loads(contents['receipt.json'])

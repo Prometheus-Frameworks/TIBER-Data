@@ -582,3 +582,7 @@ Downstream finding 4019849956 exposed one producer-side provenance invariant: re
 ## 2026-09-15 — Weekly receipt review R8
 
 Repaired #273 P2 4020572558 by applying the same release-before-retrieval invariant to schedule receipts. Fresh, retained, and publication-preparation paths share this validator; 37 weekly tests pass. Raw/candidate artifacts unchanged. Fresh review pending; stop before merge, admission, activation, or deployment.
+
+## 2026-09-16 — Weekly review R9
+
+Repaired #273 P2s 4020954441/4020954445: validate optional declared CSV row counts and reject half-supplied schedule directory/commit arguments before reading support. Six regressions failed before repair; 38 weekly tests pass. Raw/candidate artifacts unchanged. Fantasy #386 remains clean at 8dcb5657. Fresh Data review pending; stop before merge, admission, activation, or deployment.

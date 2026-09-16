@@ -1,7 +1,9 @@
 """Explicit nflverse CSV intake. Writes unadmitted raw snapshots only; never schedules itself."""
 from __future__ import annotations
 import argparse
+import csv
 import hashlib
+import io
 import json
 import re
 import shutil
@@ -69,6 +71,13 @@ def validate_receipt(receipt, contents):
         raw = contents[kind + '.csv']
         if len(raw) != p['byte_count'] or digest(raw) != p['sha256']:
             raise ValueError('Source digest mismatch')
+        if 'row_count' in p:
+            try:
+                rows = sum(1 for _ in csv.reader(io.StringIO(raw.decode('utf-8-sig'), newline=''))) - 1
+            except (UnicodeDecodeError, csv.Error) as exc:
+                raise ValueError('Source row count unreadable') from exc
+            if type(p['row_count']) is not int or p['row_count'] < 0 or p['row_count'] != rows:
+                raise ValueError('Source row count mismatch')
     a = receipt['attribution']
     if a['name'] != 'nflverse contributors' or a['license'] != 'CC BY 4.0' or a['license_source_url'] != LICENSE_URL or digest(contents['LICENSE.md']) != a['license_sha256'] or a['license_sha256'] != AUDITED_LICENSE_SHA256:
         raise ValueError('License snapshot mismatch')
