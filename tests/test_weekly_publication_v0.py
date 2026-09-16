@@ -180,6 +180,18 @@ class PublicationTests(unittest.TestCase):
         schedule['release_asset_updated_at']='2026-09-14T08:00:00-04:00'
         schedule_intake.validate_schedule_receipt(schedule,(source/'games.csv').read_bytes(),(source/'LICENSE.md').read_bytes())
 
+    def test_team_retrieval_cannot_overlap_player_retrieval(self):
+        r=json.loads((SOURCE/'receipt.json').read_bytes())
+        contents={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}
+        r['sources']['player'].update(release_asset_updated_at='2026-09-14T12:00:00Z',
+            retrieval_started_at='2026-09-14T12:00:00Z',retrieval_completed_at='2026-09-14T12:02:00Z')
+        r['sources']['team'].update(release_asset_updated_at='2026-09-14T12:00:00Z',
+            retrieval_started_at='2026-09-14T12:01:00Z',retrieval_completed_at='2026-09-14T12:03:00Z')
+        with self.assertRaisesRegex(ValueError,'cross-asset'):
+            intake.validate_receipt(r,contents)
+        r['sources']['team']['retrieval_started_at']='2026-09-14T08:02:00-04:00'
+        intake.validate_receipt(r,contents)
+
     def test_receipt_clock_order_uses_instants_and_allows_equality(self):
         r=json.loads((SOURCE/'receipt.json').read_bytes())
         contents={n:(SOURCE/n).read_bytes() for n in ('player.csv','team.csv','LICENSE.md')}
@@ -188,6 +200,7 @@ class PublicationTests(unittest.TestCase):
             source['release_asset_updated_at']='2026-09-14T09:00:00-04:00'
             source['retrieval_started_at']='2026-09-14T15:00:00+02:00'
             source['retrieval_completed_at']='2026-09-14T14:00:00Z'
+        r['sources']['team']['retrieval_started_at']='2026-09-14T10:00:00-04:00'
         intake.validate_receipt(r,contents)
 
     def test_standalone_builder_validates_source_lane_before_output(self):

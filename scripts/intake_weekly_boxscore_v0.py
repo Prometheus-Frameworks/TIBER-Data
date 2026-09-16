@@ -58,6 +58,7 @@ def validate_receipt(receipt, contents):
     if type(scope.get('season')) is not int or not 1900 <= scope['season'] <= 2200 or scope.get('season_type') != 'REG' or type(scope.get('week')) is not int or not 1 <= scope['week'] <= 18:
         raise ValueError('Invalid explicit scope')
     compiled = receipt_clock(receipt.get('snapshot_compiled_at'))
+    previous_completed = None
     for kind in ('player', 'team'):
         p = receipt['sources'][kind]
         url = f"https://github.com/nflverse/nflverse-data/releases/download/stats_{kind}/stats_{kind}_week_{scope['season']}.csv"
@@ -68,6 +69,9 @@ def validate_receipt(receipt, contents):
         completed = receipt_clock(p['retrieval_completed_at'])
         if not updated <= started <= completed <= compiled:
             raise ValueError('Source clock ordering invalid')
+        if previous_completed is not None and started < previous_completed:
+            raise ValueError('Source cross-asset clock ordering invalid')
+        previous_completed = completed
         raw = contents[kind + '.csv']
         if len(raw) != p['byte_count'] or digest(raw) != p['sha256']:
             raise ValueError('Source digest mismatch')

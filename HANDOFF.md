@@ -590,3 +590,7 @@ Repaired #273 P2s 4020954441/4020954445: validate optional declared CSV row coun
 ## 2026-09-16 — Weekly review R10
 
 Accepted #273 P2s 4021462803/4021462809 after reproducing three failing subcases. Intake obtains asset metadata before retrieval starts; player/team and schedule validators now enforce update <= start as well as the existing completion bounds. Changed two intake validators, publication tests and paired R10 audit; 39 weekly tests pass, including equivalent-offset equality. Raw/candidate bytes unchanged. Builder audit complete; independent new-head review pending. No new source acquisition, admission, activation, merge or deployment; partial coverage and unknown finality remain.
+
+## 2026-09-16 — Weekly review R11
+
+Accepted #273 P2 4021636349: shared validation now preserves player-completion <= team-start ordering from sequential intake. One regression failed before repair; 40 weekly tests pass after repair, including equivalent-offset shared endpoints. Changed intake validator, publication tests and paired R11 audit. Raw/candidate bytes unchanged. Builder audit complete; independent review pending. Joe's thumbs-up acknowledges seeing the comment; existing repair authority applies, not merge authority. No acquisition, admission, activation, merge or deployment.
