@@ -561,3 +561,36 @@ Operator accepted review discussion_r3999767711 and authorized the bounded repai
 - Missing: independent review of these activation changes and separate authorization for merge or any deployment. The corresponding Fantasy consumer must pin this receipt and keep all original 75 profiles unchanged.
 - Must not assume: historical-use approval authorizes a production or preview release, roster cuts, transactions, current roles, health or eligibility. Source clocks and original terms receipt remain unavailable.
 - Audit status: builder mechanical replay complete; independent implementation review is separate. See docs/audits/team-roster-identity-promotion-2026-09-13.{md,json}.
+
+## 2026-09-14 — Weekly intake/publication preparation
+
+- Active task: authorized next slice following the offline box-score candidate; contract/data-artifact/downstream handoff.
+- Files: four new weekly intake/publication/replay scripts, focused publication tests, raw 2025 and schedule snapshots, candidate revision inventory, contract and paired audit reports.
+- Now true: repeatable hash-checked CSV intake, committed-source offline preparation, schedule membership coverage, immutable candidate revisions, completed-season raw replay.
+- Still missing: source admission, accepted runtime pin, final-status evidence, scheduler, leaders UI, roster identity activation and production release.
+- Must not assume: preparation/replay/review grants promotion; schedule scores certify finality; receiving air yards reconcile; missing charting means low usage; source IDs establish ownership.
+- Audit: independent review completed with two P2 findings repaired; exact local validation and source pins in `docs/audits/weekly-intake-publication-2026-09-14.{md,json}`. No merge, remote publication, source promotion or deployment.
+
+## 2026-09-15 — Weekly receipt review R6
+
+Bounded data-artifact/downstream validation repair for #273 finding4011499271. Receipt compilation and retrieval ordering now validated, including dated/content-keyed reuse; 36 weekly tests pass. Changed intake validator, publication tests and paired R6 audit. Raw/candidate artifacts unchanged; no acquisition or admission. Independent exact-head review pending. Joe authorizes repair/push/re-review only; stop before merge, activation or deployment.
+
+## 2026-09-15 — Weekly receipt review R7
+
+Downstream finding 4019849956 exposed one producer-side provenance invariant: release asset update must not postdate retrieval completion. Both source assets and immutable-directory paths are covered; 36 weekly tests pass. Raw/candidate artifacts remain unchanged. Fresh review pending; stop before merge, admission, activation, or deployment.
+
+## 2026-09-15 — Weekly receipt review R8
+
+Repaired #273 P2 4020572558 by applying the same release-before-retrieval invariant to schedule receipts. Fresh, retained, and publication-preparation paths share this validator; 37 weekly tests pass. Raw/candidate artifacts unchanged. Fresh review pending; stop before merge, admission, activation, or deployment.
+
+## 2026-09-16 — Weekly review R9
+
+Repaired #273 P2s 4020954441/4020954445: validate optional declared CSV row counts and reject half-supplied schedule directory/commit arguments before reading support. Six regressions failed before repair; 38 weekly tests pass. Raw/candidate artifacts unchanged. Fantasy #386 remains clean at 8dcb5657. Fresh Data review pending; stop before merge, admission, activation, or deployment.
+
+## 2026-09-16 — Weekly review R10
+
+Accepted #273 P2s 4021462803/4021462809 after reproducing three failing subcases. Intake obtains asset metadata before retrieval starts; player/team and schedule validators now enforce update <= start as well as the existing completion bounds. Changed two intake validators, publication tests and paired R10 audit; 39 weekly tests pass, including equivalent-offset equality. Raw/candidate bytes unchanged. Builder audit complete; independent new-head review pending. No new source acquisition, admission, activation, merge or deployment; partial coverage and unknown finality remain.
+
+## 2026-09-16 — Weekly review R11
+
+Accepted #273 P2 4021636349: shared validation now preserves player-completion <= team-start ordering from sequential intake. One regression failed before repair; 40 weekly tests pass after repair, including equivalent-offset shared endpoints. Changed intake validator, publication tests and paired R11 audit. Raw/candidate bytes unchanged. Builder audit complete; independent review pending. Joe's thumbs-up acknowledges seeing the comment; existing repair authority applies, not merge authority. No acquisition, admission, activation, merge or deployment.

@@ -1,0 +1,54 @@
+{
+  "schema_version": "weekly_boxscore_source_receipt_candidate_v0",
+  "status": "unadmitted_candidate_source_snapshot",
+  "snapshot_compiled_at": "2026-09-14T13:16:53.387203+00:00",
+  "requested_scope": {
+    "season": 2026,
+    "season_type": "REG",
+    "week": 1
+  },
+  "data_base_commit": "93ac73af22da063f37694939a3494bcdf82ae1d4",
+  "authorization_basis": "Joe approved the smallest next step: one current-season weekly artifact from verified box-score inputs and team denominators, then validation. No consumer activation or promotion.",
+  "attribution": {
+    "name": "nflverse contributors",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "license_source_url": "https://raw.githubusercontent.com/nflverse/nflverse-data/master/LICENSE.md",
+    "license_file": "LICENSE.md",
+    "license_sha256": "2a82ac9bbc3e3ee066908381e8d373896db5a6025d083fbd59692fe9ccfb9111",
+    "notice": "No endorsement implied. This snapshot is not TIBER-admitted evidence."
+  },
+  "sources": {
+    "player": {
+      "file": "player.csv",
+      "source_url": "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2026.csv",
+      "asset_id": 563203051,
+      "release_asset_updated_at": "2026-09-14T10:56:06Z",
+      "retrieval_started_at": "2026-09-14T13:15:37.871272+00:00",
+      "retrieval_completed_at": "2026-09-14T13:16:31.975939+00:00",
+      "sha256": "7bf9b616d9f86a5357093b5af6bf1fa7138c1d4cb46cab4c2765fef852c30bc4",
+      "byte_count": 465069,
+      "row_count": 1041,
+      "release_digest_matched": true
+    },
+    "team": {
+      "file": "team.csv",
+      "source_url": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2026.csv",
+      "asset_id": 563203101,
+      "release_asset_updated_at": "2026-09-14T10:56:08Z",
+      "retrieval_started_at": "2026-09-14T13:16:32.031723+00:00",
+      "retrieval_completed_at": "2026-09-14T13:16:46.680495+00:00",
+      "sha256": "ec35c7154c2a2232676c10ed94a7ca8b6ec7d531671b05a45b59970c12adfc6c",
+      "byte_count": 14021,
+      "row_count": 30,
+      "release_digest_matched": true
+    }
+  },
+  "limitations": [
+    "Player and team source retrievals are separate, not an atomic upstream snapshot.",
+    "Release update time is not game finality or a historical availability witness.",
+    "Missing rows do not establish zero statistics, health, eligibility, ownership or game availability.",
+    "No live database or Team consumer was read or written.",
+    "Candidate preparation does not establish full-week completeness or admit source use by Team."
+  ]
+}
