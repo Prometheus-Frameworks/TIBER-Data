@@ -1,0 +1,9 @@
+# Weekly review repair R4 — 2026-09-15
+
+Task class: data artifact and downstream handoff; bounded validation repair of #273 findings 4011186298, 4011186303 and 4011186306. Verified against 9b009dad8160359f6ebb600e7ce84bbe2cf16ffc.
+
+Both content-keyed and legacy dated box-score reuse now compare saved player/team asset IDs with stable fetched metadata. Schedule reuse compares release-update instants (equivalent timezone offsets are not different instants), retaining original receipt bytes and retrieval clocks. Mismatches fail closed without rewriting provenance, including a replacement asset with identical bytes. The standalone candidate CLI now calls the shared full source receipt validator after committed-byte verification and before building/writing. The pure fact builder remains usable with explicitly synthetic test inputs.
+
+Touched: both intake scripts, standalone builder, publication tests and this paired audit. Regression-first verification reproduced all three findings (nine failing mutation subcases). All 33 weekly Data tests now pass, including valid standalone build, rejected fixture flags/unsupported URL/altered license, both source IDs and directory formats, timestamp tampering and existing valid reuse. No provider acquisition was run; tests use committed bytes with mocked metadata/commit reads. A deliberate invalid-support test prints a git fatal diagnostic and passes by requiring failure.
+
+What is true: these entry points reject the confirmed malformed inputs. What remains missing: fresh independent review. Source bytes, stored receipts, support pin, candidate revisions and limitations are unchanged. Offline structure validation is not independent authentication of every historical provenance field. No admission, activation, merge or deployment. Audit status: independent review pending.

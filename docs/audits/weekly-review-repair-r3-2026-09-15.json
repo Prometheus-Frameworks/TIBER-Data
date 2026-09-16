@@ -1,0 +1,17 @@
+{
+  "task": "Bounded R3 repair of schedule asset receipt reuse",
+  "classification": "data artifact task; downstream handoff task",
+  "finding": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/273#discussion_r4010985592",
+  "verified_head": "561727290a371a76381a383856b55b065fb0c4b3",
+  "result": "Saved asset ID must match stable fetched release asset ID before reuse. Mismatch fails closed without overwriting receipt, including identical bytes under a replacement asset.",
+  "validation": {
+    "prior_code": "Positive substituted asset ID regression failed as expected",
+    "weekly_tests_passed": 31
+  },
+  "limits": [
+    "No source acquisition or artifact regeneration",
+    "Offline receipt validation alone does not independently authenticate a release asset",
+    "No admission, activation, merge or deployment"
+  ],
+  "audit_status": "fresh independent review pending"
+}

@@ -1,0 +1,14 @@
+{
+  "task_class": ["data artifact", "downstream handoff"],
+  "verified_head": "9b009dad8160359f6ebb600e7ce84bbe2cf16ffc",
+  "findings": [4011186298, 4011186303, 4011186306],
+  "regression_first_failing_subcases": 9,
+  "weekly_tests_passed": 33,
+  "source_acquisition": false,
+  "stored_artifacts_changed": false,
+  "admission": false,
+  "activation": false,
+  "merge": false,
+  "deployment": false,
+  "independent_review": "pending"
+}

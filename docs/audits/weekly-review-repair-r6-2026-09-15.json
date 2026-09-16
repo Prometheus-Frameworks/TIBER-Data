@@ -1,0 +1,17 @@
+{
+  "date": "2026-09-15",
+  "task_class": [
+    "data_artifact",
+    "downstream_handoff"
+  ],
+  "baseline": "cf59b6f7e9cf31f2552b151a188462eaa8bae974",
+  "finding": 4011499271,
+  "before_failed_mutation_subcases": 10,
+  "after_weekly_tests_passed": 36,
+  "source_bytes_changed": false,
+  "candidate_bytes_changed": false,
+  "independent_review": "pending",
+  "consumer_admitted": false,
+  "merged": false,
+  "deployed": false
+}
