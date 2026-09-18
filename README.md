@@ -1,5 +1,7 @@
 # TIBER-Data
 
+> **[TIBER Now — what works, what we’re building, and what’s still conceptual](https://github.com/Prometheus-Frameworks/TIBER-Fantasy/blob/main/docs/TIBER_NOW.md)**
+
 TIBER-Data is a source of truth for canonical football data contracts used by downstream TIBER repositories. This PR adds a small, strict, versioned role-opportunity contract so repos like `Role-and-opportunity-model` and `TIBER-Fantasy` can stop inventing slightly different payload shapes.
 
 ## Canonical governance documents
