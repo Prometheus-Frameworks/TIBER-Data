@@ -329,3 +329,66 @@ def test_historical_alias_evidence_cannot_switch_revision_binding(batch):
         "observation_id"
     ]
     assert "ALIAS_EVIDENCE" in codes(batch)
+
+
+@pytest.mark.parametrize("reference", ["identity", "mapping", "snapshot-r1"])
+def test_source_record_type_is_part_of_evidence_scope(batch, reference):
+    assert validate(batch) == []
+    batch["evidence"][reference]["scope"]["source_record_type"] = "synthetic-different-record-type"
+    assert "EVIDENCE_SCOPE" in codes(batch)
+    batch["evidence"][reference]["scope"]["source_record_type"] = "synthetic-boxscore-record"
+    assert validate(batch) == []
+
+
+def test_later_attribution_evidence_rejects_wrong_record_type(batch):
+    row = batch["observations"][4]
+    evidence(batch, "identity-7", T7)
+    batch["evidence"]["identity-7"]["scope"]["source_record_type"] = (
+        "synthetic-different-record-type"
+    )
+    attribute(
+        batch,
+        row,
+        {
+            "status": "resolved",
+            "canonical_college_player_id": "synthetic-college-a",
+            "aggregation_status": "eligible",
+        },
+        "identity-7",
+        T7,
+    )
+    assert "EVIDENCE_SCOPE" in codes(batch)
+
+
+def test_attribution_chain_accepts_newest_first_serialization(batch):
+    row = batch["observations"][4]
+    evidence(batch, "identity-7", T7)
+    first = attribute(
+        batch,
+        row,
+        {
+            "status": "resolved",
+            "canonical_college_player_id": "synthetic-college-a",
+            "aggregation_status": "eligible",
+        },
+        "identity-7",
+        T7,
+    )
+    evidence(batch, "identity-9", T9)
+    attribute(
+        batch,
+        row,
+        {
+            "status": "resolved",
+            "canonical_college_player_id": "synthetic-college-b",
+            "aggregation_status": "eligible",
+        },
+        "identity-9",
+        T9,
+        first,
+    )
+    assert validate(batch) == []
+    batch["attributions"].reverse()
+    assert validate(batch) == []
+    batch["attributions"][0]["supersedes_attribution_id"] = "synthetic-missing-ancestor"
+    assert {"ATTRIBUTION_MISSING", "ATTRIBUTION_LINEAGE"} <= codes(batch)

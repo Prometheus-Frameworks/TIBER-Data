@@ -89,6 +89,7 @@ def validate(envelope: Any) -> list[Finding]:
                         "source_game_id": row["game"]["source_game_id"],
                         "source_player_id": row["identity"]["source_player_id"],
                         "source_revision_id": row["source_revision_id"],
+                        "source_record_type": row["source_record_type"],
                     }
                     if item["provider"] != row["provider"] or any(
                         binding[k] is not None and binding[k] != value
@@ -481,15 +482,23 @@ def _validate_attributions_and_aliases(envelope, ids, logical_key, evidence, fai
     events: dict[str, dict] = {}
     successor: dict[str, str] = {}
     recorded = {oid: _instant(row["retrieved_at"]) for oid, row in ids.items()}
+    # Retained attribution order is not its knowledge chronology. Index all
+    # ancestors before checking links, even when the envelope lists a child first.
+    for i, event in enumerate(envelope["attributions"]):
+        eid = event["attribution_id"]
+        if eid in events or eid in ids:
+            fail(
+                "ATTRIBUTION_DUPLICATE",
+                f"/attributions/{i}",
+                "Attribution ID must be unique across the envelope.",
+            )
+        else:
+            events[eid] = event
+            recorded[eid] = _instant(event["recorded_at"])
     for i, event in enumerate(envelope["attributions"]):
         path = f"/attributions/{i}"
         eid = event["attribution_id"]
         oid = event["source_observation_id"]
-        if eid in events or eid in ids:
-            fail(
-                "ATTRIBUTION_DUPLICATE", path, "Attribution ID must be unique across the envelope."
-            )
-        events[eid] = event
         if oid not in ids:
             fail("ATTRIBUTION_SOURCE", path, "Unknown immutable source observation.")
             continue
@@ -516,7 +525,6 @@ def _validate_attributions_and_aliases(envelope, ids, logical_key, evidence, fai
         if state["source_player_id"] != ids[oid]["identity"]["source_player_id"]:
             fail("ATTRIBUTION_SOURCE", path, "TIBER attribution cannot change source player ID.")
         references(state["evidence_refs"], path, "identity", as_known=event_time, row=ids[oid])
-        recorded[eid] = event_time
     ordered = sorted(
         enumerate(envelope["attributions"]), key=lambda pair: _instant(pair[1]["recorded_at"])
     )
