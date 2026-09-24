@@ -1,0 +1,1158 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_position",
+    "evidence_mode",
+    "generated_at",
+    "coverage",
+    "evidence",
+    "observations",
+    "attributions",
+    "retrieval_receipts"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "college_player_game_observations"
+    },
+    "schema_version": {
+      "const": "college-player-game-observations-v0.1.0"
+    },
+    "artifact_position": {
+      "const": "unpromoted"
+    },
+    "evidence_mode": {
+      "enum": [
+        "synthetic_fixture",
+        "source_observation"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "population_status",
+        "declared_population",
+        "evidence_refs",
+        "game_scope",
+        "provider",
+        "competition_scope"
+      ],
+      "properties": {
+        "population_status": {
+          "enum": [
+            "complete",
+            "partial",
+            "unknown"
+          ]
+        },
+        "declared_population": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "game_scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "expected_game_ids",
+            "observed_game_ids",
+            "expectation_evidence_refs"
+          ],
+          "properties": {
+            "expected_game_ids": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/game_key"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "observed_game_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/game_key"
+              }
+            },
+            "expectation_evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "competition_scope": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "locator",
+          "description",
+          "known_at",
+          "provider",
+          "scope",
+          "source_order_claim",
+          "applicability_rules",
+          "alias_claim"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "source_snapshot",
+              "identity",
+              "scope",
+              "mapping"
+            ]
+          },
+          "locator": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "provider": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "scope": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "season",
+              "source_game_id",
+              "source_player_id",
+              "source_revision_id",
+              "source_record_type"
+            ],
+            "properties": {
+              "season": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1800
+              },
+              "source_game_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source_player_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source_revision_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source_record_type": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          "source_order_claim": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "older_revision_id",
+                  "newer_revision_id",
+                  "assertion"
+                ],
+                "properties": {
+                  "older_revision_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "newer_revision_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "assertion": {
+                    "enum": [
+                      "explicit_correction",
+                      "documented_provider_order"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "applicability_rules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "source_record_type",
+                "field",
+                "rule_id"
+              ],
+              "properties": {
+                "source_record_type": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "field": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "rule_id": {
+                  "const": "field_not_defined_for_source_record_type"
+                }
+              }
+            }
+          },
+          "alias_claim": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "alias_source_player_id",
+                  "representative_source_player_id",
+                  "season",
+                  "source_game_id",
+                  "canonical_college_player_id",
+                  "alias_observation_id",
+                  "representative_observation_id"
+                ],
+                "properties": {
+                  "alias_source_player_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "representative_source_player_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "season": {
+                    "type": "integer",
+                    "minimum": 1800
+                  },
+                  "source_game_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "canonical_college_player_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "alias_observation_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "representative_observation_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/observation"
+      }
+    },
+    "attributions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "attribution_id",
+          "source_observation_id",
+          "supersedes_attribution_id",
+          "recorded_at",
+          "state"
+        ],
+        "properties": {
+          "attribution_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "source_observation_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "supersedes_attribution_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "state": {
+            "$ref": "#/$defs/identity"
+          }
+        }
+      }
+    },
+    "retrieval_receipts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "receipt_id",
+          "source_observation_id",
+          "retrieved_at",
+          "source_snapshot_ref"
+        ],
+        "properties": {
+          "receipt_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "source_observation_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source_snapshot_ref": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        }
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiber-data.local/schemas/college_player_game_observations_v0.schema.json",
+  "title": "College player/game observations v0.1.0 \u2014 unpromoted facts only",
+  "$defs": {
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "availability",
+        "evidence_refs",
+        "note",
+        "applicability_basis"
+      ],
+      "properties": {
+        "value": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "availability": {
+          "enum": [
+            "observed_zero",
+            "observed_value",
+            "unavailable_from_source",
+            "not_applicable",
+            "unresolved_identity",
+            "incomplete_coverage",
+            "source_conflict",
+            "excluded_by_contract"
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "applicability_basis": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "rule_id",
+                "source_record_type",
+                "evidence_refs"
+              ],
+              "properties": {
+                "rule_id": {
+                  "const": "field_not_defined_for_source_record_type"
+                },
+                "source_record_type": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "evidence_refs": {
+                  "type": "array",
+                  "minItems": 2,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "availability": {
+                "const": "observed_zero"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "const": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "availability": {
+                "const": "observed_value"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "integer",
+                "not": {
+                  "const": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "availability": {
+                "not": {
+                  "enum": [
+                    "observed_zero",
+                    "observed_value"
+                  ]
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation_id",
+        "provider",
+        "source_revision_id",
+        "revision_origin",
+        "supersedes",
+        "revision_reason",
+        "retrieved_at",
+        "source_updated_at",
+        "source_snapshot_ref",
+        "mapping_ref",
+        "identity",
+        "game",
+        "position",
+        "row_presence",
+        "category_completeness",
+        "observed",
+        "source_relationship",
+        "source_record_type"
+      ],
+      "properties": {
+        "observation_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "source_revision_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "revision_origin": {
+          "enum": [
+            "source_supplied",
+            "retained_snapshot_digest"
+          ]
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retrieved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_updated_at": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "origin",
+            "evidence_refs"
+          ],
+          "properties": {
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "origin": {
+              "enum": [
+                "source_supplied",
+                "not_supplied_by_source"
+              ]
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          }
+        },
+        "source_snapshot_ref": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "mapping_ref": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "identity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source_player_id",
+            "canonical_college_player_id",
+            "name",
+            "status",
+            "evidence_refs",
+            "aggregation_status",
+            "alias_of_observation_id"
+          ],
+          "properties": {
+            "source_player_id": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "canonical_college_player_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "status": {
+              "enum": [
+                "resolved",
+                "unresolved",
+                "ambiguous"
+              ]
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "aggregation_status": {
+              "enum": [
+                "eligible",
+                "blocked_unresolved_identity",
+                "blocked_alias_conflict",
+                "excluded_reconciled_alias"
+              ]
+            },
+            "alias_of_observation_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "game": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "season",
+            "source_game_id",
+            "date",
+            "date_origin",
+            "status",
+            "status_evidence_refs",
+            "team",
+            "opponent"
+          ],
+          "properties": {
+            "season": {
+              "type": "integer",
+              "minimum": 1800
+            },
+            "source_game_id": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "date": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "date_origin": {
+              "enum": [
+                "source_supplied",
+                "not_supplied_by_source"
+              ]
+            },
+            "status": {
+              "enum": [
+                "scheduled",
+                "in_progress",
+                "final",
+                "suspended",
+                "cancelled",
+                "unknown"
+              ]
+            },
+            "status_evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "team": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "source_program_id",
+                "name"
+              ],
+              "properties": {
+                "source_program_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              }
+            },
+            "opponent": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "source_program_id",
+                "name"
+              ],
+              "properties": {
+                "source_program_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              }
+            }
+          }
+        },
+        "position": {
+          "enum": [
+            "QB",
+            "RB",
+            "WR",
+            "TE",
+            "UNKNOWN"
+          ]
+        },
+        "row_presence": {
+          "enum": [
+            "source_row_observed"
+          ]
+        },
+        "category_completeness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "passing",
+            "rushing",
+            "receiving"
+          ],
+          "properties": {
+            "passing": {
+              "enum": [
+                "complete",
+                "partial",
+                "unknown",
+                "unavailable",
+                "not_applicable"
+              ]
+            },
+            "rushing": {
+              "enum": [
+                "complete",
+                "partial",
+                "unknown",
+                "unavailable",
+                "not_applicable"
+              ]
+            },
+            "receiving": {
+              "enum": [
+                "complete",
+                "partial",
+                "unknown",
+                "unavailable",
+                "not_applicable"
+              ]
+            }
+          }
+        },
+        "observed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "passing",
+            "rushing",
+            "receiving"
+          ],
+          "properties": {
+            "passing": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "attempts",
+                "completions",
+                "yards",
+                "touchdowns",
+                "interceptions"
+              ],
+              "properties": {
+                "attempts": {
+                  "$ref": "#/$defs/metric"
+                },
+                "completions": {
+                  "$ref": "#/$defs/metric"
+                },
+                "yards": {
+                  "$ref": "#/$defs/metric"
+                },
+                "touchdowns": {
+                  "$ref": "#/$defs/metric"
+                },
+                "interceptions": {
+                  "$ref": "#/$defs/metric"
+                }
+              }
+            },
+            "rushing": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "carries",
+                "yards",
+                "touchdowns"
+              ],
+              "properties": {
+                "carries": {
+                  "$ref": "#/$defs/metric"
+                },
+                "yards": {
+                  "$ref": "#/$defs/metric"
+                },
+                "touchdowns": {
+                  "$ref": "#/$defs/metric"
+                }
+              }
+            },
+            "receiving": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "targets",
+                "receptions",
+                "yards",
+                "touchdowns"
+              ],
+              "properties": {
+                "targets": {
+                  "$ref": "#/$defs/metric"
+                },
+                "receptions": {
+                  "$ref": "#/$defs/metric"
+                },
+                "yards": {
+                  "$ref": "#/$defs/metric"
+                },
+                "touchdowns": {
+                  "$ref": "#/$defs/metric"
+                }
+              }
+            }
+          }
+        },
+        "source_relationship": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "related_observation_id",
+            "basis",
+            "evidence_refs"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "initial",
+                "established_supersession",
+                "unresolved",
+                "older_discovered_later"
+              ]
+            },
+            "related_observation_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "basis": {
+              "enum": [
+                "none",
+                "provider_explicit_correction",
+                "documented_provider_order"
+              ]
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+        "source_record_type": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "game_key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "season",
+        "source_game_id"
+      ],
+      "properties": {
+        "season": {
+          "type": "integer",
+          "minimum": 1800
+        },
+        "source_game_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_player_id",
+        "canonical_college_player_id",
+        "name",
+        "status",
+        "evidence_refs",
+        "aggregation_status",
+        "alias_of_observation_id"
+      ],
+      "properties": {
+        "source_player_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "canonical_college_player_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "status": {
+          "enum": [
+            "resolved",
+            "unresolved",
+            "ambiguous"
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "aggregation_status": {
+          "enum": [
+            "eligible",
+            "blocked_unresolved_identity",
+            "blocked_alias_conflict",
+            "excluded_reconciled_alias"
+          ]
+        },
+        "alias_of_observation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
