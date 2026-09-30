@@ -1,5 +1,35 @@
 # TIBER-Data — Working Handoff
 
+## 2026-09-30 — #276 bounded 2026 REG Week 3 candidate
+
+- Active task: operator-authorized data artifact, provenance validation and
+  downstream handoff preparation; existing #273 implementation unchanged at
+  `e1e92078c626b9e2e502e927ba0de79afd26f451`.
+- Files touched: additive weekly player/team and schedule raw snapshots,
+  Week 3 candidate revision/index, paired
+  `docs/audits/week3-candidate-276-2026-09-30.{md,json}`, and this handoff.
+- Now true: validated raw support committed at
+  `2b58e2c22ccd2430041afcfbd143b057830878f0`; candidate SHA-256
+  `f3366ac1c2192641c6e94ba7c756ed2e12ba73b37550619ae143deaeab9f9902`.
+  Scheduled/observed membership matches across 16 games, with no missing or
+  unexpected game IDs. All six requested source IDs are present. Forty existing
+  focused tests pass; committed-support replay is byte-identical and repeat
+  publication is unchanged. Exact source clocks, conflicts and missingness are
+  recorded in the paired audit.
+- Still missing: independent exact-head review, any separately authorized source
+  admission and downstream consumer acceptance/activation. Review request is not
+  a completed review. Candidate remains `candidate_needs_review` and unadmitted.
+- Must not assume: schedule membership certifies finality; missing players mean
+  zero; source IDs admit Sleeper/canonical identities; weekly Allen observations
+  establish post-Hall snaps/routes. Twenty-four receiving-air-yard conflicts and
+  one unattributed ATL row remain disclosed. `game_finality=unknown` and
+  `full_week_final=false`. No ROP/TTS/Research execution, merge, deployment,
+  scheduler or production changes.
+- Audit-trigger status: builder mechanical validation complete; independent
+  exact-head review pending. Default sandbox transport denied requests; approved
+  execution permission passed using existing network configuration and the
+  unchanged audited master license URL. No source locator repair was required.
+
 ## Repo purpose in one sentence
 
 TIBER-Data stores canonical contracts and deterministic football data artifacts for downstream repos.
