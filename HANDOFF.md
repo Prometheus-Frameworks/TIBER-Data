@@ -29,6 +29,13 @@
   exact-head review pending. Default sandbox transport denied requests; approved
   execution permission passed using existing network configuration and the
   unchanged audited master license URL. No source locator repair was required.
+- Merge-ancestry constraint from independent review: the candidate records raw
+  support commit `2b58e2c22ccd2430041afcfbd143b057830878f0`, which is the direct
+  parent of candidate head `ffd9e829a79b8858998f533c53810fd1b2518ed5` and must remain
+  reachable from `main` for exact replay. Any later authorized merge of this
+  candidate therefore must use a normal merge commit preserving branch ancestry;
+  **do not squash or rebase merge** this PR. This constraint grants no merge,
+  admission, promotion, or downstream execution authority.
 
 ## Repo purpose in one sentence
 
