@@ -1,0 +1,100 @@
+{
+  "actions_not_performed": [
+    "source admission",
+    "downstream adoption",
+    "real-player producer execution",
+    "provider acquisition",
+    "merge",
+    "commit",
+    "push"
+  ],
+  "data": {
+    "candidate_sha256": "f3366ac1c2192641c6e94ba7c756ed2e12ba73b37550619ae143deaeab9f9902",
+    "checks": [
+      "Exact Git revision/size/SHA256 authentication for all 13 pins",
+      "Manifest receipt digest binding",
+      "Support ancestry",
+      "Candidate byte equality",
+      "Second replay byte equality",
+      "Repeat publication unchanged",
+      "Raw support, receipts, candidate and index hashes unchanged",
+      "Cross-commit diff empty",
+      "git diff --check passed"
+    ],
+    "fresh_independent_replay_completed_at": "2026-10-03T15:37:01.594796Z",
+    "fresh_independent_replay_started_at": "2026-10-03T15:37:01.315004Z",
+    "manifest_members_authenticated": 13,
+    "negative_case_behavior": "All six failed without writing a receipt or manifest; existing output was preserved",
+    "negative_cases_passed": [
+      "git_pin_mismatch",
+      "prepare_failure",
+      "publish_failure",
+      "repeat_not_noop",
+      "second_replay_differs",
+      "existing_output"
+    ],
+    "original_generation_clock": "unknown",
+    "parent": "eac3b9bc22cf1fa230b233a09f5e031a2a9b409a",
+    "reviewed_head": "4821a08ecad8c4ed7177b2acda0cb29d93a2649a",
+    "test_results": {
+      "boxscore_candidate": {
+        "failed": 0,
+        "passed": 18
+      },
+      "publication": {
+        "failed": 0,
+        "passed": 22
+      }
+    },
+    "tested_local_head": "d990f1cedb921b4c7512c361a1b50343a8049765",
+    "tree": "e0dde60d67b719258ea3cfb190702204d0bf7756",
+    "tree_equivalence_verified": true
+  },
+  "disposition": "clean",
+  "material_findings": [],
+  "remaining_gates": [
+    "Explicit downstream replay-instance adoption semantics",
+    "Exact retained input/review binding",
+    "Purpose-specific provisional-use acceptance",
+    "Vikings cohort qualification",
+    "Authenticated play-by-play and Jefferson exit boundary for post-exit allocation",
+    "Permitted snap/route witnesses"
+  ],
+  "review_execution": "Independent auditor function; tests and replay conducted read-only apart from temporary output and these explicitly authorized paired audit reports",
+  "rop": {
+    "changed_doc_blob": "64f8d2ce8d5ade045f422c1ff9c0535c4b8f1b7c",
+    "checks": [
+      "Fetched canonical remote commit",
+      "Exact parent and tree inspected",
+      "Empty diff against tested local tree",
+      "Document blob verified",
+      "git diff --check passed"
+    ],
+    "count_finding_disposition": "Resolved at reviewed head; historical partial and reviewer counts are explicitly attributed",
+    "parent": "345a368c56368024cf78fce7fed549c6ba0072a1",
+    "reviewed_head": "d72bae070c905a17fac7c847cd7e865c59d24e33",
+    "scope": "Documentation-only count correction",
+    "test_results": {
+      "eight_file_subset": {
+        "failed": 0,
+        "passed": 229,
+        "skipped": 0
+      },
+      "seven_file_subset": {
+        "failed": 0,
+        "passed": 216,
+        "skipped": 0
+      },
+      "tests_glob": {
+        "failed": 0,
+        "passed": 256,
+        "skipped": 0
+      }
+    },
+    "tested_local_head": "9e11c7acbaff92c068b7685b3a671c9a93cf9014",
+    "tree": "1c55b0b6922ff4b4fc028658e8fe23b6b4d33df7",
+    "tree_equivalence_verified": true
+  },
+  "schema_version": "week3_independent_repair_review_v1",
+  "semantics": "Sufficient evidence to propose reviewed fresh replay-instance generation binding; not recovery of original clock, original availability proof or source admission"
+}
