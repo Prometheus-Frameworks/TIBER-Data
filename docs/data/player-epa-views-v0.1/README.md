@@ -2,7 +2,7 @@
 Prepared for Joe on October 5, 2026. Offline prototype for a later TIBER Team integration or data suite.
 
 ## Deliverable
-Three consistent, inspectable player views. RB and receiving metrics contain source-backed descriptive values; full QB dropback EPA is specified but unavailable. No repository, ROP, Teamstate, Forecast, runtime, deployment or source-admission changes.
+Three consistent, inspectable player views. RB and receiving metrics contain source-backed descriptive values; full QB dropback EPA is specified but unavailable. The original offline deliverable made no repository, ROP, Teamstate, Forecast, runtime, deployment or source-admission changes; the Git preservation and verification repair are recorded below.
 
 | View | Numerator | Denominator | Current status |
 |---|---|---|---|
@@ -20,10 +20,16 @@ The source player-week file contains passing_epa, rushing_epa and receiving_epa.
 - original-comparison-provenance.json: prior EPA comparison custody record; includes its own later recording clock.
 - package-manifest.json: this package's recording clock, source identity, checks and file digests.
 
-Reproduce with:
+After extracting the archive, run from the extraction directory. The packaged
+`player-views/*.json` are frozen goldens: never use that directory as builder
+output. Verification checks their recorded digests before comparing a fresh
+temporary build. Reproduce with:
 ```
-python player_views_builder.py nflverse-current.csv player-views
 python verify_player_views.py
+reproduction_dir="$(mktemp -d)"
+python player_views_builder.py nflverse-current.csv "$reproduction_dir"
+python test_golden_boundary.py
+rm -r "$reproduction_dir"
 ```
 
 ## Population and interpretation
@@ -58,7 +64,7 @@ W1–W3 retained rushing EPA matched the later source by player-game identity. T
 Official definitions: https://nflfastr.com/reference/nfl_stats_variables.html
 Attribution: nflverse contributors. CC BY 4.0 per the retained dataset receipt: https://creativecommons.org/licenses/by/4.0/ . No endorsement implied.
 
-This user-authorized package is for offline examination and future design. It creates no general source acceptance, no retrospective approval receipt and no current production pointer. No independent review is claimed. The supplied NGS quotation is not a calibration target or canonical truth for these views.
+This user-authorized package is for offline examination and future design. It creates no general source acceptance, no retrospective approval receipt and no current production pointer. The original package claimed no independent review; the later archival audit is recorded in the Git publication handoff below. The supplied NGS quotation is not a calibration target or canonical truth for these views.
 
 ## Smallest future integration
 Data owns operand and source qualification. ROP remains the observed role layer. TIBER Team may later assemble these observations in a consumer card after contract reconciliation and independent review. Reconcile existing work before adding any issue or implementation lane. The next integration proposal should name exact files, selected recipients/positions, missingness semantics, tests, source-purpose receipt and UI acceptance scope. Full QB EPA/dropback needs separately qualified retained PBP; no new acquisition occurred while packaging this snapshot.
@@ -70,16 +76,17 @@ Active task: preserve the already-created offline package in Git, under Joe's Oc
 
 Task classification: data-artifact archival publication and downstream handoff documentation. No new derivation or source acquisition in this publication step.
 
-Files touched: this README, TIBER-Player-EPA-Views-v0.1.zip and SHA256SUMS in this directory only. The archive contains the original spec, builder, focused checks/results, exact source CSV, three JSON views and package manifest. It is preserved byte-for-byte.
+Files touched: this README, TIBER-Player-EPA-Views-v0.1.zip and SHA256SUMS, plus the paired independent audit records under `docs/audits/`. The archive contains the original spec, builder, focused checks/results, exact source CSV, three JSON views and package manifest. The original archive was committed at `128a45feec7782bb57d6b4dc563409e0197549ca`; this repair changes only reproduction docs, verification/test code, check results and manifest. Source CSV, original provenance and all three JSON goldens remain byte-for-byte unchanged.
 
-Now true: the complete offline package is committed to this draft publication branch. Raw numerical values are inspectable through the archive. The builder and synthetic/frozen-source checks previously passed; archive integrity and member digests were verified. This publication does not convert the archived script into an operational producer.
+Now true: the complete offline package is committed to this unmerged publication branch. Raw numerical values are inspectable through the archive. The builder and synthetic/frozen-source checks previously passed; archive integrity and member digests were verified. This publication does not convert the archived script into an operational producer.
 
-Still missing: independent semantic review, general source-purpose admission, QB full-dropback evidence/definition qualification, complete Week 4 coverage and finality, and any consumer integration acceptance.
+Still missing: final exact-head PR review, operator merge decision, general source-purpose admission, QB full-dropback evidence/definition qualification, complete Week 4 coverage and finality, and any consumer integration acceptance.
 
-Must not be assumed: draft publication is not merge approval, promoted truth, current NFL coverage, a production contract, UI activation or an authorization to expand producer work. The snapshot is frozen and remains partial W4 even after later games become available.
+Must not be assumed: publication is not merge approval, promoted truth, current NFL coverage, a production contract, UI activation or an authorization to expand producer work. The snapshot is frozen and remains partial W4 even after later games become available.
 
-Audit-trigger status: **audit pending before any merge**. Provenance, support wording, generated observations and handoff semantics trigger Data's auditor requirement. No independent review or new acceptance is claimed.
+Audit-trigger status: **independent audit completed — clean with nonblocking notes, archival only**. Provenance, support wording, generated observations and handoff semantics trigger Data's auditor requirement. See [human-readable audit](../../audits/player-epa-views-v0.1-2026-10-05.md) and [machine-readable disposition](../../audits/player-epa-views-v0.1-2026-10-05.json). The auditor independently reconciled the frozen population and checked the repaired archive and README; this is not source admission, consumer acceptance or merge approval. Final exact-head PR review is recorded separately in the PR discussion.
 
-Archive SHA-256: a1bd69ce45848339101594a705b5a034b4e67249521a1ad9ac509e2a03d179b2 (415,146 bytes).
+Archive SHA-256: 4410b0bb78ddd589099654c3869c0b941c1b024caf7262e65f91bf602afa1990 (416,857 bytes).
+Original archive SHA-256: a1bd69ce45848339101594a705b5a034b4e67249521a1ad9ac509e2a03d179b2 (415,146 bytes); recoverable at the original commit.
 
 Relationship to existing work: Data #273 governs weekly candidate publication; #277/#278 retain the W3 source/replay lane. This archive does not replace their receipts or authorize their consumers. Research #28's team rushing-environment design remains separate from these individual source-aggregate views. Existing target/receiving opportunity work remains under its existing owner; no new implementation lane is assigned here.
