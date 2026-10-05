@@ -24,9 +24,11 @@ python -m unittest discover -s tests -p 'test_weekly_boxscore_candidate_v0.py' -
 
 The output directory must not already exist. Fresh run clocks differ; candidate/member identities must not. Implementer results: 22 publication tests and 18 boxscore tests passed. No full-suite result is claimed. The publication suite intentionally tests a missing Git object and prints its expected diagnostic.
 
-## What remains
+## Review status and remaining gates
 
-Independent review of this exact repair and its replay semantics is pending. A complete downstream retained input/review binding still needs the reviewed repair identity; ROP's real Week 3 selector remains closed. The Teamstate shape inspector remains unadmitted. No ROP, Teamstate or Role State output was run.
+Independent repair audit is **CLEAN** at canonical head `4821a08ecad8c4ed7177b2acda0cb29d93a2649a`, as recorded in [independent-review.md](independent-review.md) and [independent-review.json](independent-review.json). The [October 3 final documentation review](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/278#issuecomment-5970722580) also recorded **CLEAN** at `739b7acdbc92f3b81463cb9a707e71ef8b0911ba`. These completed reviews do not cover this later handoff correction; fresh exact-head review of the correction is pending. The immutable receipt and manifest retain their at-build `independent_review=pending` state; the separate review artifacts record completion without rewriting that evidence.
+
+Explicit downstream replay-instance adoption and purpose-specific provisional-use acceptance remain unresolved. A complete downstream retained input/review binding still needs the reviewed repair identity; ROP's real Week 3 selector remains closed. The Teamstate shape inspector remains unadmitted. No ROP, Teamstate or Role State output was run.
 
 Vikings research needs a separately identified cohort and purpose: full-game credited targets can be inspected after qualification, but post-Jefferson targets need an authenticated play-by-play window and exit boundary. Snaps/routes require their own permitted witnesses. This weekly candidate cannot supply those missing fields.
 
@@ -34,4 +36,4 @@ Any future #277 merge must preserve source ancestry through a normal merge commi
 
 ## Handoff
 
-Files touched: this audit directory and the adjacent read-only replay audit script. Now true: a truthful new replay witness and complete member manifest exist. Still missing: independent exact-repair review and downstream adoption/purpose binding. Must not assume: replay recovers original time or establishes post-exit allocation. Audit trigger: independent audit pending.
+Files touched: this audit directory and the adjacent read-only replay audit script. Now true: a truthful new replay witness and complete member manifest exist. Still missing: downstream adoption/purpose binding and fresh exact-head review of this handoff correction. Must not assume: replay recovers original time or establishes post-exit allocation. Audit trigger: October 3 independent repair audit and final documentation review completed CLEAN at their recorded heads; review of this correction pending.
