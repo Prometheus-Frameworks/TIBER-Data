@@ -1,5 +1,42 @@
 # TIBER-Data — Working Handoff
 
+## 2026-10-05 — #278 Week 3 replay review and handoff correction
+
+- Active task: bounded repo-governance/documentation and downstream handoff
+  repair for #278's two October 5 P2 findings; no evidence or implementation change.
+- Files touched by this correction: `docs/audits/week3-replay-2026-10-03/README.md`
+  and `HANDOFF.md`. The existing [replay packet](docs/audits/week3-replay-2026-10-03/README.md)
+  contains the October 3 witness, 13-member manifest, paired independent audit
+  and provisional Vikings-use proposal; the adjacent script is unchanged.
+- Now true: the retained-byte replay freshly materialized the unchanged candidate
+  `f3366ac1c2192641c6e94ba7c756ed2e12ba73b37550619ae143deaeab9f9902`
+  at `2026-10-03T15:34:05.379891Z`; this is a new replay clock, while original
+  generation time remains unknown. The paired independent audit records **CLEAN**
+  at `4821a08ecad8c4ed7177b2acda0cb29d93a2649a`, with all 13 pins authenticated,
+  byte-equal replay, second replay, unchanged repeat publication, six failure paths,
+  and 22 publication plus 18 candidate tests passing. The
+  [October 3 final documentation review](https://github.com/Prometheus-Frameworks/TIBER-Data/pull/278#issuecomment-5970722580)
+  recorded **CLEAN** at `739b7acdbc92f3b81463cb9a707e71ef8b0911ba`.
+  This supersedes the older pending-review handoff for the replay repair only;
+  immutable receipt/manifest pending fields remain historical at-build state.
+- Still missing: explicit downstream replay-instance adoption, exact retained
+  input/review binding, purpose-specific provisional-use acceptance and Vikings
+  cohort qualification. ROP's real Week 3 selector remains closed; Teamstate's
+  shape inspector remains unadmitted. The packet's MIN full-game proposal remains
+  proposed, not accepted or executed by this repair. Post-Jefferson allocation
+  needs authenticated PBP and an exit/return boundary; snaps/routes need permitted
+  witnesses. Fresh exact-head review of this documentation correction is pending.
+- Must not assume: CLEAN audit grants source admission, downstream adoption or
+  empirical use; fresh replay recovers the original clock, pregame availability
+  or finality; weekly aggregates establish post-exit allocation. Candidate finality
+  remains unknown, corrections open and receiving-air-yard conflicts excluded.
+  No source admission, real Week 3 consumer run, Minnesota research execution,
+  downstream activation, Forecast change, merge, deployment or acquisition occurs.
+  Any later #277 merge must preserve support ancestry with a normal merge commit.
+- Audit-trigger status: October 3 independent repair audit and final documentation
+  review completed at the exact heads above; this correction requires a separate
+  fresh exact-head review and does not certify itself.
+
 ## 2026-09-30 — #276 bounded 2026 REG Week 3 candidate
 
 - Active task: operator-authorized data artifact, provenance validation and
