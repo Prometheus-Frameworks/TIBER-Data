@@ -1,0 +1,140 @@
+{
+  "schema_version": "player_epa_views_archival_audit_v0.1",
+  "audit_recorded_at": "2026-10-05T20:03:57.823592+00:00",
+  "auditor": "independent read-only auditor agent; separate from package repair implementer",
+  "task_class": "provenance_source_audit",
+  "disposition": "clean_with_nonblocking_notes_archival_only",
+  "merge_authorized": false,
+  "source_admitted": false,
+  "producer_activated": false,
+  "consumer_integrations_authorized": false,
+  "candidate": {
+    "original_commit": "128a45feec7782bb57d6b4dc563409e0197549ca",
+    "original_archive_sha256": "a1bd69ce45848339101594a705b5a034b4e67249521a1ad9ac509e2a03d179b2",
+    "archive_path": "docs/data/player-epa-views-v0.1/TIBER-Player-EPA-Views-v0.1.zip",
+    "archive_sha256": "4410b0bb78ddd589099654c3869c0b941c1b024caf7262e65f91bf602afa1990",
+    "archive_bytes": 416857,
+    "binding": "archive bytes and manifest member hashes; final commit review is separate",
+    "readme_path": "docs/data/player-epa-views-v0.1/README.md",
+    "readme_sha256": "6581a6c8707f589737628fa0c82f1db9b897fe3a998875845de151b925d2da3c"
+  },
+  "source": {
+    "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2026.csv",
+    "sha256": "27a8a464687901340e87873010b3583443619fad723db828f745f71c8086ec9e",
+    "bytes": 1950079,
+    "rows": 4379,
+    "duplicate_player_game_keys": 0,
+    "scope": {
+      "season": 2026,
+      "season_type": "REG",
+      "requested_weeks": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "retrieval_clock": null,
+    "release_clock_claim": "2026-10-05T12:33:41Z",
+    "release_clock_independently_rewitnessed": false
+  },
+  "coverage": [
+    {
+      "week": 1,
+      "rows": 1118,
+      "games": 16
+    },
+    {
+      "week": 2,
+      "rows": 1107,
+      "games": 16
+    },
+    {
+      "week": 3,
+      "rows": 1114,
+      "games": 16
+    },
+    {
+      "week": 4,
+      "rows": 1040,
+      "games": 15
+    }
+  ],
+  "views": {
+    "rb_epa_per_carry": {
+      "source_selected_rows": 360,
+      "output_rows": 478,
+      "status_counts": {
+        "available_source_aggregate": 371,
+        "unavailable_missing_operand": 107
+      }
+    },
+    "receiver_epa_per_target": {
+      "source_selected_rows": 1282,
+      "output_rows": 1715,
+      "status_counts": {
+        "available_source_aggregate": 1292,
+        "unavailable_missing_operand": 420,
+        "unavailable_zero_denominator": 3
+      }
+    },
+    "qb_epa_per_dropback": {
+      "source_selected_rows": 144,
+      "output_rows": 195,
+      "status_counts": {
+        "unavailable_full_dropback_population_not_supplied": 195
+      }
+    }
+  },
+  "unchanged_members": [
+    "nflverse-current.csv",
+    "original-comparison-provenance.json",
+    "player_views_builder.py",
+    "player-views/rb_epa_per_carry.json",
+    "player-views/receiver_epa_per_target.json",
+    "player-views/qb_epa_per_dropback.json"
+  ],
+  "checks": {
+    "zip_crc_and_sha256": "pass",
+    "all_manifest_member_sizes_and_sha256": "pass",
+    "unchanged_members_vs_original_archive": "pass",
+    "independent_all_output_operands_and_metadata_vs_csv": "pass",
+    "source_unique_keys": "pass",
+    "selected_identity_presence": "pass",
+    "partial_week4_and_unknown_finality": "pass",
+    "verify_player_views": "pass",
+    "test_golden_boundary": "pass",
+    "final_readme_scope_and_audit_status": "pass"
+  },
+  "rights": {
+    "classification": "external_candidate",
+    "archival_retention_disposition": "supported_by_existing_same_source_family_license_evidence",
+    "name": "nflverse contributors",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "receipt_path": "data/raw/weekly_boxscore/2026_w01_20260914/receipt.json",
+    "license_path": "data/raw/weekly_boxscore/2026_w01_20260914/LICENSE.md",
+    "license_sha256": "2a82ac9bbc3e3ee066908381e8d373896db5a6025d083fbd59692fe9ccfb9111",
+    "source_family_match": "same nflverse-data stats_player weekly 2026 release URL; distinct source revisions",
+    "new_terms_acquisition": false,
+    "notice": "No endorsement implied; not blanket rights or source-purpose admission."
+  },
+  "unresolved_claims": [
+    "Original retrieval clock and contemporaneous pre-cutoff availability are unwitnessed.",
+    "October 5 remote asset metadata match and release clock are preserved original provenance claims, not independently reread during this audit.",
+    "Original W1\u2013W3 retained source comparison and NGS comparison summary are preserved historical claims, not independently recomputed in this audit.",
+    "Same-source retained September license evidence supports archival retention; October acquisition-specific terms receipt and current upstream terms were not fetched.",
+    "Source IDs and positions have no new canonical identity/crosswalk or cutoff-effective roster acceptance.",
+    "Source aggregate EPA arithmetic is verified; upstream play inclusion and causal contribution are not independently reconstructed.",
+    "W4 ATL\u2013NO absent; schedule finality, latest data and full-season completeness unavailable.",
+    "Full QB dropback metric remains unavailable; PBP population and EPA choice need separate qualification."
+  ],
+  "boundaries": {
+    "no_new_source_acquisition": true,
+    "no_source_admission": true,
+    "no_operational_producer": true,
+    "no_rop_teamstate_forecast_integration": true,
+    "no_merge_deploy_schedule": true
+  },
+  "remaining": "Independent exact-head review of final repair commit; PR must remain unmerged."
+}
