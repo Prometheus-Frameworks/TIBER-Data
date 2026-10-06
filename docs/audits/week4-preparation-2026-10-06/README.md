@@ -1,3 +1,13 @@
+# Current qualification checkpoint — October 6
+
+Independent review of exact Data head `ca31f5052061e854b3df8ad46e555506f1f7712d` and tree `7d3f8a4c2ce889258fa6be9eea48c5274c577012` completed at `2026-10-06T11:43:10.583805Z`: **CLEAN WITH NON-BLOCKING NOTES**, no material findings. Paired `independent-review.md` / `.json` are retained byte-for-byte. Receipt SHA-256: `339e8690fb7d117354f0dc5be1a8e272e426517eb9303d28d29effec11ab8d13`.
+
+All 13 inventory members and raw source-row semantics were independently authenticated; offline Data reproduction is byte-identical; 40 tests plus 33 subtests pass. Receiving-air-yard conflicts, anonymous identity, finality and Sleeper identity restrictions remain. This later review does not rewrite original pending acquisition/build records or grant source/purpose acceptance or real ROP/TTS execution. Week 4 producer binding preparation is now authorized separately by Joe's October 6 follow-up.
+
+The original preparation checkpoint below is historical and retains its original review-pending wording.
+
+---
+
 # Week 4 candidate preparation — October 6, 2026
 
 Status: candidate only; independent qualification and consumer binding remain pending.
