@@ -1,0 +1,98 @@
+{
+  "schema_version": "independent_week4_producer_review_v1",
+  "reviewer": "Codex independent sub-agent /root/week4_data_review; author of neither producer implementation",
+  "independent_reviewer": true,
+  "author_of_reviewed_packets": false,
+  "review_completed_at": "2026-10-06T12:00:22.013023Z",
+  "producer_review_completed_at": "2026-10-06T12:00:22.013023Z",
+  "disposition": "clean_with_non_blocking_notes",
+  "material_findings": [],
+  "actionable_findings": [],
+  "data": {
+    "reviewed_head": "ca31f5052061e854b3df8ad46e555506f1f7712d",
+    "reviewed_tree": "7d3f8a4c2ce889258fa6be9eea48c5274c577012",
+    "review_receipt_storage_head": "c924405c7043b07af5981a9683ac9a7df076e26d",
+    "review_receipt_sha256": "339e8690fb7d117354f0dc5be1a8e272e426517eb9303d28d29effec11ab8d13",
+    "candidate_sha256": "307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9",
+    "input_inventory_sha256": "851d188aaf60a65cd39ef6fd0a4541f40aa4196010c68872edb028437a2d03e7",
+    "build_witness_sha256": "e13a2c1679749d91b465864fd2be497a9e969e63a10b549a8c45ed51f260fe1c"
+  },
+  "producers": {
+    "rop": {
+      "repository": "Prometheus-Frameworks/Role-and-opportunity-model",
+      "pull_request": 32,
+      "reviewed_head": "856263f3e06dca436b72345a38b13d411b78376e",
+      "reviewed_tree": "1c144cf20bfc5f6554e908329e0bd15996760aef",
+      "parent": "4c94f1807fe990d40f3e467683fe3f09f631415a",
+      "implementation_base": "cdb1ae5fbcf364fa383d540ec531f16ac6181d83",
+      "initial_head": "4c94f1807fe990d40f3e467683fe3f09f631415a",
+      "initial_tree": "d52683ccade563d229b5d9b8bb0f2cac2bc429a9",
+      "initial_changed_paths": 10,
+      "repair_changed_paths": 4,
+      "synthetic_tests": {
+        "passed": 322,
+        "failed": 0
+      },
+      "focused_strict_compile": "passed TypeScript5.9.2",
+      "full_repo_compile": "11 errors exactly identical to implementation baseline after checkout path normalization",
+      "week1_week2_regression": "fictional handoff/companion bytes and pins/four position states and bindings byte-identical to exact baseline"
+    },
+    "tts": {
+      "repository": "Prometheus-Frameworks/TIBER-Teamstate",
+      "pull_request": 97,
+      "reviewed_head": "4a602237db87c17afefcb1b0543551e328cc6697",
+      "reviewed_tree": "6d921ec3651d82aa9f6d01bf4e4d0218cd2291ac",
+      "parent": "9153a7f66f0f502405bb7ae6115a2c68295296f3",
+      "changed_paths": 9,
+      "synthetic_tests": {
+        "passed": 110,
+        "failed": 0,
+        "retained_week3": 63,
+        "new_week4": 47
+      },
+      "strict_slice_compile": "passed via isolated test harness TypeScript5.9.2; checkout-local dependency fallback used",
+      "week1_week3_regression": "source files byte-unchanged; all retained Week3 checks pass",
+      "full_repo_tests_or_vitest": "not run; not claimed"
+    }
+  },
+  "resolved_findings": [
+    {
+      "severity": "P2",
+      "initial_head": "4c94f1807fe990d40f3e467683fe3f09f631415a",
+      "file": "src/builders/weeklyRoleStateV1.ts",
+      "finding": "Week4 candidate-mode companion could omit optional candidateWitness and bypass pending-purpose restriction. Fictional resealed source-shaped Week4 handoff returned accepted/source_backed readiness.",
+      "repair_head": "856263f3e06dca436b72345a38b13d411b78376e",
+      "resolution": "Candidate-mode 2026 REG Week4 now requires witness and pending purpose from scope before provenance reconstruction; malformed marked binding still fails exact-closed-binding validation.",
+      "verification": "Original independent fictional reproducer now rejects closed Week4 candidate witness required. Two new tests cover omitted-marker pending/accepted and marker accepted/pending fake binding; all322tests pass."
+    }
+  ],
+  "checks": [
+    "Separate no-hardlink clones; exact published branch heads fetched read-only; parents/trees/path counts verified.",
+    "Both identical closed inventories contain16 exact bytepins; all match13 originalData inventory members plus originalbuild witness/inputinventory/independentreview receipt. Native Git blobs and complete inventory/witness semantics agree with reviewedData. Realbytes only hashed/read for source authentication, not passed to producers.",
+    "Authentication takes owned byte copies before parsing and rejects wrongsize/hash/missing/extra packet members.",
+    "ROP closed entry retains all source-row/population/anonymous/reconciliation/share/companion checks; generic realW1/2 selector unchanged; W3 restrictions preserved.",
+    "TTS closed wrapper binds new generation and distinctDatareview/storage; shape inspector preserves tenfields/16reciprocalgames/32teamrows, null/unknown and excludes conflicting airyards/player identities/advanced metrics.",
+    "All newly tested happy observations are fictional. Metadata semantic and authentication rejection seams do not admit source or execute retained-player outputs."
+  ],
+  "run_proposal_semantic_review": "Inspected unaccepted bounded-run-proposal.json: eight proposed nativeIDs initialpersistedshortlist, finalmanualselectionconfirmation pending, Charbonnet unknown and no state,32TTS context, Sleeperjoins unadmitted, pendingpurpose outputs with separate operator/runrecords. Root must update proposedROPhead to final repaired head and pin this review before decision.",
+  "non_blocking_notes": [
+    "Closed real-byte adapter/wrapper/inspector happy paths have not been invoked; reviewed statically and tested through fictional/semantic/rejection seams only.",
+    "Prepared outputs remain purpose-pending. A later exact operator source/purpose decision and separately reviewed execution record must accompany any private run; these interfaces introduce no accepted-readiness path.",
+    "No merge required for the proposed private bounded run; no merge authorization is implied.",
+    "Finality remains unknown, corrections provisional, historical cutoff unavailable, source unadmitted and display identity joins unqualified.",
+    "ROP and TTS share source lineage; they are not independent corroboration."
+  ],
+  "consumer_admitted": false,
+  "purpose_accepted": false,
+  "execution_authorized": false,
+  "boundaries": {
+    "real_ROP_TTS_invocation": false,
+    "provider_acquisition": false,
+    "merge": false,
+    "source_admission": false,
+    "site_update": false,
+    "deployment": false,
+    "schedule": false,
+    "repository_write_by_reviewer": false
+  }
+}
