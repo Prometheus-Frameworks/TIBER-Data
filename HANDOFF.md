@@ -1,3 +1,41 @@
+## 2026-10-06 — Week 4 producer bindings independently reviewed
+
+Final ROP head `856263f3e06dca436b72345a38b13d411b78376e` (draft PR #32), tree `1c144cf20bfc5f6554e908329e0bd15996760aef`; final TTS head `4a602237db87c17afefcb1b0543551e328cc6697` (draft PR #97), tree `6d921ec3651d82aa9f6d01bf4e4d0218cd2291ac`: independently CLEAN WITH NON-BLOCKING NOTES, no unresolved material findings. Actual joint review completion `2026-10-06T12:00:22.013023Z`; receipt SHA-256 `43cc39c4df2722483bef29d6344bf6b887930b0b1d807b50873e9ec4f7c5ee16`. Paired independent-producer-review.md/.json retained byte-for-byte in `docs/audits/week4-preparation-2026-10-06/`.
+
+Review identified and independently verified repair of one ROP P2: candidate-mode Week4 now requires the closed witness and pending purpose from the scope itself, even if an optional marker is omitted. 322 ROP tests, 110 TTS checks and focused strict compilation pass independently; W1/2 fictional handoff/companion bytes/pins and four position states/bindings remain identical. Full ROP compilation retains the same 11 baseline errors. TTS full repository/Vitest and TS6 are not claimed. Real-input happy path is statically inspected, not invoked.
+
+The exact `bounded-run-proposal.json` pins inputs, both final heads and the joint review/completion clock. It proposes at most eight native shortlist states plus 32 ten-field team contexts, with full denominators. Charbonnet has no observation and remains unknown; source/Sleeper mapping and the Tre Harris alias remain separate display qualification. Current manual selections must be recorded in the operator decision. Prepared outputs remain purpose-pending and must accompany separate operator/run records; no accepted-readiness path is introduced.
+
+Still missing: operator exact-source/provisional-purpose acceptance and bounded execution decision, actual output validation, verified Sleeper display joins. No acceptance receipt or execution grant is created here. All source/candidate/build/inventory evidence and original Data review are unchanged; bound review-storage head c924405c remains distinct from this later metadata-storage checkpoint. Audit status: independent Data and exact final producer reviews complete.
+
+Source unadmitted; finality unknown; corrections provisional; air-yard conflicts excluded; routes/snaps/first reads unavailable. No real-input producer run, merge, deployment, consumer activation, Site update, new acquisition, Forecast, schedule or transaction. Earlier checkpoints below are historical.
+
+---
+
+## 2026-10-06 — Week 4 independent Data qualification complete
+
+Independent reviewer qualified exact packet head `ca31f5052061e854b3df8ad46e555506f1f7712d`, tree `7d3f8a4c2ce889258fa6be9eea48c5274c577012`: CLEAN WITH NON-BLOCKING NOTES, no material findings. Paired review records are retained byte-for-byte under `docs/audits/week4-preparation-2026-10-06/`. Actual review completion: `2026-10-06T11:43:10.583805Z`; receipt SHA-256 `339e8690fb7d117354f0dc5be1a8e272e426517eb9303d28d29effec11ab8d13`.
+
+Now true: all 13 source/candidate/code inventory members and source-row semantics independently verified; unchanged offline Data rebuild byte-identical; 40 tests plus 33 subtests pass. Exact candidate and raw support are unchanged. Only the paired review records and documentation checkpoint are added here; the reviewed head remains distinct from this later storage head.
+
+Still missing: independently reviewed Week 4 producer bindings, operator exact-source/purpose acceptance and bounded execution decision, verified Sleeper joins. Finality remains unknown, 22 air-yard conflicts excluded, one anonymous observation outside player identity. Original pending records remain historical. No source admission, ROP/TTS real-input execution, merge, deployment or schedule.
+
+Audit-trigger status: independent Data review completed for the exact packet above; later receipt-storage documentation is a separate checkpoint. Joe authorized independent Data review and Week 4 producer binding preparation in the October 6 waiver-board conversation.
+
+## 2026-10-06 — Week 4 candidate preparation (independent review pending)
+
+Active task: bounded Week 4 Data acquisition, candidate preparation and downstream handoff for the H4MMER waiver shortlist, under Joe's October 6 instruction to start that pass.
+
+Files touched: seven immutable raw player/team/schedule support members; one Week 4 candidate revision and candidate-only index; paired preparation/validation records in `docs/audits/week4-preparation-2026-10-06/`; this handoff. Existing producer code, contracts and Week 3 branches are unchanged.
+
+Now true: current observations retained with checked release digests and license; candidate `307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9` built from remote support `0f99ff5a2293044c41d5de3c2601c02baa6e9daf`; 16 schedule-matched games and 32 reciprocal team rows; all carries/targets reconcile; deterministic offline rebuild; 40 existing weekly tests pass. One anonymous player row remains separate and 22 air-yard conflicts remain excluded from the proposed first consumer scope.
+
+Still missing: independent Data qualification, exact Week 4 ROP/TTS bindings and their review, operator source/purpose acceptance and bounded execution decision, verified Sleeper/source identity joins. Proposed subjects come from the initial persisted board shortlist; browser-local manual selections are not visible here.
+
+Must not assume: final-week certification, independent corroboration between producers, canonical identity admission, real-input producer execution or waiver-card activation. Candidate remains unadmitted with unknown finality. No merge, deployment, schedule or transaction.
+
+Audit-trigger status: triggered; builder validation completed; independent qualification pending. See `docs/audits/week4-preparation-2026-10-06/README.md` and paired JSON records.
+
 # TIBER-Data — Working Handoff
 
 ## Repo purpose in one sentence

@@ -1,0 +1,166 @@
+{
+  "schema_version": "week4_operator_run_proposal_v1",
+  "status": "ready_for_operator_exact_source_purpose_and_bounded_execution_decision",
+  "scope": {
+    "season": 2026,
+    "season_type": "REG",
+    "week": 4
+  },
+  "data": {
+    "reviewed_head": "ca31f5052061e854b3df8ad46e555506f1f7712d",
+    "reviewed_tree": "7d3f8a4c2ce889258fa6be9eea48c5274c577012",
+    "receipt_storage_head": "c924405c7043b07af5981a9683ac9a7df076e26d",
+    "source_support_commit": "0f99ff5a2293044c41d5de3c2601c02baa6e9daf",
+    "candidate_sha256": "307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9",
+    "input_inventory_sha256": "851d188aaf60a65cd39ef6fd0a4541f40aa4196010c68872edb028437a2d03e7",
+    "review_sha256": "339e8690fb7d117354f0dc5be1a8e272e426517eb9303d28d29effec11ab8d13"
+  },
+  "producer_heads": {
+    "rop": "856263f3e06dca436b72345a38b13d411b78376e",
+    "tts": "4a602237db87c17afefcb1b0543551e328cc6697"
+  },
+  "joint_producer_review_sha256": "43cc39c4df2722483bef29d6344bf6b887930b0b1d807b50873e9ec4f7c5ee16",
+  "producer_review_completed_at": "2026-10-06T12:00:22.013023Z",
+  "operator_acceptance": null,
+  "execution_authorized": false,
+  "proposed_purpose": "Private provisional descriptive Week4 role/opportunity and ten-field team context for selected waiver-shortlist subjects; interpretation only, no ranking or transaction",
+  "subject_selection": "Eight native source rows from initial persisted board shortlist; confirm current manual selections in exact operator decision, not automatically all browser-local edits.",
+  "proposed_rop_subjects": [
+    {
+      "name": "Emanuel Wilson",
+      "namespace": "nflverse:gsis",
+      "player_id": "00-0038797",
+      "team": "SEA",
+      "game_id": "2026_04_LAC_SEA",
+      "position": "RB",
+      "sleeper_player_id_proposed": "11435",
+      "sleeper_join_admitted": false
+    },
+    {
+      "name": "Will Shipley",
+      "namespace": "nflverse:gsis",
+      "player_id": "00-0039746",
+      "team": "PHI",
+      "game_id": "2026_04_LA_PHI",
+      "position": "RB",
+      "sleeper_player_id_proposed": "11577",
+      "sleeper_join_admitted": false
+    },
+    {
+      "name": "KC Concepcion",
+      "namespace": "nflverse:gsis",
+      "player_id": "00-0041547",
+      "team": "CLE",
+      "game_id": "2026_04_PIT_CLE",
+      "position": "WR",
+      "sleeper_player_id_proposed": "13298",
+      "sleeper_join_admitted": false
+    },
+    {
+      "name": "Keon Coleman",
+      "namespace": "nflverse:gsis",
+      "player_id": "00-0039901",
+      "team": "BUF",
+      "game_id": "2026_04_NE_BUF",
+      "position": "WR",
+      "sleeper_player_id_proposed": "11637",
+      "sleeper_join_admitted": false
+    },
+    {
+      "name": "Dohnte Meyers",
+      "namespace": "nflverse:gsis",
+      "player_id": "00-0040785",
+      "team": "CIN",
+      "game_id": "2026_04_JAX_CIN",
+      "position": "WR",
+      "sleeper_player_id_proposed": "13264",
+      "sleeper_join_admitted": false
+    },
+    {
+      "name": "Tre' Harris",
+      "namespace": "nflverse:gsis",
+      "player_id": "00-0040727",
+      "team": "LAC",
+      "game_id": "2026_04_LAC_SEA",
+      "position": "WR",
+      "sleeper_player_id_proposed": "12509",
+      "sleeper_join_admitted": false
+    },
+    {
+      "name": "Kirk Cousins",
+      "namespace": "nflverse:gsis",
+      "player_id": "00-0029604",
+      "team": "LV",
+      "game_id": "2026_04_KC_LV",
+      "position": "QB",
+      "sleeper_player_id_proposed": "1166",
+      "sleeper_join_admitted": false
+    },
+    {
+      "name": "Mike Gesicki",
+      "namespace": "nflverse:gsis",
+      "player_id": "00-0034829",
+      "team": "CIN",
+      "game_id": "2026_04_JAX_CIN",
+      "position": "TE",
+      "sleeper_player_id_proposed": "4993",
+      "sleeper_join_admitted": false
+    }
+  ],
+  "source_absent": [
+    {
+      "name": "Zach Charbonnet",
+      "status": "unknown_source_observation_not_zero",
+      "produce_state": false
+    }
+  ],
+  "proposed_tts_scope": "32 source-native team-game descriptions; complete denominators retained; Bengals/Browns are team contexts, not player ROP",
+  "outputs": [
+    "One complete allocation handoff and mandatory byte-pinned lossless companion",
+    "At most eight selected native-player WeeklyRoleStateV1 states with binding receipts",
+    "One 32-row ten-field TTS description with field-readiness and source evidence",
+    "Private run/limitations record linked to separate operator decision"
+  ],
+  "output_purpose_state": "Prepared interfaces return purpose-pending; separate operator purpose/run records must accompany outputs. No programmatic accepted-readiness promotion is authorized or implemented.",
+  "source_admission": false,
+  "game_finality": "unknown",
+  "correction": "provisional_open",
+  "source_observation_cutoff": null,
+  "identity": "Source-native GSIS only. Sleeper matches and Tre Harris alias remain separate display-join verification before cards.",
+  "excluded": [
+    "receiving_air_yards",
+    "routes",
+    "snap_share",
+    "first_reads",
+    "inside_five_work",
+    "injury_inference",
+    "predictive_rankings",
+    "Forecast",
+    "bulk_player_state_generation"
+  ],
+  "no_merge_required_for_proposed_private_run": true,
+  "site_update_authorized": false,
+  "waiver_transactions_authorized": false,
+  "new_acquisition_authorized": false,
+  "schedules_authorized": false,
+  "interfaces": {
+    "rop_allocation": "src/adapters/weeklyAllocationFromDataV1.ts#adaptRetainedWeek4",
+    "rop_selected_states": "src/builders/weeklyRoleStateV1.ts#buildWeeklyRoleStateV1",
+    "tts_context": "src/provisional/adaptWeek4ProvisionalPacket.ts#adaptWeek4ProvisionalPacket"
+  },
+  "producer_reviews": {
+    "disposition": "clean_with_non_blocking_notes",
+    "record": "docs/audits/week4-preparation-2026-10-06/independent-producer-review.json",
+    "rop_head": "856263f3e06dca436b72345a38b13d411b78376e",
+    "rop_tree": "1c144cf20bfc5f6554e908329e0bd15996760aef",
+    "tts_head": "4a602237db87c17afefcb1b0543551e328cc6697",
+    "tts_tree": "6d921ec3651d82aa9f6d01bf4e4d0218cd2291ac",
+    "unresolved_material_findings": []
+  },
+  "operator_decision_required": [
+    "Accept exact reviewed Week4 inputs for private provisional descriptive purpose, retaining limitations",
+    "Pin final native selected subjects; proposal includes8source rows from initialpersistedshortlist",
+    "Authorize one bounded offline invocation and retain output/run evidence",
+    "Keep source admission, accepted-readiness promotion, Site activation, transactions, Forecast and schedules excluded"
+  ]
+}
