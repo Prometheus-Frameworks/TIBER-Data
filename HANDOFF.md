@@ -1,3 +1,17 @@
+## 2026-10-06 — Week 4 candidate preparation (independent review pending)
+
+Active task: bounded Week 4 Data acquisition, candidate preparation and downstream handoff for the H4MMER waiver shortlist, under Joe's October 6 instruction to start that pass.
+
+Files touched: seven immutable raw player/team/schedule support members; one Week 4 candidate revision and candidate-only index; paired preparation/validation records in `docs/audits/week4-preparation-2026-10-06/`; this handoff. Existing producer code, contracts and Week 3 branches are unchanged.
+
+Now true: current observations retained with checked release digests and license; candidate `307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9` built from remote support `0f99ff5a2293044c41d5de3c2601c02baa6e9daf`; 16 schedule-matched games and 32 reciprocal team rows; all carries/targets reconcile; deterministic offline rebuild; 40 existing weekly tests pass. One anonymous player row remains separate and 22 air-yard conflicts remain excluded from the proposed first consumer scope.
+
+Still missing: independent Data qualification, exact Week 4 ROP/TTS bindings and their review, operator source/purpose acceptance and bounded execution decision, verified Sleeper/source identity joins. Proposed subjects come from the initial persisted board shortlist; browser-local manual selections are not visible here.
+
+Must not assume: final-week certification, independent corroboration between producers, canonical identity admission, real-input producer execution or waiver-card activation. Candidate remains unadmitted with unknown finality. No merge, deployment, schedule or transaction.
+
+Audit-trigger status: triggered; builder validation completed; independent qualification pending. See `docs/audits/week4-preparation-2026-10-06/README.md` and paired JSON records.
+
 # TIBER-Data — Working Handoff
 
 ## Repo purpose in one sentence

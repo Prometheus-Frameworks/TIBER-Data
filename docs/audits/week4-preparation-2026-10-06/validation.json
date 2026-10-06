@@ -1,0 +1,204 @@
+{
+  "schema_version": "week4_candidate_builder_validation_v1",
+  "validated_at": "2026-10-06T11:14:17.150320+00:00",
+  "candidate_sha256": "307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9",
+  "checks": {
+    "committed_source_bytes": "passed",
+    "release_digest_and_license": "passed_by_unchanged_intake",
+    "offline_rebuild_byte_equality": "passed",
+    "schedule_game_membership": "matched_16_games",
+    "reciprocal_team_membership": "32_unique_team_game_rows",
+    "native_player_duplicate_keys": 0,
+    "raw_player_carry_and_target_sums": "matched_all_32_team_rows_including_anonymous_source",
+    "unattributed_source_rows": 1,
+    "conflict_fields": [
+      "receiving_air_yards"
+    ],
+    "receiving_air_yard_conflicts": 22,
+    "existing_weekly_tests": {
+      "passed": 40,
+      "failed": 0
+    }
+  },
+  "source_player_rows": 1110,
+  "resolved_player_rows": 1109,
+  "finality": "unknown",
+  "consumer_admitted": false,
+  "independent_reviewer": false,
+  "independent_review": "pending",
+  "shortlist_identity_proposals": [
+    {
+      "sleeper_player_id": "11435",
+      "name": "Emanuel Wilson",
+      "position": "RB",
+      "team": "SEA",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_LAC_SEA",
+        "opponent_team": "LAC",
+        "player_id": "00-0038797",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "SEA",
+        "week": 4,
+        "player_name": "Emanuel Wilson",
+        "position": "RB"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "11577",
+      "name": "Will Shipley",
+      "position": "RB",
+      "team": "PHI",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_LA_PHI",
+        "opponent_team": "LA",
+        "player_id": "00-0039746",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "PHI",
+        "week": 4,
+        "player_name": "Will Shipley",
+        "position": "RB"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "13298",
+      "name": "KC Concepcion",
+      "position": "WR",
+      "team": "CLE",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_PIT_CLE",
+        "opponent_team": "PIT",
+        "player_id": "00-0041547",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "CLE",
+        "week": 4,
+        "player_name": "KC Concepcion",
+        "position": "WR"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "11637",
+      "name": "Keon Coleman",
+      "position": "WR",
+      "team": "BUF",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_NE_BUF",
+        "opponent_team": "NE",
+        "player_id": "00-0039901",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "BUF",
+        "week": 4,
+        "player_name": "Keon Coleman",
+        "position": "WR"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "13264",
+      "name": "Dohnte Meyers",
+      "position": "WR",
+      "team": "CIN",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_JAX_CIN",
+        "opponent_team": "JAX",
+        "player_id": "00-0040785",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "CIN",
+        "week": 4,
+        "player_name": "Dohnte Meyers",
+        "position": "WR"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "12509",
+      "name": "Tre' Harris",
+      "position": "WR",
+      "team": "LAC",
+      "status": "proposed_alias_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_LAC_SEA",
+        "opponent_team": "SEA",
+        "player_id": "00-0040727",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "LAC",
+        "week": 4,
+        "player_name": "Tre Harris",
+        "position": "WR"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "1166",
+      "name": "Kirk Cousins",
+      "position": "QB",
+      "team": "LV",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_KC_LV",
+        "opponent_team": "KC",
+        "player_id": "00-0029604",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "LV",
+        "week": 4,
+        "player_name": "Kirk Cousins",
+        "position": "QB"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "4993",
+      "name": "Mike Gesicki",
+      "position": "TE",
+      "team": "CIN",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_JAX_CIN",
+        "opponent_team": "JAX",
+        "player_id": "00-0034829",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "CIN",
+        "week": 4,
+        "player_name": "Mike Gesicki",
+        "position": "TE"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "9753",
+      "name": "Zach Charbonnet",
+      "position": "RB",
+      "team": "SEA",
+      "status": "missing_source_observation_unknown_not_zero",
+      "source_identity": null,
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "CIN",
+      "name": "Bengals",
+      "status": "team_context_only_not_player_ROP",
+      "team": "CIN"
+    },
+    {
+      "sleeper_player_id": "CLE",
+      "name": "Browns",
+      "status": "team_context_only_not_player_ROP",
+      "team": "CLE"
+    }
+  ]
+}
