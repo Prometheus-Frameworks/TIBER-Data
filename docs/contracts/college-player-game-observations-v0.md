@@ -228,6 +228,8 @@ No complete-NCAA claim follows. `game_scope.expected_game_ids` is null for unkno
 expectations and `[]` for independently established zero games (requiring scoped
 evidence). Expected and observed entries are **season × source_game_id**; the
 same provider game ID can recur in different seasons without collapsing two games.
+Every expected game must be backed by at least one expectation evidence ref whose
+non-null season/source_game_id scope components admit it.
 Every row belongs to the declared observed game set; complete population cannot
 omit a known expected game. `observed_game_ids` measures source coverage, never
 player participation. Population completeness remains an independently audited
