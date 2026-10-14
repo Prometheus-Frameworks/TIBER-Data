@@ -80,6 +80,23 @@ def test_expectation_evidence_binds_to_declared_game_scope(batch):
     assert "EVIDENCE_SCOPE" in codes(batch)
 
 
+def test_season_scoped_expectation_evidence_covers_its_season(batch):
+    game_scope = batch["coverage"]["game_scope"]
+    for season in (2025, 2026):
+        item = copy.deepcopy(batch["evidence"]["scope"])
+        item["locator"] = f"synthetic:expectation-season-{season}"
+        item["scope"]["season"] = season
+        batch["evidence"][f"expectation-{season}"] = item
+    game_scope["expectation_evidence_refs"] = ["expectation-2025", "expectation-2026"]
+    assert validate(batch) == []
+    # The 2026 season ref alone leaves the expected 2025 game unbacked.
+    game_scope["expectation_evidence_refs"] = ["expectation-2026"]
+    findings = [f for f in validate(batch) if f["code"] == "GAME_EXPECTATION"]
+    assert [f["message"] for f in findings] == [
+        "No expectation evidence in scope for 2025/synthetic-game-prior."
+    ]
+
+
 def test_source_relationship_cycles_fail_validation(batch):
     assert validate(batch) == []
     row = unresolved_row(batch, "synthetic-related-a", "synthetic-ra", "synthetic-related-a")
@@ -99,6 +116,8 @@ def test_source_relationship_cycles_fail_validation(batch):
     [
         {"name": "Jordan Matthews"},
         {"canonical_college_player_id": "college-player-4471"},
+        {"attribution_id": "attr-4471"},
+        {"supersedes_attribution_id": "attr-4470"},
     ],
 )
 def test_synthetic_attribution_keeps_synthetic_identity(batch, change):
@@ -123,5 +142,6 @@ def test_synthetic_attribution_keeps_synthetic_identity(batch, change):
         }
     )
     assert validate(batch) == []
-    state.update(change)
+    event = batch["attributions"][-1]
+    (event if next(iter(change)) in event else state).update(change)
     assert "SYNTHETIC_IDENTITY" in codes(batch)

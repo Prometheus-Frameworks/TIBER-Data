@@ -566,7 +566,9 @@ def _validate_attributions_and_aliases(envelope, ids, logical_key, evidence, fai
         if state["source_player_id"] != ids[oid]["identity"]["source_player_id"]:
             fail("ATTRIBUTION_SOURCE", path, "TIBER attribution cannot change source player ID.")
         if envelope["evidence_mode"] == "synthetic_fixture" and (
-            not state["name"].startswith("SYNTHETIC ")
+            not (state["name"] or "").startswith("SYNTHETIC ")
+            or not eid.startswith("synthetic-")
+            or not (event["supersedes_attribution_id"] or "synthetic-").startswith("synthetic-")
             or not (state["canonical_college_player_id"] or "synthetic-").startswith("synthetic-")
         ):
             fail(
