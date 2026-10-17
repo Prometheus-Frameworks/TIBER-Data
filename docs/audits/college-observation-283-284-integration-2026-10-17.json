@@ -1,0 +1,149 @@
+{
+  "artifact_type": "bounded_integration_audit",
+  "as_of_date": "2026-10-17",
+  "repository": "Prometheus-Frameworks/TIBER-Data",
+  "task_classes": ["contract", "repository_governance_audit_handoff"],
+  "main_sha": "0d9f82a8d0225602faea4887adf314983ee25a3a",
+  "recommendation": "283_code_ready_hold_for_deployment_isolation_and_operator_approval_then_284",
+  "is_new_independent_code_review": false,
+  "audit_triggered": true,
+  "audit_record_on_separate_branch": true,
+  "prs": {
+    "283": {
+      "head_sha": "d3a2bec2b7d0f69cf9881371caf48e10fbb1f230",
+      "base_ref": "main",
+      "base_sha": "0d9f82a8d0225602faea4887adf314983ee25a3a",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "mergeable": true,
+      "mergeable_state": "clean",
+      "check_run_count": 0,
+      "commit_status_count": 0,
+      "pr_workflow_run_count": 0,
+      "formal_approved_review_count": 0,
+      "inline_review_thread_count": 0,
+      "review": {
+        "reused": true,
+        "status": "completed",
+        "has_any_findings": false,
+        "has_unresolved_findings": false,
+        "commit_sha": "d3a2bec2b7d0f69cf9881371caf48e10fbb1f230",
+        "receipt": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/283#issuecomment-6233812448"
+      },
+      "changed_files": [
+        "src/contracts/college_player_game_observations_v0.py",
+        "tests/test_college_player_game_observations_v0_scope_cycles.py"
+      ],
+      "additions": 199,
+      "deletions": 0,
+      "code_changes_needed": false,
+      "blocking_gates": ["verify_no_production_deployment_path", "final_operator_merge_approval"]
+    },
+    "284": {
+      "head_sha": "e2c41d1e9efd704c175aac3b5120510461a06274",
+      "base_ref": "main",
+      "base_sha": "0d9f82a8d0225602faea4887adf314983ee25a3a",
+      "state": "open",
+      "draft_before_task": false,
+      "draft_after_task": true,
+      "merged": false,
+      "check_run_count": 0,
+      "commit_status_count": 0,
+      "pr_workflow_run_count": 0,
+      "changed_files": ["docs/contracts/college-player-game-observations-v0.md"],
+      "additions": 2,
+      "deletions": 0,
+      "unresolved_findings": [{
+        "severity": "P1",
+        "thread_id": "PRRT_kwDORrftG86sU8Bz",
+        "comment_id": 4271124695,
+        "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/284#discussion_r4271124695",
+        "reason": "documented_enforcement_absent_from_current_parent",
+        "resolved": false
+      }],
+      "post_283_requirements": [
+        "record_actual_283_merge_sha",
+        "bring_merged_main_into_documentation_branch_keep_target_main",
+        "record_new_exact_head_and_base",
+        "verify_remaining_diff_docs_only",
+        "verify_documented_rule_against_merged_validator",
+        "rerun_focused_tests",
+        "independently_review_updated_integration",
+        "reply_to_and_factually_resolve_existing_P1",
+        "restore_ready_after_verification",
+        "verify_deployment_boundary",
+        "obtain_separate_final_operator_merge_approval"
+      ]
+    }
+  },
+  "merge_controls": {
+    "branch_reports_protected": false,
+    "required_status_enforcement": "off",
+    "required_contexts": [],
+    "listed_rulesets": [],
+    "protection_detail_read": "403_integration_administration_access_unavailable",
+    "allowed_methods": ["merge", "squash", "rebase"],
+    "recommended_method": "merge",
+    "repository_auto_merge_enabled": false,
+    "codeowners_found": false,
+    "nested_agents_found": false,
+    "github_actions_workflows_in_tree": 0,
+    "empty_checks_are_passing_ci": false
+  },
+  "validation": {
+    "environment": {"python": "3.12.14", "pytest": "9.1.1", "ruff": "0.17.1", "jsonschema": "4.26.0"},
+    "head_college_tests": {"passed": 93, "failed": 0},
+    "base_college_tests": {"passed": 86, "failed": 0},
+    "head_changed_file_ruff_check": "pass",
+    "head_changed_file_ruff_format_check": "pass",
+    "head_diff_whitespace_check": "pass",
+    "head_historical_context_tests": {"passed": 25, "skipped": 1, "failed": 0},
+    "base_historical_context_tests": {"passed": 25, "skipped": 1, "failed": 0},
+    "representative_rb_bundle_test": {
+      "head": "setup_error",
+      "base": "same_setup_error",
+      "reason": "repository_local_typescript_compiler_absent",
+      "test": "tests/test_rb_contact_evasion_bundle_gate.py::test_reference_bundle_passes"
+    },
+    "earlier_author_reported_full_suite": {
+      "rb_bundle_errors": 292,
+      "historical_context_failures": 1,
+      "reported_identical_base_and_original_patch_failures": true,
+      "independently_reproduced_exact_full_suite_count_this_task": false
+    },
+    "full_suite_run_this_task": false,
+    "full_suite_green_claim": false,
+    "new_independent_review_requested_for_283": false
+  },
+  "railway_read_only_evidence": {
+    "project_id": "03bd21d1-eafa-42e8-af4a-7ccb7340a04f",
+    "environment_id": "9bb58819-c3ed-424e-962a-4d08b6931ad3",
+    "environment_name": "production",
+    "service_id": "093caa5b-155e-48c6-9106-36ff935f2732",
+    "source_repository": "Prometheus-Frameworks/TIBER-Data",
+    "source_branch": "main",
+    "check_suites": false,
+    "staged_changes": null,
+    "watch_patterns_returned": false,
+    "autodeploy_switch_separately_exposed_by_read_api": false,
+    "deployment_suppression_verified": false,
+    "latest_deployment": {
+      "id": "712c58e1-5ecc-468a-a270-75f7621d649e",
+      "status": "SUCCESS",
+      "created_at": "2026-10-06T10:53:00.453Z",
+      "commit_sha": "0d9f82a8d0225602faea4887adf314983ee25a3a",
+      "commit_is_docs_only_274_merge": true
+    },
+    "documentation": "https://docs.railway.com/deployments/github-autodeploys",
+    "inference": "ordinary_main_merge_expected_to_rebuild_deploy_without_separate_verified_suppression"
+  },
+  "older_275_unresolved_repair_threads": [
+    {"thread_id": "PRRT_kwDORrftG86lZk0s", "comment_id": 4088939092, "finding": "expectation_scope"},
+    {"thread_id": "PRRT_kwDORrftG86lZk0u", "comment_id": 4088939097, "finding": "related_observation_cycles"},
+    {"thread_id": "PRRT_kwDORrftG86lZk0y", "comment_id": 4088939101, "finding": "synthetic_attribution_identity"}
+  ],
+  "actions_performed": ["read_only_inspection", "focused_local_validation", "restore_284_draft", "record_paired_integration_audit"],
+  "not_performed": ["merge", "deployment", "hosting_configuration_change", "provider_acquisition", "source_qualification", "private_data_change", "promotion", "downstream_production_activation"],
+  "final_operator_approval_received": false
+}
