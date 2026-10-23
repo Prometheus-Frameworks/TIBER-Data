@@ -1,0 +1,893 @@
+{
+  "task": "TIBER-Data #276 bounded 2026 REG Week 3 candidate",
+  "task_classes": [
+    "data artifact",
+    "provenance validation",
+    "downstream handoff"
+  ],
+  "implementation_commit": "e1e92078c626b9e2e502e927ba0de79afd26f451",
+  "implementation_blobs": {
+    "scripts/intake_weekly_boxscore_v0.py": "2751563ebda92ceddf8800ff6885877d9a4195ab",
+    "scripts/intake_weekly_schedule_v0.py": "c77c6a39a3cdf470d4d2957395983f8504d6537a",
+    "scripts/publish_weekly_boxscore_candidate_v0.py": "a8843ac3fca3cbb46fc8beb97ab6aac0bec5a094",
+    "scripts/build_weekly_boxscore_candidate_v0.py": "f68d031584fe0ed03557e04bd224ef5b6aa5560f"
+  },
+  "source_support_commit": "2b58e2c22ccd2430041afcfbd143b057830878f0",
+  "schedule_support_commit": "2b58e2c22ccd2430041afcfbd143b057830878f0",
+  "source_directory": "data/raw/weekly_boxscore/2026_w03_6e8426cf948791cd5819b9e3ea7a5bb3ee3290370e1133bab7aeb488b093d196",
+  "schedule_directory": "data/raw/weekly_schedule/f3f8613f47dc9568f61506723d819ecac75c5b526de49884dc18d678c69de062",
+  "candidate_path": "exports/candidates/weekly_boxscore/revisions/2026_REG_w03/f3366ac1c2192641c6e94ba7c756ed2e12ba73b37550619ae143deaeab9f9902.json",
+  "candidate_sha256": "f3366ac1c2192641c6e94ba7c756ed2e12ba73b37550619ae143deaeab9f9902",
+  "status": "candidate_needs_review",
+  "consumer_admitted": false,
+  "source_receipt": {
+    "attribution": {
+      "license": "CC BY 4.0",
+      "license_sha256": "2a82ac9bbc3e3ee066908381e8d373896db5a6025d083fbd59692fe9ccfb9111",
+      "license_source_url": "https://raw.githubusercontent.com/nflverse/nflverse-data/master/LICENSE.md",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "name": "nflverse contributors",
+      "notice": "No endorsement implied; candidate, not admitted evidence."
+    },
+    "limitations": [
+      "Separate player/team retrievals are not an atomic upstream snapshot.",
+      "Release clocks are not game finality or pre-cutoff availability witnesses.",
+      "Missing observations are unknown. No source promotion or consumer activation."
+    ],
+    "requested_scope": {
+      "season": 2026,
+      "season_type": "REG",
+      "week": 3
+    },
+    "schema_version": "weekly_boxscore_source_receipt_candidate_v0",
+    "snapshot_compiled_at": "2026-09-30T00:11:12.655072+00:00",
+    "sources": {
+      "player": {
+        "asset_id": 598580930,
+        "byte_count": 1487226,
+        "file": "player.csv",
+        "release_asset_updated_at": "2026-09-29T15:45:48Z",
+        "release_digest_matched": true,
+        "retrieval_completed_at": "2026-09-30T00:11:10.837236+00:00",
+        "retrieval_started_at": "2026-09-30T00:11:10.236605+00:00",
+        "sha256": "c04c03a2aedbca54680f5fd49e8fbee638028036f5dfc3b54992da71b0a056e1",
+        "source_url": "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2026.csv"
+      },
+      "team": {
+        "asset_id": 598581030,
+        "byte_count": 40384,
+        "file": "team.csv",
+        "release_asset_updated_at": "2026-09-29T15:45:51Z",
+        "release_digest_matched": true,
+        "retrieval_completed_at": "2026-09-30T00:11:12.162605+00:00",
+        "retrieval_started_at": "2026-09-30T00:11:11.671958+00:00",
+        "sha256": "8e4ec146327dd4af1ce01b1d10b57182725c9e44a20744ebb33561b454faa42a",
+        "source_url": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2026.csv"
+      }
+    },
+    "status": "unadmitted_candidate_source_snapshot"
+  },
+  "schedule_receipt": {
+    "asset_id": 599446977,
+    "attribution": {
+      "license": "CC BY 4.0",
+      "license_sha256": "2a82ac9bbc3e3ee066908381e8d373896db5a6025d083fbd59692fe9ccfb9111",
+      "license_source_url": "https://raw.githubusercontent.com/nflverse/nflverse-data/master/LICENSE.md",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "name": "nflverse contributors"
+    },
+    "byte_count": 2182348,
+    "limitations": [
+      "Released nflverse schedule; no explicit final-status field.",
+      "Schedule membership and populated scores do not certify game finality. No admission or activation."
+    ],
+    "release_asset_updated_at": "2026-09-29T23:06:28Z",
+    "release_digest_matched": true,
+    "retrieval_completed_at": "2026-09-30T00:11:31.514676+00:00",
+    "retrieval_started_at": "2026-09-30T00:11:31.017341+00:00",
+    "schema_version": "weekly_schedule_source_candidate_v0",
+    "sha256": "f3f8613f47dc9568f61506723d819ecac75c5b526de49884dc18d678c69de062",
+    "source_family": "nflverse/nflverse-data/schedules",
+    "source_support_commit": "2b58e2c22ccd2430041afcfbd143b057830878f0",
+    "source_url": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
+    "status": "unadmitted_schedule_snapshot"
+  },
+  "coverage": {
+    "full_week_final": false,
+    "game_finality": "unknown",
+    "missing_game_ids": [],
+    "observed_game_ids": [
+      "2026_03_ARI_SF",
+      "2026_03_ATL_GB",
+      "2026_03_BAL_DAL",
+      "2026_03_CAR_CLE",
+      "2026_03_CIN_PIT",
+      "2026_03_HOU_IND",
+      "2026_03_KC_MIA",
+      "2026_03_LAC_BUF",
+      "2026_03_LA_DEN",
+      "2026_03_LV_NO",
+      "2026_03_MIN_TB",
+      "2026_03_NE_JAX",
+      "2026_03_NYJ_DET",
+      "2026_03_PHI_CHI",
+      "2026_03_SEA_WAS",
+      "2026_03_TEN_NYG"
+    ],
+    "reason": "Schedule membership only. Scores and elapsed kickoff time do not certify finality.",
+    "schedule_coverage": "matched",
+    "scheduled_game_ids": [
+      "2026_03_ARI_SF",
+      "2026_03_ATL_GB",
+      "2026_03_BAL_DAL",
+      "2026_03_CAR_CLE",
+      "2026_03_CIN_PIT",
+      "2026_03_HOU_IND",
+      "2026_03_KC_MIA",
+      "2026_03_LAC_BUF",
+      "2026_03_LA_DEN",
+      "2026_03_LV_NO",
+      "2026_03_MIN_TB",
+      "2026_03_NE_JAX",
+      "2026_03_NYJ_DET",
+      "2026_03_PHI_CHI",
+      "2026_03_SEA_WAS",
+      "2026_03_TEN_NYG"
+    ],
+    "unexpected_game_ids": []
+  },
+  "source_population": {
+    "excluded_out_of_scope_rows": {
+      "player": 2225,
+      "team": 64
+    },
+    "full_week_completeness": "unverified",
+    "game_count": 16,
+    "game_finality": "unverified",
+    "game_ids": [
+      "2026_03_ARI_SF",
+      "2026_03_ATL_GB",
+      "2026_03_BAL_DAL",
+      "2026_03_CAR_CLE",
+      "2026_03_CIN_PIT",
+      "2026_03_HOU_IND",
+      "2026_03_KC_MIA",
+      "2026_03_LAC_BUF",
+      "2026_03_LA_DEN",
+      "2026_03_LV_NO",
+      "2026_03_MIN_TB",
+      "2026_03_NE_JAX",
+      "2026_03_NYJ_DET",
+      "2026_03_PHI_CHI",
+      "2026_03_SEA_WAS",
+      "2026_03_TEN_NYG"
+    ],
+    "player_rows": 1113,
+    "player_universe": "all identity-resolved source rows in scope; unattributed rows separate; not an active-roster or participation census",
+    "positions": {
+      "C": 12,
+      "CB": 114,
+      "DB": 22,
+      "DE": 80,
+      "DL": 5,
+      "DT": 98,
+      "FB": 5,
+      "FS": 5,
+      "G": 20,
+      "ILB": 3,
+      "K": 32,
+      "LB": 178,
+      "LS": 4,
+      "MLB": 4,
+      "NT": 3,
+      "OLB": 8,
+      "OT": 26,
+      "P": 32,
+      "QB": 36,
+      "RB": 90,
+      "S": 4,
+      "SAF": 96,
+      "TE": 82,
+      "WR": 154
+    },
+    "source_player_rows_in_scope": 1114,
+    "team_rows": 32,
+    "unattributed_player_rows": 1
+  },
+  "validation": {
+    "duplicate_keys": 0,
+    "independent_review": "pending",
+    "metric_conflicts": [
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_ARI_SF",
+        "player_sum": 322,
+        "status": "conflict",
+        "team": "ARI",
+        "team_value": 318
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_ARI_SF",
+        "player_sum": 281,
+        "status": "conflict",
+        "team": "SF",
+        "team_value": 294
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_ATL_GB",
+        "player_sum": 162,
+        "status": "conflict",
+        "team": "ATL",
+        "team_value": 149
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_ATL_GB",
+        "player_sum": 406,
+        "status": "conflict",
+        "team": "GB",
+        "team_value": 392
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_CAR_CLE",
+        "player_sum": 407,
+        "status": "conflict",
+        "team": "CAR",
+        "team_value": 443
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_CAR_CLE",
+        "player_sum": 162,
+        "status": "conflict",
+        "team": "CLE",
+        "team_value": 172
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_CIN_PIT",
+        "player_sum": 314,
+        "status": "conflict",
+        "team": "PIT",
+        "team_value": 393
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_HOU_IND",
+        "player_sum": 278,
+        "status": "conflict",
+        "team": "HOU",
+        "team_value": 335
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_HOU_IND",
+        "player_sum": 276,
+        "status": "conflict",
+        "team": "IND",
+        "team_value": 281
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_KC_MIA",
+        "player_sum": 379,
+        "status": "conflict",
+        "team": "MIA",
+        "team_value": 393
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_LA_DEN",
+        "player_sum": 190,
+        "status": "conflict",
+        "team": "DEN",
+        "team_value": 185
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_LA_DEN",
+        "player_sum": 518,
+        "status": "conflict",
+        "team": "LA",
+        "team_value": 509
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_LV_NO",
+        "player_sum": 264,
+        "status": "conflict",
+        "team": "LV",
+        "team_value": 273
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_LV_NO",
+        "player_sum": 308,
+        "status": "conflict",
+        "team": "NO",
+        "team_value": 311
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_MIN_TB",
+        "player_sum": 232,
+        "status": "conflict",
+        "team": "MIN",
+        "team_value": 252
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_MIN_TB",
+        "player_sum": 336,
+        "status": "conflict",
+        "team": "TB",
+        "team_value": 394
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_NE_JAX",
+        "player_sum": 168,
+        "status": "conflict",
+        "team": "JAX",
+        "team_value": 180
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_NE_JAX",
+        "player_sum": 347,
+        "status": "conflict",
+        "team": "NE",
+        "team_value": 362
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_NYJ_DET",
+        "player_sum": 189,
+        "status": "conflict",
+        "team": "DET",
+        "team_value": 193
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_NYJ_DET",
+        "player_sum": 267,
+        "status": "conflict",
+        "team": "NYJ",
+        "team_value": 322
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_PHI_CHI",
+        "player_sum": 159,
+        "status": "conflict",
+        "team": "PHI",
+        "team_value": 155
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_SEA_WAS",
+        "player_sum": 241,
+        "status": "conflict",
+        "team": "WAS",
+        "team_value": 248
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_TEN_NYG",
+        "player_sum": 119,
+        "status": "conflict",
+        "team": "NYG",
+        "team_value": 136
+      },
+      {
+        "field": "receiving_air_yards",
+        "game_id": "2026_03_TEN_NYG",
+        "player_sum": 227,
+        "status": "conflict",
+        "team": "TEN",
+        "team_value": 228
+      }
+    ],
+    "missing_columns": {
+      "player": [],
+      "team": []
+    },
+    "null_values": {
+      "player": {
+        "attempts": 0,
+        "carries": 0,
+        "completions": 0,
+        "fumbles_lost_total": 0,
+        "passing_2pt_conversions": 0,
+        "passing_first_downs": 0,
+        "passing_interceptions": 0,
+        "passing_tds": 0,
+        "passing_yards": 0,
+        "receiving_2pt_conversions": 0,
+        "receiving_air_yards": 0,
+        "receiving_first_downs": 0,
+        "receiving_fumbles_lost": 0,
+        "receiving_tds": 0,
+        "receiving_yards": 0,
+        "receiving_yards_after_catch": 0,
+        "receptions": 0,
+        "rushing_2pt_conversions": 0,
+        "rushing_first_downs": 0,
+        "rushing_fumbles_lost": 0,
+        "rushing_tds": 0,
+        "rushing_yards": 0,
+        "sack_fumbles_lost": 0,
+        "sacks_suffered": 0,
+        "targets": 0
+      },
+      "team": {
+        "attempts": 0,
+        "carries": 0,
+        "completions": 0,
+        "fumbles_lost_total": 0,
+        "passing_2pt_conversions": 0,
+        "passing_first_downs": 0,
+        "passing_interceptions": 0,
+        "passing_tds": 0,
+        "passing_yards": 0,
+        "receiving_2pt_conversions": 0,
+        "receiving_air_yards": 0,
+        "receiving_first_downs": 0,
+        "receiving_fumbles_lost": 0,
+        "receiving_tds": 0,
+        "receiving_yards": 0,
+        "receiving_yards_after_catch": 0,
+        "receptions": 0,
+        "rushing_2pt_conversions": 0,
+        "rushing_first_downs": 0,
+        "rushing_fumbles_lost": 0,
+        "rushing_tds": 0,
+        "rushing_yards": 0,
+        "sack_fumbles_lost": 0,
+        "sacks_suffered": 0,
+        "targets": 0
+      }
+    },
+    "opponent_pairs": "matched",
+    "source_hashes": "matched"
+  },
+  "unattributed_source_observations": [
+    {
+      "identity": {
+        "game_id": "2026_03_ATL_GB",
+        "opponent_team": "GB",
+        "season": "2026",
+        "season_type": "REG",
+        "team": "ATL",
+        "week": "3"
+      },
+      "observed": {
+        "attempts": 0,
+        "carries": 0,
+        "completions": 0,
+        "fumbles_lost_total": 0,
+        "passing_2pt_conversions": 0,
+        "passing_first_downs": 0,
+        "passing_interceptions": 0,
+        "passing_tds": 0,
+        "passing_yards": 0,
+        "receiving_2pt_conversions": 0,
+        "receiving_air_yards": 0,
+        "receiving_first_downs": 0,
+        "receiving_fumbles_lost": 0,
+        "receiving_tds": 0,
+        "receiving_yards": 0,
+        "receiving_yards_after_catch": 0,
+        "receptions": 0,
+        "rushing_2pt_conversions": 0,
+        "rushing_first_downs": 0,
+        "rushing_fumbles_lost": 0,
+        "rushing_tds": 0,
+        "rushing_yards": 0,
+        "sack_fumbles_lost": 0,
+        "sacks_suffered": 0,
+        "targets": 0
+      },
+      "raw_player_id": "",
+      "reason": "unresolved_source_player_id",
+      "source": "nflverse_stats_player",
+      "source_csv_row": 3340
+    }
+  ],
+  "six_player_source_id_coverage": [
+    {
+      "source_namespace": "nflverse_stats_player/player_id",
+      "identity": {
+        "game_id": "2026_03_HOU_IND",
+        "opponent_team": "HOU",
+        "player_id": "00-0038997",
+        "player_name": "Josh Downs",
+        "position": "WR",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "IND",
+        "week": 3
+      },
+      "source_csv_row": 2880,
+      "observed": {
+        "attempts": 0,
+        "carries": 0,
+        "completions": 0,
+        "fumbles_lost_total": 0,
+        "passing_2pt_conversions": 0,
+        "passing_first_downs": 0,
+        "passing_interceptions": 0,
+        "passing_tds": 0,
+        "passing_yards": 0,
+        "receiving_2pt_conversions": 0,
+        "receiving_air_yards": 172,
+        "receiving_first_downs": 4,
+        "receiving_fumbles_lost": 0,
+        "receiving_tds": 0,
+        "receiving_yards": 77,
+        "receiving_yards_after_catch": 25,
+        "receptions": 5,
+        "rushing_2pt_conversions": 0,
+        "rushing_first_downs": 0,
+        "rushing_fumbles_lost": 0,
+        "rushing_tds": 0,
+        "rushing_yards": 0,
+        "sack_fumbles_lost": 0,
+        "sacks_suffered": 0,
+        "targets": 11
+      },
+      "derived": {
+        "carries_plus_targets": 11,
+        "carry_share_all_team_carries": {
+          "denominator": 31,
+          "numerator": 0,
+          "reason": null,
+          "status": "available",
+          "value": 0.0
+        },
+        "target_share_credited_team_targets": {
+          "denominator": 35,
+          "numerator": 11,
+          "reason": null,
+          "status": "available",
+          "value": 0.3142857142857143
+        }
+      }
+    },
+    {
+      "source_namespace": "nflverse_stats_player/player_id",
+      "identity": {
+        "game_id": "2026_03_NYJ_DET",
+        "opponent_team": "DET",
+        "player_id": "00-0039794",
+        "player_name": "Braelon Allen",
+        "position": "RB",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "NYJ",
+        "week": 3
+      },
+      "source_csv_row": 3004,
+      "observed": {
+        "attempts": 0,
+        "carries": 4,
+        "completions": 0,
+        "fumbles_lost_total": 0,
+        "passing_2pt_conversions": 0,
+        "passing_first_downs": 0,
+        "passing_interceptions": 0,
+        "passing_tds": 0,
+        "passing_yards": 0,
+        "receiving_2pt_conversions": 0,
+        "receiving_air_yards": -5,
+        "receiving_first_downs": 0,
+        "receiving_fumbles_lost": 0,
+        "receiving_tds": 0,
+        "receiving_yards": 3,
+        "receiving_yards_after_catch": 8,
+        "receptions": 3,
+        "rushing_2pt_conversions": 0,
+        "rushing_first_downs": 0,
+        "rushing_fumbles_lost": 0,
+        "rushing_tds": 0,
+        "rushing_yards": 14,
+        "sack_fumbles_lost": 0,
+        "sacks_suffered": 0,
+        "targets": 3
+      },
+      "derived": {
+        "carries_plus_targets": 7,
+        "carry_share_all_team_carries": {
+          "denominator": 19,
+          "numerator": 4,
+          "reason": null,
+          "status": "available",
+          "value": 0.21052631578947367
+        },
+        "target_share_credited_team_targets": {
+          "denominator": 36,
+          "numerator": 3,
+          "reason": null,
+          "status": "available",
+          "value": 0.08333333333333333
+        }
+      }
+    },
+    {
+      "source_namespace": "nflverse_stats_player/player_id",
+      "identity": {
+        "game_id": "2026_03_CIN_PIT",
+        "opponent_team": "CIN",
+        "player_id": "00-0035640",
+        "player_name": "DK Metcalf",
+        "position": "WR",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "PIT",
+        "week": 3
+      },
+      "source_csv_row": 2475,
+      "observed": {
+        "attempts": 0,
+        "carries": 0,
+        "completions": 0,
+        "fumbles_lost_total": 0,
+        "passing_2pt_conversions": 0,
+        "passing_first_downs": 0,
+        "passing_interceptions": 0,
+        "passing_tds": 0,
+        "passing_yards": 0,
+        "receiving_2pt_conversions": 0,
+        "receiving_air_yards": 73,
+        "receiving_first_downs": 3,
+        "receiving_fumbles_lost": 0,
+        "receiving_tds": 1,
+        "receiving_yards": 31,
+        "receiving_yards_after_catch": 8,
+        "receptions": 3,
+        "rushing_2pt_conversions": 0,
+        "rushing_first_downs": 0,
+        "rushing_fumbles_lost": 0,
+        "rushing_tds": 0,
+        "rushing_yards": 0,
+        "sack_fumbles_lost": 0,
+        "sacks_suffered": 0,
+        "targets": 5
+      },
+      "derived": {
+        "carries_plus_targets": 5,
+        "carry_share_all_team_carries": {
+          "denominator": 23,
+          "numerator": 0,
+          "reason": null,
+          "status": "available",
+          "value": 0.0
+        },
+        "target_share_credited_team_targets": {
+          "denominator": 31,
+          "numerator": 5,
+          "reason": null,
+          "status": "available",
+          "value": 0.16129032258064516
+        }
+      }
+    },
+    {
+      "source_namespace": "nflverse_stats_player/player_id",
+      "identity": {
+        "game_id": "2026_03_CIN_PIT",
+        "opponent_team": "PIT",
+        "player_id": "00-0038597",
+        "player_name": "Chase Brown",
+        "position": "RB",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "CIN",
+        "week": 3
+      },
+      "source_csv_row": 2843,
+      "observed": {
+        "attempts": 0,
+        "carries": 13,
+        "completions": 0,
+        "fumbles_lost_total": 0,
+        "passing_2pt_conversions": 0,
+        "passing_first_downs": 0,
+        "passing_interceptions": 0,
+        "passing_tds": 0,
+        "passing_yards": 0,
+        "receiving_2pt_conversions": 0,
+        "receiving_air_yards": -1,
+        "receiving_first_downs": 1,
+        "receiving_fumbles_lost": 0,
+        "receiving_tds": 0,
+        "receiving_yards": 8,
+        "receiving_yards_after_catch": 9,
+        "receptions": 2,
+        "rushing_2pt_conversions": 0,
+        "rushing_first_downs": 3,
+        "rushing_fumbles_lost": 0,
+        "rushing_tds": 0,
+        "rushing_yards": 61,
+        "sack_fumbles_lost": 0,
+        "sacks_suffered": 0,
+        "targets": 2
+      },
+      "derived": {
+        "carries_plus_targets": 15,
+        "carry_share_all_team_carries": {
+          "denominator": 18,
+          "numerator": 13,
+          "reason": null,
+          "status": "available",
+          "value": 0.7222222222222222
+        },
+        "target_share_credited_team_targets": {
+          "denominator": 37,
+          "numerator": 2,
+          "reason": null,
+          "status": "available",
+          "value": 0.05405405405405406
+        }
+      }
+    },
+    {
+      "source_namespace": "nflverse_stats_player/player_id",
+      "identity": {
+        "game_id": "2026_03_LAC_BUF",
+        "opponent_team": "BUF",
+        "player_id": "00-0040727",
+        "player_name": "Tre Harris",
+        "position": "WR",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "LAC",
+        "week": 3
+      },
+      "source_csv_row": 3202,
+      "observed": {
+        "attempts": 0,
+        "carries": 0,
+        "completions": 0,
+        "fumbles_lost_total": 0,
+        "passing_2pt_conversions": 0,
+        "passing_first_downs": 0,
+        "passing_interceptions": 0,
+        "passing_tds": 0,
+        "passing_yards": 0,
+        "receiving_2pt_conversions": 0,
+        "receiving_air_yards": 59,
+        "receiving_first_downs": 3,
+        "receiving_fumbles_lost": 0,
+        "receiving_tds": 0,
+        "receiving_yards": 76,
+        "receiving_yards_after_catch": 30,
+        "receptions": 6,
+        "rushing_2pt_conversions": 0,
+        "rushing_first_downs": 0,
+        "rushing_fumbles_lost": 0,
+        "rushing_tds": 0,
+        "rushing_yards": 0,
+        "sack_fumbles_lost": 0,
+        "sacks_suffered": 0,
+        "targets": 7
+      },
+      "derived": {
+        "carries_plus_targets": 7,
+        "carry_share_all_team_carries": {
+          "denominator": 28,
+          "numerator": 0,
+          "reason": null,
+          "status": "available",
+          "value": 0.0
+        },
+        "target_share_credited_team_targets": {
+          "denominator": 33,
+          "numerator": 7,
+          "reason": null,
+          "status": "available",
+          "value": 0.21212121212121213
+        }
+      }
+    },
+    {
+      "source_namespace": "nflverse_stats_player/player_id",
+      "identity": {
+        "game_id": "2026_03_PHI_CHI",
+        "opponent_team": "PHI",
+        "player_id": "00-0032464",
+        "player_name": "Kalif Raymond",
+        "position": "WR",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "CHI",
+        "week": 3
+      },
+      "source_csv_row": 2286,
+      "observed": {
+        "attempts": 0,
+        "carries": 0,
+        "completions": 0,
+        "fumbles_lost_total": 0,
+        "passing_2pt_conversions": 0,
+        "passing_first_downs": 0,
+        "passing_interceptions": 0,
+        "passing_tds": 0,
+        "passing_yards": 0,
+        "receiving_2pt_conversions": 0,
+        "receiving_air_yards": 58,
+        "receiving_first_downs": 4,
+        "receiving_fumbles_lost": 0,
+        "receiving_tds": 1,
+        "receiving_yards": 90,
+        "receiving_yards_after_catch": 41,
+        "receptions": 6,
+        "rushing_2pt_conversions": 0,
+        "rushing_first_downs": 0,
+        "rushing_fumbles_lost": 0,
+        "rushing_tds": 0,
+        "rushing_yards": 0,
+        "sack_fumbles_lost": 0,
+        "sacks_suffered": 0,
+        "targets": 7
+      },
+      "derived": {
+        "carries_plus_targets": 7,
+        "carry_share_all_team_carries": {
+          "denominator": 35,
+          "numerator": 0,
+          "reason": null,
+          "status": "available",
+          "value": 0.0
+        },
+        "target_share_credited_team_targets": {
+          "denominator": 34,
+          "numerator": 7,
+          "reason": null,
+          "status": "available",
+          "value": 0.20588235294117646
+        }
+      }
+    }
+  ],
+  "checks": {
+    "focused_publication_tests": {
+      "passed": 22,
+      "runner": "python -m unittest discover -s tests -p test_weekly_publication_v0.py -q"
+    },
+    "focused_boxscore_tests": {
+      "passed": 18,
+      "runner": "python -m unittest discover -s tests -p test_weekly_boxscore_candidate_v0.py -q"
+    },
+    "committed_support_deterministic_replay": "byte_equal",
+    "candidate_digest": "matched",
+    "repeat_publication": "unchanged",
+    "terminal_flags": "matched",
+    "raw_receipt_validation": "passed"
+  },
+  "independent_review": "pending request after stable PR head",
+  "limitations": [
+    "Candidate only; no source admission or consumer activation.",
+    "Schedule membership is not finality; game_finality unknown, full_week_final false.",
+    "24 receiving_air_yards conflicts retained; excluded from downstream use under #273 policy.",
+    "One unattributed ATL source row retained separately; source IDs are not canonical/Sleeper admissions.",
+    "Missing required columns: none; observed supported metric null counts: zero. Unsupported fields remain unavailable.",
+    "Weekly rows do not establish Braelon Allen post-Hall snaps or routes.",
+    "No ROP/TTS/Research execution, merge, deployment, scheduler or production change.",
+    "pytest is unavailable; existing unittest suites ran directly. Full repository suite not run.",
+    "Default sandbox networking denied requests; approved require_escalated mode passed without network setting changes or source substitution."
+  ],
+  "publication_transport": {
+    "cli_push": "failed: HTTPS credentials unavailable",
+    "method": "authenticated GitHub connection Git objects",
+    "published_support_tree": "7f30f33a02b0fdc6598bb3c01b83433371b3d485",
+    "tree_comparison": "identical to local validated support tree",
+    "preserved_local_support_commit": "4a5ebfda26e038d84c86841cf2cf9e04d9583f1f",
+    "preserved_local_candidate_commit": "4dabf7652167663cffe40401530fbffa31bcc6cf",
+    "preserved_local_candidate_sha256": "ad70513a063e51df832830dc0f15a5971204eae0007c4d225982b6c3f502c160",
+    "published_candidate_rebuilt_against_remote_support": "2b58e2c22ccd2430041afcfbd143b057830878f0"
+  }
+}

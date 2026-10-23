@@ -1,0 +1,47 @@
+{
+  "schema_version": "weekly_boxscore_source_receipt_candidate_v0",
+  "status": "unadmitted_candidate_source_snapshot",
+  "requested_scope": {
+    "season": 2026,
+    "season_type": "REG",
+    "week": 3
+  },
+  "snapshot_compiled_at": "2026-09-30T00:11:12.655072+00:00",
+  "sources": {
+    "player": {
+      "file": "player.csv",
+      "source_url": "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2026.csv",
+      "asset_id": 598580930,
+      "release_asset_updated_at": "2026-09-29T15:45:48Z",
+      "retrieval_started_at": "2026-09-30T00:11:10.236605+00:00",
+      "retrieval_completed_at": "2026-09-30T00:11:10.837236+00:00",
+      "sha256": "c04c03a2aedbca54680f5fd49e8fbee638028036f5dfc3b54992da71b0a056e1",
+      "byte_count": 1487226,
+      "release_digest_matched": true
+    },
+    "team": {
+      "file": "team.csv",
+      "source_url": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2026.csv",
+      "asset_id": 598581030,
+      "release_asset_updated_at": "2026-09-29T15:45:51Z",
+      "retrieval_started_at": "2026-09-30T00:11:11.671958+00:00",
+      "retrieval_completed_at": "2026-09-30T00:11:12.162605+00:00",
+      "sha256": "8e4ec146327dd4af1ce01b1d10b57182725c9e44a20744ebb33561b454faa42a",
+      "byte_count": 40384,
+      "release_digest_matched": true
+    }
+  },
+  "attribution": {
+    "name": "nflverse contributors",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "license_source_url": "https://raw.githubusercontent.com/nflverse/nflverse-data/master/LICENSE.md",
+    "license_sha256": "2a82ac9bbc3e3ee066908381e8d373896db5a6025d083fbd59692fe9ccfb9111",
+    "notice": "No endorsement implied; candidate, not admitted evidence."
+  },
+  "limitations": [
+    "Separate player/team retrievals are not an atomic upstream snapshot.",
+    "Release clocks are not game finality or pre-cutoff availability witnesses.",
+    "Missing observations are unknown. No source promotion or consumer activation."
+  ]
+}
