@@ -1,0 +1,232 @@
+{
+  "schema_version": "week4_bounded_downstream_preparation_v1",
+  "status": "blocked_pending_data_review_and_week4_producer_bindings",
+  "scope": {
+    "season": 2026,
+    "season_type": "REG",
+    "week": 4
+  },
+  "candidate_sha256": "307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9",
+  "candidate_path": "exports/candidates/weekly_boxscore/revisions/2026_REG_w04/307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9.json",
+  "source_support_commit": "0f99ff5a2293044c41d5de3c2601c02baa6e9daf",
+  "producer_starting_points": {
+    "ROP": {
+      "pr": 30,
+      "head": "cdb1ae5fbcf364fa383d540ec531f16ac6181d83",
+      "review": "clean_synthetic_only",
+      "week4_binding_head": null
+    },
+    "TTS": {
+      "pr": 96,
+      "head": "9153a7f66f0f502405bb7ae6115a2c68295296f3",
+      "review": "clean_synthetic_only",
+      "week4_binding_head": null
+    }
+  },
+  "player_scope": "Initial persisted board shortlist only; browser-local manual edits are not visible to this preparation. Confirm selected IDs in final run proposal.",
+  "shortlist_identity_proposals": [
+    {
+      "sleeper_player_id": "11435",
+      "name": "Emanuel Wilson",
+      "position": "RB",
+      "team": "SEA",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_LAC_SEA",
+        "opponent_team": "LAC",
+        "player_id": "00-0038797",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "SEA",
+        "week": 4,
+        "player_name": "Emanuel Wilson",
+        "position": "RB"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "11577",
+      "name": "Will Shipley",
+      "position": "RB",
+      "team": "PHI",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_LA_PHI",
+        "opponent_team": "LA",
+        "player_id": "00-0039746",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "PHI",
+        "week": 4,
+        "player_name": "Will Shipley",
+        "position": "RB"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "13298",
+      "name": "KC Concepcion",
+      "position": "WR",
+      "team": "CLE",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_PIT_CLE",
+        "opponent_team": "PIT",
+        "player_id": "00-0041547",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "CLE",
+        "week": 4,
+        "player_name": "KC Concepcion",
+        "position": "WR"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "11637",
+      "name": "Keon Coleman",
+      "position": "WR",
+      "team": "BUF",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_NE_BUF",
+        "opponent_team": "NE",
+        "player_id": "00-0039901",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "BUF",
+        "week": 4,
+        "player_name": "Keon Coleman",
+        "position": "WR"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "13264",
+      "name": "Dohnte Meyers",
+      "position": "WR",
+      "team": "CIN",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_JAX_CIN",
+        "opponent_team": "JAX",
+        "player_id": "00-0040785",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "CIN",
+        "week": 4,
+        "player_name": "Dohnte Meyers",
+        "position": "WR"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "12509",
+      "name": "Tre' Harris",
+      "position": "WR",
+      "team": "LAC",
+      "status": "proposed_alias_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_LAC_SEA",
+        "opponent_team": "SEA",
+        "player_id": "00-0040727",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "LAC",
+        "week": 4,
+        "player_name": "Tre Harris",
+        "position": "WR"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "1166",
+      "name": "Kirk Cousins",
+      "position": "QB",
+      "team": "LV",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_KC_LV",
+        "opponent_team": "KC",
+        "player_id": "00-0029604",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "LV",
+        "week": 4,
+        "player_name": "Kirk Cousins",
+        "position": "QB"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "4993",
+      "name": "Mike Gesicki",
+      "position": "TE",
+      "team": "CIN",
+      "status": "proposed_unique_name_team_position_match_needs_identity_verification",
+      "source_identity": {
+        "game_id": "2026_04_JAX_CIN",
+        "opponent_team": "JAX",
+        "player_id": "00-0034829",
+        "season": 2026,
+        "season_type": "REG",
+        "team": "CIN",
+        "week": 4,
+        "player_name": "Mike Gesicki",
+        "position": "TE"
+      },
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "9753",
+      "name": "Zach Charbonnet",
+      "position": "RB",
+      "team": "SEA",
+      "status": "missing_source_observation_unknown_not_zero",
+      "source_identity": null,
+      "canonical_identity_admitted": false
+    },
+    {
+      "sleeper_player_id": "CIN",
+      "name": "Bengals",
+      "status": "team_context_only_not_player_ROP",
+      "team": "CIN"
+    },
+    {
+      "sleeper_player_id": "CLE",
+      "name": "Browns",
+      "status": "team_context_only_not_player_ROP",
+      "team": "CLE"
+    }
+  ],
+  "rop_supported_fields": [
+    "carries",
+    "targets",
+    "all_team_carries_denominator",
+    "credited_team_targets_denominator"
+  ],
+  "team_context": "Existing ten-field descriptive TTS contract only; complete 32-team support retained, final field eligibility checked by separately prepared binding.",
+  "excluded": [
+    "receiving_air_yards",
+    "routes",
+    "route_participation",
+    "snaps",
+    "first_reads",
+    "inside_five_work",
+    "injury_inference",
+    "rankings",
+    "forecasts"
+  ],
+  "remaining_gates": [
+    "independent exact-byte Data candidate qualification",
+    "closed Week4 producer binding preparation and synthetic regression checks",
+    "independent final-head producer review",
+    "operator exact-source and bounded-purpose acceptance",
+    "separate reviewed bounded execution decision",
+    "verified Sleeper/native identity linkage before waiver-card display"
+  ],
+  "source_admitted": false,
+  "purpose_accepted": false,
+  "real_input_ROP_or_TTS_executed": false,
+  "site_updated": false
+}

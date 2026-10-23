@@ -1,0 +1,20 @@
+{
+  "schema_version": "weekly_candidate_build_witness_v1",
+  "kind": "new_candidate_materialization",
+  "scope": {
+    "season": 2026,
+    "season_type": "REG",
+    "week": 4
+  },
+  "build_started_at": "2026-10-06T11:14:16.662964+00:00",
+  "build_completed_at": "2026-10-06T11:14:16.885624+00:00",
+  "source_support_commit": "0f99ff5a2293044c41d5de3c2601c02baa6e9daf",
+  "schedule_support_commit": "0f99ff5a2293044c41d5de3c2601c02baa6e9daf",
+  "producer_code_commit": "0d9f82a8d0225602faea4887adf314983ee25a3a",
+  "candidate_path": "exports/candidates/weekly_boxscore/revisions/2026_REG_w04/307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9.json",
+  "candidate_sha256": "307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9",
+  "status": "candidate_needs_review",
+  "consumer_admitted": false,
+  "independent_review": null,
+  "purpose_acceptance": null
+}
