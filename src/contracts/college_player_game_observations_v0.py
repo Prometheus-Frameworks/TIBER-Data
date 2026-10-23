@@ -134,6 +134,32 @@ def validate(envelope: Any) -> list[Finding]:
             "Expected games require independent evidence; unknown requires none.",
         )
     if expected is not None:
+        # Non-null season/game scope components bind expectation evidence to
+        # the games it can establish; unrelated-game evidence supports nothing.
+        def admits(ref: str, item: dict) -> bool:
+            bound = evidence[ref]["scope"]
+            return all(
+                bound[k] is None or bound[k] == item[k] for k in ("season", "source_game_id")
+            )
+
+        scoped = [r for r in scope["expectation_evidence_refs"] if r in evidence]
+        for ref in scoped:
+            if (expected or evidence[ref]["scope"]["source_game_id"] is not None) and not any(
+                admits(ref, item) for item in expected
+            ):
+                fail(
+                    "EVIDENCE_SCOPE",
+                    "/coverage/game_scope",
+                    f"Expectation evidence is scoped outside the expected games: {ref}",
+                )
+        for item in expected:
+            if scoped and not any(admits(ref, item) for ref in scoped):
+                fail(
+                    "GAME_EXPECTATION",
+                    "/coverage/game_scope",
+                    f"No expectation evidence in scope for {item['season']}/"
+                    f"{item['source_game_id']}.",
+                )
         expected_keys = {game_key(item) for item in expected}
         if len(expected_keys) != len(expected):
             fail("GAME_EXPECTATION", "/coverage", "Duplicate season/game expectation key.")
@@ -399,6 +425,21 @@ def validate(envelope: Any) -> list[Finding]:
         if attempts is not None and completions is not None and completions > attempts:
             fail("PASS_COUNTS", path, "Completions exceed attempts.")
 
+    # Every related-assertion chain must terminate at a retained initial row;
+    # a self-link or cycle has no traceable first assertion.
+    for i, row in enumerate(rows):
+        seen = {row["observation_id"]}
+        node = row["source_relationship"]["related_observation_id"]
+        while node in ids and node not in seen:
+            seen.add(node)
+            node = ids[node]["source_relationship"]["related_observation_id"]
+        if node in seen:
+            fail(
+                "LINEAGE_CYCLE",
+                f"/observations/{i}/source_relationship",
+                "Source relationship chain is self-referential or cyclic.",
+            )
+
     for i, row in enumerate(rows):
         parent = row["supersedes"]
         relation = row["source_relationship"]
@@ -524,6 +565,17 @@ def _validate_attributions_and_aliases(envelope, ids, logical_key, evidence, fai
         state = event["state"]
         if state["source_player_id"] != ids[oid]["identity"]["source_player_id"]:
             fail("ATTRIBUTION_SOURCE", path, "TIBER attribution cannot change source player ID.")
+        if envelope["evidence_mode"] == "synthetic_fixture" and (
+            not (state["name"] or "").startswith("SYNTHETIC ")
+            or not eid.startswith("synthetic-")
+            or not (event["supersedes_attribution_id"] or "synthetic-").startswith("synthetic-")
+            or not (state["canonical_college_player_id"] or "synthetic-").startswith("synthetic-")
+        ):
+            fail(
+                "SYNTHETIC_IDENTITY",
+                path + "/state",
+                "Fixture attribution names and IDs must stay unmistakably synthetic.",
+            )
         references(state["evidence_refs"], path, "identity", as_known=event_time, row=ids[oid])
     ordered = sorted(
         enumerate(envelope["attributions"]), key=lambda pair: _instant(pair[1]["recorded_at"])
