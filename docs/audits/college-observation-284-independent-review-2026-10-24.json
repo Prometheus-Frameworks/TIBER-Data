@@ -1,0 +1,168 @@
+{
+  "schema_version": "tiber.pr-integration-review.v1",
+  "date": "2026-10-24",
+  "task": "Independent review and readiness handoff for TIBER-Data PR #284",
+  "task_classes": [
+    "contract review",
+    "provenance/source audit handoff"
+  ],
+  "repository": "Prometheus-Frameworks/TIBER-Data",
+  "documentation_pr": 284,
+  "documentation_head": "2d55c4906ea226cae41ce867f58bbf08deeede16",
+  "base_and_merge_base": "f9eaed14ac1c77bfea5ba70f670df2e6578822fc",
+  "implementation_pr": 283,
+  "implementation_reviewed_head": "d3a2bec2b7d0f69cf9881371caf48e10fbb1f230",
+  "implementation_merged": true,
+  "implementation_merge_commit": "f9eaed14ac1c77bfea5ba70f670df2e6578822fc",
+  "remaining_diff": [
+    {
+      "path": "docs/contracts/college-player-game-observations-v0.md",
+      "additions": 2,
+      "deletions": 0
+    }
+  ],
+  "independent_review": {
+    "reviewer": "chatgpt-codex-connector[bot]",
+    "trigger_url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/284#issuecomment-6385681190",
+    "receipt_url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/284#issuecomment-6385702544",
+    "summary_url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/284#issuecomment-6168979750",
+    "commit_sha": "2d55c4906ea226cae41ce867f58bbf08deeede16",
+    "status": "completed",
+    "has_any_findings": false,
+    "has_unresolved_findings": false,
+    "completed_at": "2026-10-24T14:57:59.706293Z",
+    "limits": "Bot no-findings receipt, not a formal GitHub APPROVED review or operator merge approval; no claim that the reviewer ran our local validation."
+  },
+  "semantic_check": {
+    "result": "Documented per-game expectation evidence rule is enforced by merged main.",
+    "validator_path": "src/contracts/college_player_game_observations_v0.py",
+    "validator_blob": "292a32d2c7147b916ae5d6951a049581ff3793b4",
+    "behavior": "Non-null season/source_game_id components must match; each expected game needs an admitting expectation ref. Missing, invalid-kind and provider-mismatched refs also fail existing validation gates.",
+    "unsupported_claims_found": false,
+    "scope": "Contract validity only, not source authenticity, provider qualification, real-data coverage, promotion or activation."
+  },
+  "local_validation": {
+    "snapshot": "13 retrieved files verified against exact-head Git blob IDs before and after checks; focused file snapshot, not a full repository checkout.",
+    "python": "3.12.14",
+    "pytest": "9.1.1",
+    "jsonschema": "4.26.0",
+    "ruff": "0.17.2",
+    "test_command": "python -m pytest -q tests/test_college_player_game_observations_v0*.py",
+    "test_result": {
+      "passed": 93,
+      "failed": 0,
+      "duration_seconds": 3.6
+    },
+    "ruff_check": "passed",
+    "ruff_format_check": "passed",
+    "ruff_files": [
+      "src/contracts/college_player_game_observations_v0.py",
+      "tests/test_college_player_game_observations_v0_scope_cycles.py"
+    ],
+    "regressions": [
+      "test_expectation_evidence_binds_to_declared_game_scope",
+      "test_season_scoped_expectation_evidence_covers_its_season"
+    ],
+    "evidence_url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/284#issuecomment-6385705915",
+    "full_suite_run": false,
+    "files": [
+      {
+        "path": "AGENTS.md",
+        "blob_sha": "7fdc142c1a621ed254ca752f89474fff918a4bd1"
+      },
+      {
+        "path": "TRUTH_SOURCES.md",
+        "blob_sha": "27eec691b8e8535024a1bef1d342d67c83785e1c"
+      },
+      {
+        "path": "docs/TIBER_DOCTRINE.md",
+        "blob_sha": "71a33a8b555797a8ea3fb3d4c90f252fbe525189"
+      },
+      {
+        "path": "docs/contracts/college-player-game-observations-v0.md",
+        "blob_sha": "bd709f50c4f0896a06cd403df27d0d490b990d73"
+      },
+      {
+        "path": "pyproject.toml",
+        "blob_sha": "9e6c09708e486b8c60b767d9015adee662f875fa"
+      },
+      {
+        "path": "schemas/college_player_game_observations_v0.schema.json",
+        "blob_sha": "27b42e01c92db9ff0765a0a82f030097bd0955e2"
+      },
+      {
+        "path": "src/contracts/college_player_game_observations_v0.py",
+        "blob_sha": "292a32d2c7147b916ae5d6951a049581ff3793b4"
+      },
+      {
+        "path": "tests/fixtures/college_observations/player_games.synthetic.json",
+        "blob_sha": "67658910f12f7b020fb654f89a2e3efc18efbd26"
+      },
+      {
+        "path": "tests/test_college_player_game_observations_v0.py",
+        "blob_sha": "dd4f0161580472d1c7abd9f525744f4491a96e8e"
+      },
+      {
+        "path": "tests/test_college_player_game_observations_v0_alias_graph.py",
+        "blob_sha": "6f1b6cf1d6bea544e6dfd9fbaee0a8f91300292a"
+      },
+      {
+        "path": "tests/test_college_player_game_observations_v0_history.py",
+        "blob_sha": "a1200e9e0a2a7d78a8ca48e2ff482b8e878aca24"
+      },
+      {
+        "path": "tests/test_college_player_game_observations_v0_repair.py",
+        "blob_sha": "6aa27ad921935c822fe097c9e9ff2ebcc1b1fc39"
+      },
+      {
+        "path": "tests/test_college_player_game_observations_v0_scope_cycles.py",
+        "blob_sha": "e8550327efe0793b8972a781ad5d13b3a29a399e"
+      }
+    ]
+  },
+  "repository_controls": {
+    "head_check_runs": 0,
+    "head_commit_statuses": 0,
+    "head_pr_workflow_runs": 0,
+    "branch_main_protected": false,
+    "observed_required_status_contexts": [],
+    "rulesets": [],
+    "ci_pass_claim": false,
+    "limits": "Observed branch/status/ruleset API responses are not an exhaustive administrative protection audit.",
+    "instructions": [
+      "AGENTS.md",
+      "TRUTH_SOURCES.md",
+      "HANDOFF.md",
+      "docs/TIBER_DOCTRINE.md"
+    ],
+    "nested_agents_or_codeowners_found": false,
+    "github_workflow_files_found": false,
+    "audit_trigger_status": "Contract-doc trigger satisfied by independent exact-head review and this committed integration receipt."
+  },
+  "readiness": {
+    "original_p1_thread": "PRRT_kwDORrftG86sU8Bz",
+    "original_p1_resolved": true,
+    "resolution_evidence_url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/284#discussion_r4367501751",
+    "draft": false,
+    "merged": false,
+    "operator_final_merge_approval": "not granted",
+    "remaining_gates": [
+      "Recheck exact head/base and review state before any future merge",
+      "Obtain separate operator final approval for this exact head",
+      "Verify existing no-production-deployment boundary under separately authorized scope"
+    ],
+    "hosting_or_production_changed": false,
+    "production_state_inspected": false
+  },
+  "artifact_boundary": {
+    "branch": "audit/data-284-independent-review-2026-10-24",
+    "base": "f9eaed14ac1c77bfea5ba70f670df2e6578822fc",
+    "new_files": [
+      "docs/audits/college-observation-284-independent-review-2026-10-24.md",
+      "docs/audits/college-observation-284-independent-review-2026-10-24.json"
+    ],
+    "documentation_pr_head_changed": false,
+    "main_changed": false,
+    "prior_audit": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c062eb43d69b97a668ba4b864f7d6fc52e709d88/docs/audits/college-observation-283-284-integration-2026-10-17.md"
+  }
+}
