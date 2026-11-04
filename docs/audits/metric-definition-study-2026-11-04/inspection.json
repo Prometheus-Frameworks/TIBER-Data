@@ -1,0 +1,244 @@
+{
+  "study_version": "0.1.0",
+  "status": "pinned_repository_inspection",
+  "consumer_authorized": false,
+  "scope": "offline_design_study; no current player evidence",
+  "inspection_date": "2026-11-04",
+  "task_classification": [
+    "provenance_source_audit",
+    "documentation_and_offline_design_demonstration"
+  ],
+  "data_ref": "c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc",
+  "external_ref": "5027a0946bced5e8e4e843f885d1c4bb93b0a421",
+  "external_classification": "schema_reference_only; source code and documentation patterns, no upstream data admitted",
+  "external_sources": [
+    {
+      "path": "STRATEGY.md",
+      "git_blob_sha": "feb3e711f48e2de6c4bfcb83cd9c915d13706903",
+      "url": "https://github.com/withqwerty/football-docs/blob/5027a0946bced5e8e4e843f885d1c4bb93b0a421/STRATEGY.md"
+    },
+    {
+      "path": "src/metrics.ts",
+      "git_blob_sha": "870af3ec4499ab0d3c9c8907ba2b6e2470083e1b",
+      "url": "https://github.com/withqwerty/football-docs/blob/5027a0946bced5e8e4e843f885d1c4bb93b0a421/src/metrics.ts"
+    },
+    {
+      "path": "src/tools.ts",
+      "git_blob_sha": "4dae4418c7ea3dc58b03f7d9ce31352059785163",
+      "url": "https://github.com/withqwerty/football-docs/blob/5027a0946bced5e8e4e843f885d1c4bb93b0a421/src/tools.ts"
+    },
+    {
+      "path": "src/__tests__/metrics.test.ts",
+      "git_blob_sha": "31e29713a813c4cffa1e87667ddbb37e950589b8",
+      "url": "https://github.com/withqwerty/football-docs/blob/5027a0946bced5e8e4e843f885d1c4bb93b0a421/src/__tests__/metrics.test.ts"
+    },
+    {
+      "path": "src/__tests__/search-coverage.test.ts",
+      "git_blob_sha": "c6be01c7c3d6ec622fc024ffebf63dd1fa505e7c",
+      "url": "https://github.com/withqwerty/football-docs/blob/5027a0946bced5e8e4e843f885d1c4bb93b0a421/src/__tests__/search-coverage.test.ts"
+    },
+    {
+      "path": "src/data-update.ts",
+      "git_blob_sha": "181084e0f11dcbc55d25fab02444a406bb3fc4e6",
+      "url": "https://github.com/withqwerty/football-docs/blob/5027a0946bced5e8e4e843f885d1c4bb93b0a421/src/data-update.ts"
+    },
+    {
+      "path": "package.json",
+      "git_blob_sha": "ecbf46c3ae8c6218491da70018bc603635610e8d",
+      "url": "https://github.com/withqwerty/football-docs/blob/5027a0946bced5e8e4e843f885d1c4bb93b0a421/package.json"
+    }
+  ],
+  "data_sources": [
+    {
+      "path": "AGENTS.md",
+      "git_blob_sha": "7fdc142c1a621ed254ca752f89474fff918a4bd1",
+      "sha256": "b3cddcc42a6f0f9f7e46a4bdec56194bf25cf29d12a29c0f98d2d47828fc7f85",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/AGENTS.md"
+    },
+    {
+      "path": "docs/TIBER_DOCTRINE.md",
+      "git_blob_sha": "71a33a8b555797a8ea3fb3d4c90f252fbe525189",
+      "sha256": "5c33ff420fe479020a370aa23694f66625fba890081922efd25b8a312ee1cffd",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/docs/TIBER_DOCTRINE.md"
+    },
+    {
+      "path": "docs/repo-boundaries-and-feedback-loops.md",
+      "git_blob_sha": "3c4b7f479b09776b49bd1ef5637727432b2d67b7",
+      "sha256": "c1df7ea4d628b2b1b7466e1ab35a0db12871c03770d86b60d8da33ab5c0bd9a9",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/docs/repo-boundaries-and-feedback-loops.md"
+    },
+    {
+      "path": "docs/projection-input-semantics.md",
+      "git_blob_sha": "90ab7ee10882b5864af1f8b97ebcce12e06dac2a",
+      "sha256": "92b9fed1265f5b13ec480e15766e6e01382734f4e55c299071d562e153a8f182",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/docs/projection-input-semantics.md"
+    },
+    {
+      "path": "data/semantics/projection_input_semantics.json",
+      "git_blob_sha": "3cf7b87adbe33baf993094e86db07f1ac3f68624",
+      "sha256": "9814a17795c02da0c1f000a19a2fc7cf1225c2b872f781d1175ddd3e73689cad",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/data/semantics/projection_input_semantics.json"
+    },
+    {
+      "path": "src/contracts/v1/roleOpportunity.ts",
+      "git_blob_sha": "52bed73fe4e67853b1f4bf9b3186ac51e125a766",
+      "sha256": "ff9b79bb224714442296b041c258dc1807d91e8b7611c216456cc85447c1f447",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/src/contracts/v1/roleOpportunity.ts"
+    },
+    {
+      "path": "src/contracts/v1/rbContactEvasionObservationsV0.ts",
+      "git_blob_sha": "f2ad63d65bb11e5baafecf678feae162cfd1c017",
+      "sha256": "3366543a96c7429acf928f533cd7e462046667e14051139891dfe425d10ec837",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/src/contracts/v1/rbContactEvasionObservationsV0.ts"
+    },
+    {
+      "path": "src/derive/gold.py",
+      "git_blob_sha": "5af8b396949483b1d6169f1c1fc9ef2e2d213961",
+      "sha256": "d05e3161c9fc46d90a6ee8c1bb242059855463f7fbb99a8aacb4635137fccc56",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/src/derive/gold.py"
+    },
+    {
+      "path": "src/utils/frames.py",
+      "git_blob_sha": "43523ea0c3acd70e592db6a2763909eaaa1453e0",
+      "sha256": "dcf457019b7569e7b700e393849d8aa99f8049eba0e53f9ee2bcd6f6b37cb011",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/src/utils/frames.py"
+    },
+    {
+      "path": "src/transform/silver.py",
+      "git_blob_sha": "bd6f5e7f652a3915328bc3b4fa4028a7aeab0757",
+      "sha256": "d53307ccf54895e8c14c05cfa87cd823bd76e7bcd0e62af70697e8830a1996e3",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/src/transform/silver.py"
+    },
+    {
+      "path": "docs/schemas/player_role_inputs_weekly.md",
+      "git_blob_sha": "75597111741393ec1efafa6ef2b01e857249a334",
+      "sha256": "6009d526d237ed94e5f61e7a1dbd20107156607b0f7ee57e8378f3c598260827",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/docs/schemas/player_role_inputs_weekly.md"
+    },
+    {
+      "path": "scripts/build_player_weekly_usage_source_backed_2025.py",
+      "git_blob_sha": "9d25869d2f9956134eeea4f41414c70b9efc5227",
+      "sha256": "6d3a3313b2355897dca6762eb554f0d7527a7f896f7d2fd3f407f1286726e020",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/scripts/build_player_weekly_usage_source_backed_2025.py"
+    },
+    {
+      "path": "src/export/playerWeeklyUsageArtifact.ts",
+      "git_blob_sha": "2c659034d070b4aff9514ef882f577faf48137ff",
+      "sha256": "25424b628cce81c5d54a3ac51bdbbc01a5e525eacdae4046618da4cd095a7ba3",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/src/export/playerWeeklyUsageArtifact.ts"
+    },
+    {
+      "path": "docs/data/player-weekly-usage-source-backed-2025.md",
+      "git_blob_sha": "7be4f73e2fbf7cbca0e4d58a0afce6c51cb2c7ba",
+      "sha256": "1b571b48f9332599c244511312111961f3b76a8f452a8b644bac3cb1cc4291ad",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/docs/data/player-weekly-usage-source-backed-2025.md"
+    },
+    {
+      "path": "docs/data/receiving-role-integrity-route-participation-proxy.md",
+      "git_blob_sha": "b0e2680a76692f21ed733a31c408eb01ae5870df",
+      "sha256": "d3f2eaf9b9c4caa84fba66702b7997bad13207cd4956e8e6980b139be5d5f7f6",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/docs/data/receiving-role-integrity-route-participation-proxy.md"
+    },
+    {
+      "path": "docs/audits/offensive-participation-evidence-readiness-audit-2026-08-10.md",
+      "git_blob_sha": "6e8ca97bb2515d5cc95a84a00c8602525051ce0b",
+      "sha256": "204df4bd77c313f52e2d5b6c003af55c644753f680581bae177e332616dd984e",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/docs/audits/offensive-participation-evidence-readiness-audit-2026-08-10.md"
+    },
+    {
+      "path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
+      "git_blob_sha": "df638e8c1c6b3c3aeadf597f1a637ce12402955a",
+      "sha256": "30a8e17370270e2fa5d055c7a771f19af2fe7bd89282cd2373f7704a492412cb",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/data/processed/evidence/player_weekly_usage_2025.source_backed.json"
+    },
+    {
+      "path": "exports/promoted/nfl/player_weekly_usage_v1.json",
+      "git_blob_sha": "3c18796bb7ac6938100f72bfe6e269d453fffcab",
+      "sha256": "425db119ed6b6d78bead9a638a4295703bf316547c4b76c0022b0de765804260",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/exports/promoted/nfl/player_weekly_usage_v1.json"
+    },
+    {
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "git_blob_sha": "f7b2918b978d842cd8753a7f3dedd3836934859b",
+      "sha256": "d45f612b207085df00b4b080e4f55ce1abbd060dcbf30b0bee777ff833ddd8ac",
+      "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/exports/promoted/nfl/player_season_coverage_v0.json"
+    }
+  ],
+  "artifact_coverage": [
+    {
+      "path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
+      "rows": 6326,
+      "seasons": [
+        2025
+      ],
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "non_null": {
+        "routes_run": 0,
+        "route_participation": 0,
+        "snap_share": 0,
+        "target_share": 6326
+      },
+      "meaning": "Repo-held source-backed input; non-null is not new admission, formula qualification, or current coverage."
+    },
+    {
+      "path": "exports/promoted/nfl/player_weekly_usage_v1.json",
+      "rows": 6,
+      "non_null": {
+        "routes_run": 6,
+        "route_participation": 6,
+        "snap_share": 6,
+        "target_share": 6
+      },
+      "source_labels": [
+        "offline_fixture:data/raw/evidence/player_weekly_usage_2025.offline_fixture.json"
+      ],
+      "meaning": "Fixture only, including all populated route values."
+    },
+    {
+      "path": "exports/promoted/nfl/player_season_coverage_v0.json",
+      "rows": 3016,
+      "WR_rows": 1191,
+      "WR_non_null": {
+        "routes_run": 0,
+        "route_participation": 0,
+        "snap_share": 0,
+        "target_share": 1191
+      },
+      "meaning": "Bounded 2021-2025 historical WR census; not all TIBER lanes or current 2026 evidence."
+    }
+  ],
+  "catalog_sha256": "b5f2be998699391f46d1879e2a3f4ae0e984eaf6e0e7341f020c75156b5e7c4c",
+  "terminal_recommendation": "prepare_a_small_definition_inspection_layer_over_existing_Data_authority",
+  "independent_review": "pending; builder checks are not independent review",
+  "prohibited_assumptions": [
+    "A documented metric is not available player evidence.",
+    "Non-null is not source admission or population completeness.",
+    "route_share is not route_participation.",
+    "Pass-play participation is not actual routes.",
+    "An authentic or signed document is not an admitted observation or validated hypothesis.",
+    "Study IDs, synthetic arithmetic, and draft presence authorize no consumer or promotion."
+  ]
+}

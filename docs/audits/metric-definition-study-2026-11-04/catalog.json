@@ -1,0 +1,133 @@
+{
+  "study_version": "0.1.0",
+  "status": "inspection_catalog",
+  "consumer_authorized": false,
+  "scope": "offline_design_study; no current player evidence",
+  "catalog_sha256": "b5f2be998699391f46d1879e2a3f4ae0e984eaf6e0e7341f020c75156b5e7c4c",
+  "definitions": [
+    {
+      "namespace": "study_only",
+      "unit": "fraction",
+      "scope_requirement": "same player/team/window and eligible event population",
+      "runtime_binding": null,
+      "consumer_authorized": false,
+      "id": "study.target_share.gold_team_targets.v0",
+      "family": "target_share",
+      "definition_status": "existing_code_inspection",
+      "numerator": "player_targets",
+      "denominator": "sum_player_targets_in_silver_team_week",
+      "formula": "player_targets / team_targets when team_targets > 0; otherwise 0.0",
+      "missing_behavior": "Existing gold code returns 0.0 for zero, negative, or null team_targets. Policy concern; unchanged by study.",
+      "unresolved": [
+        "Input-population completeness; observed code behavior is not source admission."
+      ],
+      "sources": [
+        "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/src/derive/gold.py",
+        "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/src/transform/silver.py"
+      ]
+    },
+    {
+      "namespace": "study_only",
+      "unit": "fraction",
+      "scope_requirement": "same player/team/window and eligible event population",
+      "runtime_binding": null,
+      "consumer_authorized": false,
+      "id": "study.target_share.weekly_source_passthrough.v0",
+      "family": "target_share",
+      "definition_status": "existing_mapping_inspection",
+      "numerator": null,
+      "denominator": null,
+      "formula": null,
+      "missing_behavior": "Preserve upstream target_share or null. No denominator is reconstructed.",
+      "unresolved": [
+        "Exact upstream formula/version is not pinned by the inspected weekly artifact; cannot bind gold formula retroactively."
+      ],
+      "sources": [
+        "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/scripts/build_player_weekly_usage_source_backed_2025.py"
+      ]
+    },
+    {
+      "namespace": "study_only",
+      "unit": "fraction",
+      "scope_requirement": "same player/team/window and eligible event population",
+      "runtime_binding": null,
+      "consumer_authorized": false,
+      "id": "study.route_share.sum_player_routes.v0",
+      "family": "route_share",
+      "definition_status": "existing_code_inspection",
+      "numerator": "actual_player_routes_run",
+      "denominator": "sum_player_routes_in_input_team_week",
+      "formula": "player_routes / sum(input_player_routes for team, season, week)",
+      "missing_behavior": "No route column or nonpositive sum: null. Partial player/route coverage requires separate qualification.",
+      "unresolved": [
+        "True routes and complete input-player coverage are not established for a live lane."
+      ],
+      "sources": [
+        "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/src/derive/gold.py",
+        "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/docs/schemas/player_role_inputs_weekly.md"
+      ]
+    },
+    {
+      "namespace": "study_only",
+      "unit": "fraction",
+      "scope_requirement": "same player/team/window and eligible event population",
+      "runtime_binding": null,
+      "consumer_authorized": false,
+      "id": "study.route_participation.team_dropbacks.v0",
+      "family": "route_participation",
+      "definition_status": "proposed_ratio_only",
+      "numerator": "actual_player_routes_run",
+      "denominator": "eligible_team_dropbacks",
+      "formula": "actual_player_routes_run / eligible_team_dropbacks",
+      "missing_behavior": "Unavailable if either count, matched scope, or event rules are unavailable; zero denominator has no value.",
+      "unresolved": [
+        "Provider route definition and sack/scramble/spike/penalty eligibility are not frozen; no canonical binding is proposed as ready."
+      ],
+      "sources": [
+        "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/docs/projection-input-semantics.md",
+        "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/docs/audits/offensive-participation-evidence-readiness-audit-2026-08-10.md"
+      ]
+    },
+    {
+      "namespace": "study_only",
+      "unit": "fraction",
+      "scope_requirement": "same player/team/window and eligible event population",
+      "runtime_binding": null,
+      "consumer_authorized": false,
+      "id": "study.targets_per_route.actual_routes.v0",
+      "family": "targets_per_route",
+      "definition_status": "existing_code_inspection",
+      "numerator": "player_targets",
+      "denominator": "actual_player_routes_run",
+      "formula": "player_targets / actual_player_routes_run when routes_run > 0; otherwise null",
+      "missing_behavior": "No routes, null routes, or zero routes: null. On-field participation cannot substitute for routes.",
+      "unresolved": [
+        "Requires admitted actual routes on the same eligible plays as targets."
+      ],
+      "sources": [
+        "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/src/derive/gold.py",
+        "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/data/semantics/projection_input_semantics.json"
+      ]
+    },
+    {
+      "namespace": "study_only",
+      "unit": "fraction",
+      "scope_requirement": "same player/team/window and eligible event population",
+      "runtime_binding": null,
+      "consumer_authorized": false,
+      "id": "study.pass_play_participation_proxy.eligible_pass_plays.v0",
+      "family": "pass_play_participation_proxy",
+      "definition_status": "existing_scaffold_inspection",
+      "numerator": "on_field_eligible_pass_plays",
+      "denominator": "eligible_team_pass_plays",
+      "formula": "on_field_eligible_pass_plays / eligible_team_pass_plays",
+      "missing_behavior": "Missing participation, denominator, identity, or event policy: unavailable. Never relabel as routes.",
+      "unresolved": [
+        "Scaffold and historical source audit do not establish current-season source admission."
+      ],
+      "sources": [
+        "https://github.com/Prometheus-Frameworks/TIBER-Data/blob/c46e9c34fd355bf922bc14eaeeb88fc9c3e77adc/docs/data/receiving-role-integrity-route-participation-proxy.md"
+      ]
+    }
+  ]
+}
