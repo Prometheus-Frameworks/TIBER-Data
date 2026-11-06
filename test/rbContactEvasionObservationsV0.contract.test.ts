@@ -297,6 +297,8 @@ const MANDATED_POSITIVE: ReadonlyArray<[string, string]> = [
 const SUPPLEMENTARY_POSITIVE: ReadonlyArray<[string, string]> = [
   ['P8 absent source clock stays null', 'p8_absent_source_clock_stays_null.json'],
   ['P9 below-minimum sample honestly missing and provable', 'p9_below_minimum_sample_provable.json'],
+  ['P10 two providers observe one canonical metric under their own definitions', 'p10_two_providers_same_canonical_metric.json'],
+  ['P11 distinct providers reuse one locally meaningful snapshot id', 'p11_distinct_providers_share_snapshot_id.json'],
 ];
 
 const MANDATED_NEGATIVE: ReadonlyArray<[string, string, RbContactEvasionReasonCode]> = [
@@ -361,12 +363,18 @@ const MISSINGNESS_NEGATIVE: ReadonlyArray<[string, string, RbContactEvasionReaso
   ['N49 derived publication labeled a direct observation', 'n49_material_kind_incompatible_with_evidence_class.json', 'MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS'],
 ];
 
+/** N50: the post-merge Codex review of PR #259 (thread r3848531165). */
+const POST_MERGE_REVIEW_NEGATIVE: ReadonlyArray<[string, string, RbContactEvasionReasonCode]> = [
+  ['N50 digest-pinned snapshot under unknown retention rights', 'n50_snapshot_digest_with_unknown_retention.json', 'CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION'],
+];
+
 const ALL_POSITIVE = [...MANDATED_POSITIVE, ...SUPPLEMENTARY_POSITIVE];
 const ALL_NEGATIVE = [
   ...MANDATED_NEGATIVE,
   ...SECOND_ROUND_NEGATIVE,
   ...CONVERGENCE_NEGATIVE,
   ...MISSINGNESS_NEGATIVE,
+  ...POST_MERGE_REVIEW_NEGATIVE,
 ];
 
 describe('rb_contact_evasion_observations_v0 positive fixtures', () => {
@@ -2075,5 +2083,253 @@ describe('rb_contact_evasion_observations_v0 structural invariants', () => {
     for (const [, , code] of ALL_NEGATIVE) {
       expect(rbContactEvasionReasonCodeSchema.safeParse(code).success).toBe(true);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Post-merge Codex review of PR #259 at head 83b7e41 (threads r3848531165,
+// r3848531172, r3848531175). Each attack is locked at the public evaluator in
+// the exact form the review reproduced it, with the positive control beside it.
+// ---------------------------------------------------------------------------
+
+describe('post-merge Codex review of PR #259', () => {
+  const P1 = () => mutable('positive', 'p1_complete_derived_explosiveness_rate.json');
+  const P5 = () => mutable('positive', 'p5_declared_snapshot_supersession.json');
+  const missingNotMeasured = () =>
+    ({
+      status: 'missing',
+      missingness_reason: 'not_measured',
+      value: null,
+      numerator: null,
+      denominator: null,
+      eligible_opportunities: null,
+    }) as const;
+
+  describe('r3848531165 — unknown retention rights never admit a digest-pinned snapshot', () => {
+    it('rejects the exact attack: missing row, snapshot provenance, valid digest, retention unknown', () => {
+      const artifact = P5();
+      const observation = artifact.observations[0];
+      observation.measurement = missingNotMeasured();
+      observation.source.permissions.retention_and_reproduction = 'unknown';
+      observation.source.promotable = false;
+      const report = evaluate(artifact);
+      expect(report.shape_valid).toBe(true);
+      expect(report.reason_codes).toEqual(['CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION']);
+      expect(report.violations[0]?.path).toBe('observations[0].source.content_digest');
+    });
+
+    it('keeps rejecting prohibited retention under the same code', () => {
+      const artifact = P5();
+      artifact.observations[0].measurement = missingNotMeasured();
+      artifact.observations[0].source.permissions.retention_and_reproduction = 'prohibited';
+      expect(evaluate(artifact).reason_codes).toEqual(['CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION']);
+    });
+
+    it('keeps the affirmative permitted disposition valid, with and without a stored value', () => {
+      expect(evaluate(P5()).violations).toEqual([]);
+      const missing = P5();
+      missing.observations[0].measurement = missingNotMeasured();
+      expect(evaluate(missing).violations).toEqual([]);
+    });
+
+    it('a rights-blocked claim cannot keep a digest-pinned snapshot while its retention right is unresolved', () => {
+      const artifact = P5();
+      const observation = artifact.observations[0];
+      observation.measurement = {
+        status: 'missing',
+        missingness_reason: 'rights_blocked',
+        value: null,
+        numerator: null,
+        denominator: null,
+        eligible_opportunities: null,
+      };
+      observation.source.access_class = 'licensed_or_gated';
+      observation.source.acquisition_method = 'manual_citation';
+      observation.source.permissions.retention_and_reproduction = 'unknown';
+      observation.source.promotable = false;
+      const report = evaluate(artifact);
+      expect(report.shape_valid).toBe(true);
+      expect(report.reason_codes).toContain('CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION');
+    });
+
+    it('N50 pins the attack in the corpus and is rejected by exactly that code', () => {
+      const report = evaluate(loadFixture('negative', 'n50_snapshot_digest_with_unknown_retention.json'));
+      expect(report.shape_valid).toBe(true);
+      expect(report.reason_codes).toEqual(['CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION']);
+    });
+
+    describe('cross-product: provenance x digest x retention disposition x measurement status', () => {
+      const provenances: RbContactEvasionProvenanceMode[] = ['live', 'snapshot'];
+      const digests = ['none', 'sha256'] as const;
+      const retentions = ['permitted', 'prohibited', 'unknown'] as const;
+      const statuses = ['observed', 'missing'] as const;
+      for (const provenance of provenances) {
+        for (const digest of digests) {
+          for (const retention of retentions) {
+            for (const status of statuses) {
+              const expected = new Set<RbContactEvasionReasonCode>();
+              if (status === 'observed' && retention !== 'permitted') {
+                expected.add('STORED_EXACT_VALUE_REQUIRES_RETENTION');
+              }
+              if (digest === 'sha256' && retention !== 'permitted') {
+                expected.add('CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION');
+              }
+              if (provenance === 'snapshot' && digest === 'none') {
+                expected.add('SNAPSHOT_WITHOUT_CONTENT_DIGEST');
+              }
+              const sorted = [...expected].sort();
+              it(`${provenance} / digest=${digest} / retention=${retention} / ${status} -> ${
+                sorted.length === 0 ? 'valid' : sorted.join(',')
+              }`, () => {
+                const observation = buildObservation('forced_missed_tackles_count', {
+                  provenanceMode: provenance,
+                  retention,
+                });
+                observation.source.content_digest =
+                  digest === 'sha256' ? { algorithm: 'sha256', value: 'c'.repeat(64) } : null;
+                if (status === 'missing') {
+                  observation.measurement = missingNotMeasured();
+                }
+                const report = evaluate(buildArtifact([observation]));
+                expect(report.shape_valid).toBe(true);
+                expect(report.reason_codes).toEqual(sorted);
+              });
+            }
+          }
+        }
+      }
+    });
+  });
+
+  describe('r3848531172 — definition drift is scoped to the source identity', () => {
+    const asAltProvider = (row: RbContactEvasionObservation, id: string): RbContactEvasionObservation => {
+      const copy = JSON.parse(JSON.stringify(row)) as RbContactEvasionObservation;
+      copy.observation_id = id;
+      copy.source.owner = 'example_alt_open_provider';
+      copy.source.product = 'synthetic_contact_summary_alt';
+      copy.source.snapshot_id = 'synthetic-alt-snapshot-2025-01-08';
+      copy.metric.source_native_metric_name = 'explosive carries (10+ yards) per attempt';
+      copy.metric.definition_ref =
+        'docs/contracts/rb-contact-evasion-observations-v0.md#metric-dictionary-alt-provider';
+      copy.metric.definition_version = 'synthetic-alt-def-2024.3';
+      return copy;
+    };
+
+    it('admits two providers observing one canonical metric under their own source-native definitions', () => {
+      const artifact = P1();
+      artifact.observations.push(asAltProvider(artifact.observations[0], 'alt-provider-same-metric'));
+      const report = evaluate(artifact);
+      expect(report.shape_valid).toBe(true);
+      expect(report.violations).toEqual([]);
+    });
+
+    it('still rejects one provider changing its own definition under a stable id (N4 unchanged)', () => {
+      const report = evaluate(loadFixture('negative', 'n04_metric_definition_drift.json'));
+      expect(report.reason_codes).toEqual(['METRIC_DEFINITION_DRIFT_UNDER_STABLE_ID']);
+      expect(report.violations[0]?.path).toBe('observations[1].metric');
+    });
+
+    it('attributes drift to the provider that drifted when another provider is present', () => {
+      const artifact = P1();
+      artifact.observations.push(asAltProvider(artifact.observations[0], 'alt-provider-row'));
+      const drifted = JSON.parse(
+        JSON.stringify(artifact.observations[0]),
+      ) as RbContactEvasionObservation;
+      drifted.observation_id = 'same-provider-drifted-definition';
+      drifted.scope = { ...drifted.scope, season: 2023 };
+      drifted.cohort_scope = drifted.cohort_scope ? { ...drifted.cohort_scope, season: 2023 } : null;
+      drifted.clocks = {
+        ...drifted.clocks,
+        window_start: '2023-09-07T00:00:00+00:00',
+        window_end: '2024-01-08T00:00:00+00:00',
+        source_observed_at: '2024-01-08T04:00:00+00:00',
+        source_generated_at: '2024-01-09T12:00:00+00:00',
+        source_available_at: '2024-01-10T09:00:00+00:00',
+        retrieved_at: '2024-01-11T15:30:00+00:00',
+      };
+      drifted.metric.definition_version = 'synthetic-def-2023.1';
+      artifact.observations.push(drifted);
+      const report = evaluate(artifact);
+      expect(report.reason_codes).toEqual(['METRIC_DEFINITION_DRIFT_UNDER_STABLE_ID']);
+      expect(report.violations.map((violation) => violation.path)).toEqual(['observations[2].metric']);
+    });
+
+    it('a source identity is owner x product: the same owner may describe a metric differently per product', () => {
+      const artifact = P1();
+      const other = asAltProvider(artifact.observations[0], 'same-owner-other-product');
+      other.source.owner = artifact.observations[0].source.owner;
+      artifact.observations.push(other);
+      expect(evaluate(artifact).violations).toEqual([]);
+    });
+
+    it('P10 pins the two-provider case in the corpus', () => {
+      const artifact = validateRbContactEvasionObservationsV0(
+        loadFixture('positive', 'p10_two_providers_same_canonical_metric.json'),
+      );
+      expect(new Set(artifact.observations.map((row) => row.metric.metric_id)).size).toBe(1);
+      expect(new Set(artifact.observations.map((row) => row.source.owner)).size).toBe(2);
+      expect(new Set(artifact.observations.map((row) => row.metric.definition_version)).size).toBe(2);
+    });
+  });
+
+  describe('r3848531175 — the uniqueness grain carries the source namespace', () => {
+    const sameSnapshotOtherOwner = (row: RbContactEvasionObservation): RbContactEvasionObservation => {
+      const copy = JSON.parse(JSON.stringify(row)) as RbContactEvasionObservation;
+      copy.observation_id = 'other-owner-same-snapshot-id';
+      copy.source.owner = 'example_alt_open_provider';
+      copy.source.product = 'synthetic_contact_summary_alt';
+      return copy;
+    };
+
+    it('admits distinct owners reusing one locally meaningful snapshot id for the same player, window, and metric', () => {
+      const artifact = P1();
+      artifact.observations.push(sameSnapshotOtherOwner(artifact.observations[0]));
+      expect(artifact.observations[0].source.snapshot_id).toBe(artifact.observations[1].source.snapshot_id);
+      const report = evaluate(artifact);
+      expect(report.shape_valid).toBe(true);
+      expect(report.violations).toEqual([]);
+    });
+
+    it('admits the same owner under a different product with the same snapshot id', () => {
+      const artifact = P1();
+      const other = sameSnapshotOtherOwner(artifact.observations[0]);
+      other.source.owner = artifact.observations[0].source.owner;
+      artifact.observations.push(other);
+      expect(evaluate(artifact).violations).toEqual([]);
+    });
+
+    it('still rejects a repeated grain within one owner x product (N20 unchanged)', () => {
+      const report = evaluate(loadFixture('negative', 'n20_duplicate_observation_grain.json'));
+      expect(report.reason_codes).toEqual(['DUPLICATE_OBSERVATION_GRAIN']);
+      const grainOnly = P1();
+      const renamed = JSON.parse(
+        JSON.stringify(grainOnly.observations[0]),
+      ) as RbContactEvasionObservation;
+      renamed.observation_id = 'renamed-duplicate-grain';
+      grainOnly.observations.push(renamed);
+      expect(evaluate(grainOnly).reason_codes).toEqual(['DUPLICATE_OBSERVATION_GRAIN']);
+    });
+
+    it('the exported grain key differs by owner alone and by product alone', () => {
+      const base = P1().observations[0];
+      const byOwner = JSON.parse(JSON.stringify(base)) as RbContactEvasionObservation;
+      byOwner.source.owner = 'example_alt_open_provider';
+      const byProduct = JSON.parse(JSON.stringify(base)) as RbContactEvasionObservation;
+      byProduct.source.product = 'synthetic_contact_summary_alt';
+      expect(rbContactEvasionGrainKey(byOwner)).not.toBe(rbContactEvasionGrainKey(base));
+      expect(rbContactEvasionGrainKey(byProduct)).not.toBe(rbContactEvasionGrainKey(base));
+      expect(rbContactEvasionGrainKey(byOwner)).not.toBe(rbContactEvasionGrainKey(byProduct));
+    });
+
+    it('P11 pins the shared-snapshot-id case in the corpus', () => {
+      const artifact = validateRbContactEvasionObservationsV0(
+        loadFixture('positive', 'p11_distinct_providers_share_snapshot_id.json'),
+      );
+      expect(new Set(artifact.observations.map((row) => row.source.snapshot_id)).size).toBe(1);
+      expect(new Set(artifact.observations.map((row) => row.source.owner)).size).toBe(2);
+      expect(rbContactEvasionGrainKey(artifact.observations[0])).not.toBe(
+        rbContactEvasionGrainKey(artifact.observations[1]),
+      );
+    });
   });
 });

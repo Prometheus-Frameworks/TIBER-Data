@@ -1,0 +1,243 @@
+{
+  "artifact_version": "rb_contact_evasion_slice_a_post_merge_review_repair_v1",
+  "audit_date": "2026-11-06",
+  "record_type": "independent_review_repair_record",
+  "not_an_independent_audit_of_repaired_head": true,
+  "final_exact_head_audit_status": "pending_fresh_independent_review_of_repaired_head",
+  "tracking_issue": {
+    "repository": "Prometheus-Frameworks/TIBER-Data",
+    "number": 234,
+    "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/issues/234"
+  },
+  "pull_request_reviewed": {
+    "repository": "Prometheus-Frameworks/TIBER-Data",
+    "number": 259,
+    "url": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/259",
+    "merged": true,
+    "merged_at": "2026-08-25T00:44:18Z",
+    "squash_commit": "4498d5efd053e6bbc87f5f28214b0509550ad653"
+  },
+  "related_governance_advisory": {
+    "repository": "Prometheus-Frameworks/TIBER-Ops",
+    "number": 74,
+    "summary": "program-alignment advisory: #259-#261 merged without a materialized merge-authority receipt or a #234 terminal decision; procedural, operator-owned, not repaired here"
+  },
+  "task_classification": [
+    "contract_task",
+    "repo_governance_documentation"
+  ],
+  "audit_trigger": "fired",
+  "reviewed_head": "83b7e41ccf7481b3a7d08f3d4cd9e66e748bba77",
+  "repair_base": {
+    "branch": "main",
+    "commit_prefix": "c46e9c33",
+    "date": "2026-11-06"
+  },
+  "review_source": {
+    "reviewer_identity": "chatgpt-codex-connector",
+    "review_kind": "automated_review_on_pull_request",
+    "review_id": 5013780978,
+    "created_at": "2026-08-25T00:24:19Z",
+    "auditor_identity_fabricated": false,
+    "review_comment_ids": [
+      "r3848531165",
+      "r3848531172",
+      "r3848531175",
+      "r3848531179"
+    ],
+    "threads_resolved_at_verification": false
+  },
+  "scope": {
+    "schema_changed": false,
+    "schema_version": "rb_contact_evasion_observations_v0.4.0",
+    "reason_codes_added_or_removed": false,
+    "source_bytes_retrieved": false,
+    "sources_admitted": false,
+    "ingestion_authorized": false,
+    "candidate_rows_authorized": false,
+    "artifact_created": false,
+    "promotion_authorized": false,
+    "consumer_activation_authorized": false,
+    "model_activation_authorized": false,
+    "merge_authorized": false,
+    "exports_changed": false,
+    "readme_changed": false
+  },
+  "reproduction_at_main_before_repair": [
+    {
+      "id": "K1",
+      "attack": "P5 with measurement missing/not_measured and retention_and_reproduction unknown",
+      "result": {
+        "valid": true,
+        "reason_codes": []
+      }
+    },
+    {
+      "id": "K1c",
+      "attack": "same with retention prohibited (control)",
+      "result": {
+        "valid": false,
+        "reason_codes": [
+          "CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION"
+        ]
+      }
+    },
+    {
+      "id": "K2",
+      "attack": "P1 plus a second provider (new owner/product/snapshot) with its own source-native definition",
+      "result": {
+        "valid": false,
+        "reason_codes": [
+          "METRIC_DEFINITION_DRIFT_UNDER_STABLE_ID"
+        ]
+      }
+    },
+    {
+      "id": "K3",
+      "attack": "P1 plus a second owner/product reusing the same snapshot_id",
+      "result": {
+        "valid": false,
+        "reason_codes": [
+          "DUPLICATE_OBSERVATION_GRAIN"
+        ]
+      }
+    }
+  ],
+  "findings": [
+    {
+      "id": "r3848531165",
+      "severity": "P1",
+      "title": "Reject snapshots when retention permission is unknown",
+      "accepted": true,
+      "reproduced": true,
+      "disposition": "repaired",
+      "repair": "content_digest requires retention_and_reproduction permitted; prohibited and unknown both fire CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION; snapshot requires a digest so the snapshot path is closed for every measurement status",
+      "fixtures": [
+        "negative/n50_snapshot_digest_with_unknown_retention.json"
+      ],
+      "reason_code": "CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION"
+    },
+    {
+      "id": "r3848531172",
+      "severity": "P1",
+      "title": "Scope definition-drift checks to the source identity",
+      "accepted": true,
+      "reproduced": true,
+      "disposition": "repaired",
+      "repair": "checkDefinitionDrift keyed by [owner, product, metric_id]; N4 unchanged",
+      "fixtures": [
+        "positive/p10_two_providers_same_canonical_metric.json"
+      ],
+      "reason_code": "METRIC_DEFINITION_DRIFT_UNDER_STABLE_ID"
+    },
+    {
+      "id": "r3848531175",
+      "severity": "P2",
+      "severity_note": "the operator dispatch described this finding as P1; the connector badge is P2",
+      "title": "Namespace snapshot IDs in the uniqueness grain",
+      "accepted": true,
+      "reproduced": true,
+      "disposition": "repaired",
+      "repair": "rbContactEvasionGrainKey includes source.owner and source.product before snapshot_id; N20 unchanged",
+      "fixtures": [
+        "positive/p11_distinct_providers_share_snapshot_id.json"
+      ],
+      "reason_code": "DUPLICATE_OBSERVATION_GRAIN"
+    },
+    {
+      "id": "r3848531179",
+      "severity": "P1",
+      "title": "Commit the required contract audit before merging",
+      "accepted": true,
+      "reproduced": true,
+      "agents_md_reference": "AGENTS.md audit triggers (contract under src/contracts/**, schemas/**, docs/contracts/**)",
+      "disposition": "committed_paired_audit_record_under_docs_audits",
+      "disposition_detail": "This record. It does not fabricate an independent auditor identity and leaves final exact-head audit status pending fresh independent review."
+    }
+  ],
+  "slice_b_consequence": {
+    "replaced_test": "test_slice_b_did_not_modify_slice_a_contract_files",
+    "replacement_test": "test_slice_a_surface_changes_only_through_its_committed_digest_manifest",
+    "manifest": "tests/fixtures/rb_contact_evasion_slice_a_surface_digests.json",
+    "manifest_files": 66,
+    "corpus_count_guard": {
+      "positive": {
+        "before": 9,
+        "after": 11
+      },
+      "negative": {
+        "before": 49,
+        "after": 50
+      }
+    },
+    "gate_behavior_changed": false
+  },
+  "verification_local": {
+    "vitest_contract_suite": {
+      "before": 748,
+      "after": 791
+    },
+    "pytest_slice_a_schema_suite": {
+      "before": 81,
+      "after": 84
+    },
+    "pytest_bundle_gate_suite": {
+      "before_collected": 292,
+      "after": 295
+    },
+    "typecheck": "clean",
+    "ruff": "clean",
+    "diff_check": "clean",
+    "json_validity": "clean",
+    "mutations": [
+      {
+        "name": "revert_digest_rule_to_prohibited_only",
+        "killed_by": 9
+      },
+      {
+        "name": "key_drift_globally_by_metric_id",
+        "killed_by": 5
+      },
+      {
+        "name": "key_drift_by_owner_only",
+        "killed_by": 1
+      },
+      {
+        "name": "drop_owner_product_from_grain",
+        "killed_by": 5
+      },
+      {
+        "name": "drop_owner_only_from_grain",
+        "killed_by": 1
+      },
+      {
+        "name": "drop_product_only_from_grain",
+        "killed_by": 2
+      }
+    ],
+    "mutations_total": 6,
+    "mutations_killed": 6,
+    "zero_kill_holes": 0,
+    "implementation_restored_byte_for_byte": true
+  },
+  "residual_boundaries": [
+    "producer-declared owner/product/snapshot_id and permission dispositions are consistency-checked, not verified; no admitted source registry exists",
+    "the content digest is format-checked and rights-gated, never recomputed against payload bytes",
+    "grain namespace is owner x product; provider identity is not reconciled across renamed products or across time",
+    "the TIBER-Ops #74 merge-authority-receipt and #234 terminal-decision gap is operator-owned and is neither ratified nor reversed by this record",
+    "this record is not an independent audit of the repaired head"
+  ],
+  "authorization": {
+    "source_access": false,
+    "collection": false,
+    "ingestion": false,
+    "candidate_row": false,
+    "artifact": false,
+    "promotion": false,
+    "consumer_activation": false,
+    "model_activation": false,
+    "merge": false,
+    "issue_234_state": "open",
+    "hold": "source, promotion, and consumer hold stands"
+  }
+}

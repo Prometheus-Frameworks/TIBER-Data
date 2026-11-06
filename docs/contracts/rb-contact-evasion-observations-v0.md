@@ -47,6 +47,17 @@ now checkable claims with per-state shapes, not free assertions. That
 enumeration is the invariant matrix below, and it — not any fixture list — is
 the contract's design.
 
+A post-merge Codex review of PR #259 (at head `83b7e41`) found three places
+where the matrix was keyed or gated one step too coarsely: a content digest was
+refused only under *prohibited* retention, so an *unknown* retention right still
+admitted a digest-pinned snapshot; definition drift was keyed globally by
+`metric_id`, so two providers could not both observe one canonical metric; and
+the uniqueness grain omitted the source namespace, so two owners reusing one
+locally meaningful `snapshot_id` collapsed into a false duplicate. The repair
+round (recorded in
+`docs/audits/rb-contact-evasion-observations-v0-slice-a-post-merge-review-repair-2026-11-06.md`)
+corrected all three without any shape change.
+
 ## Invariant matrix
 
 For every dimension: who owns the fact, and the machine-readable reason code
@@ -59,7 +70,7 @@ that fires when a payload disagrees.
 | metric id universe | `RB_CONTACT_EVASION_METRIC_DICTIONARY` | `UNKNOWN_METRIC_ID` |
 | value kind, unit, directionality | descriptor | `METRIC_DESCRIPTOR_CONTRADICTED` |
 | canonical inclusion/exclusion rules (verbatim) | descriptor | `CANONICAL_DEFINITION_CONTRADICTED` |
-| source-native name / ref / version | source-native, inspectable | drift-checked only: `METRIC_DEFINITION_DRIFT_UNDER_STABLE_ID` |
+| source-native name / ref / version | source-native, inspectable | drift-checked only, **within one source identity (owner × product)**: `METRIC_DEFINITION_DRIFT_UNDER_STABLE_ID` |
 | required caveat identity | descriptor | `REQUIRED_CAVEAT_MISSING` |
 | state-bound caveats (`synthetic_fixture_value` ⇔ fixture provenance; `combined_touch_denominator_disclosed` ⇔ a verified disclosure; `snapshot_superseded` ⇔ a superseding snapshot) hold exactly when their state holds | contract | `REQUIRED_CAVEAT_MISSING` / `INAPPLICABLE_CAVEAT_DECLARED` |
 | `minimum_sample_rule_id` names the code-owned rule on rate metrics and is null where no rule governs — no payload-invented rule id validates on any value kind | contract | `MINIMUM_SAMPLE_RULE_NOT_CODE_OWNED` / `MINIMUM_SAMPLE_RULE_NOT_APPLICABLE` |
@@ -69,7 +80,11 @@ inspectability; none of them is authoritative. Rewriting "10 or more yards" to
 "5 or more yards" under `explosive_rushes_10_plus_per_rush_attempt` is a
 rejection, not a variant. Source-native wording lives in
 `source_native_metric_name` / `definition_ref` / `definition_version`, is
-drift-checked within an artifact, and never redefines the canonical metric.
+drift-checked within an artifact **per source identity (owner × product)**, and
+never redefines the canonical metric. Two providers legitimately describe one
+canonical metric in different source-native words, references, and versions;
+that is independent observation (P10), not drift. Drift is one provider changing
+what its own stable id means (N4).
 
 ### B. Mechanism and opportunity-class compatibility
 
@@ -193,7 +208,7 @@ arithmetic: an equality heuristic was unsound in both directions and is gone.
 | promotable requires retention, redistribution, automation all permitted and attribution settled | contract | `SOURCE_PERMISSIONS_INCOMPATIBLE_WITH_PROMOTABLE` |
 | restricted access cannot be promotable or back a non-opinion observed value | contract | `RESTRICTED_SOURCE_ACCESS_OVERCLAIMED` |
 | material kind bounds the evidence class (`measured_observation` → any; `derived_publication` → normalized/derived/opinion, never direct; `editorial_opinion` → opinion only). Conservative labeling is allowed; overstating never is | `RB_CONTACT_EVASION_MATERIAL_EVIDENCE_CLASSES` | `EXTERNAL_OPINION_LABELED_AS_OBSERVATION` / `MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS` |
-| snapshot requires a digest; a digest is forbidden where retention is prohibited | contract | `SNAPSHOT_WITHOUT_CONTENT_DIGEST` / `CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION` |
+| snapshot requires a digest; a digest requires retention **`permitted`** — a digest pins retained payload bytes, so `prohibited` **and** `unknown` both reject, whether or not the row stores a value | contract | `SNAPSHOT_WITHOUT_CONTENT_DIGEST` / `CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION` |
 | digest closed to `sha256` + 64 lowercase hex | contract | `CONTENT_DIGEST_MALFORMED` |
 | supersession never self-references | contract | `SUPERSESSION_SELF_REFERENCE` |
 
@@ -217,14 +232,17 @@ be `not_acquired`, and a fixture row may honestly *model* any acquisition mode
 (a synthetic row simulating a gated source declares `not_acquired`).
 
 `unknown` dispositions fail closed everywhere. They are never read as
-permission.
+permission. That includes the snapshot path: snapshot provenance is retained,
+rebuildable material, so a digest-pinned snapshot under an unresolved retention
+right is rejected (N50) exactly as one under a prohibited right is. Only the
+affirmative `permitted` disposition admits a digest.
 
 ### I. Artifact identity, grain, and position
 
 | Fact | Owner | Code |
 |---|---|---|
 | `observation_id` unique per artifact | contract | `DUPLICATE_OBSERVATION_ID` |
-| canonical grain unique (player × window × opportunity class × metric definition × snapshot × denominator) | contract, key exported as `rbContactEvasionGrainKey` | `DUPLICATE_OBSERVATION_GRAIN` |
+| canonical grain unique (player × window × opportunity class × metric definition × source owner × product × snapshot × denominator) | contract, key exported as `rbContactEvasionGrainKey` | `DUPLICATE_OBSERVATION_GRAIN` |
 | fixture provenance never in candidate/promoted | contract | `FIXTURE_PROVENANCE_IN_CANDIDATE_POSITION` |
 | minimum-sample rule code-owned; fixture-only authority; observed rates fail closed outside `fixture_only` | contract | `MINIMUM_SAMPLE_RULE_NOT_CODE_OWNED` / `MINIMUM_SAMPLE_RULE_NOT_ADMITTED_FOR_POSITION` / `MINIMUM_SAMPLE_NOT_MET_RATE_EMITTED` |
 | **promoted position fails closed entirely** | contract | `PROMOTED_POSITION_REQUIRES_PROMOTION_GATE` |
@@ -267,13 +285,17 @@ One row is:
 one canonical player
 x one exact football window
 x one metric definition
-x one source snapshot
+x one source snapshot, within one source owner x product namespace
 x one denominator definition
 ```
 
 Season aggregates, partial-season windows, weekly observations, rushing
 observations, and receiving observations never share a row, and the grain is
-enforced at artifact level, not merely described.
+enforced at artifact level, not merely described. `snapshot_id` carries no
+global-uniqueness requirement — `owner` and `product` are separate fields — so
+the snapshot participates in the grain under its source namespace: two distinct
+providers reusing the same locally meaningful snapshot id for the same player,
+window, and metric are two observations (P11), not a duplicated grain.
 
 ## Identity
 
@@ -365,6 +387,8 @@ are **not** evidence about Bucky Irving or any real player.
 |---|---|---|
 | P8 | `p8_absent_source_clock_stays_null.json` | A source supplying no observation or generation clock leaves both `null` with declared origins, instead of backfilling |
 | P9 | `p9_below_minimum_sample_provable.json` | An honestly missing below-minimum rate: the retained eligible count (12, under the multi-week bar of 20) is exactly what proves the claim |
+| P10 | `p10_two_providers_same_canonical_metric.json` | Two providers (distinct owner × product) observe one canonical metric for the same player and window under their own source-native names, references, and versions; independent observation, not definition drift |
+| P11 | `p11_distinct_providers_share_snapshot_id.json` | Two providers reuse the same locally meaningful `snapshot_id` for the same player, window, and metric; distinct source namespaces, not a duplicated grain |
 
 ### Negative fixtures
 
@@ -456,6 +480,18 @@ checkable claims.
 | N48 | `n48_minimum_sample_rule_not_applicable.json` | `MINIMUM_SAMPLE_RULE_NOT_APPLICABLE` |
 | N49 | `n49_material_kind_incompatible_with_evidence_class.json` | `MATERIAL_KIND_INCOMPATIBLE_WITH_EVIDENCE_CLASS` |
 
+#### Post-merge review corpus N50 (Codex review of PR #259)
+
+| # | File | Reason code |
+|---|---|---|
+| N50 | `n50_snapshot_digest_with_unknown_retention.json` | `CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION` |
+
+N50 is a missing (`not_measured`) row with snapshot provenance and a well-formed
+sha256 digest whose `retention_and_reproduction` is `unknown`. Before the
+post-merge repair it validated: the digest rule rejected only `prohibited`, and
+with no stored value the retention rule had nothing to gate. A retained,
+digest-pinned snapshot needs an affirmative retention right.
+
 Reshaped as the missingness model tightened (twice): **N44** now isolates the
 inadmissible-count invariant via `not_measured` — the one reason with no
 source-state coupling — because every state-coupled reason (`rights_blocked`,
@@ -483,8 +519,9 @@ eligible-opportunity equality; negative, zero, fractional, and non-finite values
 per metric domain; all eight nullable source-clock patterns with a reversal at
 every consecutive existing pair; every evidence class × acquisition mode ×
 retention × automation disposition; every artifact position × provenance mode;
-and every window completeness × week presence × class. Each invalid combination
-must fail semantically — never merely by parsing.
+every window completeness × week presence × class; and (post-merge round)
+provenance × digest presence × retention disposition × measurement status. Each
+invalid combination must fail semantically — never merely by parsing.
 
 ## Reason codes
 
@@ -497,7 +534,7 @@ carrying the same codes.
 Codes beyond the fixture corpus: `SCHEMA_SHAPE_INVALID`, `UNKNOWN_FIELD_PRESENT`,
 `UNKNOWN_METRIC_ID`, `DENOMINATOR_OPPORTUNITY_CLASS_MISMATCH`,
 `MISSINGNESS_REASON_ABSENT`, `OBSERVED_COMPONENT_MISSING_VALUE`,
-`CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION`, `ARTIFACT_CLOCK_MISMATCH`,
+`ARTIFACT_CLOCK_MISMATCH`,
 `INCOMPATIBILITY_REGISTRY_NOT_SYMMETRIC`, `DERIVED_EVIDENCE_REQUIRES_TRANSFORM`,
 `SUPERSESSION_SELF_REFERENCE`, `PROMOTED_POSITION_REQUIRES_PROMOTION_GATE`.
 
