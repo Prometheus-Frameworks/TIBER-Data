@@ -8,13 +8,17 @@ provider data, and no external source was accessed to produce any of it. Source
 owners are `example_*` placeholders; snapshot ids are marked synthetic; every
 observation declares its synthetic nature in `warnings`.
 
-- `positive/` — P1–P7 (the corpus #234 mandates) plus P8–P9. Each must validate
-  through the public contract gate.
+- `positive/` — P1–P7 (the corpus #234 mandates) plus P8–P11. Each must validate
+  through the public contract gate. P10–P11 come from the post-merge Codex
+  review of PR #259: two providers describing one canonical metric in their own
+  words, and two providers reusing one locally meaningful snapshot id.
 - `negative/` — N1–N15 (the corpus #234 mandates), N16–N28 (second review
-  round), N29–N42 (convergence round), and N43–N49
-  (missingness-and-declaration round). Each is deliberately **shape-valid** and must be rejected
-  by exactly one reason code, so the rejection is attributable to the contract
-  rule it exercises rather than to a parse failure.
+  round), N29–N42 (convergence round), N43–N49
+  (missingness-and-declaration round), and N50 (post-merge review round: a
+  digest-pinned snapshot under an unknown retention right). Each is deliberately
+  **shape-valid** and must be rejected by exactly one reason code, so the
+  rejection is attributable to the contract rule it exercises rather than to a
+  parse failure.
 
 Two negative fixtures declare `artifact_position: "candidate"` — N15 and N28 —
 because the rules they exercise only bite outside `fixture_only`. No fixture

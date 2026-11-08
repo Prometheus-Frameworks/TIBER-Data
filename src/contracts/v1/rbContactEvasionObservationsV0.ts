@@ -2105,11 +2105,11 @@ function checkSourceAndEvidence(
         detail: `content digest is not a verifiable pin: ${problems.join('; ')}; an unverifiable digest is not a digest`,
       });
     }
-    if (permissions.retention_and_reproduction === 'prohibited') {
+    if (permissions.retention_and_reproduction !== 'permitted') {
       push({
         reason_code: 'CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION',
         path: `${sourcePath}.content_digest`,
-        detail: 'a content digest of payload bytes cannot be recorded when retention_and_reproduction is "prohibited"',
+        detail: `a content digest pins retained payload bytes, so recording one requires retention_and_reproduction "permitted", but it is "${permissions.retention_and_reproduction}"; "unknown" is an unresolved right and is never read as permission, and a snapshot is retained material whether or not the row stores a value`,
       });
     }
   }
@@ -2244,7 +2244,14 @@ function checkTransform(
   }
 }
 
-/** The declared one-row grain, as a comparable key. */
+/**
+ * The declared one-row grain, as a comparable key.
+ *
+ * The source snapshot is namespaced by its owner and product: `snapshot_id`
+ * carries no global-uniqueness requirement, so two providers may each use the
+ * same locally meaningful snapshot id for the same player, window, and metric
+ * without being the same observation.
+ */
 export function rbContactEvasionGrainKey(observation: RbContactEvasionObservation): string {
   const { identity, scope, clocks, metric, measurement, source } = observation;
   return JSON.stringify([
@@ -2258,6 +2265,8 @@ export function rbContactEvasionGrainKey(observation: RbContactEvasionObservatio
     clocks.window_end,
     metric.metric_id,
     metric.definition_version,
+    source.owner,
+    source.product,
     source.snapshot_id,
     measurement.denominator?.metric_id ?? null,
     measurement.denominator?.opportunity_type ?? null,
@@ -2295,34 +2304,42 @@ function checkArtifactUniqueness(
       push({
         reason_code: 'DUPLICATE_OBSERVATION_GRAIN',
         path: `observations[${index}]`,
-        detail: `this row repeats the canonical grain (player x window x metric definition x source snapshot x denominator) already present at observations[${priorGrain}]; the declared one-row grain forbids double-counting`,
+        detail: `this row repeats the canonical grain (player x window x metric definition x source owner/product x snapshot x denominator) already present at observations[${priorGrain}]; the declared one-row grain forbids double-counting`,
       });
     }
   });
 }
 
+/**
+ * Source-native definition drift under a stable canonical metric id, scoped to
+ * the source identity (owner x product). Two providers legitimately describe
+ * one canonical metric in different source-native names, references, and
+ * versions; that is independent observation, not drift. Drift is one provider
+ * changing what its own stable id means within one artifact.
+ */
 function checkDefinitionDrift(
   observations: RbContactEvasionObservation[],
   push: Push,
 ): void {
   const seen = new Map<string, { definition: string; index: number }>();
   observations.forEach((observation, index) => {
-    const { metric } = observation;
+    const { metric, source } = observation;
     const definition = JSON.stringify([
       metric.source_native_metric_name,
       metric.definition_ref,
       metric.definition_version,
     ]);
-    const previous = seen.get(metric.metric_id);
+    const providerMetric = JSON.stringify([source.owner, source.product, metric.metric_id]);
+    const previous = seen.get(providerMetric);
     if (previous === undefined) {
-      seen.set(metric.metric_id, { definition, index });
+      seen.set(providerMetric, { definition, index });
       return;
     }
     if (previous.definition !== definition) {
       push({
         reason_code: 'METRIC_DEFINITION_DRIFT_UNDER_STABLE_ID',
         path: `observations[${index}].metric`,
-        detail: `metric_id "${metric.metric_id}" carries definition ${definition} here but ${previous.definition} at observations[${previous.index}]; a changed definition requires a new metric identity`,
+        detail: `metric_id "${metric.metric_id}" from source "${source.owner}" / "${source.product}" carries definition ${definition} here but ${previous.definition} at observations[${previous.index}]; a changed definition under one provider's stable id requires a new metric identity`,
       });
     }
   });

@@ -208,10 +208,10 @@ def test_slice_a_corpus_is_intact() -> None:
         "p6_weekly_and_season_windows_coexist.json",
         "p7_bucky_receipt_remains_partial.json",
     ]
-    assert len(POSITIVE_FIXTURES) == 9
-    assert len(NEGATIVE_FIXTURES) == 49
+    assert len(POSITIVE_FIXTURES) == 11
+    assert len(NEGATIVE_FIXTURES) == 50
     assert len(MANDATED_NEGATIVE_FIXTURES) == 15
-    assert len(set(NEGATIVE_FIXTURES.values())) == 49, "each negative fixture owns a distinct code"
+    assert len(set(NEGATIVE_FIXTURES.values())) == 50, "each negative fixture owns a distinct code"
 
 
 @pytest.mark.parametrize("name", POSITIVE_FIXTURES)
@@ -1367,19 +1367,12 @@ def test_slice_b_wrote_nothing_under_exports() -> None:
     assert matches == []
 
 
-def test_slice_b_did_not_modify_slice_a_contract_files() -> None:
-    """The Slice A surface this gate depends on must be unmodified by this slice."""
+SLICE_A_SURFACE_DIGESTS_PATH = (
+    REPO_ROOT / "tests/fixtures/rb_contact_evasion_slice_a_surface_digests.json"
+)
 
-    tracked = subprocess.run(
-        ["git", "diff", "--name-only", "4498d5efd053e6bbc87f5f28214b0509550ad653", "--"],
-        cwd=str(REPO_ROOT),
-        capture_output=True,
-        check=False,
-        text=True,
-    )
-    if tracked.returncode != 0:  # pragma: no cover - shallow clone or detached history
-        pytest.skip("the authorized base commit is not reachable in this checkout")
-    changed = {line for line in tracked.stdout.splitlines() if line}
+
+def _slice_a_surface_paths() -> list[str]:
     protected = {
         "src/contracts/v1/rbContactEvasionObservationsV0.ts",
         "schemas/rb_contact_evasion_observations_v0.schema.json",
@@ -1392,7 +1385,37 @@ def test_slice_b_did_not_modify_slice_a_contract_files() -> None:
         for sub in ("positive", "negative")
         for path in (FIXTURE_ROOT / sub).glob("*.json")
     }
-    assert changed & protected == set(), sorted(changed & protected)
+    return sorted(protected)
+
+
+def test_slice_a_surface_changes_only_through_its_committed_digest_manifest() -> None:
+    """The Slice A surface this gate trusts changes explicitly, never incidentally.
+
+    PR #260 pinned this guard to the Slice A squash commit, which could not
+    survive any legitimate Slice A change. The post-merge Codex review of PR
+    #259 repaired Slice A itself, so the guard now binds the exact bytes of
+    every Slice A file to a committed digest manifest: a change to the contract,
+    schema, doc, fixtures, or Slice A tests must update that manifest in the
+    same reviewed change, and a gate-only change cannot touch Slice A without
+    the manifest diff showing it.
+    """
+
+    manifest = json.loads(SLICE_A_SURFACE_DIGESTS_PATH.read_text(encoding="utf-8"))
+    assert manifest["algorithm"] == "sha256"
+    pinned = manifest["files"]
+    assert sorted(pinned) == _slice_a_surface_paths(), (
+        "Slice A surface file set drifted from the digest manifest"
+    )
+    actual = {
+        relative: hashlib.sha256((REPO_ROOT / relative).read_bytes()).hexdigest()
+        for relative in pinned
+    }
+    mismatched = {
+        relative: {"pinned": pinned[relative], "actual": actual[relative]}
+        for relative in pinned
+        if actual[relative] != pinned[relative]
+    }
+    assert mismatched == {}, mismatched
 
 
 def test_admitted_digest_algorithms_are_exactly_sha256() -> None:

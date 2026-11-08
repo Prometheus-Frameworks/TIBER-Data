@@ -46,6 +46,11 @@ MANDATED_POSITIVE_FIXTURES = [
 SUPPLEMENTARY_POSITIVE_FIXTURES = [
     "p8_absent_source_clock_stays_null.json",
     "p9_below_minimum_sample_provable.json",
+    # P10-P11 were added in the post-merge Codex review round of PR #259: two
+    # providers may describe one canonical metric in their own source-native
+    # words, and may reuse a locally meaningful snapshot id, without colliding.
+    "p10_two_providers_same_canonical_metric.json",
+    "p11_distinct_providers_share_snapshot_id.json",
 ]
 POSITIVE_FIXTURES = MANDATED_POSITIVE_FIXTURES + SUPPLEMENTARY_POSITIVE_FIXTURES
 
@@ -137,11 +142,20 @@ MISSINGNESS_NEGATIVE_FIXTURES = {
     ),
 }
 
+# N50: the post-merge Codex review of PR #259 (thread r3848531165) -- a
+# digest-pinned snapshot under an unresolved retention right.
+POST_MERGE_REVIEW_NEGATIVE_FIXTURES = {
+    "n50_snapshot_digest_with_unknown_retention.json": (
+        "CONTENT_DIGEST_NOT_PERMITTED_BY_RETENTION"
+    ),
+}
+
 NEGATIVE_FIXTURES = {
     **MANDATED_NEGATIVE_FIXTURES,
     **SUPPLEMENTARY_NEGATIVE_FIXTURES,
     **CONVERGENCE_NEGATIVE_FIXTURES,
     **MISSINGNESS_NEGATIVE_FIXTURES,
+    **POST_MERGE_REVIEW_NEGATIVE_FIXTURES,
 }
 
 MECHANISMS = [
