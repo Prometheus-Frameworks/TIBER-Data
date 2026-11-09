@@ -1,0 +1,69 @@
+{
+  "audit_version": "0.1.0",
+  "prepared_date": "2026-11-09",
+  "task": "Data-only source-bound metric definition inspection implementation candidate",
+  "baseline": "35fc692b67d2e218b3033e7e30688e03c367de58",
+  "study_pr": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/285",
+  "authorization": "Prepare a separate bounded implementation PR after Joe approved the recommended decision; no merge or consumer activation.",
+  "task_classes": [
+    "data_artifact_inspection_metadata",
+    "provenance_source_inspection",
+    "supporting_documentation"
+  ],
+  "status": "implementation_candidate",
+  "consumer_authorized": false,
+  "canonical_approval": "not_granted",
+  "catalog_sha256": "458bcf493981ec4acca971e2cb31edf5a7fe699d64dbc39a24e961bc2b3e1c80",
+  "candidate_files_sha256": {
+    "data/semantics/projection_input_semantics.json": "72e593399d36dd8674f34acfa48bb66150400eb783bb842a9f35b45c458748f7",
+    "scripts/inspect_projection_input_semantics.mjs": "fc43c49b28e53837a02c6cc5ddac0524a8fb54705a07ea1ba4a1480bce15a8e1",
+    "scripts/lib/metric_definition_inspection.mjs": "1208ff9e18d9f935200d06e10d187a3e6ada7be2fb802f8e255701d21d8f4cbe",
+    "scripts/tests/metric_definition_inspection.checks.mjs": "2d1dd6b9b1f79c954465ab98d7d19cc524527a24672254b74a3327b76acb274d",
+    "tests/test_metric_definition_source_parity.py": "a8c8b290149f339e31ec7a4ed50784b403a5c3cd874610e413fe74d1a8dfe758"
+  },
+  "validation": {
+    "node_checks": {
+      "passed": 19,
+      "skipped": 0
+    },
+    "bounded_python_tests": {
+      "passed": 27,
+      "source_parity_cases_included": 12
+    },
+    "typecheck": "passed",
+    "build": "passed",
+    "ruff_new_python_file": "passed",
+    "bounded_typescript": {
+      "passed": 977,
+      "excluded_known_roster_comparison_cases": 1
+    },
+    "generated_views": "reproduced",
+    "protected_producer_runtime_and_observation_surfaces": "unchanged",
+    "full_suite_signoff": false
+  },
+  "coverage_inspection": {
+    "source_backed_weekly_rows": 6326,
+    "source_backed_non_null_routes": 0,
+    "source_backed_non_null_route_participation": 0,
+    "source_backed_non_null_snap_share": 0,
+    "populated_fixture_only_rows": 6,
+    "source_admission": "not_assessed",
+    "current_season_coverage": "not_assessed"
+  },
+  "builder_contradiction_audit": "completed",
+  "independent_exact_head_review": "pending",
+  "limitations": [
+    "Known roster array-versus-wrapper equality mismatch remains outside scope.",
+    "Full Python suite and unrestricted pre-PR script were not completed for this candidate.",
+    "Synthetic alias probe isolates unrelated historical vacated-target helper; full compatibility pipeline is not qualified.",
+    "Route event eligibility, canonical approval, admitted observations and consumer integration remain unresolved."
+  ],
+  "prohibited_actions_in_this_candidate": [
+    "merge",
+    "source_admission",
+    "data_acquisition",
+    "canonical_metric_repair",
+    "consumer_activation",
+    "scoring_or_ranking_change"
+  ]
+}

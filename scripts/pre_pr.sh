@@ -19,6 +19,7 @@ fi
 
 echo "Running TypeScript checks..."
 npm run typecheck
+npm run test:metric-definition-inspection
 npm run test
 
 if [[ "$SKIP_PYTHON_TESTS" != "1" ]]; then
