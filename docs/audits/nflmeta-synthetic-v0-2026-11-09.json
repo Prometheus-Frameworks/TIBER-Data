@@ -1,0 +1,99 @@
+{
+  "audit": "nflmeta_synthetic_v0_builder_boundary_check",
+  "date": "2026-11-09",
+  "issue": "https://github.com/Prometheus-Frameworks/TIBER-Data/issues/287",
+  "base_commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+  "classification": "contract_task_schema_reference_only",
+  "independent_review": "pending_before_merge",
+  "files": [
+    {
+      "path": "src/contracts/nflmetaSyntheticV0/common.ts",
+      "sha256": "2595c4308ecef2d5c7602d904c856f2fb30c68f539b9a2c12c5ce55168ea7c1a"
+    },
+    {
+      "path": "src/contracts/nflmetaSyntheticV0/playerGame.ts",
+      "sha256": "b6eab2da40070d9970bfd9aefaf1da3a1c45e949ac1202e3789ab0bcac3b12f1"
+    },
+    {
+      "path": "src/contracts/nflmetaSyntheticV0/crossReferences.ts",
+      "sha256": "9ec9d850390453257b505a1767655b54e7862be23472051d85e4350f26825142"
+    },
+    {
+      "path": "test/fixtures/nflmetaSyntheticV0/builders.ts",
+      "sha256": "3c400bc9749ceb2220c28f99c56ed94871e044f521a4a8f8505d13ffd41aae42"
+    },
+    {
+      "path": "test/nflmetaSyntheticPlayerGame.v0.test.ts",
+      "sha256": "cabc15883bcad7bfb314d86d0ecc89c7386715ed5c5e6bce737a8f6e0f16a584"
+    },
+    {
+      "path": "test/nflmetaSyntheticCrossReferences.v0.test.ts",
+      "sha256": "e8d21b16c113ab9b6611b091d7e8a46726196aadecd46f097cac9cc5a83465ff"
+    },
+    {
+      "path": "docs/contracts/nflmeta-synthetic-v0.md",
+      "sha256": "b30f94820d5bd86bed350659fa694f1b234e6799de8b6ea63874aed7c7947599"
+    },
+    {
+      "path": "README.md",
+      "sha256": "dd6f2900d931dab4f903a2952e0c90c627ad9683dcc738dfe6448a29883c3c04"
+    },
+    {
+      "path": "HANDOFF.md",
+      "sha256": "b8ebd56045d964f502de2911ac040c494382059c9afd8ef4c83073212b7ba1bd"
+    }
+  ],
+  "checks": {
+    "focused_synthetic_tests": {
+      "passed": 89
+    },
+    "typescript_check": "passed",
+    "typescript_build": "passed",
+    "vitest_excluding_existing_roster_export_file": {
+      "files": 20,
+      "passed": 1055
+    },
+    "existing_roster_export_test": {
+      "candidate_timeout_seconds": 90,
+      "unchanged_base_timeout_seconds": 60,
+      "status": "reproduced_without_new_code"
+    },
+    "full_vitest": "not_green_existing_roster_export_stall; initial_unbounded_run_interrupted",
+    "python_suite": {
+      "passed": 1506,
+      "skipped": 3,
+      "failed": 1,
+      "failure": "test_rb_contact_evasion_bundle_gate.py::test_bridge_opens_the_module_exactly_once",
+      "unchanged_base_reproduction": "same_failure_zero_recorded_module_opens"
+    },
+    "scope": "only_versioned_contracts_synthetic_tests_documentation",
+    "runtime_imports": "zod_and_local_contract_modules_only",
+    "root_package_exports": "unchanged; new modules are not exported",
+    "source_data_and_promoted_crosswalk": "unchanged",
+    "runtime": {
+      "node": "24.22.1",
+      "python": "3.12.14",
+      "vitest": "3.2.4"
+    }
+  },
+  "builder_findings": [],
+  "remaining_gates": [
+    "independent_contract_and_identity_review",
+    "authenticated_payload_qualification",
+    "retention_replay_reviewer_successor_rights",
+    "source_purpose_acceptance",
+    "explicit_source_admission"
+  ],
+  "not_authorized_or_performed": [
+    "provider_api_calls",
+    "accounts_or_keys",
+    "purchase",
+    "provider_outreach",
+    "persistent_provider_cache",
+    "promoted_crosswalk_mutation",
+    "MCP_registration",
+    "downstream_wiring",
+    "merge",
+    "deployment"
+  ]
+}

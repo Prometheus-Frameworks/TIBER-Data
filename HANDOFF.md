@@ -49,6 +49,29 @@ Example:
 - Missing: honest raw support beyond W6
 - Must not assume: W7+ exists unless committed support is present
 
+## Current handoff — #287 NFLMeta synthetic contracts v0
+
+- Active task: implement pure player-game and full Sleeper cross-reference
+  contracts from public documentation using invented fixtures only.
+- Files touched: `src/contracts/nflmetaSyntheticV0/`, two focused test files,
+  `test/fixtures/nflmetaSyntheticV0/builders.ts`, the contract document, paired
+  builder audit, README and this handoff.
+- Audit-trigger status: builder boundary audit recorded; **independent contract
+  and identity review pending before merge**. No external reviewer dispatched.
+- What is now true: all 34 base fields retain explicit reported/missing/
+  not-reported/partial states; source dates, write clocks, simulated receipts and
+  content fingerprints stay distinct; full mapping proposals require complete
+  version-consistent traversal; failure discards staging; existing ID conflicts
+  block the proposal and null/absent mappings never erase existing IDs. Retained
+  IDs explicitly remain without current verification.
+- What is still missing: independent review, authenticated payload qualification,
+  retention/replay/reviewer/successor permission, exact purpose acceptance and any
+  future source-admission decision. Validation details are in the paired audit.
+- What must not be assumed: synthetic output is not provider evidence or a
+  promoted identity bridge. No source call, account, card, credentials, provider
+  outreach, persistent cache, downstream wiring, MCP activation, merge or
+  deployment occurred.
+
 ## Current handoff — #236 historical landing-context design/evidence pilots
 
 - Active task: design the minimum cutoff-aware historical landing-context
