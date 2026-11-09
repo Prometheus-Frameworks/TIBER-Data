@@ -20,6 +20,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
+    "test:metric-definition-inspection": "node --test scripts/tests/metric_definition_inspection.checks.mjs",
     "export:forge-weekly-sample": "npm run build && node scripts/export_forge_weekly_input_sample.mjs",
     "export:forge-weekly-derived": "npm run build && node scripts/export_forge_weekly_input_derived.mjs",
     "export:forge-weekly-derived-upstream-scaffold": "npm run build && node scripts/export_forge_weekly_input_derived_upstream_scaffold.mjs",

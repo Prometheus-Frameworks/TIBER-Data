@@ -2,10 +2,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
+import {
+  catalog, compare, inspectCoverage, inspectionMarkdown, loadInspection, lookup, serialize,
+  validateInspection,
+} from './lib/metric_definition_inspection.mjs';
 
 const DEFAULT_REGISTRY = 'data/semantics/projection_input_semantics.json';
 const DEFAULT_OUTPUT = 'docs/projection-input-semantics.generated.md';
-const ALLOWED_OPTIONS = new Set(['registry', 'write', 'output', 'group', 'status', 'consumer']);
+const ALLOWED_OPTIONS = new Set([
+  'registry', 'write', 'output', 'group', 'status', 'consumer',
+  'definitions', 'id', 'left', 'right', 'artifact', 'json', 'check-generated',
+]);
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const GENERATED_JSON = 'data/semantics/metric_definitions.generated.json';
+const GENERATED_MARKDOWN = 'docs/metric-definitions.generated.md';
 const REQUIRED_ENTRY_FIELDS = [
   'field_group',
   'field_name',
@@ -38,6 +49,8 @@ const ALLOWED_SEMANTIC_TYPES = new Set([
 ]);
 
 function printUsage() {
+  console.log('Definition inspection: --definitions <list|get|compare|coverage> [--id <exact-id>] [--left <id> --right <id>] [--artifact <exact-artifact-id>] [--json]');
+  console.log('Generation: --definitions list --write | --definitions list --check-generated');
   console.log(`Usage: node scripts/inspect_projection_input_semantics.mjs [options]\n\nOptions:\n  --registry <path>   Semantics registry JSON path (default: ${DEFAULT_REGISTRY})\n  --write             Write generated markdown summary\n  --output <path>     Generated markdown output path (default: ${DEFAULT_OUTPUT})\n  --group <name>      Filter by field_group\n  --status <status>   Filter by status\n  --consumer <name>   Filter by downstream consumer\n  --help, -h          Show this help\n\nExamples:\n  node scripts/inspect_projection_input_semantics.mjs\n  node scripts/inspect_projection_input_semantics.mjs --status needs_verification\n  node scripts/inspect_projection_input_semantics.mjs --write`);
 }
 
@@ -57,8 +70,8 @@ function parseArgs(argv) {
       continue;
     }
 
-    if (arg === '--write') {
-      options.write = true;
+    if (['--write', '--json', '--check-generated'].includes(arg)) {
+      options[arg.slice(2)] = true;
       continue;
     }
 
@@ -86,6 +99,28 @@ function parseArgs(argv) {
 
   if (options.consumer && !ALLOWED_CONSUMERS.has(options.consumer)) {
     throw new Error(`--consumer must be one of: ${[...ALLOWED_CONSUMERS].join(', ')}`);
+  }
+
+  if (options.definitions) {
+    const required = { list: [], get: ['id'], compare: ['left', 'right'], coverage: ['artifact'] };
+    if (!Object.hasOwn(required, options.definitions)) throw new Error('unknown definition operation');
+    for (const key of required[options.definitions]) {
+      if (!options[key]) throw new Error(`--${key} is required`);
+    }
+    for (const key of ['id', 'left', 'right', 'artifact']) {
+      if (options[key] && !required[options.definitions].includes(key)) {
+        throw new Error(`--${key} is not used by this operation`);
+      }
+    }
+    if (options.group || options.status || options.consumer || argv.includes('--output')) {
+      throw new Error('definition operations do not accept legacy filters or --output');
+    }
+    if ((options.write || options['check-generated']) && options.definitions !== 'list') {
+      throw new Error('generation is only available with --definitions list');
+    }
+    if (options.write && options['check-generated']) throw new Error('choose write or check-generated');
+  } else if (['id', 'left', 'right', 'artifact', 'check-generated', 'json'].some((key) => options[key])) {
+    throw new Error('definition-specific options require --definitions');
   }
 
   return options;
@@ -197,6 +232,7 @@ function validateRegistry(registry) {
   if (errors.length > 0) {
     throw new Error(`registry validation failed:\n- ${errors.join('\n- ')}`);
   }
+  if (Object.hasOwn(registry, 'definition_inspection')) validateInspection(registry);
 }
 
 function applyFilters(entries, options) {
@@ -288,6 +324,11 @@ function main() {
   try {
     options = parseArgs(process.argv.slice(2));
   } catch (error) {
+    if (process.argv.includes('--definitions')) {
+      console.log(serialize({ status: 'invalid_request', consumer_authorized: false, error: error.message }));
+      process.exitCode = 1;
+      return;
+    }
     fail(error.message);
     printUsage();
     return;
@@ -303,7 +344,42 @@ function main() {
   try {
     ({ registry, resolvedPath } = loadRegistry(options.registry));
   } catch (error) {
+    if (options.definitions) {
+      console.log(serialize({ status: 'invalid_registry', consumer_authorized: false, error: error.message }));
+      process.exitCode = 1;
+      return;
+    }
     fail(error.message);
+    return;
+  }
+
+  if (options.definitions) {
+    try {
+      const context = loadInspection(registry, ROOT);
+      const result = {
+        list: () => catalog(context),
+        get: () => lookup(context, options.id),
+        compare: () => compare(context, options.left, options.right),
+        coverage: () => inspectCoverage(context, options.artifact),
+      }[options.definitions]();
+      if (options.write || options['check-generated']) {
+        for (const [relative, content] of [
+          [GENERATED_JSON, serialize(catalog(context))],
+          [GENERATED_MARKDOWN, inspectionMarkdown(context)],
+        ]) {
+          const destination = path.join(ROOT, relative);
+          if (options.write) fs.writeFileSync(destination, content);
+          else if (!fs.existsSync(destination) || fs.readFileSync(destination, 'utf8') !== content) {
+            throw new Error(`generated inspection view is stale: ${relative}`);
+          }
+        }
+      }
+      console.log(serialize(result));
+      if (['not_indexed', 'selection_required'].includes(result.status)) process.exitCode = 2;
+    } catch (error) {
+      console.log(serialize({ status: 'inspection_blocked', consumer_authorized: false, error: error.message }));
+      process.exitCode = 1;
+    }
     return;
   }
 

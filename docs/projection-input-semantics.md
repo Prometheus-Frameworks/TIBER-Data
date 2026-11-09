@@ -10,6 +10,19 @@ This is **not ingestion**. It does not create a runtime feed, scoring rule, mode
 - Viewer / validator: `scripts/inspect_projection_input_semantics.mjs`
 - Optional generated view: `docs/projection-input-semantics.generated.md`
 
+## Exact metric-definition inspection candidate
+
+The viewer also offers a Data-only definition inspection candidate, implemented
+inside the existing registry's `definition_inspection` section. The original 37
+field entries and their statuses retain their meanings. Selected entries link
+to exact inspection variants through `definition_ids`; they are not duplicated
+as competing field entries.
+
+See [metric-definition inspection](metric-definition-inspection.md) for exact
+lookup, denominator comparisons, separate pinned coverage receipts, regeneration,
+source-drift handling, and acceptance boundaries. These operations do not alter
+canonical metrics or authorize downstream consumption.
+
 ## Boundary rules
 
 - Existing data artifacts are not changed by this viewer.

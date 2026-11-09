@@ -130,7 +130,8 @@
       "downstream_consumers": ["Point-prediction-model", "FORGE"],
       "consumption_recommendation": "adapt_before_consumption",
       "status": "candidate",
-      "notes_open_questions": ["Confirm exact denominator and sample window before direct model use."]
+      "notes_open_questions": ["Confirm exact denominator and sample window before direct model use."],
+      "definition_ids": ["inspection.route_participation.gold_compatibility_alias.v0", "inspection.route_participation.team_dropbacks.proposed.v0"]
     },
     {
       "field_group": "opportunity",
@@ -146,7 +147,8 @@
       "downstream_consumers": ["Point-prediction-model", "FORGE"],
       "consumption_recommendation": "adapt_before_consumption",
       "status": "candidate",
-      "notes_open_questions": ["Existing schema uses tprr naming; decide whether model-facing name should remain targets_per_route.", "Source-backed rows may not expose routes_run yet, so aggregate samples must preserve nulls."]
+      "notes_open_questions": ["Existing schema uses tprr naming; decide whether model-facing name should remain targets_per_route.", "Source-backed rows may not expose routes_run yet, so aggregate samples must preserve nulls."],
+      "definition_ids": ["inspection.targets_per_route.actual_routes.v0"]
     },
     {
       "field_group": "opportunity",
@@ -596,5 +598,360 @@
       "status": "needs_verification",
       "notes_open_questions": ["Likely needs its own contract before any projection-input adapter can consume it."]
     }
-  ]
+  ],
+  "definition_inspection": {
+    "version": "0.1.0",
+    "status": "implementation_candidate",
+    "consumer_authorized": false,
+    "authority": "TIBER-Data existing semantics registry and pinned producers; inspection descriptors are not canonical metric approvals.",
+    "query_aliases": {
+      "route %": [
+        "route_share",
+        "route_participation"
+      ],
+      "tprr": [
+        "targets_per_route"
+      ]
+    },
+    "definitions": [
+      {
+        "id": "inspection.target_share.gold_team_targets.v0",
+        "family": "target_share",
+        "field_names": [
+          "target_share"
+        ],
+        "definition_status": "existing_code_inspection",
+        "canonical_approval": "not_granted",
+        "numerator": "player_targets",
+        "denominator": "sum_player_targets_in_silver_team_week",
+        "formula": "player_targets / team_targets when team_targets > 0; otherwise 0.0",
+        "unit": "fraction",
+        "grain": [
+          "player_id",
+          "team",
+          "season",
+          "week"
+        ],
+        "event_eligibility": {
+          "status": "unresolved",
+          "rule": "Silver sums input player targets by team/season/week; event eligibility and full population are not established by the formula."
+        },
+        "aggregation": {
+          "status": "not_selected",
+          "rule": "No rolling/season aggregation is selected; ratio of summed matched counts and mean of game ratios answer different questions."
+        },
+        "missing_behavior": "Legacy gold code returns 0.0 when team_targets is null, zero or negative. This inspection does not repair that behavior.",
+        "caveats": [
+          "Legacy fallback zero is not proof of observed zero opportunities.",
+          "Input-population completeness needs independent qualification."
+        ],
+        "source_bindings": [
+          {
+            "path": "src/derive/gold.py",
+            "commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+            "sha256": "d05e3161c9fc46d90a6ee8c1bb242059855463f7fbb99a8aacb4635137fccc56",
+            "symbol": "build_player_role_inputs_weekly"
+          },
+          {
+            "path": "src/transform/silver.py",
+            "commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+            "sha256": "d53307ccf54895e8c14c05cfa87cd823bd76e7bcd0e62af70697e8830a1996e3",
+            "symbol": "build_weekly_team_stats"
+          }
+        ],
+        "alias_of": null
+      },
+      {
+        "id": "inspection.target_share.weekly_passthrough.v0",
+        "family": "target_share",
+        "field_names": [
+          "target_share"
+        ],
+        "definition_status": "existing_mapping_inspection",
+        "canonical_approval": "not_granted",
+        "numerator": null,
+        "denominator": null,
+        "formula": null,
+        "unit": "fraction",
+        "grain": [
+          "player_id",
+          "team",
+          "season",
+          "week"
+        ],
+        "event_eligibility": {
+          "status": "unresolved",
+          "rule": "Exact upstream target and denominator event rules are unresolved."
+        },
+        "aggregation": {
+          "status": "not_selected",
+          "rule": "No rolling/season aggregation is selected; ratio of summed matched counts and mean of game ratios answer different questions."
+        },
+        "missing_behavior": "Preserves upstream target_share or null; no denominator is reconstructed.",
+        "caveats": [
+          "The exact upstream generator/definition version is not pinned in the artifact; do not inherit the gold formula."
+        ],
+        "source_bindings": [
+          {
+            "path": "scripts/build_player_weekly_usage_source_backed_2025.py",
+            "commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+            "sha256": "6d3a3313b2355897dca6762eb554f0d7527a7f896f7d2fd3f407f1286726e020",
+            "symbol": "build_source_backed_payload"
+          }
+        ],
+        "alias_of": null
+      },
+      {
+        "id": "inspection.route_share.sum_player_routes.v0",
+        "family": "route_share",
+        "field_names": [
+          "route_share"
+        ],
+        "definition_status": "existing_code_inspection",
+        "canonical_approval": "not_granted",
+        "numerator": "actual_player_routes_run",
+        "denominator": "sum_player_routes_in_input_team_week",
+        "formula": "player_routes / sum(input_player_routes for team, season, week)",
+        "unit": "fraction",
+        "grain": [
+          "player_id",
+          "team",
+          "season",
+          "week"
+        ],
+        "event_eligibility": {
+          "status": "unresolved",
+          "rule": "Team/season/week grouping is implemented; upstream route event rules and input-player completeness remain unqualified."
+        },
+        "aggregation": {
+          "status": "not_selected",
+          "rule": "No rolling/season aggregation is selected; ratio of summed matched counts and mean of game ratios answer different questions."
+        },
+        "missing_behavior": "Absent routes column or nonpositive team sum: null; null player routes stay null.",
+        "caveats": [
+          "Input-player completeness is unknown; dropping teammates can inflate this share without any role change.",
+          "This formula is not routes per team dropback; no actual-route source admission is established."
+        ],
+        "source_bindings": [
+          {
+            "path": "src/derive/gold.py",
+            "commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+            "sha256": "d05e3161c9fc46d90a6ee8c1bb242059855463f7fbb99a8aacb4635137fccc56",
+            "symbol": "build_player_role_inputs_weekly"
+          }
+        ],
+        "alias_of": null
+      },
+      {
+        "id": "inspection.route_participation.gold_compatibility_alias.v0",
+        "family": "route_participation",
+        "field_names": [
+          "route_participation"
+        ],
+        "definition_status": "existing_mapping_inspection",
+        "canonical_approval": "not_granted",
+        "numerator": "actual_player_routes_run",
+        "denominator": "sum_player_routes_in_input_team_week",
+        "formula": "player_routes / sum(input_player_routes for team, season, week)",
+        "unit": "fraction",
+        "grain": [
+          "player_id",
+          "team",
+          "season",
+          "week"
+        ],
+        "event_eligibility": {
+          "status": "unresolved",
+          "rule": "Team/season/week grouping is implemented; upstream route event rules and input-player completeness remain unqualified."
+        },
+        "aggregation": {
+          "status": "not_selected",
+          "rule": "No rolling/season aggregation is selected; ratio of summed matched counts and mean of game ratios answer different questions."
+        },
+        "missing_behavior": "Copies existing route_share, including null, without changing its denominator.",
+        "caveats": [
+          "Legacy compatibility field name route_participation preserves the summed-player-route formula.",
+          "This is a confirmed code mapping, not proof that real route observations reach a consumer."
+        ],
+        "source_bindings": [
+          {
+            "path": "src/derive/gold.py",
+            "commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+            "sha256": "d05e3161c9fc46d90a6ee8c1bb242059855463f7fbb99a8aacb4635137fccc56",
+            "symbol": "build_player_role_profile_compatibility_weekly"
+          },
+          {
+            "path": "src/derive/gold.py",
+            "commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+            "sha256": "d05e3161c9fc46d90a6ee8c1bb242059855463f7fbb99a8aacb4635137fccc56",
+            "symbol": "build_player_role_inputs_weekly"
+          }
+        ],
+        "alias_of": "inspection.route_share.sum_player_routes.v0"
+      },
+      {
+        "id": "inspection.route_participation.team_dropbacks.proposed.v0",
+        "family": "route_participation",
+        "field_names": [
+          "route_participation"
+        ],
+        "definition_status": "proposed_ratio",
+        "canonical_approval": "not_granted",
+        "numerator": "actual_player_routes_run",
+        "denominator": "eligible_team_dropbacks",
+        "formula": "actual_player_routes_run / eligible_team_dropbacks",
+        "unit": "fraction",
+        "grain": [
+          "player_id",
+          "team",
+          "season",
+          "week"
+        ],
+        "event_eligibility": {
+          "status": "unresolved",
+          "rule": "Provider route definition and eligible team-dropback rules are unresolved."
+        },
+        "aggregation": {
+          "status": "not_selected",
+          "rule": "No rolling/season aggregation is selected; ratio of summed matched counts and mean of game ratios answer different questions."
+        },
+        "missing_behavior": "Unavailable without both counts, matching scope and qualified event rules; zero denominator has no ratio.",
+        "caveats": [
+          "No canonical approval or admitted route observation is supplied.",
+          "Sack, scramble, spike and penalty eligibility must be frozen before source binding."
+        ],
+        "source_bindings": [
+          {
+            "path": "docs/audits/offensive-participation-evidence-readiness-audit-2026-08-10.md",
+            "commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+            "sha256": "204df4bd77c313f52e2d5b6c003af55c644753f680581bae177e332616dd984e",
+            "symbol": null
+          }
+        ],
+        "alias_of": null
+      },
+      {
+        "id": "inspection.targets_per_route.actual_routes.v0",
+        "family": "targets_per_route",
+        "field_names": [
+          "targets_per_route",
+          "tprr"
+        ],
+        "definition_status": "existing_code_inspection",
+        "canonical_approval": "not_granted",
+        "numerator": "player_targets",
+        "denominator": "actual_player_routes_run",
+        "formula": "player_targets / actual_player_routes_run when routes_run > 0; otherwise null",
+        "unit": "fraction",
+        "grain": [
+          "player_id",
+          "team",
+          "season",
+          "week"
+        ],
+        "event_eligibility": {
+          "status": "unresolved",
+          "rule": "Requires qualified actual routes and targets on a matched event population."
+        },
+        "aggregation": {
+          "status": "not_selected",
+          "rule": "No rolling/season aggregation is selected; ratio of summed matched counts and mean of game ratios answer different questions."
+        },
+        "missing_behavior": "Missing/null/zero routes: null. Observed zero targets with positive routes can yield zero.",
+        "caveats": [
+          "Targets and actual routes must cover matching eligible events; on-field participation cannot substitute for routes."
+        ],
+        "source_bindings": [
+          {
+            "path": "src/derive/gold.py",
+            "commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+            "sha256": "d05e3161c9fc46d90a6ee8c1bb242059855463f7fbb99a8aacb4635137fccc56",
+            "symbol": "build_player_role_inputs_weekly"
+          }
+        ],
+        "alias_of": null
+      },
+      {
+        "id": "inspection.pass_play_participation.eligible_pass_plays.v0",
+        "family": "pass_play_participation_proxy",
+        "field_names": [
+          "pass_play_participation_proxy"
+        ],
+        "definition_status": "existing_scaffold_inspection",
+        "canonical_approval": "not_granted",
+        "numerator": "on_field_eligible_pass_plays",
+        "denominator": "eligible_team_pass_plays",
+        "formula": "on_field_eligible_pass_plays / eligible_team_pass_plays",
+        "unit": "fraction",
+        "grain": [
+          "player_id",
+          "team",
+          "season",
+          "week"
+        ],
+        "event_eligibility": {
+          "status": "unresolved",
+          "rule": "Participation/PBP join and pass-play inclusion rules require future source qualification."
+        },
+        "aggregation": {
+          "status": "not_selected",
+          "rule": "No rolling/season aggregation is selected; ratio of summed matched counts and mean of game ratios answer different questions."
+        },
+        "missing_behavior": "Unavailable without participation, denominator, identity and explicit event policy.",
+        "caveats": [
+          "On-field presence is not proof of running a route.",
+          "Scaffold documentation establishes no current source coverage."
+        ],
+        "source_bindings": [
+          {
+            "path": "docs/data/receiving-role-integrity-route-participation-proxy.md",
+            "commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+            "sha256": "d3f2eaf9b9c4caa84fba66702b7997bad13207cd4956e8e6980b139be5d5f7f6",
+            "symbol": null
+          }
+        ],
+        "alias_of": null
+      }
+    ],
+    "coverage_artifacts": [
+      {
+        "id": "weekly_usage_2025.source_backed",
+        "source_kind": "repository_source_backed",
+        "binding": {
+          "path": "data/processed/evidence/player_weekly_usage_2025.source_backed.json",
+          "commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+          "sha256": "30a8e17370270e2fa5d055c7a771f19af2fe7bd89282cd2373f7704a492412cb",
+          "symbol": null
+        },
+        "records_key": "records",
+        "fields": [
+          "routes_run",
+          "route_participation",
+          "snap_share",
+          "target_share"
+        ],
+        "definition_bindings": {
+          "target_share": "inspection.target_share.weekly_passthrough.v0"
+        }
+      },
+      {
+        "id": "weekly_usage.offline_fixture",
+        "source_kind": "fixture",
+        "binding": {
+          "path": "exports/promoted/nfl/player_weekly_usage_v1.json",
+          "commit": "35fc692b67d2e218b3033e7e30688e03c367de58",
+          "sha256": "425db119ed6b6d78bead9a638a4295703bf316547c4b76c0022b0de765804260",
+          "symbol": null
+        },
+        "records_key": null,
+        "fields": [
+          "routes_run",
+          "route_participation",
+          "snap_share",
+          "target_share"
+        ],
+        "definition_bindings": {}
+      }
+    ]
+  }
 }
