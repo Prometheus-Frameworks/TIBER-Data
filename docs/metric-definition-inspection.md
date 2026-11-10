@@ -80,6 +80,50 @@ for known component/unit/grain conflicts, `unresolved` where equivalence is not
 established, or `same_definition` for an identical ID. Every comparison leaves
 observation comparability `not_assessed`.
 
+### Three meanings of route participation
+
+Three different quantities in this repository carry a route-participation name.
+They are not interchangeable, none is canonically approved, and no conversion
+between them is defined.
+
+| Meaning | Where it lives | Formula | Inspection ID |
+| --- | --- | --- | --- |
+| Summed-player-route share | `src/derive/gold.py`: `route_share` in `build_player_role_inputs_weekly`, copied unchanged to `route_participation` by `build_player_role_profile_compatibility_weekly` | player `routes_run` / sum of input-player `routes_run` for team, season, week | `inspection.route_share.sum_player_routes.v0`; `inspection.route_participation.gold_compatibility_alias.v0` for the copy |
+| Proposed routes per team dropback | Proposal text only; no producer computes it | actual player routes / eligible team dropbacks, event rules unresolved | `inspection.route_participation.team_dropbacks.proposed.v0` (`proposed_ratio`) |
+| FORGE targets per team pass attempt proxy | `src/export/forgeWeeklyDerivedArtifact.ts`: `routeParticipation` in `deriveSkillRecord` | player targets / team pass attempts, clamped to 0..1; 0 for QB rows or when team pass attempts are not positive | none; not indexed |
+
+The FORGE proxy predates this inspection layer and is described here only so it
+is not mistaken for either catalog variant. It uses no route counts: the same
+export sets `routesRun` to `max(targets, receptions)` and flags the rows with
+`routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume`.
+It has no inspection ID and no source pin, so the viewer's drift checks do not
+cover this paragraph; the export code remains the authority for its behavior.
+A `route_participation` or `route %` lookup therefore lists the two catalog
+variants only. That list is not an inventory of every route-participation field
+in the repository.
+
+The proposed dropback ratio stays unapproved. The fixture rows are not evidence
+for it or for any other meaning above.
+
+### `definition_ids` are references; `definition_bindings` are coverage bindings
+
+The registry has two different links from a field name to an inspection ID.
+
+- `entries[].definition_ids` is a navigation reference: it lists catalog variants
+  that share the entry's field name. It is validated by ID existence and
+  field-name match only. It does not state which variant, if any, produced the
+  values in an artifact, and no viewer response reads it.
+- `coverage_artifacts[].definition_bindings` is the only link a coverage receipt
+  uses. A field absent from it is reported with `definition_id: null` and
+  `definition_binding: "unbound"`.
+
+The `route_participation` entry references the gold compatibility alias and the
+proposed dropback ratio. Both usage-lane coverage artifacts leave
+`route_participation` and `routes_run` unbound, and they stay unbound: a
+reference never becomes a binding, and binding a field needs its own reviewed
+change with source support. Unbound means the definition behind those values is
+not established, including for the six fixture rows.
+
 Coverage is a separate operation over two allowlisted committed artifacts. It
 returns their exact source pin/digest, row and missing/non-null/zero/invalid-value
 counts, observed season/week keys, explicit season-type uncertainty, source
@@ -98,7 +142,9 @@ promoted-path usage export are explicitly labeled fixtures and remain
 
 This version fixes `consumer_authorized=false` and `canonical_approval=not_granted`.
 Neither caller options nor registry edits may switch those flags on under this
-inspection schema. There is no HTTP/MCP endpoint, ingestion, data acquisition,
+inspection schema. Failure responses (`invalid_request`, `invalid_registry`,
+`inspection_blocked`) carry both flags too. The flags are denials: `false` and
+`not_granted` never mean a metric may be used. There is no HTTP/MCP endpoint, ingestion, data acquisition,
 scoring operation, automatic update, or downstream export registration.
 
 Before inspection acceptance: review the exact candidate head; verify generated
