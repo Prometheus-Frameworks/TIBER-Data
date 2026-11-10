@@ -98,9 +98,15 @@ export sets `routesRun` to `max(targets, receptions)` and flags the rows with
 `routes_and_route_participation_approximated_from_team_pass_attempts_and_player_target_volume`.
 It has no inspection ID and no source pin, so the viewer's drift checks do not
 cover this paragraph; the export code remains the authority for its behavior.
-A `route_participation` or `route %` lookup therefore lists the two catalog
-variants only. That list is not an inventory of every route-participation field
-in the repository.
+Lookups therefore list catalog variants only, never the FORGE proxy:
+
+- `route_participation` returns two IDs: the gold compatibility alias and the
+  proposed dropback ratio.
+- `route %` returns three IDs: those two plus the original summed-player-route
+  `inspection.route_share.sum_player_routes.v0`.
+
+Neither list is an inventory of every route-participation field in the
+repository.
 
 The proposed dropback ratio stays unapproved. The fixture rows are not evidence
 for it or for any other meaning above.

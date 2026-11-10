@@ -1,0 +1,128 @@
+{
+  "audit_version": "0.1.0",
+  "prepared_date": "2026-11-10",
+  "task": "PR #290 documentation and validation closeout for the metric-definition inspection follow-up",
+  "pull_request": "https://github.com/Prometheus-Frameworks/TIBER-Data/pull/290",
+  "base": "7a13fda31356ec0fcb11e100157a3ff95156ecb4",
+  "code_head": "66030294f5595d0ba23c8e3d9dc28457796ddc5c",
+  "closeout_head": "recorded in the PR body; a file cannot contain its own commit SHA",
+  "historical_289_audit": "docs/audits/metric-definition-inspection-2026-11-09 (unchanged)",
+  "task_classes": [
+    "repo_documentation",
+    "provenance_source_audit_record"
+  ],
+  "status": "draft_unmerged_undeployed_unactivated",
+  "consumer_authorized": false,
+  "canonical_approval": "not_granted",
+  "catalog_sha256": "458bcf493981ec4acca971e2cb31edf5a7fe699d64dbc39a24e961bc2b3e1c80",
+  "review_status": {
+    "code_head": "codex_reviewed_with_isolated_checks",
+    "closeout_head": "not_independently_reviewed"
+  },
+  "closeout_files": [
+    "docs/metric-definition-inspection.md",
+    "docs/audits/metric-definition-inspection-followup-2026-11-10/README.md",
+    "docs/audits/metric-definition-inspection-followup-2026-11-10/audit.json"
+  ],
+  "lookup_behavior": {
+    "route_participation": {
+      "status": "selection_required",
+      "exit_code": 2,
+      "ids": [
+        "inspection.route_participation.gold_compatibility_alias.v0",
+        "inspection.route_participation.team_dropbacks.proposed.v0"
+      ]
+    },
+    "route %": {
+      "status": "selection_required",
+      "exit_code": 2,
+      "ids": [
+        "inspection.route_share.sum_player_routes.v0",
+        "inspection.route_participation.gold_compatibility_alias.v0",
+        "inspection.route_participation.team_dropbacks.proposed.v0"
+      ]
+    },
+    "resolution": "documentation corrected to match behavior; implementation unchanged"
+  },
+  "builder_reported_checks_at_code_head": {
+    "independent": false,
+    "missing_flag_reproduced_before_fix": true,
+    "focused_node_checks": { "passed": 22, "failed": 0, "skipped": 0 },
+    "generated_view_drift_check": "passed",
+    "legacy_filters": "passed",
+    "syntax_and_whitespace": "passed",
+    "typecheck": "passed",
+    "build": "passed",
+    "full_vitest": { "passed": 1066, "failed": 1 },
+    "bounded_python_tests": { "passed": 27 },
+    "ruff_parity_test_file": "passed",
+    "full_pytest": { "passed": 1518, "failed": 1, "skipped": 3 },
+    "unrestricted_pre_pr_script": "not_run"
+  },
+  "codex_independent_checks_at_code_head": {
+    "provenance": "relayed by the operator in the closeout request; no Codex artifact is attached to PR #290 and the builder did not verify it against a primary record",
+    "method": "isolated checks against exact fetched files",
+    "confirmed": [
+      "three error statuses retain both denial flags",
+      "refusal payloads cannot override the denial flags",
+      "descriptor-generated views match committed views",
+      "legacy filters work",
+      "both registry coverage artifacts omit route bindings"
+    ],
+    "not_done": [
+      "full focused suite rerun",
+      "validation of all pinned Git sources",
+      "full TypeScript suite rerun",
+      "full Python suite rerun",
+      "independent reproduction of the baseline failures"
+    ]
+  },
+  "closeout_rerun_checks": {
+    "independent": false,
+    "focused_node_checks": { "passed": 22, "failed": 0, "skipped": 0 },
+    "generated_view_drift_check": "passed",
+    "legacy_filters": "passed",
+    "syntax_and_whitespace": "passed",
+    "not_rerun": ["typecheck", "build", "full_vitest", "python_tests", "ruff"]
+  },
+  "github_ci": {
+    "read_at_head": "66030294f5595d0ba23c8e3d9dc28457796ddc5c",
+    "check_runs": 0,
+    "commit_statuses": 0,
+    "workflows_directory_present": false,
+    "interpretation": "results absent, not passing"
+  },
+  "unresolved_test_dispositions": [
+    {
+      "suite": "vitest",
+      "test": "test/rosterPlayerTeamMapArtifact.export.test.ts > supports source_backed lane when source artifact exists and fails closed otherwise",
+      "evidence": "builder-reported failure, reproduced on unmodified main; not independently reproduced",
+      "existing_exclusion": "listed as a known exclusion in the #289 record for its bounded runs; cause stated there was not verified here",
+      "cause": "not_verified_in_this_pr",
+      "disposition": "pending_operator_review"
+    },
+    {
+      "suite": "pytest",
+      "test": "tests/test_historical_landing_context_2023_pilots.py::test_asserted_data_commit_path_blob_and_hash_pins_replay",
+      "evidence": "builder-reported failure, reproduced on unmodified main; fetching pinned commit 9a58e6ed4b748783869277bb430c60ae33f1d05a did not resolve it; not independently reproduced",
+      "existing_exclusion": null,
+      "cause": "undetermined",
+      "disposition": "pending_operator_review"
+    }
+  ],
+  "full_suite_signoff": false,
+  "remaining_requirements": [
+    "independent review of the closeout head",
+    "operator disposition of both unresolved test failures",
+    "CI evidence (none exists for any head)",
+    "canonical definition approval, admitted route observations, route_participation coverage binding and consumer activation remain outside this PR"
+  ],
+  "prohibited_actions_in_this_candidate": [
+    "merge",
+    "deployment",
+    "source_admission",
+    "canonical_metric_repair",
+    "consumer_activation",
+    "scoring_or_ranking_change"
+  ]
+}
