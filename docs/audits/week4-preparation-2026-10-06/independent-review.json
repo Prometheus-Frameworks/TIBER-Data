@@ -1,0 +1,63 @@
+{
+  "schema_version": "independent_week4_data_review_v1",
+  "reviewer": "Codex independent sub-agent /root/week4_data_review; not the packet author",
+  "repository": "Prometheus-Frameworks/TIBER-Data",
+  "pull_request": 281,
+  "reviewed_head": "ca31f5052061e854b3df8ad46e555506f1f7712d",
+  "reviewed_tree": "7d3f8a4c2ce889258fa6be9eea48c5274c577012",
+  "candidate_path": "exports/candidates/weekly_boxscore/revisions/2026_REG_w04/307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9.json",
+  "candidate_sha256": "307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9",
+  "source_support_commit": "0f99ff5a2293044c41d5de3c2601c02baa6e9daf",
+  "producer_code_commit": "0d9f82a8d0225602faea4887adf314983ee25a3a",
+  "review_completed_at": "2026-10-06T11:43:10.583805Z",
+  "disposition": "clean_with_non_blocking_notes",
+  "actionable_findings": [],
+  "checks": {
+    "reviewed_head": "ca31f5052061e854b3df8ad46e555506f1f7712d",
+    "reviewed_tree": "7d3f8a4c2ce889258fa6be9eea48c5274c577012",
+    "inventory_members_verified": 13,
+    "changed_files": 15,
+    "candidate_sha256": "307204e4c8123e8b1f66d8dabbacfb5310ad84b72abfa935b15f0fd4e5016de9",
+    "offline_rebuild_started_at": "2026-10-06T11:42:34.803870+00:00",
+    "offline_rebuild_completed_at": "2026-10-06T11:42:35.031056+00:00",
+    "raw_scope_player_rows": 1110,
+    "resolved_player_rows": 1109,
+    "anonymous_rows": 1,
+    "team_rows": 32,
+    "games": 16,
+    "air_yard_conflicts": 22,
+    "all_carry_target_sums": "matched",
+    "shortlist_native_identity_proposals": "verified_exact_against_committed_source_only",
+    "original_build_witness": "chronologically_valid_recorded_actual_invocation; independently reproduced bytes; original execution not independently observed",
+    "provider_metadata": "receipt claims and unchanged intake checks audited; no fresh provider acquisition",
+    "fixture_tests": {
+      "passed": 40,
+      "subtests": 33
+    },
+    "source_admitted": false,
+    "real_ROP_TTS_executed": false
+  },
+  "notes": [
+    "22 receiving-air-yard conflicts remain excluded; every other available team reconciliation field matches.",
+    "One anonymous source observation participates in denominators but is not a player identity.",
+    "Shortlist native rows match; Sleeper mapping and the Tre Harris alias remain proposals needing identity qualification.",
+    "Original acquisition/build clocks are preserved recorded witnesses. Reviewer audited their chronology and unchanged intake implementation and independently reproduced bytes, without claiming to have witnessed original execution or revalidated current provider metadata.",
+    "Full-week schedule membership is matched, game finality remains unknown; candidate cannot establish historical cutoff availability."
+  ],
+  "boundaries": {
+    "source_purpose_acceptance": false,
+    "source_admitted": false,
+    "real_player_ROP_TTS_invocation": false,
+    "merge": false,
+    "deployment": false,
+    "provider_acquisition": false,
+    "repo_write": false
+  },
+  "review_method": "Separate no-hardlink clone; read-only reviewed tree; unchanged Data offline prepare in memory, write reproduction into external scratch only; independent raw CSV row/sum checks and unchanged weekly tests.",
+  "input_inventory_sha256": "851d188aaf60a65cd39ef6fd0a4541f40aa4196010c68872edb028437a2d03e7",
+  "build_witness_sha256": "e13a2c1679749d91b465864fd2be497a9e969e63a10b549a8c45ed51f260fe1c",
+  "material_findings": [],
+  "independent_reviewer": true,
+  "author_of_reviewed_packet": false,
+  "consumer_admitted": false
+}
