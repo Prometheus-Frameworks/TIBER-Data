@@ -1,0 +1,93 @@
+{
+  "study_version": "0.1.0",
+  "status": "synthetic_demo",
+  "consumer_authorized": false,
+  "scope": "offline_design_study; no current player evidence",
+  "player_identity": null,
+  "counts": {
+    "actual_player_routes": 21,
+    "team_dropbacks": 30,
+    "sum_input_player_routes": 105,
+    "team_pass_attempts": 24,
+    "on_field_pass_plays": 24,
+    "player_targets": 6,
+    "team_targets": 22
+  },
+  "caveat": "Independent arithmetic examples, not a reconciled event ledger or a real player/game. No source or eligibility rule is validated.",
+  "examples": [
+    {
+      "label": "route_share",
+      "numerator": "actual_player_routes",
+      "denominator": "sum_input_player_routes",
+      "status": "synthetic_arithmetic",
+      "value": 0.2,
+      "evidence_kind": "synthetic_demo"
+    },
+    {
+      "label": "proposed_route_participation",
+      "numerator": "actual_player_routes",
+      "denominator": "team_dropbacks",
+      "status": "synthetic_arithmetic",
+      "value": 0.7,
+      "evidence_kind": "synthetic_demo"
+    },
+    {
+      "label": "pass_attempt_denominator_counterexample",
+      "numerator": "actual_player_routes",
+      "denominator": "team_pass_attempts",
+      "status": "synthetic_arithmetic",
+      "value": 0.875,
+      "evidence_kind": "synthetic_demo"
+    },
+    {
+      "label": "pass_play_participation_proxy",
+      "numerator": "on_field_pass_plays",
+      "denominator": "team_dropbacks",
+      "status": "synthetic_arithmetic",
+      "value": 0.8,
+      "evidence_kind": "synthetic_demo"
+    },
+    {
+      "label": "targets_per_route",
+      "numerator": "player_targets",
+      "denominator": "actual_player_routes",
+      "status": "synthetic_arithmetic",
+      "value": 0.2857142857142857,
+      "evidence_kind": "synthetic_demo"
+    },
+    {
+      "label": "target_share_gold_formula",
+      "numerator": "player_targets",
+      "denominator": "team_targets",
+      "status": "synthetic_arithmetic",
+      "value": 0.2727272727272727,
+      "evidence_kind": "synthetic_demo"
+    }
+  ],
+  "missing_routes_example": {
+    "status": "missing_input",
+    "value": null,
+    "evidence_kind": "synthetic_demo"
+  },
+  "zero_routes_example": {
+    "status": "undefined_denominator",
+    "value": null,
+    "evidence_kind": "synthetic_demo"
+  },
+  "aggregation_example": {
+    "evidence_kind": "synthetic_demo",
+    "game_counts": [
+      [
+        1,
+        2
+      ],
+      [
+        9,
+        30
+      ]
+    ],
+    "ratio_of_sums": 0.3125,
+    "mean_of_game_ratios": 0.4,
+    "meaning": "31.25% and 40% answer different aggregation questions; no default chosen."
+  }
+}
