@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import {
   catalog, compare, digest, inspectCoverage, inspectionMarkdown, loadInspection,
-  lookup, serialize, sha256, validateInspection,
+  lookup, refusal, serialize, sha256, validateInspection,
 } from '../lib/metric_definition_inspection.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -266,4 +266,62 @@ test('CLI invalid combinations produce explicit machine-readable failure', () =>
     assert.equal(JSON.parse(result.stdout).consumer_authorized, false);
   }
   assert.equal(cli('--definitions', 'coverage', '--artifact', 'unknown').status, 2);
+});
+
+test('every definition-operation failure retains both denial flags', () => {
+  const stale = fs.mkdtempSync(path.join(os.tmpdir(), 'metric-registry-refusal-'));
+  try {
+    const r = clone();
+    r.definition_inspection.definitions[0].caveats.push('Synthetic metadata drift test only.');
+    const drifted = path.join(stale, 'registry.json');
+    fs.writeFileSync(drifted, serialize(r));
+    const cases = [
+      ['invalid_request', ['--definitions', 'get']],
+      ['invalid_request', ['--definitions', 'unknown_operation']],
+      ['invalid_request', ['--definitions', 'list', '--status', 'candidate']],
+      ['invalid_registry', ['--definitions', 'list', '--registry', path.join(stale, 'missing.json')]],
+      ['inspection_blocked', ['--definitions', 'list', '--registry', drifted, '--check-generated']],
+    ];
+    for (const [status, args] of cases) {
+      const result = cli(...args);
+      assert.equal(result.status, 1);
+      const body = JSON.parse(result.stdout);
+      assert.equal(body.status, status);
+      assert.equal(body.consumer_authorized, false);
+      assert.equal(body.canonical_approval, 'not_granted');
+      assert.equal(typeof body.error, 'string');
+    }
+  } finally { fs.rmSync(stale, { recursive: true, force: true }); }
+});
+
+test('refusal payloads cannot override the denial flags', () => {
+  const result = refusal('inspection_blocked', 'synthetic',
+    { consumer_authorized: true, canonical_approval: 'approved' });
+  assert.equal(result.consumer_authorized, false);
+  assert.equal(result.canonical_approval, 'not_granted');
+  for (const response of [lookup(context, 'unknown'), compare(context, 'a', 'b'),
+    inspectCoverage(context, 'unknown'), lookup(context, 'route %'), catalog(context)]) {
+    assert.equal(response.consumer_authorized, false);
+    assert.equal(response.canonical_approval, 'not_granted');
+  }
+});
+
+test('field links are references only; route_participation coverage stays unbound', () => {
+  const entry = registry.entries.find((item) => item.field_name === 'route_participation');
+  assert.deepEqual(entry.definition_ids, [ID.alias, ID.participation]);
+  for (const artifact of registry.definition_inspection.coverage_artifacts) {
+    assert.equal(Object.hasOwn(artifact.definition_bindings, 'route_participation'), false);
+    assert.equal(Object.hasOwn(artifact.definition_bindings, 'routes_run'), false);
+    const receipt = inspectCoverage(context, artifact.id);
+    assert.equal(receipt.columns.route_participation.definition_id, null);
+    assert.equal(receipt.columns.route_participation.definition_binding, 'unbound');
+    assert.equal(Object.hasOwn(receipt, 'definition_ids'), false);
+    assert.equal(Object.hasOwn(receipt.columns.route_participation, 'definition_ids'), false);
+  }
+  syntheticRepository(({ root, r }) => {
+    r.entries.find((item) => item.field_name === 'route_participation').definition_ids = [ID.alias];
+    const receipt = inspectCoverage(loadInspection(r, root), 'weekly_usage.offline_fixture');
+    assert.equal(receipt.columns.route_participation.definition_binding, 'unbound');
+    assert.equal(receipt.columns.route_participation.measurement_support, 'fixture_only');
+  });
 });
