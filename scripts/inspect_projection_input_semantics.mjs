@@ -4,7 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import {
-  catalog, compare, inspectCoverage, inspectionMarkdown, loadInspection, lookup, serialize,
+  catalog, compare, inspectCoverage, inspectionMarkdown, loadInspection, lookup, refusal, serialize,
   validateInspection,
 } from './lib/metric_definition_inspection.mjs';
 
@@ -325,7 +325,7 @@ function main() {
     options = parseArgs(process.argv.slice(2));
   } catch (error) {
     if (process.argv.includes('--definitions')) {
-      console.log(serialize({ status: 'invalid_request', consumer_authorized: false, error: error.message }));
+      console.log(serialize(refusal('invalid_request', error.message)));
       process.exitCode = 1;
       return;
     }
@@ -345,7 +345,7 @@ function main() {
     ({ registry, resolvedPath } = loadRegistry(options.registry));
   } catch (error) {
     if (options.definitions) {
-      console.log(serialize({ status: 'invalid_registry', consumer_authorized: false, error: error.message }));
+      console.log(serialize(refusal('invalid_registry', error.message)));
       process.exitCode = 1;
       return;
     }
@@ -377,7 +377,7 @@ function main() {
       console.log(serialize(result));
       if (['not_indexed', 'selection_required'].includes(result.status)) process.exitCode = 2;
     } catch (error) {
-      console.log(serialize({ status: 'inspection_blocked', consumer_authorized: false, error: error.message }));
+      console.log(serialize(refusal('inspection_blocked', error.message)));
       process.exitCode = 1;
     }
     return;

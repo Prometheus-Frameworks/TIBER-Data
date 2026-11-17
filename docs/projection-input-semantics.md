@@ -16,7 +16,9 @@ The viewer also offers a Data-only definition inspection candidate, implemented
 inside the existing registry's `definition_inspection` section. The original 37
 field entries and their statuses retain their meanings. Selected entries link
 to exact inspection variants through `definition_ids`; they are not duplicated
-as competing field entries.
+as competing field entries. `definition_ids` are references only; they do not
+bind any artifact's values to a definition. Coverage bindings are separate and
+`route_participation` coverage remains unbound.
 
 See [metric-definition inspection](metric-definition-inspection.md) for exact
 lookup, denominator comparisons, separate pinned coverage receipts, regeneration,

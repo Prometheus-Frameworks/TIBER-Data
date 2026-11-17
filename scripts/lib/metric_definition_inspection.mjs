@@ -149,16 +149,25 @@ export function loadInspection(registry, root) {
   return { config, root, catalogDigest: digest(config) };
 }
 
+// The denial flags are re-applied after any payload so that no payload can override them.
+const DENIAL = Object.freeze({ consumer_authorized: false, canonical_approval: 'not_granted' });
+
 function envelope(context, status, payload = {}) {
   return {
     inspection_version: context.config.version,
     status,
     inspection_scope: 'definition_and_coverage_inspection_only',
-    consumer_authorized: false,
-    canonical_approval: 'not_granted',
+    ...DENIAL,
     catalog_sha256: context.catalogDigest,
     ...payload,
+    ...DENIAL,
   };
+}
+
+// Failure response for requests that never reach a validated catalog (invalid request,
+// invalid registry, blocked inspection). A failure is never an approval or an authorization.
+export function refusal(status, error, payload = {}) {
+  return { ...payload, status, ...DENIAL, error: String(error) };
 }
 
 function definitionView(definition) {
