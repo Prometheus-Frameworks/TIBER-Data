@@ -1,0 +1,24 @@
+{
+  "schema_version": "weekly_schedule_source_candidate_v0",
+  "status": "unadmitted_schedule_snapshot",
+  "source_family": "nflverse/nflverse-data/schedules",
+  "source_url": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
+  "asset_id": 615271477,
+  "sha256": "0de841abf2ee694fb1baa779f35a3a702bfce6bd83d252c26375f13468b4d493",
+  "byte_count": 2182781,
+  "release_asset_updated_at": "2026-10-06T11:06:43Z",
+  "retrieval_started_at": "2026-10-06T11:09:18.451002+00:00",
+  "retrieval_completed_at": "2026-10-06T11:09:34.001374+00:00",
+  "release_digest_matched": true,
+  "attribution": {
+    "name": "nflverse contributors",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "license_source_url": "https://raw.githubusercontent.com/nflverse/nflverse-data/master/LICENSE.md",
+    "license_sha256": "2a82ac9bbc3e3ee066908381e8d373896db5a6025d083fbd59692fe9ccfb9111"
+  },
+  "limitations": [
+    "Released nflverse schedule; no explicit final-status field.",
+    "Schedule membership and populated scores do not certify game finality. No admission or activation."
+  ]
+}
